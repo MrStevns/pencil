@@ -55,13 +55,13 @@ QImage* BrushFactory::createRadialImage(QColor color, qreal radius, qreal offset
 
     painter.begin(mBrushImage);
 
-    painter.setBrush(QBrush(color));
+    painter.setBrush(QBrush(QColor(color.red(),color.green(),color.blue())));
     painter.setPen(Qt::NoPen);
     painter.setCompositionMode(QPainter::CompositionMode_Source);
     painter.drawRect(QRect(0,0,radius,radius));
     painter.end();
 
-    applyAlphaMask(*mBrushImage,radius,offset,opacity);
+    applyAlphaMask(*mBrushImage,radius,offset,color.alphaF());
 
     return mBrushImage;
 }
@@ -99,6 +99,7 @@ void BrushFactory::applyAlphaMask(QImage& image, qreal radius, qreal offset, qre
         painter.begin(mAlphaMask);
 
         painter.setBrush(QBrush(gradient));
+        painter.setOpacity(opacity);
         painter.setPen(Qt::NoPen);
         painter.drawRect(QRect(0,0,radius,radius));
         painter.end();
