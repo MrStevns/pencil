@@ -196,13 +196,13 @@ void EraserTool::paintAt( QPointF point )
         BlitRect rect;
 
         rect.extend( point.toPoint() );
-        mScribbleArea->drawBrush( point,
-                                  brushWidth,
-                                  properties.feather,
-                                  QColor(255, 255, 255, 255),
-                                  opacity,
-                                  properties.useFeather,
-                                  properties.useAA );
+//        mScribbleArea->drawBrush( point,
+//                                  brushWidth,
+//                                  properties.feather,
+//                                  QColor(255, 255, 255, 255),
+//                                  opacity,
+//                                  properties.useFeather,
+//                                  properties.useAA );
 
         int rad = qRound( brushWidth ) / 2 + 2;
 
@@ -251,13 +251,13 @@ void EraserTool::drawStroke()
         {
             QPointF point = mLastBrushPoint + ( i + 1 ) * ( brushStep )* ( b - mLastBrushPoint ) / distance;
             rect.extend( point.toPoint() );
-            mScribbleArea->drawBrush( point,
-                                      brushWidth,
-                                      properties.feather,
-                                      QColor(255, 255, 255, 255),
-                                      opacity,
-                                      properties.useFeather,
-                                      properties.useAA );
+//            mScribbleArea->drawBrush( point,
+//                                      brushWidth,
+//                                      properties.feather,
+//                                      QColor(255, 255, 255, 255),
+//                                      opacity,
+//                                      properties.useFeather,
+//                                      properties.useAA );
 
             if ( i == ( steps - 1 ) )
             {

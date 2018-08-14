@@ -22,7 +22,9 @@ GNU General Public License for more details.
 
 #include <QList>
 #include <QPointF>
+#include <QMap>
 
+#include "brushfactory.h"
 
 class StrokeTool : public BaseTool
 {
@@ -30,14 +32,43 @@ class StrokeTool : public BaseTool
 
 public:
     explicit StrokeTool(QObject* parent);
-    
+    /**
+     * @brief startStroke, this prepares a bunch of settings before we initialize our stroke
+     * it is mainly used by vector
+     */
     void startStroke();
+
+
+    /**
+     * @brief drawStroke, Prepares the next stroke for stroke and pressure interpolation
+     */
     void drawStroke();
+
+    /**
+     * @brief endStroke
+     */
     void endStroke();
 
     bool keyPressEvent(QKeyEvent* event) override;
     bool keyReleaseEvent(QKeyEvent* event) override;
 
+    /**
+     * @brief StrokeTool::missingDabs, calculates the euclidean distance to figure out
+     * the distance we need to cover with dabs
+     * @param x, x pos of next dab
+     * @param y, y pos of next dab
+     * @return float, how many dabs will be drawn between the last and current pos
+     */
+    float missingDabs(float cux, float cuy, float oldX, float oldY);
+
+
+    /**
+     * @brief strokeTo, Performs the actual stroking from a to b.
+     * @param brushObject, the struct containing all relevant information about our brush
+     * @param x, last x position
+     * @param y, last y position
+     */
+    void strokeTo(Brush& brush, float lastx, float lasty);
 protected:
     bool mFirstDraw = false;
 
@@ -53,6 +84,11 @@ protected:
     /// "old" Pencil behaviour).
     /// Returns true by default.
     virtual bool emptyFrameActionEnabled();
+
+    float deltaX;
+    float deltaY;
+
+    float mLeftOverDabDistance;
 
 private:
 	QPointF mLastPixel = { 0, 0 };

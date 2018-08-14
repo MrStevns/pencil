@@ -37,6 +37,9 @@ GNU General Public License for more details.
 #include "playbackmanager.h"
 #include "viewmanager.h"
 
+#include "util.h"
+#include "brushfactory.h"
+
 
 ScribbleArea::ScribbleArea(QWidget* parent) : QWidget(parent),
 mLog("ScribbleArea")
@@ -1189,36 +1192,54 @@ void ScribbleArea::setGaussianGradient(QGradient &gradient, QColor colour, qreal
 
 void ScribbleArea::drawPen(QPointF thePoint, qreal brushWidth, QColor fillColour, bool useAA)
 {
-    QRectF rectangle(thePoint.x() - 0.5 * brushWidth, thePoint.y() - 0.5 * brushWidth, brushWidth, brushWidth);
+//    QRectF rectangle(thePoint.x() - 0.5 * brushWidth, thePoint.y() - 0.5 * brushWidth, brushWidth, brushWidth);
 
-    mBufferImg->drawEllipse(rectangle, Qt::NoPen, QBrush(fillColour, Qt::SolidPattern),
-                            QPainter::CompositionMode_Source, useAA);
+
+//    BrushFactory factory;
+
+//    QImage* brushImg = factory.createRadialImage(fillColour,brushWidth,5, fillColour.alphaF());
+//    factory.applyPerlinNoise(*brushImg,10,10,6,255);
+//    BitmapImage bitmap = BitmapImage(QRect(thePoint.x()-0.5*brushWidth,thePoint.y()-0.5*brushWidth,brushWidth,brushWidth), *brushImg);
+
+
+    // TODO: paste alpha blends
+//     make new method for painting our brush.
+//    mBufferImg->paste(mBufferImg, QPainter::CompositionMode_Source);
+//    mBufferImg->drawEllipse(bitmap.bounds(), Qt::NoPen, QBrush(fillColour, Qt::SolidPattern),
+//                            QPainter::CompositionMode_Source, useAA);
 }
 
 void ScribbleArea::drawPencil(QPointF thePoint, qreal brushWidth, qreal fixedBrushFeather, QColor fillColour, qreal opacity)
 {
-    drawBrush(thePoint, brushWidth, fixedBrushFeather, fillColour, opacity, true);
+//    drawBrush(thePoint, brushWidth, fixedBrushFeather, fillColour, opacity, true);
 }
 
-void ScribbleArea::drawBrush(QPointF thePoint, qreal brushWidth, qreal mOffset, QColor fillColour, qreal opacity, bool usingFeather, int useAA)
+void ScribbleArea::drawBrush(Brush& brush, float x, float y/*QPointF thePoint, qreal brushWidth, qreal mOffset, QColor fillColour, qreal opacity, bool usingFeather, int useAA*/)
 {
-    QRectF rectangle(thePoint.x() - 0.5 * brushWidth, thePoint.y() - 0.5 * brushWidth, brushWidth, brushWidth);
+//    QRectF rectangle(thePoint.x() - 0.5 * brushWidth, thePoint.y() - 0.5 * brushWidth, brushWidth, brushWidth);
 
-    BitmapImage gradientImg;
-    if (usingFeather)
-    {
-        QRadialGradient radialGrad(thePoint, 0.5 * brushWidth);
-        setGaussianGradient(radialGrad, fillColour, opacity, mOffset);
+//    BitmapImage gradientImg;
+//    if (usingFeather)
+//    {
+//        QRadialGradient radialGrad(thePoint, 0.5 * brushWidth);
+//        setGaussianGradient(radialGrad, fillColour, opacity, mOffset);
 
-        gradientImg.drawEllipse(rectangle, Qt::NoPen, radialGrad,
-                                QPainter::CompositionMode_SourceOver, false);
-    }
-    else
-    {
-        mBufferImg->drawEllipse(rectangle, Qt::NoPen, QBrush(fillColour, Qt::SolidPattern),
-                                QPainter::CompositionMode_SourceOver, useAA);
-    }
-    mBufferImg->paste(&gradientImg);
+//        gradientImg.drawEllipse(rectangle, Qt::NoPen, radialGrad,
+//                                QPainter::CompositionMode_SourceOver, false);
+//    }
+//    else
+//    {
+//        mBufferImg->drawEllipse(rectangle, Qt::NoPen, QBrush(fillColour, Qt::SolidPattern),
+//                                QPainter::CompositionMode_SourceOver, useAA);
+//    }
+
+//    QImage* brushImg = factory.createRadialImage(fillColour,brushWidth,mOffset,opacity);
+//    factory.applyPerlinNoise(*brushImg,10,10,6,255);
+//    factory.applySimpleNoise(*brushImg);
+    BitmapImage bitmap = BitmapImage(QRect(x-0.5*brush.brushWidth,y-0.5*brush.brushWidth,brush.brushWidth,brush.brushWidth), *brush.brushImage);
+
+
+    mBufferImg->paste(&bitmap);
 }
 
 /**

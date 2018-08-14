@@ -226,7 +226,7 @@ void BrushTool::mouseReleaseEvent( QMouseEvent* event )
             }
             else
             {
-                drawStroke();
+//                drawStroke();
             }
         }
 
@@ -244,7 +244,10 @@ void BrushTool::mouseMoveEvent( QMouseEvent* event )
     {
         if ( event->buttons() & Qt::LeftButton )
         {
-            drawStroke();
+            QPointF currentPos = mEditor->view()->mapScreenToCanvas(event->localPos());
+            drawStroke(mLastBrushPoint, currentPos);
+
+            mLastBrushPoint = currentPos;
             if (properties.stabilizerLevel != m_pStrokeManager->getStabilizerLevel())
                 m_pStrokeManager->setStabilizerLevel(properties.stabilizerLevel);
         }
@@ -269,20 +272,20 @@ void BrushTool::paintAt( QPointF point )
         BlitRect rect;
 
         rect.extend( point.toPoint() );
-        mScribbleArea->drawBrush( point,
-                                  brushWidth,
-                                  properties.feather,
-                                  mEditor->color()->frontColor(),
-                                  opacity,
-                                  properties.useFeather,
-                                  properties.useAA );
+//        mScribbleArea->drawBrush( point,
+//                                  brushWidth,
+//                                  properties.feather,
+//                                  mEditor->color()->frontColor(),
+//                                  opacity,
+//                                  properties.useFeather,
+//                                  properties.useAA );
 
         int rad = qRound( brushWidth ) / 2 + 2;
         mScribbleArea->refreshBitmap( rect, rad );
     }
 }
 
-void BrushTool::drawStroke()
+void BrushTool::drawStroke(QPointF start, QPointF end)
 {
     StrokeTool::drawStroke();
     QList<QPointF> p = m_pStrokeManager->interpolateStroke();
@@ -291,52 +294,119 @@ void BrushTool::drawStroke()
 
     if ( layer->type() == Layer::BITMAP )
     {
-        for ( int i = 0; i < p.size(); i++ )
-        {
-            p[ i ] = mEditor->view()->mapScreenToCanvas( p[ i ] );
-        }
 
-        qreal opacity = 1.0;
-        if (properties.pressure == true) {
-            opacity = mCurrentPressure / 2;
-        }
+        BrushFactory bfactory;
 
-        mCurrentWidth = properties.width;
-        qreal brushWidth = mCurrentWidth;
+        QImage* brushImage = bfactory.createRadialImage(mEditor->color()->frontColor(),
+                                                       properties.width,
+                                                       properties.feather,
+                                                       1.0);
 
-        qreal brushStep = (0.5 * brushWidth);
-        brushStep = qMax( 1.0, brushStep );
+        Brush brush;
+        brush.brushImage = brushImage;
+        brush.brushWidth = properties.width;
+        brush.dabSpacing = 0.5;
+        brush.opacity = 1.0;
+        brush.scatterAmount = 30;
+        brush.scatterDensity = 3;
+        brush.softness = properties.feather;
 
-        BlitRect rect;
+        strokeTo(brush, start.x(), start.y());
+//        mScribbleArea->drawBrush(
+//        for ( int i = 0; i < p.size(); i++ )
+//        {
+//            p[ i ] = mEditor->view()->mapScreenToCanvas( p[ i ] );
+//        }
 
-        QPointF a = mLastBrushPoint;
-        QPointF b = getCurrentPoint();
+//        qreal opacity = 1.0;
+//        if (properties.pressure == true) {
+//            opacity = mCurrentPressure / 2;
+//        }
 
-        qreal distance = 4 * QLineF( b, a ).length();
-        int steps = qRound( distance / brushStep);
+//        mCurrentWidth = properties.width;
+//        qreal brushWidth = mCurrentWidth;
 
-        for ( int i = 0; i < steps; i++ )
-        {
-            QPointF point = mLastBrushPoint + ( i + 1 ) * brushStep * ( getCurrentPoint() - mLastBrushPoint ) / distance;
+////        qreal brushStep = (0.5 * brushWidth);
+//////        brushStep = qMax( 1.0, brushStep );
 
-            rect.extend( point.toPoint() );
-            mScribbleArea->drawBrush( point,
-                                      brushWidth,
-                                      properties.feather,
-                                      mEditor->color()->frontColor(),
-                                      opacity,
-                                      properties.useFeather,
-                                      properties.useAA );
-            if ( i == ( steps - 1 ) )
-            {
-                mLastBrushPoint = getCurrentPoint();
-            }
-        }
+//        BlitRect rect;
 
-        int rad = qRound( brushWidth  / 2 + 2);
+////        QPointF a = mLastBrushPoint;
+////        QPointF b = getCurrentPoint();
 
-        mScribbleArea->paintBitmapBufferRect( rect );
-        mScribbleArea->refreshBitmap( rect, rad );
+////        float distance = QLineF(b,a).length();
+////        int steps = qRound(distance/brushStep);
+
+//        float leftOverDistance = mLeftOverDabDistance;
+
+//        // calculate the euclidean distance
+//        // to find the distance that we need to cover with dabs
+//        float distance = missingDabs(start.x(),start.y(),end.x(),end.y());
+
+//        float spacing = brushWidth*0.1;
+
+//        float stepX = deltaX / distance;
+//        float stepY = deltaY / distance;
+
+//        float offsetX = 0.0;
+//        float offsetY = 0.0;
+
+//        // since we want to stab at a specific interval,
+//        // add the potentially missing leftover distance to the current distance
+//        float totalDistance = leftOverDistance + distance;
+
+//        // will dap until totalDistance is less than spacing
+//        while (totalDistance >= spacing)
+//        {
+//            // make sure to add potentially missed distance
+//            // to our offset
+//            for (int i = 0; i < 4; i++) {
+//            float randX = qrand() % (int)brushWidth*2 + (-brushWidth);
+//            float randY = qrand() % (int)brushWidth*2 + (-brushWidth);
+//            if (leftOverDistance > 0) {
+//                offsetX += stepX * (spacing - leftOverDistance);
+//                offsetY += stepY * (spacing - leftOverDistance);
+
+//                leftOverDistance -= spacing;
+//            } else {
+
+//                // otherwise just calculate the offset from the
+//                // direction (stepX, stepY) and spacing.
+//                offsetX += stepX * spacing;
+//                offsetY += stepY * spacing;
+
+//            }
+
+//            qDebug() << "rand x" << randX;
+//            qDebug() << "rand y" << randY;
+
+//            QPoint stampAt(start.x()+offsetX+randX,
+//                           start.y()+offsetY+randY);
+
+//            rect.extend(stampAt);
+
+//            mScribbleArea->drawBrush( stampAt,
+//                                      brushWidth,
+//                                      properties.feather,
+//                                      mEditor->color()->frontColor(),
+//                                      opacity,
+//                                      properties.useFeather,
+//                                      properties.useAA );
+//        }
+
+
+//            // remove the distance we've covered already
+//            totalDistance -= spacing;
+//        }
+
+//        int rad = qRound( brushWidth  / 2 + 2);
+
+//        mScribbleArea->paintBitmapBufferRect( rect );
+//        mScribbleArea->refreshBitmap( rect, rad );
+
+//        // there might still be dabbing we didn't cover
+//        // so set the remaining to our new left over distance
+//        mLeftOverDabDistance = totalDistance;
 
           // Line visualizer
           // for debugging

@@ -38,6 +38,7 @@ GNU General Public License for more details.
 #include "vectorselection.h"
 #include "canvaspainter.h"
 #include "preferencemanager.h"
+#include "brushfactory.h"
 
 class Layer;
 class Editor;
@@ -173,7 +174,7 @@ public:
     void drawPath( QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm );
     void drawPen( QPointF thePoint, qreal brushWidth, QColor fillColour, bool useAA = true );
     void drawPencil( QPointF thePoint, qreal brushWidth, qreal fixedBrushFeather, QColor fillColour, qreal opacity );
-    void drawBrush( QPointF thePoint, qreal brushWidth, qreal offset, QColor fillColour, qreal opacity, bool usingFeather = true, int useAA = 0 );
+    void drawBrush(Brush& brush, float x, float y /*QPointF thePoint, qreal brushWidth, qreal offset, QColor fillColour, qreal opacity, bool usingFeather = true, int useAA = 0*/ );
     void blurBrush( BitmapImage *bmiSource_, QPointF srcPoint_, QPointF thePoint_, qreal brushWidth_, qreal offset_, qreal opacity_ );
     void liquifyBrush( BitmapImage *bmiSource_, QPointF srcPoint_, QPointF thePoint_, qreal brushWidth_, qreal offset_, qreal opacity_ );
 

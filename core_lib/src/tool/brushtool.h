@@ -36,7 +36,7 @@ public:
 
     void adjustPressureSensitiveProperties( qreal pressure, bool mouseDevice ) override;
 
-    void drawStroke();
+    void drawStroke(QPointF start, QPointF end);
     void paintVectorStroke();
     void paintBitmapStroke();
     void paintAt( QPointF point );
