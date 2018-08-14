@@ -21,6 +21,8 @@ GNU General Public License for more details.
 #include <functional>
 #include <QTransform>
 
+#include <random>
+
 
 QTransform RectMapTransform( QRectF source, QRectF target );
 
@@ -54,5 +56,25 @@ private:
     bool mBlocked = false;
 };
 
+
+class PerlinNoise
+{
+
+public:
+    explicit PerlinNoise(std::uint32_t seed = std::default_random_engine::default_seed);
+
+    void reseed(std::uint32_t seed);
+    double noise(double x) const;
+    double noise(double x, double y) const;
+    double noise(double x, double y, double z) const;
+
+private:
+    std::int32_t p[512];
+
+    static double Fade(double t) noexcept;
+    static double Lerp(double t, double a, double b) noexcept;
+    static double Grad(std::int32_t hash, double x, double y, double z) noexcept;
+
+};
 
 #endif // UTIL_H
