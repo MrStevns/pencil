@@ -67,6 +67,16 @@ public:
      */
     void applyPerlinNoise(QImage& image, double freqX, double freqY, uint aggresion, uint opacity);
 
+
+    /**
+     * @brief rgbBlending, applies rgb blending between two colors depending on two blend factors
+     * @param foreground, the foreground color to blend
+     * @param background, the background color to blend
+     * @param fac1, blending amount of foreground color
+     * @param fac2, blending amount of background color
+     */
+    QColor rgbBlending(QRgb foreground, QRgb background, float fac1, float fac2);
+
 private:
 
     void update();

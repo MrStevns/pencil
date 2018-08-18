@@ -66,6 +66,50 @@ QImage* BrushFactory::createRadialImage(QColor color, qreal radius, qreal offset
     return mBrushImage;
 }
 
+QColor BrushFactory::rgbBlending(QRgb foreground, QRgb background, float fac1, float fac2)
+{
+
+    int redBlend;
+    int greenBlend;
+    int blueBlend;
+    int alphaBlend;
+
+    // α blend value
+    // rgb1 - foreground color
+    // (1-x) - midway blend value
+    // rgb2 - background color
+    //
+    // formula
+    // α * rgb1 + (1-x) * rgb2 = rgb3
+
+    redBlend = fac1*qRed(foreground)+qRed(background)*(1-fac2);
+    greenBlend = fac1*qGreen(foreground)+qGreen(background)*(1-fac2);
+    blueBlend =  fac1*qBlue(foreground)+qBlue(background)*(1-fac2);
+    alphaBlend = qAlpha(foreground);
+
+    if (redBlend > 255) {
+        redBlend = 255;
+    } else if (redBlend < 0) {
+        redBlend = 0;
+    }
+
+    if (greenBlend > 255) {
+        greenBlend = 255;
+    } else if (greenBlend < 0) {
+        greenBlend = 0;
+    }
+
+    if (blueBlend > 255) {
+        blueBlend = 255;
+    } else if (blueBlend < 0 ) {
+        blueBlend = 0;
+    }
+
+    QRgb blended = qRgba(redBlend, greenBlend, blueBlend, alphaBlend);
+
+    return blended;
+}
+
 void BrushFactory::applyAlphaMask(QImage& image, qreal radius, qreal offset, qreal opacity)
 {
 
