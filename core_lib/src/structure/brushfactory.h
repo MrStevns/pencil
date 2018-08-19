@@ -32,6 +32,10 @@ struct Brush {
     float scatterAmount;
     float scatterDensity;
     float dabSpacing;
+    float posX;
+    float posY;
+    float bgBlendFac;
+    float fgBlendFac;
 };
 
 
@@ -49,7 +53,7 @@ public:
      * @param opacity, determines how opaque the brush will become
      * @return A QImage image
      */
-    QImage* createRadialImage(QColor color, qreal radius, qreal offset, qreal opacity);
+    QImage* createRadialImage(const QRgb& surfaceColor, QColor color, qreal radius, qreal offset, qreal opacity);
 
     /**
      * @brief BrushFactory::applySimpleNoise, applies simple 1 bit noise to image
@@ -69,13 +73,21 @@ public:
 
 
     /**
-     * @brief rgbBlending, applies rgb blending between two colors depending on two blend factors
+     * @brief blendBetween, applies rgb blending between two colors depending on two blend factors
      * @param foreground, the foreground color to blend
      * @param background, the background color to blend
      * @param fac1, blending amount of foreground color
      * @param fac2, blending amount of background color
      */
-    QColor rgbBlending(QRgb foreground, QRgb background, float fac1, float fac2);
+    QColor blendBetween(QRgb foreground, QRgb background, float fac1, float fac2);
+
+
+    /**
+     * @brief colorMeanOfPixels, calculates the mean color of a image. Meant for getting the average surface color per dab
+     * @param surfaceImage, a qimage that holds the surface color information.
+     * @return QRgb, squared means of the all pixels in the image as a QRgb
+     */
+    static QRgb colorMeanOfPixels(QImage& surfaceImage, QColor brushColor);
 
 private:
 

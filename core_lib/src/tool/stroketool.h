@@ -26,6 +26,8 @@ GNU General Public License for more details.
 
 #include "brushfactory.h"
 
+class BrushFactory;
+
 class StrokeTool : public BaseTool
 {
     Q_OBJECT
@@ -69,6 +71,14 @@ public:
      * @param y, last y position
      */
     void strokeTo(Brush& brush, float lastx, float lasty);
+
+
+    /**
+     * @brief getSurfaceColor, gets the average surface color by applying squares mean to every pixel in the image
+     * @param brush, the brush struct that contains position information, image etc that is required.
+     * @return the average color of the surface image
+     */
+    QRgb getSurfaceColor(float posX, float posY, QColor brushColor);
 protected:
     bool mFirstDraw = false;
 
@@ -89,6 +99,13 @@ protected:
     float deltaY;
 
     float mLeftOverDabDistance;
+    float mOpacity = 0;
+
+    bool firstStroke = true;
+
+    QRgb mSurfaceColor;
+
+    BrushFactory* mBrushFactory;
 
 private:
 	QPointF mLastPixel = { 0, 0 };

@@ -20,8 +20,12 @@ GNU General Public License for more details.
 #include "scribblearea.h"
 #include "strokemanager.h"
 #include "viewmanager.h"
+#include "layermanager.h"
 #include "editor.h"
 #include "blitrect.h"
+
+#include "layerbitmap.h"
+#include "brushfactory.h"
 
 #include <QtMath>
 
@@ -43,6 +47,7 @@ StrokeTool::StrokeTool( QObject *parent ) :
 BaseTool( parent )
 {
     detectWhichOSX();
+    mBrushFactory = new BrushFactory();
 }
 
 void StrokeTool::startStroke()
@@ -54,6 +59,7 @@ void StrokeTool::startStroke()
 
     mFirstDraw = true;
     mLastPixel = getCurrentPixel();
+    firstStroke = true;
     
     mStrokePoints.clear();
 
@@ -98,6 +104,9 @@ void StrokeTool::endStroke()
     mStrokePoints.clear();
     mStrokePressures.clear();
 
+    mOpacity = 0.0;
+    firstStroke = false;
+
     enableCoalescing();
 }
 
@@ -130,20 +139,33 @@ float StrokeTool::missingDabs(float cux, float cuy, float oldX, float oldY)
     deltaX = oldX - cux;
     deltaY = oldY - cuy;
 
-    qDebug() << "missing dab: deltaX" << deltaX;
+//    qDebug() << "missing dab: deltaX" << deltaX;
 
     // calculate the distance
     distance = sqrt( deltaX * deltaX + deltaY * deltaY );
-    qDebug() << "distance is: " << distance;
+//    qDebug() << "distance is: " << distance;
 
     return distance;
 }
 
+QRgb StrokeTool::getSurfaceColor(float posX, float posY, QColor brushColor) {
+
+    Layer* layer = mEditor->layers()->currentLayer();
+    uint frameNumber = mEditor->currentFrame();
+    BitmapImage surfaceImage = *static_cast<LayerBitmap*>(layer)->getBitmapImageAtFrame(frameNumber);
+
+    surfaceImage = surfaceImage.copy(QRect(posX-properties.width/2,posY-properties.width/2,properties.width,properties.width));
+
+    return BrushFactory::colorMeanOfPixels(*surfaceImage.image(), brushColor);
+
+}
+
 void StrokeTool::strokeTo(Brush& brush, float lastx, float lasty) {
-    qreal opacity = 1.0;
-    if (properties.pressure == true) {
-        opacity = mCurrentPressure / 2;
-    }
+
+
+//    if (properties.pressure == true) {
+        mOpacity += qPow(0.1,0.1);
+//    }
 
     mCurrentWidth = properties.width;
     qreal brushWidth = mCurrentWidth;
@@ -168,6 +190,18 @@ void StrokeTool::strokeTo(Brush& brush, float lastx, float lasty) {
     // add the potentially missing leftover distance to the current distance
     float totalDistance = leftOverDistance + distance;
 
+    mSurfaceColor = getSurfaceColor(lastx,lasty, brush.color);
+//    if (brush.brushImage) {
+    QImage* image = mBrushFactory->createRadialImage(mSurfaceColor,brush.color,
+                                                   properties.width,
+                                                   properties.feather,
+                                                   mOpacity);
+        mBrushFactory->applySimpleNoise(*image);
+        brush.brushImage = image;
+//    }
+
+    bool didPaint = false;
+
     // will dap until totalDistance is less than spacing
     while (totalDistance >= spacing)
     {
@@ -188,30 +222,43 @@ void StrokeTool::strokeTo(Brush& brush, float lastx, float lasty) {
 
         }
 
-        for (int i = 0; i < brush.scatterDensity; i++) {
-            float randX = qrand() % (int)brushWidth*2 + (-brushWidth);
-            float randY = qrand() % (int)brushWidth*2 + (-brushWidth);
+        QPoint stampAt;
+        if (brush.scatterAmount > 0) {
 
-//            qDebug() << "rand x" << randX;
-//            qDebug() << "rand y" << randY;
+            if (brush.scatterDensity == 0) {
+                brush.scatterDensity = 1;
+            }
+            for (int i = 0; i < brush.scatterDensity; i++) {
+                float randX = qrand() % (int)brushWidth*2 + (-brushWidth);
+                float randY = qrand() % (int)brushWidth*2 + (-brushWidth);
 
-            QPoint stampAt(lastx+offsetX+randX,
-                           lasty+offsetY+randY);
+                stampAt = QPoint(lastx+offsetX+randX,
+                               lasty+offsetY+randY);
+
+                rect.extend(stampAt);
+
+                mScribbleArea->drawBrush(brush, stampAt.x(), stampAt.y() );
+            }
+        } else {
+            stampAt = QPoint(lastx+offsetX, lasty+offsetY);
 
             rect.extend(stampAt);
 
-            mScribbleArea->drawBrush( brush,stampAt.x(),stampAt.y() );
-        }
+            mScribbleArea->drawBrush(brush, stampAt.x(), stampAt.y());
+            didPaint = true;
 
+        }
 
         // remove the distance we've covered already
         totalDistance -= spacing;
     }
 
-    int rad = qRound( brushWidth  / 2 + 2);
+    mOpacity = 0;
 
-    mScribbleArea->paintBitmapBufferRect( rect );
-    mScribbleArea->refreshBitmap( rect, rad );
+    int rad = qRound(brushWidth);
+
+    mScribbleArea->paintBitmapBufferRect( QRect(lasty-properties.width/2,lasty-properties.width/2,properties.width,properties.width) );
+    mScribbleArea->refreshBitmap( QRect(lastx-properties.width/2,lasty-properties.width/2,properties.width,properties.width), rad );
 
     // there might still be dabbing we didn't cover
     // so set the remaining to our new left over distance
