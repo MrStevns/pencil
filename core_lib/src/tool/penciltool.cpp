@@ -185,6 +185,7 @@ void PencilTool::mouseMoveEvent(QMouseEvent* event)
             {
                 m_pStrokeManager->setStabilizerLevel(properties.stabilizerLevel);
             }
+            mLastBrushPoint = getCurrentPoint();
         }
     }
 }
@@ -279,40 +280,52 @@ void PencilTool::drawStroke()
             opacity = mCurrentPressure / 2;
             mCurrentWidth = properties.width * mCurrentPressure;
         }
-        qreal brushWidth = mCurrentWidth;
-        qreal fixedBrushFeather = properties.feather;
 
-        qreal brushStep = (0.5 * brushWidth);
-        brushStep = qMax(1.0, brushStep);
+        Brush brush;
+//        brush.brushImage = brushImage;
+        brush.brushWidth = mCurrentWidth;
+        brush.dabSpacing = 0.05;
+        brush.opacity = opacity;
+        brush.scatterAmount = 0;
+        brush.scatterDensity = 0;
+        brush.softness = properties.feather;
+        brush.color = mEditor->color()->frontColor();
 
-        BlitRect rect;
+        strokeTo(brush, mLastBrushPoint.x(), mLastBrushPoint.y());
+//        qreal brushWidth = mCurrentWidth;
+//        qreal fixedBrushFeather = properties.feather;
 
-        QPointF a = mLastBrushPoint;
-        QPointF b = getCurrentPoint();
+//        qreal brushStep = (0.5 * brushWidth);
+//        brushStep = qMax(1.0, brushStep);
 
-        qreal distance = 4 * QLineF(b, a).length();
-        int steps = qRound(distance / brushStep);
+//        BlitRect rect;
 
-        for (int i = 0; i < steps; i++)
-        {
-            QPointF point = mLastBrushPoint + (i + 1) * brushStep * (getCurrentPoint() - mLastBrushPoint) / distance;
-            rect.extend(point.toPoint());
-            mScribbleArea->drawPencil(point,
-                                      brushWidth,
-                                      fixedBrushFeather,
-                                      mEditor->color()->frontColor(),
-                                      opacity);
+//        QPointF a = mLastBrushPoint;
+//        QPointF b = getCurrentPoint();
 
-            if (i == (steps - 1))
-            {
-                mLastBrushPoint = getCurrentPoint();
-            }
-        }
+//        qreal distance = 4 * QLineF(b, a).length();
+//        int steps = qRound(distance / brushStep);
 
-        int rad = qRound(brushWidth) / 2 + 2;
+//        for (int i = 0; i < steps; i++)
+//        {
+//            QPointF point = mLastBrushPoint + (i + 1) * brushStep * (getCurrentPoint() - mLastBrushPoint) / distance;
+//            rect.extend(point.toPoint());
+//            mScribbleArea->drawPencil(point,
+//                                      brushWidth,
+//                                      fixedBrushFeather,
+//                                      mEditor->color()->frontColor(),
+//                                      opacity);
 
-        mScribbleArea->paintBitmapBufferRect(rect);
-        mScribbleArea->refreshBitmap(rect, rad);
+//            if (i == (steps - 1))
+//            {
+//                mLastBrushPoint = getCurrentPoint();
+//            }
+//        }
+
+//        int rad = qRound(brushWidth) / 2 + 2;
+
+//        mScribbleArea->paintBitmapBufferRect(rect);
+//        mScribbleArea->refreshBitmap(rect, rad);
     }
     else if (layer->type() == Layer::VECTOR)
     {

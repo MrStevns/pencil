@@ -54,6 +54,8 @@ protected:
 
     QPointF mMouseDownPoint;
 
+    QRgb mSurfaceColor;
+
     BitmapImage mImg;
     QColor mCurrentPressuredColor;
     qreal mOpacity;

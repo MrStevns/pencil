@@ -186,7 +186,7 @@ void StrokeTool::strokeTo(Brush& brush, float lastx, float lasty) {
     float offsetX = 0.0;
     float offsetY = 0.0;
 
-    // since we want to stab at a specific interval,
+    // since we want to dab at a specific interval,
     // add the potentially missing leftover distance to the current distance
     float totalDistance = leftOverDistance + distance;
 
@@ -253,12 +253,14 @@ void StrokeTool::strokeTo(Brush& brush, float lastx, float lasty) {
         totalDistance -= spacing;
     }
 
+    // control the fadeout at the end of a stroke
     mOpacity = 0;
 
     int rad = qRound(brushWidth);
 
-    mScribbleArea->paintBitmapBufferRect( QRect(lasty-properties.width/2,lasty-properties.width/2,properties.width,properties.width) );
-    mScribbleArea->refreshBitmap( QRect(lastx-properties.width/2,lasty-properties.width/2,properties.width,properties.width), rad );
+    mScribbleArea->paintBitmapBuffer();
+//    mScribbleArea->paintBitmapBufferRect( QRect(lasty-properties.width/2,lasty-properties.width/2,properties.width,properties.width) );
+//    mScribbleArea->refreshBitmap(QRect(lastx-properties.width/2,lasty-properties.width/2,properties.width,properties.width), rad );
 
     // there might still be dabbing we didn't cover
     // so set the remaining to our new left over distance

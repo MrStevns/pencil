@@ -33,7 +33,6 @@ GNU General Public License for more details.
 #include "scribblearea.h"
 #include "blitrect.h"
 
-
 BrushTool::BrushTool(QObject* parent) : StrokeTool(parent)
 {
 }
@@ -295,23 +294,18 @@ void BrushTool::drawStroke(QPointF start, QPointF end)
     if ( layer->type() == Layer::BITMAP )
     {
 
-        BrushFactory bfactory;
-
-        QImage* brushImage = bfactory.createRadialImage(mEditor->color()->frontColor(),
-                                                       properties.width,
-                                                       properties.feather,
-                                                       1.0);
-
         Brush brush;
-        brush.brushImage = brushImage;
+//        brush.brushImage = brushImage;
         brush.brushWidth = properties.width;
-        brush.dabSpacing = 0.5;
+        brush.dabSpacing = 0.05;
         brush.opacity = 1.0;
-        brush.scatterAmount = 30;
-        brush.scatterDensity = 3;
+        brush.scatterAmount = 2;
+        brush.scatterDensity = 0;
         brush.softness = properties.feather;
+        brush.color = mEditor->color()->frontColor();
 
         strokeTo(brush, start.x(), start.y());
+//        mScribbleArea->paintBitmapBufferRect(QRect(end.x()-properties.width/2,end.y()-properties.width/2,properties.width,properties.width));
 //        mScribbleArea->drawBrush(
 //        for ( int i = 0; i < p.size(); i++ )
 //        {
