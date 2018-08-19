@@ -187,30 +187,22 @@ void BrushFactory::applySimpleNoise(QImage& image)
         mNoiseImage->fill(Qt::black);
         QRgb* pixel;
 
-//        int randx = (arc4random() % mNoiseImage->width());
-//        int randy = (arc4random() % mNoiseImage->height());
         for(int j=0; j<h; j++) {
+            pixel = (QRgb*)mNoiseImage->constScanLine(j);
             for(int i=0; i<w; i++) {
-                pixel = (QRgb*)mNoiseImage->constScanLine(j)+i;
                 if((rand()%2) == 0) {
-                    *pixel = qRgba(0,0,0,0);
+                    pixel[i] = qRgba(0,0,0,0);
                 }
             }
         }
-        qDebug() << "test cache";
     }
-
-
-//    mNoiseImage.save("/Users/CandyFace/Desktop/noise.png");
 
     QPainter painter(&image);
 
-    painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
     painter.drawImage(QRect(0,0,w,h),*mNoiseImage);
 
     update();
-
-//    image.save("/Users/CandyFace/Desktop/noiseApplied.png");
 }
 
 void BrushFactory::applyPerlinNoise(QImage& image, double freqX, double freqY, uint aggresion = 1, uint opacity = 255)
