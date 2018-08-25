@@ -157,6 +157,20 @@ QRgb BrushFactory::colorMeanOfPixels(QImage& surfaceImage, QColor brushColor) {
     return rgb.rgba();
 }
 
+QRgb BrushFactory::colorMean(QRgb color1, QRgb color2)
+{
+    uint red = 0;
+    uint green = 0;
+    uint blue = 0;
+
+    red = qRed(color1) * qRed(color1) + qRed(color2) * qRed(color2);
+    green = qGreen(color1) * qGreen(color1) + qGreen(color2) * qGreen(color2);
+    blue = qBlue(color1) * qBlue(color1) + qBlue(color2) * qBlue(color2);
+
+
+    return qRgb(qSqrt(red/2),qSqrt(green/2),qSqrt(blue/2));
+}
+
 QColor BrushFactory::blendBetween(QRgb foreground, QRgb background, float fac1, float fac2)
 {
 
