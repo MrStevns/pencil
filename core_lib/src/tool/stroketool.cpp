@@ -156,7 +156,7 @@ QRgb StrokeTool::getSurfaceColor(float posX, float posY, QColor brushColor) {
 
     surfaceImage = surfaceImage.copy(QRect(posX-properties.width/2,posY-properties.width/2,properties.width,properties.width));
 
-    return BrushFactory::colorMeanOfPixels(*surfaceImage.image(), brushColor);
+    return BrushFactory::getAverageColorOfImage(*surfaceImage.image(), brushColor);
 
 }
 
@@ -190,19 +190,11 @@ void StrokeTool::strokeTo(Brush& brush, float lastx, float lasty) {
     // add the potentially missing leftover distance to the current distance
     float totalDistance = leftOverDistance + distance;
 
-    mSurfaceColor = getSurfaceColor(lastx,lasty, brush.color);
-//    if (brush.brushImage) {
-    QImage* image = mBrushFactory->createRadialImage(mSurfaceColor,brush.color,
-                                                   properties.width,
-                                                   properties.feather,
-                                                   mOpacity);
-        mBrushFactory->applySimpleNoise(*image);
-        brush.brushImage = image;
-//    }
-
-    bool didPaint = false;
+    QRgb surfaceColor = getSurfaceColor(brush.posX,brush.posY, brush.fillColor);
+    QPoint stampAt;
 
     // will dap until totalDistance is less than spacing
+    QImage* image = nullptr;
     while (totalDistance >= spacing)
     {
         // make sure to add potentially missed distance
@@ -222,7 +214,6 @@ void StrokeTool::strokeTo(Brush& brush, float lastx, float lasty) {
 
         }
 
-        QPoint stampAt;
         if (brush.scatterAmount > 0) {
 
             if (brush.scatterDensity == 0) {

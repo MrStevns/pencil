@@ -289,7 +289,7 @@ void PencilTool::drawStroke()
         brush.scatterAmount = 0;
         brush.scatterDensity = 0;
         brush.softness = properties.feather;
-        brush.color = mEditor->color()->frontColor();
+        brush.fillColor = mEditor->color()->frontColor();
 
         strokeTo(brush, mLastBrushPoint.x(), mLastBrushPoint.y());
 //        qreal brushWidth = mCurrentWidth;

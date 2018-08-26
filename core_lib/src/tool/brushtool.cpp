@@ -284,6 +284,7 @@ void BrushTool::paintAt( QPointF point )
     }
 }
 
+Brush brush;
 void BrushTool::drawStroke(QPointF start, QPointF end)
 {
     StrokeTool::drawStroke();
@@ -294,15 +295,19 @@ void BrushTool::drawStroke(QPointF start, QPointF end)
     if ( layer->type() == Layer::BITMAP )
     {
 
-        Brush brush;
 //        brush.brushImage = brushImage;
         brush.brushWidth = properties.width;
-        brush.dabSpacing = 0.05;
+        brush.dabSpacing = 0.1;
         brush.opacity = 1.0;
-        brush.scatterAmount = 2;
+        brush.scatterAmount = 0;
         brush.scatterDensity = 0;
         brush.softness = properties.feather;
-        brush.color = mEditor->color()->frontColor();
+        brush.applySimpleNoise = false;
+        brush.bgBlendFac = 0.5;
+        brush.fgBlendFac = 0.5;
+        brush.posX = start.x();
+        brush.posY = start.y();
+        brush.fillColor = mEditor->color()->frontColor();
 
         strokeTo(brush, start.x(), start.y());
 //        mScribbleArea->paintBitmapBufferRect(QRect(end.x()-properties.width/2,end.y()-properties.width/2,properties.width,properties.width));

@@ -24,8 +24,8 @@ TEST_CASE("Brush Factory")
         BrushFactory factory;
 
         // hard brush
-        QImage* pix = factory.createRadialImage(QColor(0,0,0,255), 40, 5, 1.0);
-        pix->save("/Users/CandyFace/Desktop/brush.png");
+//        QImage* pix = factory.createRadialImage(qRgba(0,0,0,0),QColor(0,0,0,255), 40, 5, 1.0);
+//        pix->save("/Users/CandyFace/Desktop/brush.png");
         // test noise
 //        factory.applySimpleNoise(*pix);
 

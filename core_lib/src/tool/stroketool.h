@@ -103,8 +103,6 @@ protected:
 
     bool firstStroke = true;
 
-    QRgb mSurfaceColor;
-
     BrushFactory* mBrushFactory;
 
 private:

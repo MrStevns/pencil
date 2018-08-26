@@ -25,10 +25,12 @@ struct Brush {
      *   - min, max, current
      */
 //    float parameters[];
-    QColor color;
+    QColor fillColor;
     float softness;
     float opacity;
     float brushWidth;
+    bool applySimpleNoise;
+    bool applyPerlinNoise;
     float scatterAmount;
     float scatterDensity;
     float dabSpacing;
@@ -36,6 +38,7 @@ struct Brush {
     float posY;
     float bgBlendFac;
     float fgBlendFac;
+    float dabAngle;
 };
 
 
@@ -53,7 +56,7 @@ public:
      * @param opacity, determines how opaque the brush will become
      * @return A QImage image
      */
-    QImage* createRadialImage(const QRgb& surfaceColor, QColor color, qreal radius, qreal offset, qreal opacity);
+    QImage* createRadialImage(Brush* brush, QRgb surfaceColor);
 
     /**
      * @brief BrushFactory::applySimpleNoise, applies simple 1 bit noise to image
@@ -83,11 +86,13 @@ public:
 
 
     /**
-     * @brief colorMeanOfPixels, calculates the mean color of a image. Meant for getting the average surface color per dab
+     * @brief getAverageColorOfImage, calculates the mean color of a image. Meant for getting the average surface color per dab
      * @param surfaceImage, a qimage that holds the surface color information.
      * @return QRgb, squared means of the all pixels in the image as a QRgb
      */
-    static QRgb colorMeanOfPixels(QImage& surfaceImage, QColor brushColor);
+    static QRgb getAverageColorOfImage(QImage& surfaceImage, QColor brushColor);
+
+    static QRgb colorMean(QRgb color1, QRgb color2);
 
 private:
 

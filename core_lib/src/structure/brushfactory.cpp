@@ -20,6 +20,7 @@ BrushFactory::~BrushFactory()
 {
     mBrushImage = nullptr;
     mNoiseImage = nullptr;
+    mAlphaMask = nullptr;
 }
 
 void BrushFactory::update()
@@ -28,78 +29,27 @@ void BrushFactory::update()
     mOldOffset = mOffset;
 }
 
-QImage* BrushFactory::createRadialImage(const QRgb& surfaceColor ,QColor color, qreal radius, qreal offset, qreal opacity)
+QImage* BrushFactory::createRadialImage(Brush* brush, QRgb surfaceColor)
 {
 
-    mOffset = offset;
-    mBrushImage = new QImage(radius,radius, QImage::Format_ARGB32_Premultiplied);
+    mOffset = brush->softness;
+    mBrushImage = new QImage(brush->brushWidth,brush->brushWidth, QImage::Format_ARGB32_Premultiplied);
 
-//    qDebug() << radius;
     // fill with transparency to avoid artifcats
     mBrushImage->fill(QColor(0,0,0,0));
 
-
-//    Layer* layer = mEditor->layers()->currentLayer();
-//    uint frameNumber = mEditor->currentFrame();
-//    BitmapImage* surfaceImage = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(frameNumber);
-
-//    QRgb surfaceColor = surfaceImage->constScanLine(x,y);
-//    *(QRgb*)brush.brushImage->scanLine((int)radius/2)+brush.brushImage->height() = qRgba(
-//                qRed(surfaceColor),
-//                qGreen(surfaceColor),
-//                qBlue(surfaceColor),
-//                qAlpha(surfaceColor));
-
-
-//    int satBlended = 0;
-//    int valueBlended = 0;
-//    int hueBlended = 0;
-//    color = color.toHsv();
-//    QColor surface = QColor(surfaceColor);
-//    surface = surface.toHsv();
-
-//    qDebug() << "surface value " << surface.value();
-//    satBlended = color.saturation()+(1-0.3)*surface.saturation();
-//    valueBlended = color.value()+(1-0.3)*surface.value();
-//    hueBlended = color.hue();
-
-//    if (satBlended > 255) {
-//        satBlended = 255;
-//    }
-
-//    if (valueBlended > 255) {
-//        valueBlended = 255;
-//    }
-
-//    if (hueBlended > 360) {
-//        hueBlended = 360;
-//    }
-
-//    QColor blended = QColor::fromHsv(hueBlended,satBlended, valueBlended);
-//    QColor color1 = QColor(brushColor);
-//    qDebug() << "brush color sat: "  << color1.hsvSaturation();
-
-    QRgb brushColor = qRgba(color.red(),color.green(),color.blue(), color.alpha());
-
-    QColor rgbBlended = blendBetween(brushColor, surfaceColor, 0.1, 0.4);
-
+    QRgb brushColor = brush->fillColor.rgba();
+    QColor rgbBlended = blendBetween(brushColor, surfaceColor, brush->fgBlendFac, brush->bgBlendFac);
 
     mBrushImage->fill(rgbBlended);
 
-    QPainter painter;
-    painter.begin(mBrushImage);
-
-    painter.setPen(Qt::NoPen);
-    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-    painter.drawRect(QRect(0,0,radius,radius));
-    painter.end();
-
-    applyAlphaMask(*mBrushImage,radius,offset,opacity);
+//    qDebug() << "mbrushImage is: " << mBrushImage->isNull();
+    applyAlphaMask(*mBrushImage, brush->brushWidth, brush->softness, brush->opacity);
 
     return mBrushImage;
 }
 
-QRgb BrushFactory::colorMeanOfPixels(QImage& surfaceImage, QColor brushColor) {
+QRgb BrushFactory::getAverageColorOfImage(QImage& surfaceImage, QColor brushColor) {
 
     int red = 0;
     int blue = 0;
@@ -109,50 +59,31 @@ QRgb BrushFactory::colorMeanOfPixels(QImage& surfaceImage, QColor brushColor) {
     // finds average color value...
     int pixelCount = surfaceImage.width()*surfaceImage.height();
 
-    for (int y = 0; y < surfaceImage.height(); y++) {
+    const QRgb* end = (const QRgb*)surfaceImage.bits() + surfaceImage.width()*surfaceImage.height();
 
-        QRgb* color = (QRgb*)surfaceImage.constScanLine(y);
+    for (QRgb* rgb = (QRgb*)surfaceImage.bits(); rgb != end; rgb++){
+//        *rgb = qRgb(rgb[0],rgb[1],rgb[2]);
 
-        for (int x = 0; x < surfaceImage.width(); x++) {
+        if (qAlpha(rgb[0]) == 0 && qRed(rgb[1]) == 0 && qGreen(rgb[2]) == 0 && qBlue(rgb[3]) == 0) {
 
-            // make sure the background is white when there's no alpha to blend
-            // otherwise color will be black...
-            if (qAlpha(color[x]) == 0 && qRed(color[x]) == 0 && qGreen(color[x]) == 0 && qBlue(color[x]) == 0) {
-//                noAverage = true;
-//                red += brushColor.red()*brushColor.red();
-//                green += brushColor.green()*brushColor.green();
-//                blue += brushColor.blue()*brushColor.blue();
+            red += 255*255;
+            green += 255*255;
+            blue += 255*255;
+            alpha += 255*255;
+        } else  {
+            red += qRed(rgb[0]) * qRed(rgb[0]);
+            green += qGreen(rgb[1]) * qGreen(rgb[1]);
+            blue += qBlue(rgb[2]) * qBlue(rgb[2]);
+            alpha += qAlpha(rgb[3]) * qAlpha(rgb[3]);
 
-                red += 255*255;
-                green += 255*255;
-                blue += 255*255;
-                alpha += 255*255;
-//                alpha += brushColor.alpha()*brushColor.alpha();
-
-//                red += brushColor.hsvHue()*brushColor.hsvHue();
-//                green += brushColor.hsvSaturation()*brushColor.hsvSaturation();
-//                blue += brushColor.value()*brushColor.value();
-//                alpha += brushColor.alpha()*brushColor.alpha();
-
-            } else  {
-                red += qRed(color[x]) * qRed(color[x]);
-                green += qGreen(color[x]) * qGreen(color[x]);
-                blue += qBlue(color[x]) * qBlue(color[x]);
-                alpha += qAlpha(color[x]) * qAlpha(color[x]);
-
-            }
         }
-//        myfile << "\n";
     }
 
     QColor rgb = qRgba(qSqrt(red/pixelCount),qSqrt(green/pixelCount),qSqrt(blue/pixelCount),qSqrt(alpha/pixelCount));
 
 
     // we're only interested in the saturation here...
-//    rgb = rgb.toHsv();s
-    rgb = rgb.fromHsv(brushColor.hue(), rgb.hsvSaturation(), brushColor.value());
-
-//    rgb = rgb.toRgb();
+//    rgb = rgb.fromHsv(brushColor.hue(), rgb.hsvSaturation(), brushColor.value());
 
     return rgb.rgba();
 }
@@ -191,11 +122,6 @@ QColor BrushFactory::blendBetween(QRgb foreground, QRgb background, float fac1, 
     greenBlend = fac1*qGreen(foreground)+qGreen(background)*(1-fac2);
     blueBlend =  fac1*qBlue(foreground)+qBlue(background)*(1-fac2);
     alphaBlend = fac1*qAlpha(foreground)+qAlpha(background)*(1-fac2);
-
-//    qDebug() << "r" << redBlend;
-//    qDebug() << "g" << greenBlend;
-//    qDebug() << "b" << blueBlend;
-//    qDebug() << "a" << alphaBlend;
 
     if (redBlend > 255) {
         redBlend = 255;
@@ -238,6 +164,7 @@ void BrushFactory::applyAlphaMask(QImage& image, qreal radius, qreal offset, qre
     if (mAlphaMask == nullptr) {
 
 //        qDebug() << "size was updated, creating new mask";
+        qDebug() << "alpha is null, creating new mask";
         mAlphaMask = new QImage(radius,radius, QImage::Format_Alpha8);
         mAlphaMask->fill(0);
         QRadialGradient gradient(QPoint(0.5*radius,0.5*radius), 0.5 * radius);
@@ -262,8 +189,9 @@ void BrushFactory::applyAlphaMask(QImage& image, qreal radius, qreal offset, qre
         painter.setPen(Qt::NoPen);
         painter.drawRect(QRect(0,0,radius,radius));
         painter.end();
-
     }
+
+//    qDebug() << "alphaMask is: " << mAlphaMask->isNull();
 
 //    QPainter painter;
 //    painter.begin(mAlphaMask);
