@@ -70,6 +70,7 @@ GNU General Public License for more details.
 #include "recentfilemenu.h"
 #include "shortcutfilter.h"
 #include "app_util.h"
+#include "importimagedialog.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -762,26 +763,30 @@ bool MainWindow2::autoSave()
 
 void MainWindow2::importImage()
 {
-    FileDialog fileDialog(this);
-    QString strFilePath = fileDialog.openFile(FileType::IMAGE);
 
-    if (strFilePath.isEmpty()) { return; }
-    if (!QFile::exists(strFilePath)) { return; }
+    ImportImageDialog* importImageDialog = new ImportImageDialog(nullptr, FileType::IMAGES);
+        importImageDialog->setEditor(mEditor);
+    importImageDialog->exec();
+//    FileDialog fileDialog(this);
+//    QString strFilePath = fileDialog.openFile(FileType::IMAGE);
 
-    bool ok = mEditor->importImage(strFilePath);
-    if (!ok)
-    {
-        QMessageBox::warning(this,
-                             tr("Warning"),
-                             tr("Unable to import image.<br><b>TIP:</b> Use Bitmap layer to import bitmaps."),
-                             QMessageBox::Ok,
-                             QMessageBox::Ok);
-        return;
-    }
+//    if (strFilePath.isEmpty()) { return; }
+//    if (!QFile::exists(strFilePath)) { return; }
+
+//    bool ok = mEditor->importImage(strFilePath);
+//    if (!ok)
+//    {
+//        QMessageBox::warning(this,
+//                             tr("Warning"),
+//                             tr("Unable to import image.<br><b>TIP:</b> Use Bitmap layer to import bitmaps."),
+//                             QMessageBox::Ok,
+//                             QMessageBox::Ok);
+//        return;
+//    }
 
 
-    ui->scribbleArea->updateCurrentFrame();
-    mTimeLine->updateContent();
+//    ui->scribbleArea->updateCurrentFrame();
+//    mTimeLine->updateContent();
 }
 
 void MainWindow2::importImageSequence()

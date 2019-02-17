@@ -51,6 +51,8 @@ GNU General Public License for more details.
 #include "util.h"
 #include "movieexporter.h"
 
+#include "bitmapimage.h"
+
 #define MIN(a,b) ((a)>(b)?(b):(a))
 
 
@@ -578,22 +580,22 @@ void Editor::copyFromScan()
 
     if (!layer->keyExists(currentFrame())) { return; }
 
-    if (mScribbleArea->isSomethingSelected())
-    {
-        copy();
-        layer->removeKeyFrame(currentFrame());
-        layer->addNewKeyFrameAt(currentFrame());
-        paste();
-        g_clipboardBitmapImage.clear();
+//    if (mScribbleArea->isSomethingSelected())
+//    {
+//        copy();
+//        layer->removeKeyFrame(currentFrame());
+//        layer->addNewKeyFrameAt(currentFrame());
+//        paste();
+//        g_clipboardBitmapImage.clear();
         scanToTransparent();
-    }
+//    }
 }
 
 void Editor::scanToTransparent()
 {
     LayerBitmap* layerBitmap = static_cast<LayerBitmap*>(layers()->currentLayer());
     mObject->updateActiveFrames(currentFrame());
-    layerBitmap->scanToTransparent(currentFrame());
+    layerBitmap->applyTransparencyThreshold(currentFrame(),0, 0);
     mScribbleArea->updateFrame(currentFrame());
 }
 
@@ -609,9 +611,20 @@ void Editor::toBlackLine()
 void Editor::fillWhiteAreas()
 {
     LayerBitmap* layerBitmap = static_cast<LayerBitmap*>(layers()->currentLayer());
-    mObject->updateActiveFrames(currentFrame());
-    layerBitmap->fillWhiteAreas(currentFrame());
-    mScribbleArea->updateFrame(currentFrame());
+//    mObject->updateActiveFrames(currentFrame());
+    BitmapImage* image = layerBitmap->getBitmapImageAtFrame(currentFrame());
+    layerBitmap->fillWhiteAreas(image, currentFrame());
+    image->image()->save("/Users/CandyFace/Desktop/fillWhiteAreas.png");
+//    mScribbleArea->updateFrame(currentFrame());
+}
+
+void Editor::fillWhiteAreas(BitmapImage* image)
+{
+    LayerBitmap* layerBitmap = static_cast<LayerBitmap*>(layers()->currentLayer());
+//    mObject->updateActiveFrames(currentFrame());
+//    BitmapImage* image = layerBitmap->getBitmapImageAtFrame(currentFrame());
+    layerBitmap->fillWhiteAreas(image, currentFrame());
+//    mScribbleArea->updateFrame(currentFrame());
 }
 
 void Editor::fillWhiteAreasRest()
@@ -622,7 +635,7 @@ void Editor::fillWhiteAreasRest()
         if (layerBitmap->keyExists(i))
         {
             scrubTo(i);
-            layerBitmap->fillWhiteAreas(currentFrame());
+//            layerBitmap->fillWhiteAreas(currentFrame());
             mObject->updateActiveFrames(currentFrame());
             mScribbleArea->updateFrame(currentFrame());
         }

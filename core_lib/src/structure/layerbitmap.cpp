@@ -68,13 +68,13 @@ void LayerBitmap::singleInitColorLayer(Layer *fromLayer, LayerBitmap *colorlayer
     }
 }
 
-BitmapImage* LayerBitmap::scanToTransparent(int frame)
+void LayerBitmap::applyTransparencyThreshold(int frame, int minThreshold, int maxThreshold)
 {
-    if (!keyExists(frame)) { return nullptr; }
+    if (!keyExists(frame)) { return; }
 
     BitmapImage* img = static_cast<BitmapImage*>(getKeyFrameAt(frame));
-    img->enableAutoCrop(true);
-    img->autoCrop();
+//    img->enableAutoCrop(true);
+//    img->autoCrop();
     QRgb rgba;
     for (int x = img->left(); x <= img->right(); x++)
     {
@@ -95,7 +95,6 @@ BitmapImage* LayerBitmap::scanToTransparent(int frame)
         }
     }
     getKeyFrameAt(frame)->modification();
-    return img;
 }
 
 void LayerBitmap::toBlackLine(int frame)
@@ -114,11 +113,12 @@ void LayerBitmap::toBlackLine(int frame)
     getKeyFrameAt(frame)->modification();
 }
 
-void LayerBitmap::fillWhiteAreas(int frame)
+bool first = true;
+void LayerBitmap::fillWhiteAreas(BitmapImage* image, int frame)
 {
     if (!keyExists(frame)) { return; }
 
-    BitmapImage* img = static_cast<BitmapImage*>(getKeyFrameAt(frame));
+    BitmapImage* img = image;
 
     // fill areas size 'area' or less with black
     QVector<QPoint> points;
@@ -130,10 +130,10 @@ void LayerBitmap::fillWhiteAreas(int frame)
             if (qAlpha(img->pixel(x, y)) < 1)
             {
                 points.append(QPoint(x, y));
-                int areaSize = fillWithColor(QPoint(x, y), transp, rosa, frame);
+                int areaSize = fillWithColor(img, QPoint(x, y), transp, rosa, frame);
                 if (areaSize <= mWhiteArea)
                 {   // replace rosa with thinline (black)
-                    fillWithColor(points.last(), rosa, thinline, frame);
+                    fillWithColor(img, points.last(), rosa, thinline, frame);
                     points.removeLast();
                 }
             }
@@ -141,7 +141,7 @@ void LayerBitmap::fillWhiteAreas(int frame)
     }
     // replace rosa with trans
     while (!points.isEmpty()) {
-        fillWithColor(points[0], rosa, transp, frame);
+        fillWithColor(img,points[0], rosa, transp, frame);
         points.removeFirst();
     }
     getKeyFrameAt(frame)->modification();
@@ -387,10 +387,9 @@ void LayerBitmap::replaceThinLine(int frame)
     getKeyFrameAt(frame)->modification();
 }
 
-int LayerBitmap::fillWithColor(QPoint point, QRgb orgColor, QRgb newColor, int frame)
+int LayerBitmap::fillWithColor(BitmapImage* img, QPoint point, QRgb orgColor, QRgb newColor, int frame)
 {
     if (!keyExists(frame)) { return -1; }
-    BitmapImage* img = static_cast<BitmapImage*>(getKeyFrameAt(frame));
     QList<QPoint> fillList;
     fillList.clear();
     // fill first pixel

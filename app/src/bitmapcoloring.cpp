@@ -41,7 +41,7 @@ BitmapColoring::BitmapColoring(Editor* editor, QWidget *parent) :
 
     connect(ui->sb2_fillArea, QOverload<int>::of(&QSpinBox::valueChanged), mLayerBitmap, &LayerBitmap::setWhiteArea);
     connect(ui->btn2_fillRest, &QPushButton::clicked, mEditor, &Editor::fillWhiteAreasRest);
-    connect(ui->btn2_repairs, &QPushButton::clicked, mEditor, &Editor::fillWhiteAreas);
+    connect(ui->btn2_repairs, &QPushButton::clicked, mEditor, QOverload<>::of(&Editor::fillWhiteAreas));
     connect(ui->btn3_thinRest, &QPushButton::clicked, mEditor, &Editor::toThinBlackLineRest);
     connect(ui->btn3_repairs, &QPushButton::clicked, mEditor, &Editor::toThinBlackLine);
     connect(ui->btn4_replaceThinLines, &QPushButton::clicked, mEditor, &Editor::replaceThinLines);

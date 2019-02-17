@@ -766,6 +766,130 @@ bool BitmapImage::compareColor(QRgb newColor, QRgb oldColor, int tolerance, QHas
     return isSimilar;
 }
 
+BitmapImage* BitmapImage::applyTransparencyThreshold(BitmapImage* inputImage, int maxThreshold)
+{
+    BitmapImage* img = inputImage->clone();
+    QRgb rgba;
+    QRgb transp = qRgba(0, 0, 0, 0);
+    int minThreshold = 255-maxThreshold;
+    qDebug() << minThreshold;
+    for (int x = img->left(); x <= img->right(); x++)
+    {
+        for (int y = img->top(); y <= img->bottom(); y++)
+        {
+            rgba = img->pixel(x, y);
+            if (qGray(rgba) >= maxThreshold)
+            {
+                img->setPixel(x, y, Qt::transparent);
+            }
+
+            if(qGray(rgba) >= minThreshold && qGray(rgba) < maxThreshold)
+            {
+                qreal factor = qreal(maxThreshold - qGray(rgba)) / qreal(maxThreshold - minThreshold);
+                int alpha = static_cast<int>(255 * factor);
+                QRgb tmp  = qRgba(0, 0, 0, alpha);
+                img->setPixel(x , y, tmp);
+            }
+        }
+    }
+    return img;
+}
+
+BitmapImage* BitmapImage::applyExpandPixels(BitmapImage* inputImage, int expandValue)
+{
+    BitmapImage* img = inputImage;
+//    BitmapImage* img2 = inputImage->clone();
+
+    // fill areas size 'area' or less with black
+    QVector<QPoint> points;
+    points.clear();
+
+    const QRgb transp = qRgba(0, 0, 0, 0);
+    const QRgb thinline = qRgba(1, 0, 0, 255);
+    const QRgb rosa = qRgba(255,230,230,255);
+    for (int x = img->left(); x < img->right(); x++)
+    {
+        for (int y = img->top(); y < img->bottom(); y++)
+        {
+            if (qAlpha(img->pixel(x, y)) < 1)
+            {
+                points.append(QPoint(x, y));
+                int areaSize = fillWithColor(img, QPoint(x, y), transp, rosa);
+                if (areaSize <= expandValue)
+                {   // replace rosa with thinline (black)
+                    fillWithColor(img, points.last(), rosa, thinline);
+                    points.removeLast();
+                }
+            }
+        }
+    }
+
+    // replace rosa with trans
+    while (!points.isEmpty()) {
+        fillWithColor(img, points[0], rosa, transp);
+        points.removeFirst();
+    }
+    return img;
+}
+
+int BitmapImage::fillWithColor(BitmapImage* image, QPoint point, QRgb orgColor, QRgb newColor)
+{
+    BitmapImage* img = image;
+    QList<QPoint> fillList;
+    fillList.clear();
+    // fill first pixel
+    img->setPixel(point, newColor);
+    int pixels = 1;
+    fillList.append(point);
+
+    QRect rect = img->bounds();
+    while (!fillList.isEmpty())
+    {
+        QPoint tmp = fillList.at(0);
+        if (rect.contains(QPoint(tmp.x() + 1, tmp.y())) && img->pixel(QPoint(tmp.x() + 1, tmp.y())) == orgColor)
+        {
+            img->setPixel(QPoint(tmp.x() + 1, tmp.y()), newColor);
+            fillList.append(QPoint(tmp.x() + 1, tmp.y()));
+            pixels++;
+        }
+        if (rect.contains(QPoint(tmp.x(), tmp.y() + 1)) && img->pixel(QPoint(tmp.x(), tmp.y() + 1)) == orgColor)
+        {
+            img->setPixel(QPoint(tmp.x(), tmp.y() + 1), newColor);
+            fillList.append(QPoint(tmp.x(), tmp.y() + 1));
+            pixels++;
+        }
+        if (rect.contains(QPoint(tmp.x() - 1, tmp.y())) && img->pixel(QPoint(tmp.x() - 1, tmp.y())) == orgColor)
+        {
+            img->setPixel(QPoint(tmp.x() - 1, tmp.y()), newColor);
+            fillList.append(QPoint(tmp.x() - 1, tmp.y()));
+            pixels++;
+        }
+        if (rect.contains(QPoint(tmp.x(), tmp.y() - 1)) && img->pixel(QPoint(tmp.x(), tmp.y() - 1)) == orgColor)
+        {
+            img->setPixel(QPoint(tmp.x(), tmp.y() - 1), newColor);
+            fillList.append(QPoint(tmp.x(), tmp.y() - 1));
+            pixels++;
+        }
+        fillList.removeFirst();
+    }
+    return pixels;
+}
+
+BitmapImage* BitmapImage::applyPixelatedLines(BitmapImage *inputImage)
+{
+    BitmapImage* img = inputImage->clone();
+    QRgb color = qRgba(1,0,0,255);
+    for (int x = img->left(); x <= img->right(); x++)
+    {
+        for (int y = img->top(); y <= img->bottom(); y++)
+        {
+            if (qAlpha(img->pixel(x, y)) > 0)
+                img->setPixel(x, y, color);
+        }
+    }
+    return img;
+}
+
 // Flood fill
 // ----- http://lodev.org/cgtutor/floodfill.html
 void BitmapImage::floodFill(BitmapImage* targetImage,

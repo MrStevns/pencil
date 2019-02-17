@@ -42,6 +42,7 @@ class ScribbleArea;
 class TimeLine;
 class BackupElement;
 class ActiveFramePool;
+class BitmapImage;
 
 enum class SETTING;
 
@@ -154,6 +155,7 @@ public: //slots
     void copyFromScan();
     void scanToTransparent();
     void toBlackLine();
+    void fillWhiteAreas(BitmapImage* image);
     void fillWhiteAreas();
     void fillWhiteAreasRest();
     void toThinBlackLine();

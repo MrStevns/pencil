@@ -61,7 +61,8 @@ HEADERS += \
     src/doubleprogressdialog.h \
     src/colorslider.h \
     src/checkupdatesdialog.h \
-    src/bitmapcoloring.h
+    src/bitmapcoloring.h \
+    src/importimagedialog.h
 
 SOURCES += \
     src/main.cpp \
@@ -91,7 +92,8 @@ SOURCES += \
     src/doubleprogressdialog.cpp \
     src/colorslider.cpp \
     src/checkupdatesdialog.cpp \
-    src/bitmapcoloring.cpp
+    src/bitmapcoloring.cpp \
+    src/importimagedialog.cpp
 
 FORMS += \
     ui/mainwindow2.ui \
@@ -114,7 +116,8 @@ FORMS += \
     ui/filespage.ui \
     ui/toolspage.ui \
     ui/toolboxwidget.ui \
-    ui/bitmapcoloringwidget.ui
+    ui/bitmapcoloringwidget.ui \
+    ui/importimagedialog.ui
 
 
 

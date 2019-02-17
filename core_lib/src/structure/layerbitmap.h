@@ -48,14 +48,19 @@ public:
     void setThreshold(int threshold) { mThreshold = threshold; }
     int getWhiteArea() { return mWhiteArea; }
     void setWhiteArea(int whiteArea) { mWhiteArea = whiteArea; }
-    BitmapImage* scanToTransparent(int frame);
+
+    /**
+     * @brief LayerBitmap::applyTransparencyThreshold
+     * Replaces all pixel information with transparency down to a certain threshold
+     */
+    void applyTransparencyThreshold(int frame, int minThreshold, int maxThreshold);
 
     void toBlackLine(int frame);
 
-    void fillWhiteAreas(int frame);
+    void fillWhiteAreas(BitmapImage* image, int frame);
     void toThinBlackLine(int frame);
     void replaceThinLine(int frame);
-    int fillWithColor(QPoint point, QRgb orgColor, QRgb newColor, int frame);
+    int fillWithColor(BitmapImage* img, QPoint point, QRgb orgColor, QRgb newColor, int frame);
     // color layer methods end
 
 protected:
