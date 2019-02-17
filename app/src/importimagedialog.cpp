@@ -125,6 +125,7 @@ void ImportImageDialog::applyOptions()
     BitmapImage* previewConverted = mInputImage->clone();;
 
     QImage image = previewConverted->image()->convertToFormat(QImage::Format_ARGB32);
+
     previewConverted->setImage(&image);
     mPreviewImage = previewConverted->applyTransparencyThreshold(previewConverted, mThresholdValue);
 
@@ -133,58 +134,25 @@ void ImportImageDialog::applyOptions()
         mPreviewImage = previewWithTrans->applyPixelatedLines(previewWithTrans);
     }
 
-    BitmapImage* previewWithPixels = mPreviewImage->clone();
+
+//    BitmapImage* previewWithPixels = mPreviewImage;
     if (ui->fillAreaSpinbox->value() > 0) {
 //        mPreviewImage = previewWithPixels->applyExpandPixels(previewWithPixels, ui->fillAreaSpinbox->value());
-
-        mEditor->fillWhiteAreas(previewWithPixels);
-//        mPreviewImage = previewWithPixels;
+        mEditor->fillWhiteAreas(previewWithTrans);
+        mPreviewImage = previewWithTrans;
     }
 
     QPixmap pix = QPixmap(image.size());
     pix.fill(Qt::transparent);
 
-
     QPainter p(&pix);
     p.setCompositionMode(QPainter::CompositionMode_Source);
     p.drawImage(0,0, *mPreviewImage->image());
-//    p.setCompositionMode(QPainter::CompositionMode_DestinationOut);
-    p.setCompositionMode(QPainter::CompositionMode_Source);
-    p.drawImage(0,0, *previewWithPixels->image());
     p.end();
-
-    pix.save("/Users/CandyFace/Desktop/pix.png");
-
-//    QPixmap pix3 = QPixmap(image.size());
-//    pix3.fill(Qt::transparent);
-
-//    previewWithPixels->image()->save("/Users/CandyFace/Desktop/previewWithPixels.png");
-
-//    QPainter p2(&pix3);
-
-//    // TODO: figure out the right combination..
-//    // we need to merge an inverted previewWithPixels with our final image
-//    p2.setCompositionMode(QPainter::RasterOp_SourceOrDestination );
-//    p2.drawImage(0,0, *previewWithPixels->image());
-////    p2.setCompositionMode(QPainter::CompositionMode_Destination);
-////    p2.drawImage(0,0, *mPreviewImage->image());
-
-////    p2.setCompositionMode(QPainter::CompositionMode_DestinationOut);
-//    p2.end();
-
-//    pix3.save("/Users/CandyFace/Desktop/pix3.png");
-
-//    QPainter finalPaint(&pix);
-//    finalPaint.setCompositionMode(QPainter::CompositionMode_SourceOver);
-//    finalPaint.drawPixmap(0,0, pix3);
-////        pfinalPaint2.setCompositionMode(QPainter::CompositionMode_DestinationOut);
-////    finalPaint.drawImage(0,0, *previewWithPixels->image());
-//    finalPaint.end();
 
 //    mPreviewImage->image()->save("/Users/CandyFace/Desktop/Fisk.png");
 
-    ////    qDebug() << mConvertedPreview->image()->format();
-    qDebug() << mPreviewImage->image()->format();
+    qDebug() << previewWithTrans->image()->format();
 
 //    mPreviewImage->image()->save("/Users/CandyFace/Desktop/bw.png");
 //    progress.setValue(50);

@@ -113,7 +113,6 @@ void LayerBitmap::toBlackLine(int frame)
     getKeyFrameAt(frame)->modification();
 }
 
-bool first = true;
 void LayerBitmap::fillWhiteAreas(BitmapImage* image, int frame)
 {
     if (!keyExists(frame)) { return; }

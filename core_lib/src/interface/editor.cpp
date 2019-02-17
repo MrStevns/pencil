@@ -614,7 +614,6 @@ void Editor::fillWhiteAreas()
 //    mObject->updateActiveFrames(currentFrame());
     BitmapImage* image = layerBitmap->getBitmapImageAtFrame(currentFrame());
     layerBitmap->fillWhiteAreas(image, currentFrame());
-    image->image()->save("/Users/CandyFace/Desktop/fillWhiteAreas.png");
 //    mScribbleArea->updateFrame(currentFrame());
 }
 
