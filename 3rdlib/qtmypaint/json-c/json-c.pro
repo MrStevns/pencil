@@ -5,6 +5,22 @@ CONFIG += staticlib
 SUBDIRS = config/win32 \
           config/macxunix
 
+# HACK: Copy config.h that fits the respective platform, created by configure in another build
+exists($${PWD}/config.h) {
+    message("config.h moved to correct folder")
+} else {
+    win32 {
+        system(echo "testing win32 ")
+        system($$QMAKE_COPY \"$${PWD}\\config\\win32\\config.h\" \"$${PWD}\\config.h\" $$escape_expand(\\n))
+        QMAKE_CLEAN += -r $${PWD}\\config.h
+    }
+    macx|unix {
+        system(echo "testing macx and unix ")
+        system($$QMAKE_COPY $${PWD}/config/macxunix/config.h $${PWD}/ $$escape_expand(\\n))
+        QMAKE_CLEAN += -r $${PWD}/config.h
+    }
+}
+
 HEADERS += arraylist.h \
            bits.h \
            debug.h \
@@ -22,18 +38,6 @@ HEADERS += arraylist.h \
            random_seed.h \
            json_config.h \
            config.h
-
-# HACK: Copy config.h that fits the respective platform, created by configure in another build
-macx:unix {
-    system($$QMAKE_COPY $${PWD}/config/macxunix/config.h $${PWD}/ $$escape_expand(\\n))
-    QMAKE_CLEAN += -r $${PWD}/config.h
-}
-
-win32 {
-    system($$QMAKE_COPY $${PWD}\\config\\win32\\config.h $${PWD}\\ $$escape_expand(\\n))
-    QMAKE_CLEAN += -r $${PWD}\\config.h
-}
-
 
 SOURCES += arraylist.c \
            debug.c \
