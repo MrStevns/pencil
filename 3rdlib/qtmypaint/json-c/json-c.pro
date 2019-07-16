@@ -17,7 +17,7 @@ HEADERS += arraylist.h \
            math_compat.h \
            printbuf.h \
            random_seed.h \
-           config.h \
+#           config.h \
            json_config.h
 
 SOURCES += arraylist.c \
