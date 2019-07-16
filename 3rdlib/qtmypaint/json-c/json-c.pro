@@ -24,10 +24,16 @@ HEADERS += arraylist.h \
            config.h
 
 # HACK: Copy config.h that fits the respective platform, created by configure in another build
-macx:unix: system($$QMAKE_COPY $${PWD}/config/macxunix/config.h $${PWD}/ $$escape_expand(\\n))
-win32: system($$QMAKE_COPY $${PWD}\\config\\win32\\config.h $${PWD}\\ $$escape_expand(\\n))
-macx:unix: QMAKE_CLEAN += -r $${PWD}/config.h
-win32: QMAKE_CLEAN += -r $${PWD}\\config.h
+macx:unix {
+    system($$QMAKE_COPY $${PWD}/config/macxunix/config.h $${PWD}/ $$escape_expand(\\n))
+    QMAKE_CLEAN += -r $${PWD}/config.h
+}
+
+win32 {
+    system($$QMAKE_COPY $${PWD}\\config\\win32\\config.h $${PWD}\\ $$escape_expand(\\n))
+    QMAKE_CLEAN += -r $${PWD}\\config.h
+}
+
 
 SOURCES += arraylist.c \
            debug.c \
