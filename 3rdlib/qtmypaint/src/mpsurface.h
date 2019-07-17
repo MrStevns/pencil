@@ -28,13 +28,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef MPSURFACE_H
 #define MPSURFACE_H
 
+#include <memory>
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <QGraphicsScene>
 #include <QImage>
 
 extern "C" {
