@@ -33,10 +33,8 @@ else:unix: PRE_TARGETDEPS += ../json-c/libjson-c.a
 # --- libmypaint ---
 
 # We use a precompiled version of mypaint to avoid various compile problem with dependencies
-win32:CONFIG(release, debug|release): LIBS += -L../libmypaint/release/ -l libmypaint
-else:win32:CONFIG(debug, debug|release): LIBS += -L../libmypaint/debug/ -l libmypaint
-else:!macx:unix: LIBS += -L$$PWD/../libmypaint/ -l libmypaint \
-                   $$PWD/../libmypaint/libmypaint.so
+win32: LIBS += -L$$PWD/../libmypaint/libmypaint-1-3-0.dll
+else:!macx:unix: LIBS += $$PWD/../libmypaint/libmypaint.so
 macx: LIBS += $$PWD/../libmypaint/libmypaint.dylib
 
 INCLUDEPATH += $$PWD/../libmypaint

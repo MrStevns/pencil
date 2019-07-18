@@ -184,8 +184,8 @@ INCLUDEPATH += $$PWD/../3rdlib/qtmypaint/json-c \
                $$PWD/../3rdlib/qtmypaint/libmypaint \
                $$PWD/../3rdlib/qtmypaint/src
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/release/ -lqtmypaint
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/debug/ -lqtmypaint
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/release/qtmypaint.dll
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/debug/qtmypaint.dll
 else:!macx:unix: LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/ -lqtmypaint
 
 macx: LIBS += -L../3rdlib/qtmypaint/src/ -lqtmypaint \
