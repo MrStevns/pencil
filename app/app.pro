@@ -184,15 +184,31 @@ INCLUDEPATH += $$PWD/../3rdlib/qtmypaint/json-c \
                $$PWD/../3rdlib/qtmypaint/libmypaint \
                $$PWD/../3rdlib/qtmypaint/src
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/release/qtmypaint.dll
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/debug/qtmypaint.dll
-else:!macx:unix: LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/ -lqtmypaint
+win32:CONFIG(release, debug|release): LIBS += $$OUT_PWD/../3rdlib/qtmypaint/src/release/libQTMyPaint.dll
+else:win32:CONFIG(debug, debug|release): LIBS += $$OUT_PWD/../3rdlib/qtmypaint/src/debug/libQTMyPaint.dll
+else:!macx:unix: LIBS += $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.so
 
-macx: LIBS += -L../3rdlib/qtmypaint/src/ -lqtmypaint \
-              ../3rdlib/qtmypaint/src/libQTMyPaint.1.0.0.dylib
+macx: LIBS += $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.dylib
 
 INCLUDEPATH += ../3rdlib/qtmypaint
 DEPENDPATH += ../3rdlib/qtmypaint
+
+# Install: move libraries to their respective folders
+macx {
+    libraries.path = $$OUT_PWD/../bin/$${QMAKE_APPLICATION_BUNDLE_NAME}.app/contents/MacOS/
+    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.dylib
+}else:unix {
+    libraries.path = $$OUT_PWD/../bin/
+    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.so
+}else:win32:CONFIG(release, debug|release) {
+    libraries.path = $$OUT_PWD/../bin/release/
+    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.dll
+}else:win32:CONFIG(debug, release|debug) {
+    libraries.path = $$OUT_PWD/../bin/debug/
+    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.dll
+}
+
+INSTALLS += libraries
 
 #win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/qtmypaint/release/libqtmypaint.a
 #else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/qtmypaint/debug/libqtmypaint.a

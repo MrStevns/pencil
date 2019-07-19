@@ -59,12 +59,32 @@ INCLUDEPATH += $$PWD/../3rdlib/qtmypaint/json-c \
                $$PWD/../3rdlib/qtmypaint/src
 
 # --- qtmypaint ---
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/release/qtmypaint.dll
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/debug/qtmypaint.dll
-else:!macx:unix: LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/ -lqtmypaint
+win32:CONFIG(release, debug|release): LIBS += $$OUT_PWD\..\3rdlib\qtmypaint\src\release\libQTMyPaint.dll
+else:win32:CONFIG(debug, debug|release): LIBS += $$OUT_PWD\..\3rdlib\qtmypaint\src\debug\libQTMyPaint.dll
+else:!macx:unix: LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/src/ -lQTMyPaint \
+                           $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.so
 
-macx: LIBS += -L../3rdlib/qtmypaint/src/ -lqtmypaint \
-              ../3rdlib/qtmypaint/src/libQTMyPaint.1.0.0.dylib
+macx: LIBS += $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.dylib
+
+INCLUDEPATH += ../3rdlib/qtmypaint
+DEPENDPATH += ../3rdlib/qtmypaint
+
+# Install: move libraries to their respective folders
+macx {
+    libraries.path = $$OUT_PWD
+    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.dylib
+}else:unix {
+    libraries.path = $$OUT_PWD
+    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.so
+}else:win32:CONFIG(release, debug|release) {
+    libraries.path = $$OUT_PWD/release/
+    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.dll
+}else:win32:CONFIG(debug, release|debug) {
+    libraries.path = $$OUT_PWD/debug/
+    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.dll
+}
+
+INSTALLS += libraries
 
 INCLUDEPATH += $$PWD/../3rdlib/qtmypaint
 DEPENDPATH += $$PWD/../3rdlib/qtmypaint

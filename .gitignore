@@ -4,7 +4,6 @@
 *.slo
 *.lo
 *.o
-*.a
 *.la
 *.lai
 .obj
