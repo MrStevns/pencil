@@ -92,7 +92,20 @@ script:
   else
     qmake ../ PREFIX=/usr CONFIG+=release CONFIG+=GIT CONFIG+=NIGHTLY;
   fi'
-  - make;
+  # - export PATH=$PATH:/usr/local/lib
+  # - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+  # - export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:${TRAVIS_BUILD_DIR}/build/tests
+  # - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${TRAVIS_BUILD_DIR}/build/tests:${TRAVIS_BUILD_DIR}/build/bin
+  - make
+  - 'if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+      cd $TRAVIS_BUILD_DIR/build/tests;
+      otool -L tests;
+    fi'
+  - 'if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      cd $TRAVIS_BUILD_DIR/build/tests;
+      ldd tests;
+      ls;
+    fi'
   - "$TRAVIS_BUILD_DIR/build/tests/tests"
 
 after_success:

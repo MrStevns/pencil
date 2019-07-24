@@ -7,7 +7,7 @@ TEMPLATE = subdirs
 SUBDIRS = \ # sub-project names
     qtmypaint \
     core_lib \
-    app \
+#    app \
     tests \
 
 # build the project sequentially as listed in SUBDIRS !

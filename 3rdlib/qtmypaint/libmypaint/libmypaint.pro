@@ -1,6 +1,6 @@
 QT += core
 
-TARGET = mypaint
+TARGET = libmypaint
 TEMPLATE = lib
 CONFIG += sharedlib
 

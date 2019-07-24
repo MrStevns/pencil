@@ -58,24 +58,68 @@ INCLUDEPATH += $$PWD/../3rdlib/qtmypaint/json-c \
                $$PWD/../3rdlib/qtmypaint/libmypaint \
                $$PWD/../3rdlib/qtmypaint/src
 
-# --- qtmypaint ---
-win32:CONFIG(release, debug|release): LIBS += $$OUT_PWD\..\3rdlib\qtmypaint\src\release\libQTMyPaint.dll
-else:win32:CONFIG(debug, debug|release): LIBS += $$OUT_PWD\..\3rdlib\qtmypaint\src\debug\libQTMyPaint.dll
-else:!macx:unix: LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/src/ -lQTMyPaint \
-                           $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.so
 
-macx: LIBS += $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.dylib
+INCLUDEPATH += $$PWD/../3rdlib/qtmypaint/src
+DEPENDPATH += $$PWD/../3rdlib/qtmypaint/src
 
-INCLUDEPATH += ../3rdlib/qtmypaint
-DEPENDPATH += ../3rdlib/qtmypaint
+# --- libmypaint ---
+win32-g++: LIBS += $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint.dll.a
+else:!macx:unix: LIBS += $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint-1.3.so.0.0.0 \
+                         $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint-1.3.so.0 \
+                         $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint.so
+else:macx: LIBS += $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint.dylib
 
 # Install: move libraries to their respective folders
 macx {
     libraries.path = $$OUT_PWD
     libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.dylib
+
+    system($$QMAKE_COPY $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.1.0.0.dylib $${OUT_PWD}/)
+    system($$QMAKE_SYMBOLIC_LINK $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.1.0.dylib  $${OUT_PWD}/)
+    system($$QMAKE_SYMBOLIC_LINK $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.1.dylib  $${OUT_PWD}/)
+    system($$QMAKE_SYMBOLIC_LINK $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.dylib $${OUT_PWD}/)
+
+    system($$QMAKE_COPY $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint-1.3.0.dylib $${OUT_PWD}/)
+
+#    QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
+#    QMAKE_RPATHDIR += @executable_path/
+
+#    QMAKE_POST_LINK = install_name_tool -add_rpath @executable_path/ libmypaint-1.3.0.dylib
+    QMAKE_POST_LINK = install_name_tool -change /usr/local/lib/libmypaint-1.3.0.dylib $$OUT_PWD/libmypaint-1.3.0.dylib $$OUT_PWD/tests
+
+    exists($$OUT_PWD/*.dylib*) {
+        message("found dylib files")
+        listme = $$system(ls $$OUT_PWD/*.dylib*)
+        message($$listme)
+    } else {
+        message("found no so files")
+    }
 }else:unix {
+
     libraries.path = $$OUT_PWD
-    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.so
+    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.so*
+
+    system($$QMAKE_COPY $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.so.1.0.0 $${OUT_PWD}/)
+    system($$QMAKE_SYMBOLIC_LINK $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.so.1.0 $${OUT_PWD}/)
+    system($$QMAKE_SYMBOLIC_LINK $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.so.1 $${OUT_PWD}/)
+    system($$QMAKE_SYMBOLIC_LINK $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.so $${OUT_PWD}/)
+
+    system($$QMAKE_COPY $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint-1.3.so.0.0.0 $${OUT_PWD}/)
+    system($$QMAKE_SYMBOLIC_LINK $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint-1.3.so.0 $${OUT_PWD}/)
+    system($$QMAKE_SYMBOLIC_LINK $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint.so $${OUT_PWD}/)
+
+    # suppress the default RPATH if you wish
+    QMAKE_LFLAGS_RPATH=
+    # add your own with quoting gyrations to make sure $ORIGIN gets to the command line unexpanded
+    QMAKE_LFLAGS += "-Wl,-rpath,\'\$$OUT_PWD\'"
+
+    exists($$OUT_PWD/*.so*) {
+        message("found so files")
+        listme = $$system(ls $$OUT_PWD/*.so*)
+        message($$listme)
+    } else {
+        message("found no so files")
+    }
 }else:win32:CONFIG(release, debug|release) {
     libraries.path = $$OUT_PWD/release/
     libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.dll
@@ -84,7 +128,20 @@ macx {
     libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.dll
 }
 
-INSTALLS += libraries
+# --- qtmypaint ---
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/src/release/ -lQTMyPaint
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/src/debug/ -lQTMyPaint
+else:!macx:unix: LIBS += $$OUT_PWD/libQTMyPaint.so.1.0.0 \
+                         $$OUT_PWD/libQTMyPaint.so \
+                         $$OUT_PWD/libQTMyPaint.so.1 \
+                         $$OUT_PWD/libQTMyPaint.so.1.0
+
+else:macx: LIBS += $$OUT_PWD/libQTMyPaint.dylib \
+                   $$OUT_PWD/libQTMyPaint.1.dylib \
+                   $$OUT_PWD/libQTMyPaint.1.0.dylib \
+                   $$OUT_PWD/libQTMyPaint.1.0.0.dylib
+
+#INSTALLS += libraries
 
 INCLUDEPATH += $$PWD/../3rdlib/qtmypaint
 DEPENDPATH += $$PWD/../3rdlib/qtmypaint
