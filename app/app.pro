@@ -179,49 +179,16 @@ else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PW
 else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../core_lib/debug/core_lib.lib
 else:unix: PRE_TARGETDEPS += $$OUT_PWD/../core_lib/libcore_lib.a
 
-# --- qtmypaint ---
-INCLUDEPATH += $$PWD/../3rdlib/qtmypaint/json-c \
-               $$PWD/../3rdlib/qtmypaint/libmypaint \
-               $$PWD/../3rdlib/qtmypaint/src
+# --- paint_lib ---
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/paint_lib/release/ -lpaint_lib
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/paint_lib/debug/ -lpaint_lib
+else:unix: LIBS += -L$$OUT_PWD/../3rdlib/paint_lib/ -lpaint_lib
 
-win32:CONFIG(release, debug|release): LIBS += $$OUT_PWD\..\3rdlib\qtmypaint\src\release\libQTMyPaint.dll
-else:win32:CONFIG(debug, debug|release): LIBS += $$OUT_PWD\..\3rdlib\qtmypaint\src\debug\libQTMyPaint.dll
-else:!macx:unix: LIBS += $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.so
+INCLUDEPATH += $$PWD/../3rdlib/paint_lib
+DEPENDPATH += $$PWD/../3rdlib/paint_lib
 
-macx: LIBS += $$OUT_PWD/../3rdlib/qtmypaint/src/libQTMyPaint.dylib
-
-INCLUDEPATH += ../3rdlib/qtmypaint
-DEPENDPATH += ../3rdlib/qtmypaint
-
-# Install: move libraries to their respective folders
-macx {
-    libraries.path = $$OUT_PWD/../bin/$${QMAKE_APPLICATION_BUNDLE_NAME}.app/contents/MacOS/
-    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.dylib
-}else:unix {
-    libraries.path = $$OUT_PWD/../bin/
-    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.so*
-}else:win32:CONFIG(release, debug|release) {
-    libraries.path = $$OUT_PWD/../bin/release/
-    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.dll
-}else:win32:CONFIG(debug, release|debug) {
-    libraries.path = $$OUT_PWD/../bin/debug/
-    libraries.files = $$OUT_PWD/../3rdlib/qtmypaint/src/*.dll
-}
-
-INSTALLS += libraries
-
-# -- qtmypaint
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/src/release/ -lQTMyPaint
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/src/debug/ -lQTMyPaint
-else:!macx:unix: LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/src/ -lQTMyPaint
-else:macx: LIBS += -L$$OUT_PWD/../3rdlib/qtmypaint/src/ -lQTMyPaint
-
-INCLUDEPATH += $$PWD/../3rdlib/qtmypaint/src
-DEPENDPATH += $$PWD/../3rdlib/qtmypaint/src
-
-# --- libmypaint ---
-win32-g++: LIBS += $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint.dll.a
-else:!macx:unix: LIBS += $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint-1.3.so.0.0.0 \
-                         $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint-1.3.so.0 \
-                         $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint.so
-else:macx: LIBS += $$PWD/../3rdlib/qtmypaint/libmypaint/libmypaint.dylib
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/release/libpaint_lib.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/debug/libpaint_lib.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/release/paint_lib.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/debug/paint_lib.lib
+else:unix: PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/libpaint_lib.a

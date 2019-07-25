@@ -1608,15 +1608,15 @@ void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float yt
     point = mEditor->view()->mapScreenToCanvas(point);
 
     mMyPaint->strokeTo(point.x(), point.y(), pressure, xtilt, ytilt, deltaTime);
-    qDebug() << "stroke to: <<<< \n";
-    qDebug() << "nsencs elapsed" << timer.nsecsElapsed();
-    qDebug() << "seconds elapsed" << timer.elapsed();
+//    qDebug() << "stroke to: <<<< \n";
+//    qDebug() << "nsencs elapsed" << timer.nsecsElapsed();
+//    qDebug() << "seconds elapsed" << timer.elapsed();
 
     // update dirty region
     updateDirtyTiles();
-    qDebug() << "\n updated tiles: <<<<";
-    qDebug() << "nsencs elapsed" << timer.nsecsElapsed();
-    qDebug() << "seconds elapsed" << timer.elapsed();
+//    qDebug() << "\n updated tiles: <<<<";
+//    qDebug() << "nsencs elapsed" << timer.nsecsElapsed();
+//    qDebug() << "seconds elapsed" << timer.elapsed();
 }
 
 void ScribbleArea::updateDirtyTiles()
