@@ -116,7 +116,7 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
 
     connect(mNavigatorWidget, &QTreeWidget::itemPressed, this, &MPBrushConfigurator::brushCategorySelected);
     connect(mNavigatorWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MPBrushConfigurator::brushCategorySelectionChanged);
-    connect(mMapValuesButton, &QPushButton::pressed, this, &MPBrushConfigurator::updateMapValuesButton);
+//    connect(mMapValuesButton, &QPushButton::pressed, this, &MPBrushConfigurator::updateMapValuesButton);
 
     connect(cloneBrushButton, &QPushButton::pressed, this, &MPBrushConfigurator::pressedCloneBrush);
     connect(deleteBrushButton, &QPushButton::pressed, this, &MPBrushConfigurator::pressedRemoveBrush);
@@ -329,12 +329,16 @@ BrushSettingItem* MPBrushConfigurator::addTreeChild(BrushSettingItem::Category c
 
 void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
 {
-    qDeleteAll(mBrushSettingsWidget->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
-    removeBrushSettingSpacers();
-
     if (!mBrushWidgets.isEmpty()) {
+        qDeleteAll(mBrushSettingsWidget->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
+
+        for (int i = 0; i < mListOfConnections.count(); i++) {
+            disconnect(mListOfConnections.takeAt(i));
+        }
         mBrushWidgets.clear();
     }
+
+    removeBrushSettingSpacers();
 
     switch(static_cast<BrushSettingItem*>(item)->ItemCategory()) {
         case BrushSettingItem::Basic: prepareBasicBrushSettings(); break;
@@ -358,10 +362,10 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
     for (BrushSettingWidget* item : mBrushWidgets) {
         vBoxLayout->addWidget(item);
 
-        connect(item, &BrushSettingWidget::brushSettingChanged, this, &MPBrushConfigurator::updateBrushSetting);
-        connect(item, &BrushSettingWidget::brushMappingForInputChanged, this, &MPBrushConfigurator::updateBrushMapping);
-        connect(item, &BrushSettingWidget::brushMappingRemoved, this, &MPBrushConfigurator::removeBrushMappingForInput);
-        connect(mMapValuesButton, &QPushButton::pressed, item, &BrushSettingWidget::changeText);
+        mListOfConnections << connect(item, &BrushSettingWidget::brushSettingChanged, this, &MPBrushConfigurator::updateBrushSetting);
+        mListOfConnections << connect(item, &BrushSettingWidget::brushMappingForInputChanged, this, &MPBrushConfigurator::updateBrushMapping);
+        mListOfConnections << connect(item, &BrushSettingWidget::brushMappingRemoved, this, &MPBrushConfigurator::removeBrushMappingForInput);
+//        mListOfConnections << connect(mMapValuesButton, &QPushButton::pressed, item, &BrushSettingWidget::changeText);
     }
 
     addBrushSettingsSpacer();

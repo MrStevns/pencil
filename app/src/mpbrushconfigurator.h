@@ -204,6 +204,9 @@ private:
     ToolType mToolType;
 
     QSize mImageSize = QSize(32,32);
+
+    QList<QMetaObject::Connection> mListOfConnections;
+
 };
 
 #endif // MPBRUSHCONFIGURATOR_H
