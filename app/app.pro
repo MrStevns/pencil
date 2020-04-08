@@ -219,14 +219,9 @@ DEPENDPATH += $$PWD/../core_lib/src
 CONFIG(debug,debug|release) BUILDTYPE = debug
 CONFIG(release,debug|release) BUILDTYPE = release
 
-win32-msvc*{
+win32 {
   LIBS += -L$$OUT_PWD/../core_lib/$$BUILDTYPE/ -lcore_lib
   PRE_TARGETDEPS += $$OUT_PWD/../core_lib/$$BUILDTYPE/core_lib.lib
-}
-
-win32-g++{
-  LIBS += -L$$OUT_PWD/../core_lib/ -lcore_lib
-  PRE_TARGETDEPS += $$OUT_PWD/../core_lib/libcore_lib.a
 }
 
 # --- mac os and linux
@@ -240,14 +235,9 @@ unix {
 INCLUDEPATH += $$PWD/../3rdlib/paint_lib
 DEPENDPATH += $$PWD/../3rdlib/paint_lib
 
-win32-msvc* {
+win32 {
   LIBS += -L$$OUT_PWD/../3rdlib/paint_lib/$$BUILDTYPE/ -lpaint_lib
   PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/$$BUILDTYPE/paint_lib.lib
-}
-
-win32-g++ {
-  LIBS += -L$$OUT_PWD/../3rdlib/paint_lib/ -lpaint_lib
-  PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/libpaint_lib.a
 }
 
 unix: {
