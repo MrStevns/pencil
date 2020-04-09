@@ -224,9 +224,21 @@ win32-msvc*{
   PRE_TARGETDEPS += $$OUT_PWD/../core_lib/$$BUILDTYPE/core_lib.lib
 }
 
-win32-g++{
-  LIBS += -L$$OUT_PWD/../core_lib/$$BUILDTYPE/ -lcore_lib
-  PRE_TARGETDEPS += $$OUT_PWD/../core_lib/$$BUILDTYPE/libcore_lib.a
+
+# From 5.14, MinGW windows builds are not build with debug-release flag
+versionAtLeast(QT_VERSION, 5.14) {
+
+    win32-g++{
+      LIBS += -L$$OUT_PWD/../core_lib/ -lcore_lib
+      PRE_TARGETDEPS += $$OUT_PWD/../core_lib/libcore_lib.a
+    }
+
+} else {
+
+    win32-g++{
+      LIBS += -L$$OUT_PWD/../core_lib/$$BUILDTYPE/ -lcore_lib
+      PRE_TARGETDEPS += $$OUT_PWD/../core_lib/$$BUILDTYPE/libcore_lib.a
+    }
 }
 
 # --- mac os and linux
@@ -245,12 +257,22 @@ win32-msvc* {
   PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/$$BUILDTYPE/paint_lib.lib
 }
 
-win32-g++ {
-  LIBS += -L$$OUT_PWD/../3rdlib/paint_lib/$$BUILDTYPE/ -lpaint_lib
-  PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/$$BUILDTYPE/libpaint_lib.a
+# From 5.14, MinGW windows builds are not build with debug-release flag
+versionAtLeast(QT_VERSION, 5.14) {
+    win32-g++ {
+      LIBS += -L$$OUT_PWD/../3rdlib/paint_lib/ -lpaint_lib
+      PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/libpaint_lib.a
+    }
+} else {
+
+    win32-g++ {
+      LIBS += -L$$OUT_PWD/../3rdlib/paint_lib/$$BUILDTYPE/ -lpaint_lib
+      PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/$$BUILDTYPE/libpaint_lib.a
+    }
 }
 
 unix: {
   LIBS += -L$$OUT_PWD/../3rdlib/paint_lib/ -lpaint_lib
   PRE_TARGETDEPS += $$OUT_PWD/../3rdlib/paint_lib/libpaint_lib.a
 }
+
