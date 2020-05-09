@@ -4,12 +4,15 @@
 #include <QWidget>
 
 #include "brushsetting.h"
+#include "spinslider.h"
 
 class QToolButton;
 class SpinSlider;
 class QDoubleSpinBox;
 class Editor;
 class MPMappingOptionsWidget;
+class QHBoxLayout;
+
 
 class BrushSettingWidget : public QWidget
 {
@@ -22,36 +25,30 @@ public:
     void setToolTip(QString toolTip);
     void setCore(Editor* editor) { mEditor = editor; }
     void updateUI();
-
-    void closeMappingWindow();
+    void initUI();
 
     void changeText();
 
     BrushSettingType setting() { return mSettingType; }
+    QString name() { return mSettingName; }
     qreal currentValue() { return mCurrentValue; }
+//    qreal initialValue() { return mInitialValue; }
 
-public slots:
-    void notifyInputMappingRemoved(BrushInputType input);
+    SpinSlider* slider() { return mValueSlider; }
 
 Q_SIGNALS:
-    void brushSettingChanged(qreal previousValue, qreal value, BrushSettingType setting);
-    void brushMappingForInputChanged(QVector<QPointF> points, BrushSettingType setting, BrushInputType inputType);
-    void brushMappingRemoved(BrushSettingType setting, BrushInputType);
+    void brushSettingChanged(qreal value, BrushSettingType setting);
 
 private:
 
     void onSliderChanged(qreal value);
-    void openMappingWindow();
-
     void setValueInternal(qreal value);
 
     void updateSetting(qreal value);
-    void updateBrushMapping(QVector<QPointF> newPoints, BrushInputType inputType);
 
     QDoubleSpinBox* mValueBox = nullptr;
     QDoubleSpinBox* mVisualBox = nullptr;
     SpinSlider* mValueSlider = nullptr;
-    QToolButton* mMappingButton = nullptr;
     BrushSettingType mSettingType;
 
     Editor* mEditor = nullptr;
@@ -65,14 +62,14 @@ private:
     qreal mMappedValue = 0.0;
 
     qreal mCurrentValue;
-    qreal mInitialValue;
 
     QWidget* mParent = nullptr;
-    MPMappingOptionsWidget* mMappingWidget = nullptr;
 
     const QString mSettingName;
 
     bool first = false;
+
+    QHBoxLayout* mHBoxLayout;
 };
 
 #endif // BRUSHSETTINGWIDGET_H

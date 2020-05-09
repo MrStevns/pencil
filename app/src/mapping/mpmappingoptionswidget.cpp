@@ -141,7 +141,7 @@ void MPMappingOptionsWidget::showInputMapper(BrushInputType inputType)
 
     if (mMappingWidget) {
         mHBoxLayout->removeWidget(mMappingWidget);
-        delete mMappingWidget;
+        mMappingWidget->deleteLater();
     }
 
     mMappingWidget = new MPMappingWidget(getBrushInputName(inputType), info.soft_min, info.soft_max, inputType, mapping.controlPoints.points, 8, this);
@@ -174,7 +174,7 @@ void MPMappingOptionsWidget::removeAction(BrushInputType input)
         MPMappingOption& option = mOptions[i];
         if (input == mOptions[i].inputType) {
 
-            delete mMappingWidget;
+            mMappingWidget->deleteLater();
 
             option.deleteAll();
             mOptions.removeAt(i);

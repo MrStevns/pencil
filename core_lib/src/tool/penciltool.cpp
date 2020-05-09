@@ -46,16 +46,15 @@ void PencilTool::loadSettings()
     mPropertyEnabled[STABILIZATION] = true;
     mPropertyEnabled[FILLCONTOUR] = true;
 
+    mDefaultBrushSettings = { RadiusLog, PressureGain };
+
     QSettings settings(PENCIL2D, PENCIL2D);
     properties.width = settings.value("pencilWidth", 4).toDouble();
     properties.feather = 50;
     properties.pressure = settings.value("pencilPressure", true).toBool();
     properties.stabilizerLevel = settings.value("pencilLineStabilization", StabilizationLevel::STRONG).toInt();
-    properties.useAA = DISABLED;
     properties.useFeather = true;
     properties.useFillContour = false;
-    //    properties.invisibility = 1;
-    //    properties.preserveAlpha = 0;
 }
 
 void PencilTool::resetToDefault()

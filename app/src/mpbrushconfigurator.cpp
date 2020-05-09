@@ -11,15 +11,18 @@
 #include <QToolBar>
 #include <QMessageBox>
 #include <QLabel>
+#include <QCheckBox>
 
 #include <QJsonObject>
 #include <QJsonValueRef>
 #include <QJsonDocument>
 #include <QJsonArray>
 
+#include "toolmanager.h"
+
 #include "spinslider.h"
 #include "brushsettingitem.h"
-#include "brushsettingwidget.h"
+#include "brushsettingeditwidget.h"
 #include "editor.h"
 #include "mpbrushutils.h"
 #include "mpbrushinfodialog.h"
@@ -116,7 +119,6 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
 
     connect(mNavigatorWidget, &QTreeWidget::itemPressed, this, &MPBrushConfigurator::brushCategorySelected);
     connect(mNavigatorWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MPBrushConfigurator::brushCategorySelectionChanged);
-//    connect(mMapValuesButton, &QPushButton::pressed, this, &MPBrushConfigurator::updateMapValuesButton);
 
     connect(cloneBrushButton, &QPushButton::pressed, this, &MPBrushConfigurator::pressedCloneBrush);
     connect(deleteBrushButton, &QPushButton::pressed, this, &MPBrushConfigurator::pressedRemoveBrush);
@@ -128,6 +130,9 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
 
 void MPBrushConfigurator::initUI()
 {
+    mBrushName = mEditor->brushes()->currentBrushName();
+    mPreset = mEditor->brushes()->currentPresetName();
+
     auto basicRoot = addTreeRoot(BrushSettingItem::Basic, mNavigatorWidget, tr("Basic settings"));
 
     auto advanceRoot = addTreeRoot(BrushSettingItem::Advanced, mNavigatorWidget, tr("Advanced settings"));
@@ -150,15 +155,9 @@ void MPBrushConfigurator::initUI()
 
 void MPBrushConfigurator::updateUI()
 {
-    for (BrushSettingType type : allSettings) {
-        for (BrushSettingWidget* widget : mBrushWidgets) {
-            if (widget->setting() == type) {
-                widget->setCore(mEditor);
-                widget->updateUI();
-            }
-        }
+    for (BrushSettingEditWidget* item : mBrushWidgets) {
+        item->updateUI();
     }
-
     mDiscardChangesButton->setEnabled(!mOldModifications.isEmpty());
 
     QPixmap pix(QPixmap(MPBrushParser::getBrushImagePath(mPreset, mBrushName)));
@@ -166,29 +165,28 @@ void MPBrushConfigurator::updateUI()
     mBrushNameWidget->setText(mBrushName);
 }
 
-void MPBrushConfigurator::updateConfig(ToolType toolType, const QString& preset, const QString& brushName, const QByteArray& content)
+void MPBrushConfigurator::updateConfig()
 {
+    auto currentBrushName = mEditor->brushes()->currentBrushName();
+    auto currentPresetName = mEditor->brushes()->currentPresetName();
 
-    if (mBrushName != brushName && mPreset != mPreset) {
+    if (mBrushName != currentBrushName && mPreset != currentPresetName) {
         mOldModifications.clear();
     }
 
-    mToolType = toolType;
-    mBrushName = brushName;
-    mPreset = preset;
-    Q_UNUSED(content)
+    mToolType = mEditor->tools()->currentTool()->type();
+    mBrushName = currentBrushName;
+    mPreset = currentPresetName;
     updateUI();
 }
 
 void MPBrushConfigurator::prepareBasicBrushSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Opacity"), BrushSettingType::BRUSH_SETTING_OPAQUE, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Radius"), BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC, 0, 200));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Hardness"), BrushSettingType::BRUSH_SETTING_HARDNESS, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Softness"), BrushSettingType::BRUSH_SETTING_SOFTNESS, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Anti-aliasing"), BrushSettingType::BRUSH_SETTING_ANTI_ALIASING,0, 100));
-
-    mBrushWidgets.append(new BrushSettingWidget(tr("Pressure gain"), BrushSettingType::BRUSH_SETTING_PRESSURE_GAIN_LOG, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(Opacity));
+    mBrushWidgets.append(new BrushSettingEditWidget(RadiusLog));
+    mBrushWidgets.append(new BrushSettingEditWidget(Hardness));
+    mBrushWidgets.append(new BrushSettingEditWidget(AntiAliasing));
+    mBrushWidgets.append(new BrushSettingEditWidget(PressureGain));
 }
 
 void MPBrushConfigurator::prepareAdvancedBrushSettings()
@@ -210,106 +208,106 @@ void MPBrushConfigurator::prepareAdvancedBrushSettings()
 
 void MPBrushConfigurator::prepareOpacitySettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Opacity"), BrushSettingType::BRUSH_SETTING_OPAQUE, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Opacity multiply"), BrushSettingType::BRUSH_SETTING_OPAQUE_MULTIPLY, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Opacity linearize"), BrushSettingType::BRUSH_SETTING_OPAQUE_LINEARIZE, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(Opacity));
+    mBrushWidgets.append(new BrushSettingEditWidget(OpacityMultiply));
+    mBrushWidgets.append(new BrushSettingEditWidget(OpacityLinearize));
 }
 
 void MPBrushConfigurator::prepareDabSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Radius"), BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Hardness"), BrushSettingType::BRUSH_SETTING_HARDNESS, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Dabs per basic radius"), BrushSettingType::BRUSH_SETTING_DABS_PER_BASIC_RADIUS, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Dabs per actual radius"), BrushSettingType::BRUSH_SETTING_DABS_PER_ACTUAL_RADIUS, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Dabs per second"), BrushSettingType::BRUSH_SETTING_DABS_PER_SECOND, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Dab scale"), BrushSettingType::BRUSH_SETTING_GRIDMAP_SCALE, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Dab scale X"), BrushSettingType::BRUSH_SETTING_GRIDMAP_SCALE_X, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Dab scale Y"), BrushSettingType::BRUSH_SETTING_GRIDMAP_SCALE_Y, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(RadiusLog));
+    mBrushWidgets.append(new BrushSettingEditWidget(Hardness));
+    mBrushWidgets.append(new BrushSettingEditWidget(DabsPerBasicRadius));
+    mBrushWidgets.append(new BrushSettingEditWidget(DabsPerActualRadius));
+    mBrushWidgets.append(new BrushSettingEditWidget(DabsPerSecond));
+    mBrushWidgets.append(new BrushSettingEditWidget(DabScale));
+    mBrushWidgets.append(new BrushSettingEditWidget(DabScaleX));
+    mBrushWidgets.append(new BrushSettingEditWidget(DabScaleY));
 }
 
 void MPBrushConfigurator::prepareRandomSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Radius by random"), BrushSettingType::BRUSH_SETTING_RADIUS_BY_RANDOM, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(RadiusRandom));
 }
 
 void MPBrushConfigurator::prepareSpeedSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Speed start"), BrushSettingType::BRUSH_SETTING_SPEED1_SLOWNESS, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Speed end"), BrushSettingType::BRUSH_SETTING_SPEED2_SLOWNESS, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Speed gamma start"), BrushSettingType::BRUSH_SETTING_SPEED1_GAMMA, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Speed gamma end"), BrushSettingType::BRUSH_SETTING_SPEED2_GAMMA, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(SpeedStart));
+    mBrushWidgets.append(new BrushSettingEditWidget(SpeedEnd));
+    mBrushWidgets.append(new BrushSettingEditWidget(SpeedGammaStart));
+    mBrushWidgets.append(new BrushSettingEditWidget(SpeedGammaEnd));
 }
 
 void MPBrushConfigurator::prepareOffsetSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset by random"), BrushSettingType::BRUSH_SETTING_OFFSET_BY_RANDOM, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset X"), BrushSettingType::BRUSH_SETTING_OFFSET_X, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset Y"), BrushSettingType::BRUSH_SETTING_OFFSET_Y, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset angle left"), BrushSettingType::BRUSH_SETTING_OFFSET_ANGLE, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset angle left ascend"), BrushSettingType::BRUSH_SETTING_OFFSET_ANGLE_ASC, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset angle right"), BrushSettingType::BRUSH_SETTING_OFFSET_ANGLE_2, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset angle right ascend"), BrushSettingType::BRUSH_SETTING_OFFSET_ANGLE_2_ASC, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset angle adjecent"), BrushSettingType::BRUSH_SETTING_OFFSET_ANGLE_ADJ, -180, 180));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset multiplier"), BrushSettingType::BRUSH_SETTING_OFFSET_MULTIPLIER, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset by speed"), BrushSettingType::BRUSH_SETTING_OFFSET_BY_SPEED, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Offset by speed slowness"), BrushSettingType::BRUSH_SETTING_OFFSET_BY_SPEED_SLOWNESS, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetRandom));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetX));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetY));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetAngleLeft));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetAngleLeftAscend));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetAngleRight));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetAngleRightAscend));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetAngleAdjecent));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetMultiplier));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetBySpeed));
+    mBrushWidgets.append(new BrushSettingEditWidget(OffsetSpeedSlowness));
 }
 
 void MPBrushConfigurator::prepareTrackingSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Slow tracking"), BrushSettingType::BRUSH_SETTING_SLOW_TRACKING, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Slow tracking per. dab"), BrushSettingType::BRUSH_SETTING_SLOW_TRACKING_PER_DAB, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Tracking noise"), BrushSettingType::BRUSH_SETTING_TRACKING_NOISE, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(SlowTracking));
+    mBrushWidgets.append(new BrushSettingEditWidget(SlowTrackingPerDab));
+    mBrushWidgets.append(new BrushSettingEditWidget(TrackingNoise));
 }
 
 void MPBrushConfigurator::prepareColorSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Change color: Hue"), BrushSettingType::BRUSH_SETTING_CHANGE_COLOR_H, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Change color: Lightness"), BrushSettingType::BRUSH_SETTING_CHANGE_COLOR_L, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Change color: Saturation"), BrushSettingType::BRUSH_SETTING_CHANGE_COLOR_HSL_S, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Change color: Value"), BrushSettingType::BRUSH_SETTING_CHANGE_COLOR_V, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Change color: Saturation"), BrushSettingType::BRUSH_SETTING_CHANGE_COLOR_HSV_S, -100, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Restore color"), BrushSettingType::BRUSH_SETTING_RESTORE_COLOR, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(ChangeColorHue));
+    mBrushWidgets.append(new BrushSettingEditWidget(ChangeColorLightness));
+    mBrushWidgets.append(new BrushSettingEditWidget(ChangeColorHLSSaturation));
+    mBrushWidgets.append(new BrushSettingEditWidget(ChangeColorValue));
+    mBrushWidgets.append(new BrushSettingEditWidget(ChangeColorHSVSaturation));
+    mBrushWidgets.append(new BrushSettingEditWidget(RestoreColor));
 }
 
 void MPBrushConfigurator::prepareSmudgeSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Smudge"), BrushSettingType::BRUSH_SETTING_SMUDGE, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Smudge length"), BrushSettingType::BRUSH_SETTING_SMUDGE_LENGTH, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Smudge radius"), BrushSettingType::BRUSH_SETTING_SMUDGE_RADIUS_LOG, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(Smudge));
+    mBrushWidgets.append(new BrushSettingEditWidget(SmudgeLength));
+    mBrushWidgets.append(new BrushSettingEditWidget(SmudgeRadius));
 }
 
 void MPBrushConfigurator::prepareEraserSetting()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Eraser"), BrushSettingType::BRUSH_SETTING_ERASER, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(Eraser));
 }
 
 void MPBrushConfigurator::prepareStrokeSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Stroke threshold"), BrushSettingType::BRUSH_SETTING_STROKE_THRESHOLD, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Stroke duration"), BrushSettingType::BRUSH_SETTING_STROKE_DURATION_LOGARITHMIC, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Stroke holdtime"), BrushSettingType::BRUSH_SETTING_STROKE_HOLDTIME, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(StrokeThreshold));
+    mBrushWidgets.append(new BrushSettingEditWidget(StrokeDuration));
+    mBrushWidgets.append(new BrushSettingEditWidget(StrokeHoldTime));
 }
 
 void MPBrushConfigurator::prepareCustomInputSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Custom input"), BrushSettingType::BRUSH_SETTING_CUSTOM_INPUT, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Custom input slowness"), BrushSettingType::BRUSH_SETTING_CUSTOM_INPUT_SLOWNESS, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(CustomInput));
+    mBrushWidgets.append(new BrushSettingEditWidget(CustomInputSlowness));
 }
 
 void MPBrushConfigurator::prepareEllipticalDabSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Elleptical dab ratio"), BrushSettingType::BRUSH_SETTING_ELLIPTICAL_DAB_RATIO, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Elleptical dab angle"), BrushSettingType::BRUSH_SETTING_ELLIPTICAL_DAB_ANGLE, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(EllepticalDabRatio));
+    mBrushWidgets.append(new BrushSettingEditWidget(EllepticalDabAngle));
 }
 
 void MPBrushConfigurator::prepareOtherSettings()
 {
-    mBrushWidgets.append(new BrushSettingWidget(tr("Anti-aliasing"), BrushSettingType::BRUSH_SETTING_ANTI_ALIASING, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Lock Alpha"), BrushSettingType::BRUSH_SETTING_LOCK_ALPHA, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Colorize"), BrushSettingType::BRUSH_SETTING_COLORIZE, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Snap to pixel"), BrushSettingType::BRUSH_SETTING_SNAP_TO_PIXEL, 0, 100));
-    mBrushWidgets.append(new BrushSettingWidget(tr("Pressure gain"), BrushSettingType::BRUSH_SETTING_PRESSURE_GAIN_LOG, 0, 100));
+    mBrushWidgets.append(new BrushSettingEditWidget(AntiAliasing));
+    mBrushWidgets.append(new BrushSettingEditWidget(LockAlpha));
+    mBrushWidgets.append(new BrushSettingEditWidget(Colorize));
+    mBrushWidgets.append(new BrushSettingEditWidget(SnapToPixel));
+    mBrushWidgets.append(new BrushSettingEditWidget(PressureGain));
 }
 
 BrushSettingItem* MPBrushConfigurator::addTreeRoot(BrushSettingItem::Category category, QTreeWidget* treeWidget, const QString name)
@@ -359,13 +357,16 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
         case BrushSettingItem::Unknown: return;
     }
 
-    for (BrushSettingWidget* item : mBrushWidgets) {
+    for (BrushSettingEditWidget* item : mBrushWidgets) {
         vBoxLayout->addWidget(item);
 
-        mListOfConnections << connect(item, &BrushSettingWidget::brushSettingChanged, this, &MPBrushConfigurator::updateBrushSetting);
-        mListOfConnections << connect(item, &BrushSettingWidget::brushMappingForInputChanged, this, &MPBrushConfigurator::updateBrushMapping);
-        mListOfConnections << connect(item, &BrushSettingWidget::brushMappingRemoved, this, &MPBrushConfigurator::removeBrushMappingForInput);
-//        mListOfConnections << connect(mMapValuesButton, &QPushButton::pressed, item, &BrushSettingWidget::changeText);
+        mListOfConnections << connect(item, &BrushSettingEditWidget::brushSettingChanged, this, &MPBrushConfigurator::saveChanges);
+        mListOfConnections << connect(item, &BrushSettingEditWidget::brushMappingForInputChanged, this, &MPBrushConfigurator::updateBrushMapping);
+        mListOfConnections << connect(item, &BrushSettingEditWidget::brushMappingRemoved, this, &MPBrushConfigurator::removeBrushMappingForInput);
+        mListOfConnections << connect(item, &BrushSettingEditWidget::toggleSettingFor, this, &MPBrushConfigurator::toggleSettingForBrushSetting);
+
+        item->setCore(mEditor);
+        item->initUI();
     }
 
     addBrushSettingsSpacer();
@@ -397,14 +398,25 @@ void MPBrushConfigurator::addBrushSettingsSpacer()
     vBoxLayout->addItem(spacer);
 }
 
-void MPBrushConfigurator::updateBrushSetting(qreal oldValue, qreal value, BrushSettingType settingType)
+void MPBrushConfigurator::updateBrushSetting(qreal value, BrushSettingType setting)
+{
+    for (BrushSettingEditWidget* widget : mBrushWidgets)
+    {
+        if (widget->settingType() == setting) {
+            widget->setValue(value);
+            return;
+        }
+    }
+}
+
+void MPBrushConfigurator::saveChanges(qreal startValue, qreal value, BrushSettingType settingType)
 {
     int settingTypeInt = static_cast<int>(settingType);
 
     // Adds old brush value and only save once, so we can discard it later if needed
     if (!mOldModifications.contains(settingTypeInt)) {
         BrushChanges changes;
-        changes.baseValue = oldValue;
+        changes.baseValue = startValue;
         changes.settingsType = settingType;
         mOldModifications.insert(settingTypeInt, changes);
     }
@@ -438,7 +450,14 @@ void MPBrushConfigurator::updateBrushSetting(qreal oldValue, qreal value, BrushS
 
     mEditor->setMPBrushSetting(settingType, static_cast<float>(value));
 
-    applyChanges(mCurrentModifications);
+    auto st = mEditor->brushes()->applyChangesToBrushFile(mCurrentModifications);
+
+    if (st.fail()) {
+        QMessageBox::warning(this, st.title(), st.description());
+        return;
+    }
+
+    emit brushSettingChanged(value, settingType);
 }
 
 void MPBrushConfigurator::updateBrushMapping(QVector<QPointF> points, BrushSettingType setting, BrushInputType input)
@@ -485,7 +504,9 @@ void MPBrushConfigurator::updateBrushMapping(QVector<QPointF> points, BrushSetti
     }
 
     mEditor->setBrushInputMapping(points, setting, input);
-    applyChanges(mCurrentModifications);
+    mEditor->brushes()->applyChangesToBrushFile(mCurrentModifications);
+
+    mCurrentModifications.clear();
 }
 
 void MPBrushConfigurator::removeBrushMappingForInput(BrushSettingType setting, BrushInputType input)
@@ -535,70 +556,6 @@ void MPBrushConfigurator::updateMapValuesButton()
     }
 }
 
-void MPBrushConfigurator::applyChanges(QHash<int, BrushChanges> changes)
-{
-    auto status = MPBrushParser::readBrushFromFile(mPreset, mBrushName);
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(status.data, &error);
-
-    writeModifications(doc, error, changes);
-
-    Status statusWrite = MPBrushParser::writeBrushToFile(mPreset, mBrushName, doc.toJson());
-
-    if (statusWrite.fail()) {
-        QMessageBox::warning(this, statusWrite.title(), statusWrite.description());
-    }
-
-    mCurrentModifications.clear();
-    emit reloadBrushSettings();
-}
-
-void MPBrushConfigurator::writeModifications(QJsonDocument& document, QJsonParseError& error, QHash<int, BrushChanges> modifications)
-{
-
-    QJsonObject rootObject = document.object();
-
-    if (error.error != QJsonParseError::NoError) {
-        QMessageBox::information(this, tr("Parse error!"), tr("Could not save brush file\n the following error was given: ") + error.errorString());
-        return;
-    }
-
-    QJsonObject::iterator settingsContainerObjIt = rootObject.find("settings");
-
-    if (settingsContainerObjIt->isUndefined()) {
-        QMessageBox::information(this, tr("Parse error!"), tr("Looks like you are missign a 'settings' field in your brush file, this shouldn't happen...") + error.errorString());
-        return;
-    }
-    QJsonValueRef settingsContainerRef = settingsContainerObjIt.value();
-
-    QJsonObject settingsContainerObj = settingsContainerRef.toObject();
-    QHashIterator<int, BrushChanges> settingIt(modifications);
-    while (settingIt.hasNext()) {
-        settingIt.next();
-
-        BrushChanges brushChanges = settingIt.value();
-        QString settingId = MPBrushParser::getBrushSettingIdentifier(brushChanges.settingsType);
-
-        QJsonObject::iterator settingObjIt = settingsContainerObj.find(settingId);
-
-        if (settingObjIt->isUndefined()) {
-            QJsonObject settingObj;
-            brushChanges.write(settingObj);
-            settingsContainerObj.insert(settingId, settingObj);
-        } else {
-            QJsonValueRef settingRef = settingObjIt.value();
-            QJsonObject settingObj = settingRef.toObject();
-            brushChanges.write(settingObj);
-
-            settingsContainerObj.remove(settingId);
-            settingsContainerObj.insert(settingId, settingObj);
-        }
-    }
-    settingsContainerRef = settingsContainerObj;
-    document.setObject(rootObject);
-
-}
-
 void MPBrushConfigurator::pressedRemoveBrush()
 {   
     QMessageBox::StandardButton ret = QMessageBox::warning(this, tr("Delete brush"),
@@ -628,9 +585,11 @@ void MPBrushConfigurator::openBrushInfoWidget(DialogContext dialogContext)
     mBrushInfoWidget->setCore(mEditor);
     mBrushInfoWidget->initUI();
 
-    auto status = MPBrushParser::readBrushFromFile(mPreset, mBrushName);
+    auto brushMan = mEditor->brushes();
+
+    auto status = brushMan->readBrushFromFile(mPreset, mBrushName);
     QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(status.data, &error);
+    QJsonDocument doc = QJsonDocument::fromJson(brushMan->currentBrushData(), &error);
 
     mBrushInfoWidget->setBrushInfo(mBrushName, mPreset, mToolType, doc);
     mBrushInfoWidget->show();
@@ -657,8 +616,10 @@ void MPBrushConfigurator::pressedDiscardBrush()
                                    static_cast<float>(changesIt.value().baseValue));
     }
 
-    applyChanges(mOldModifications);
+    mEditor->brushes()->applyChangesToBrushFile(mOldModifications);
     updateUI();
+
+    mCurrentModifications.clear();
     mOldModifications.clear();
     mDiscardChangesButton->setEnabled(false);
 }

@@ -43,13 +43,14 @@ void PenTool::loadSettings()
     mPropertyEnabled[ANTI_ALIASING] = true;
     mPropertyEnabled[STABILIZATION] = true;
 
+    mDefaultBrushSettings = { RadiusLog, PressureGain, AntiAliasing };
+
     QSettings settings(PENCIL2D, PENCIL2D);
 
     properties.width = settings.value("penWidth", 12.0).toDouble();
     properties.pressure = settings.value("penPressure", true).toBool();
     properties.invisibility = OFF;
     properties.preserveAlpha = OFF;
-    properties.useAA = settings.value("penAA", true).toBool();
     properties.stabilizerLevel = settings.value("penLineStabilization", StabilizationLevel::STRONG).toInt();
 }
 
@@ -59,7 +60,6 @@ void PenTool::resetToDefault()
     setUseFeather(false);
     setPressure(true);
     setStabilizerLevel(StabilizationLevel::STRONG);
-    setAA(1);
 }
 
 void PenTool::setWidth(const qreal width)
@@ -81,17 +81,6 @@ void PenTool::setPressure(const bool pressure)
     // Update settings
     QSettings settings(PENCIL2D, PENCIL2D);
     settings.setValue("penPressure", pressure);
-    settings.sync();
-}
-
-void PenTool::setAA(const int AA)
-{
-    // Set current property
-    properties.useAA = AA;
-
-    // Update settings
-    QSettings settings(PENCIL2D, PENCIL2D);
-    settings.setValue("penAA", AA);
     settings.sync();
 }
 

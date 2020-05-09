@@ -22,6 +22,7 @@ GNU General Public License for more details.
 #include <QHash>
 #include "basetool.h"
 #include "basemanager.h"
+#include "brushsetting.h"
 
 class ScribbleArea;
 
@@ -46,6 +47,8 @@ public:
     void tabletRestorePrevTool();
     int propertySwitch(bool condition, int property);
 
+    void setMPBrushSetting(qreal value, BrushSettingType setting);
+
 Q_SIGNALS:
     void penWidthValueChanged(float);
     void penFeatherValueChanged(float);
@@ -65,7 +68,6 @@ public slots:
     void setVectorMergeEnabled(bool);
     void setBezier(bool);
     void setPressure(bool);
-    void setAA(int);
     void setStabilizerLevel(int);
     void setTolerance(int);
     void setUseFillContour(bool);

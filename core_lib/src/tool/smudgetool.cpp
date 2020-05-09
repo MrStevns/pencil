@@ -46,6 +46,8 @@ void SmudgeTool::loadSettings()
     mPropertyEnabled[WIDTH] = true;
     mPropertyEnabled[FEATHER] = true;
 
+    mDefaultBrushSettings = { RadiusLog, Hardness, Smudge };
+
     QSettings settings(PENCIL2D, PENCIL2D);
     properties.width = settings.value("smudgeWidth", 24.0).toDouble();
     properties.feather = settings.value("smudgeFeather", 48.0).toDouble();

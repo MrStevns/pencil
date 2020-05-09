@@ -33,6 +33,7 @@ class QDoubleSpinBox;
 class QGroupBox;
 class Editor;
 class BaseTool;
+class ToolBrushSettingsWidget;
 
 
 class ToolOptionWidget : public BaseDockWidget
@@ -47,6 +48,8 @@ public:
 
     void makeConnectionToEditor(Editor* editor);
 
+    ToolBrushSettingsWidget* brushSettingsWidget();
+
 public slots:
     void onToolPropertyChanged(ToolType, ToolPropertyType);
     void onToolChanged(ToolType);
@@ -60,7 +63,6 @@ private:
     void setPressure(int);
     void setPreserveAlpha(int);
     void setVectorMergeEnabled(int);
-    void setAA(int);
     void setStabilizerLevel(int);
     void setTolerance(int);
     void setFillContour(int);

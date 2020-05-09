@@ -54,6 +54,9 @@ signals:
     void valueChanged(qreal);
     void valueOnRelease(qreal);
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
     void onSliderValueChanged(int);
     void onSliderReleased();

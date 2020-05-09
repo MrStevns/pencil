@@ -19,7 +19,9 @@ GNU General Public License for more details.
 
 #include <QSettings>
 #include <QDebug>
+#include <QScrollBar>
 
+#include "toolbrushsettingswidget.h"
 #include "spinslider.h"
 #include "editor.h"
 #include "util.h"
@@ -35,6 +37,8 @@ ToolOptionWidget::ToolOptionWidget(QWidget* parent) : BaseDockWidget(parent)
     setWidget(innerWidget);
     ui = new Ui::ToolOptions;
     ui->setupUi(innerWidget);
+
+//    ui->
 }
 
 ToolOptionWidget::~ToolOptionWidget()
@@ -56,6 +60,11 @@ void ToolOptionWidget::initUI()
     ui->toleranceSlider->init(tr("Color Tolerance"), SpinSlider::LINEAR, SpinSlider::INTEGER, 0, 100);
     ui->toleranceSlider->setValue(settings.value("Tolerance", "50").toInt());
     ui->toleranceSpinBox->setValue(settings.value("Tolerance", "50").toInt());
+
+    ui->brushSettingsWidget->setCore(editor());
+    ui->brushSettingsWidget->initUI();
+
+    ui->scrollArea->horizontalScrollBar()->setEnabled(false);
 }
 
 void ToolOptionWidget::updateUI()
@@ -76,7 +85,6 @@ void ToolOptionWidget::updateUI()
     setPenInvisibility(p.invisibility);
     setPreserveAlpha(p.preserveAlpha);
     setVectorMergeEnabled(p.vectorMergeEnabled);
-    setAA(p.useAA);
     setStabilizerLevel(p.stabilizerLevel);
     setTolerance(static_cast<int>(p.tolerance));
     setFillContour(p.useFillContour);
@@ -106,7 +114,6 @@ void ToolOptionWidget::makeConnectionToEditor(Editor* editor)
     connect(ui->useFeatherBox, &QCheckBox::clicked, toolManager, &ToolManager::setUseFeather);
 
     connect(ui->vectorMergeBox, &QCheckBox::clicked, toolManager, &ToolManager::setVectorMergeEnabled);
-    connect(ui->useAABox, &QCheckBox::clicked, toolManager, &ToolManager::setAA);
 
     connect(ui->inpolLevelsCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated), toolManager, &ToolManager::setStabilizerLevel);
 
@@ -118,6 +125,7 @@ void ToolOptionWidget::makeConnectionToEditor(Editor* editor)
 
     connect(toolManager, &ToolManager::toolChanged, this, &ToolOptionWidget::onToolChanged);
     connect(toolManager, &ToolManager::toolPropertyChanged, this, &ToolOptionWidget::onToolPropertyChanged);
+    connect(toolManager, &ToolManager::toolChanged, ui->brushSettingsWidget, &ToolBrushSettingsWidget::setupSettings);
 }
 
 void ToolOptionWidget::onToolPropertyChanged(ToolType, ToolPropertyType ePropertyType)
@@ -133,7 +141,6 @@ void ToolOptionWidget::onToolPropertyChanged(ToolType, ToolPropertyType ePropert
     case INVISIBILITY: setPenInvisibility(p.invisibility); break;
     case PRESERVEALPHA: setPreserveAlpha(p.preserveAlpha); break;
     case VECTORMERGE: setVectorMergeEnabled(p.vectorMergeEnabled); break;
-    case ANTI_ALIASING: setAA(p.useAA); break;
     case STABILIZATION: setStabilizerLevel(p.stabilizerLevel); break;
     case TOLERANCE: setTolerance(static_cast<int>(p.tolerance)); break;
     case FILLCONTOUR: setFillContour(p.useFillContour); break;
@@ -155,7 +162,6 @@ void ToolOptionWidget::setVisibility(BaseTool* tool)
     ui->usePressureBox->setVisible(tool->isPropertyEnabled(PRESSURE));
     ui->makeInvisibleBox->setVisible(tool->isPropertyEnabled(INVISIBILITY));
     ui->preserveAlphaBox->setVisible(tool->isPropertyEnabled(PRESERVEALPHA));
-    ui->useAABox->setVisible(tool->isPropertyEnabled(ANTI_ALIASING));
     ui->stabilizerLabel->setVisible(tool->isPropertyEnabled(STABILIZATION));
     ui->inpolLevelsCombo->setVisible(tool->isPropertyEnabled(STABILIZATION));
     ui->toleranceSlider->setVisible(tool->isPropertyEnabled(TOLERANCE));
@@ -191,23 +197,41 @@ void ToolOptionWidget::setVisibility(BaseTool* tool)
             ui->sizeSlider->setLabel(tr("Width"));
             ui->toleranceSlider->setVisible(false);
             ui->toleranceSpinBox->setVisible(false);
-            ui->useAABox->setVisible(false);
             break;
         }
+
+        ui->brushSettingsWidget->setVisible(false);
     }
     else
     {
         switch (propertyType)
         {
+        case BRUSH:
+        case PEN:
+        case POLYLINE:
+        case SMUDGE:
         case PENCIL:
+        case ERASER:
             ui->fillContourBox->setVisible(false);
+            ui->sizeSlider->setVisible(false);
+            ui->brushSpinBox->setVisible(false);
+            ui->useBezierBox->setVisible(false);
+            ui->featherSlider->setVisible(false);
+            ui->usePressureBox->setVisible(false);
+//            ui->inpolLevelsCombo->setVisible(false);
+//            ui->stabilizerLabel->setVisible(false);
+            ui->makeInvisibleBox->setVisible(false);
+            ui->featherSpinBox->setVisible(false);
+            ui->brushSettingsWidget->setVisible(true);
             break;
         case BUCKET:
             ui->brushSpinBox->setVisible(false);
             ui->sizeSlider->setVisible(false);
+            ui->brushSettingsWidget->setVisible(false);
             break;
         default:
             ui->makeInvisibleBox->setVisible(false);
+            ui->brushSettingsWidget->setVisible(false);
             break;
         }
     }
@@ -275,29 +299,6 @@ void ToolOptionWidget::setVectorMergeEnabled(int x)
     ui->vectorMergeBox->setChecked(x > 0);
 }
 
-void ToolOptionWidget::setAA(int x)
-{
-    SignalBlocker b(ui->useAABox);
-    ui->useAABox->setEnabled(true);
-    ui->useAABox->setVisible(false);
-
-    auto layerType = editor()->layers()->currentLayer()->type();
-
-    if (layerType == Layer::BITMAP)
-    {
-        if (x == -1)
-        {
-            ui->useAABox->setEnabled(false);
-            ui->useAABox->setVisible(false);
-        }
-        else
-        {
-            ui->useAABox->setVisible(true);
-        }
-        ui->useAABox->setChecked(x > 0);
-    }
-}
-
 void ToolOptionWidget::setStabilizerLevel(int x)
 {
     ui->inpolLevelsCombo->setCurrentIndex(qBound(0, x, ui->inpolLevelsCombo->count() - 1));
@@ -339,9 +340,13 @@ void ToolOptionWidget::disableAllOptions()
     ui->makeInvisibleBox->hide();
     ui->preserveAlphaBox->hide();
     ui->vectorMergeBox->hide();
-    ui->useAABox->hide();
     ui->inpolLevelsCombo->hide();
     ui->toleranceSlider->hide();
     ui->toleranceSpinBox->hide();
     ui->fillContourBox->hide();
+}
+
+ToolBrushSettingsWidget* ToolOptionWidget::brushSettingsWidget()
+{
+    return ui->brushSettingsWidget;
 }

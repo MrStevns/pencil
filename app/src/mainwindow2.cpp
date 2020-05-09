@@ -59,6 +59,8 @@ GNU General Public License for more details.
 #include "timeline.h"
 #include "toolbox.h"
 #include "onionskinwidget.h"
+#include "toolbrushsettingswidget.h"
+#include "mpbrushconfigurator.h"
 
 //#include "preview.h"
 #include "timeline2.h"
@@ -172,6 +174,9 @@ void MainWindow2::createDockWidgets()
     mBrushSelectorWidget = new MPBrushSelector(this);
     mBrushSelectorWidget->setCore(mEditor);
 
+//    mToolBrushSettingsWidget = new ToolBrushSettingsWidget(this);
+//    mToolBrushSettingsWidget->setCore(mEditor);
+
     /*
     mTimeline2 = new Timeline2;
     mTimeline2->setObjectName( "Timeline2" );
@@ -187,6 +192,7 @@ void MainWindow2::createDockWidgets()
         << mOnionSkinWidget
         << mToolOptions
         << mToolBox
+//        << mToolBrushSettingsWidget
         << mBrushSelectorWidget;
 
     mBrushSelectorWidget->show();
@@ -215,6 +221,7 @@ void MainWindow2::createDockWidgets()
     addDockWidget(Qt::LeftDockWidgetArea, mOnionSkinWidget);
     addDockWidget(Qt::BottomDockWidgetArea, mTimeLine);
     addDockWidget(Qt::RightDockWidgetArea, mBrushSelectorWidget);
+//    addDockWidget(Qt::LeftDockWidgetArea, mToolBrushSettingsWidget);
     setDockNestingEnabled(true);
 
     /*
@@ -1071,7 +1078,7 @@ bool MainWindow2::newObjectFromPresets(int presetIndex)
     return true;
 }
 
-void  MainWindow2::showPresetDialog()
+void MainWindow2::showPresetDialog()
 {
     if (mEditor->preference()->isOn(SETTING::ASK_FOR_PRESET))
     {
@@ -1089,6 +1096,20 @@ void  MainWindow2::showPresetDialog()
         presetDialog->open();
     }
 }
+
+//void MainWindow2::displayErrorDialog(Status status)
+//{
+//    auto dialog = new ErrorDialog(status, this);
+
+//    dialog->exec();
+//}
+
+//void MainWindow2::displayErrorDialog(QString title, QString description)
+//{
+//    auto dialog = new ErrorDialog(title, description, "", this);
+
+//    dialog->exec();
+//}
 
 void MainWindow2::readSettings()
 {
@@ -1349,6 +1370,8 @@ void MainWindow2::makeConnections(Editor* editor)
     connect(editor, &Editor::needDisplayInfo, this, &MainWindow2::displayMessageBox);
     connect(editor, &Editor::needDisplayInfoNoTitle, this, &MainWindow2::displayMessageBoxNoTitle);
     connect(editor->layers(), &LayerManager::currentLayerChanged, this, &MainWindow2::currentLayerChanged);
+
+//    connect(editor->brushes(), &MPBrushManager::errorFromTitleMessage, this, &MainWindow2::displayErrorDialog);
 }
 
 void MainWindow2::makeConnections(Editor* editor, ColorBox* colorBox)
@@ -1437,6 +1460,12 @@ void MainWindow2::makeConnections(Editor* editor, MPBrushSelector* brushSelector
     ToolManager* toolManager = editor->tools();
     connect(toolManager, &ToolManager::toolChanged, brushSelector, &MPBrushSelector::typeChanged);
     connect(brushSelector, &MPBrushSelector::brushSelected, editor, &Editor::loadBrush);
+    connect(brushSelector, &MPBrushSelector::toggleSettingForBrushSetting, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::toggleSetting);
+    connect(brushSelector, &MPBrushSelector::notifySettingChanged, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateSetting);
+    connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::notifyBrushSettingUpdated, brushSelector, &MPBrushSelector::notifySettingChanged);
+    connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateSetting, brushSelector, &MPBrushSelector::notifySettingChanged);
+//    connect(toolManager, &ToolManager::toolChanged, mToolBrushSettingsWidget, &ToolBrushSettingsWidget::setupSettings);
+//    connect(editor->layers(), &LayerManager::layerTypeChanged, mToolBrushSettingsWidget, &ToolBrushSettingsWidget::showIfRelevant);
 }
 
 void MainWindow2::bindActionWithSetting(QAction* action, SETTING setting)

@@ -24,6 +24,7 @@ GNU General Public License for more details.
 #include <QLocale>
 #include <QDebug>
 #include <QStyle>
+#include <QEvent>
 
 
 SpinSlider::SpinSlider(QWidget* parent) : QWidget(parent)
@@ -59,6 +60,8 @@ void SpinSlider::init(QString text, GROWTH_TYPE type, VALUE_TYPE dataType, qreal
 
     setLayout(layout);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    mSlider->installEventFilter(this);
 
     connect(mSlider, &QSlider::valueChanged, this, &SpinSlider::onSliderValueChanged);
     connect(mSlider, &QSlider::sliderReleased, this, &SpinSlider::onSliderReleased);
@@ -133,4 +136,14 @@ void SpinSlider::setPixelPos(qreal min, qreal max, int val, int space, bool upsi
 void SpinSlider::setExponent(const qreal exp)
 {
     mExp = exp;
+}
+
+bool SpinSlider::eventFilter(QObject *obj, QEvent *event)
+{
+    if(event->type() == QEvent::Wheel && obj == mSlider)
+    {
+        // Block wheel events.
+        return true;
+    }
+    return false;
 }

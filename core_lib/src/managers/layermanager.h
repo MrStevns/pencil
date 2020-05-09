@@ -52,6 +52,8 @@ public:
 
     Status deleteLayer(int index);
     Status renameLayer(Layer*, const QString& newName);
+
+    // TODO: deprecated.. remove.
     void notifyLayerChanged(Layer*);
 
     void gotoNextLayer();
@@ -78,6 +80,7 @@ Q_SIGNALS:
     void layerCountChanged(int count);
     void animationLengthChanged(int length);
     void layerDeleted(int index);
+    void layerTypeChanged(Layer::LAYER_TYPE);
 
 private:
     int getIndex(Layer*) const;

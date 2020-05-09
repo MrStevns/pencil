@@ -365,6 +365,11 @@ QPointF BaseTool::getLastPressPoint()
     return mEditor->view()->mapScreenToCanvas(getLastPressPixel());
 }
 
+QList<BrushSetting> BaseTool::enabledBrushSettings()
+{
+    return mDefaultBrushSettings;
+}
+
 void BaseTool::setWidth(const qreal width)
 {
     properties.width = width;
@@ -403,11 +408,6 @@ void BaseTool::setPreserveAlpha(const bool preserveAlpha)
 void BaseTool::setVectorMergeEnabled(const bool vectorMergeEnabled)
 {
     properties.vectorMergeEnabled = vectorMergeEnabled;
-}
-
-void BaseTool::setAA(const int useAA)
-{
-    properties.useAA = useAA;
 }
 
 void BaseTool::setStabilizerLevel(const int level)

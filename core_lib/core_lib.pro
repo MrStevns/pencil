@@ -51,6 +51,7 @@ HEADERS +=  \
     src/interface/basedockwidget.h \
     src/interface/backgroundwidget.h \
     src/managers/basemanager.h \
+    src/managers/mpbrushmanager.h \
     src/managers/selectionmanager.h \
     src/managers/colormanager.h \
     src/managers/layermanager.h \
@@ -59,6 +60,7 @@ HEADERS +=  \
     src/managers/viewmanager.h \
     src/managers/preferencemanager.h \
     src/managers/soundmanager.h \
+    src/structure/brushchanges.h \
     src/structure/camera.h \
     src/structure/keyframe.h \
     src/structure/layer.h \
@@ -96,6 +98,7 @@ HEADERS +=  \
     src/util/util.h \
     src/util/log.h \
     src/util/movemode.h \
+    src/util/mpbrushutils.h \
     src/canvaspainter.h \
     src/soundplayer.h \
     src/movieexporter.h \
@@ -127,6 +130,7 @@ SOURCES += \
     src/interface/basedockwidget.cpp \
     src/interface/backgroundwidget.cpp \
     src/managers/basemanager.cpp \
+    src/managers/mpbrushmanager.cpp \
     src/managers/selectionmanager.cpp \
     src/managers/colormanager.cpp \
     src/managers/layermanager.cpp \

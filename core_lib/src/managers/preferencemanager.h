@@ -120,6 +120,7 @@ public:
     float getFloat(SETTING option);
 
     void set(QString option, QString value);
+    void set(QString option, bool value);
     QString get(QString option);
 
 Q_SIGNALS:

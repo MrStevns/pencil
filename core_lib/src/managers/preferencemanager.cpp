@@ -429,6 +429,12 @@ void PreferenceManager::set(QString option, QString value)
     settings.setValue( option, value );
 }
 
+void PreferenceManager::set(QString option, bool value)
+{
+    QSettings settings( PENCIL2D, PENCIL2D );
+    settings.setValue( option, value );
+}
+
 QString PreferenceManager::get(QString option)
 {
     QSettings settings( PENCIL2D, PENCIL2D );

@@ -17,6 +17,8 @@ GNU General Public License for more details.
 #include "errordialog.h"
 #include "ui_errordialog.h"
 
+#include "pencilerror.h"
+
 ErrorDialog::ErrorDialog( QString title, QString description, QString details, QWidget *parent ) :
     QDialog( parent ),
     ui(new Ui::ErrorDialog)
@@ -34,6 +36,28 @@ ErrorDialog::ErrorDialog( QString title, QString description, QString details, Q
     {
         ui->details->setText( QString( "<pre>%1</pre>" ).arg( details ) );
     }
+    this->adjustSize();
+}
+
+ErrorDialog::ErrorDialog(Status status, QWidget* parent) : QDialog(parent),
+  ui(new Ui::ErrorDialog)
+{
+    ui->setupUi( this );
+    QString title = status.title();
+    setWindowTitle(title);
+    ui->title->setText( QString("<h3>%1</h3>").arg(title));
+    ui->description->setText( status.description() );
+
+    QString details = status.details().str();
+    if (details.isEmpty())
+    {
+        ui->details->setVisible(false);
+    }
+    else
+    {
+        ui->details->setText(QString("<pre>%1</pre>").arg(details));
+    }
+    this->adjustSize();
 }
 
 ErrorDialog::~ErrorDialog()

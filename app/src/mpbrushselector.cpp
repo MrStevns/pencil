@@ -28,6 +28,7 @@
 #include "combobox.h"
 
 #include "preferencemanager.h"
+#include "mpbrushmanager.h"
 
 #include "mpbrushutils.h"
 #include "mpbrushconfigurator.h"
@@ -67,13 +68,11 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
     containerWidget->setLayout(mVLayout);
     setWidget(containerWidget);
 
-    MPBrushParser::copyResourcesToAppData();
+//    // TODO: move all parsing and core logic into the new mpbrushmanager...
+//    MPBrushParser::copyResourcesToAppData();
 
-    mBrushesPath = MPCONF::getBrushesPath();
+//    mBrushesPath = MPCONF::getBrushesPath();
     // end of copy process
-
-    // First, we parse the "brushes.conf" file to fill m_brushLib
-    loadBrushes();
 
     connect(configuratorButton, &QToolButton::pressed, this, &MPBrushSelector::openConfigurator);
     connect(presetsManagerButton, &QToolButton::pressed, this, &MPBrushSelector::showPresetManager);
@@ -82,7 +81,8 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
 
 void MPBrushSelector::initUI()
 {
-
+    // First, we parse the "brushes.conf" file to fill m_brushLib
+    loadBrushes();
 }
 
 void MPBrushSelector::updateUI()
@@ -92,29 +92,27 @@ void MPBrushSelector::updateUI()
 
 void MPBrushSelector::loadBrushes()
 {
-    QFile fileOrder(MPBrushParser::getBrushConfigPath(BrushConfigFile));
+    auto st = mEditor->brushes()->loadPresets();
 
-    if (fileOrder.open(QIODevice::ReadOnly))
+    if (st.ok())
     {
-        // TODO: will probably have to create a brush importer
-        mBrushPresets = MPBrushParser::parseConfig(fileOrder, mBrushesPath);
-
+        QVector<MPBrushPreset> presets = mEditor->brushes()->presets();
         if (mPresetComboBox->count() > 0) {
             mPresetComboBox->clear();
         }
 
-        for (MPBrushPreset preset : mBrushPresets) {
+        for (MPBrushPreset preset : presets) {
             mPresetComboBox->addItem(preset.name);
         }
 
         QSettings settings(PENCIL2D,PENCIL2D);
         QString lastPreset = settings.value(SETTING_MPBRUSHPRESET).toString();
 
-        if (lastPreset.isEmpty()) {
-            currentPresetName = mBrushPresets.first().name;
-            settings.setValue(SETTING_MPBRUSHPRESET, currentPresetName);
-        } else {
-            currentPresetName = lastPreset;
+        if (!lastPreset.isEmpty()) {
+////            currentPresetName = presets.first().name;
+////            settings.setValue(SETTING_MPBRUSHPRESET, currentPresetName);
+//        } else {
+////            currentPresetName = lastPreset;
             mPresetComboBox->setCurrentItemFrom(lastPreset);
         }
 
@@ -149,7 +147,7 @@ void MPBrushSelector::addToolTabs()
 
 void MPBrushSelector::updateBrushList(QString brushName, QString brushPreset)
 {
-    currentPresetName = brushPreset;
+    mEditor->brushes()->setCurrentPresetName(brushPreset);
 
     loadBrushes();
     selectBrush(brushName);
@@ -163,7 +161,9 @@ void MPBrushSelector::reloadBrushList()
 void MPBrushSelector::populateList()
 {
     // Make sure currentBrushPreset is loaded here
-    for (const MPBrushPreset& pre : mBrushPresets) {
+    auto presets = mEditor->brushes()->presets();
+    auto currentPresetName = mEditor->brushes()->currentPresetName();
+    for (const MPBrushPreset& pre : presets) {
         if (pre.name == currentPresetName) {
             currentBrushPreset = pre;
             break;
@@ -185,7 +185,7 @@ void MPBrushSelector::populateList()
         int brushIndex = 0;
         for (const QString& brush : subList.brushesForTool(toolListIt.key().toLower())) {
 
-            QIcon preview(mBrushesPath + QDir::separator() + currentPresetName + QDir::separator() + brush + BRUSH_PREVIEW_EXT);
+            QIcon preview(mEditor->brushes()->brushesPath() + QDir::separator() + currentPresetName + QDir::separator() + brush + BRUSH_PREVIEW_EXT);
             QListWidgetItem* p_item = new QListWidgetItem(preview, nullptr, widget, brushIndex);
             p_item->setToolTip(QString("%1").arg(brush));
             p_item->setData(Qt::UserRole, QVariant::fromValue(brush));
@@ -214,18 +214,17 @@ void MPBrushSelector::itemClicked(QListWidgetItem *itemWidget)
 
         loadBrushFromFile(brushName);
 
-        mEditor->preference()->set(QString(SETTING_MPBRUSHFORTOOL+currentToolName+currentPresetName).toLower(), brushName.toLower());
+        mEditor->preference()->set(QString(SETTING_MPBRUSHFORTOOL+currentToolName+preset.name).toLower(), brushName.toLower());
     }
 }
 
 void MPBrushSelector::loadBrushFromFile(const QString& brushName)
 {
-    auto status = MPBrushParser::readBrushFromFile(currentPresetName, brushName);
-    if (status.errorcode == Status::OK)
+    auto brushMan = mEditor->brushes();
+    Status status = brushMan->readBrushFromCurrentPreset(brushName);
+    if (status == Status::OK)
     {
-        currentBrushName = brushName;
-        currentBrushData = status.data;
-        emit brushSelected(currentToolType, currentPresetName, brushName, status.data); // Read the whole file and broadcast is as a char* buffer
+        emit brushSelected(); // Read the whole file and broadcast is as a char* buffer
     }
 }
 
@@ -264,13 +263,18 @@ void MPBrushSelector::loadToolBrushes(QString toolName)
 
         // Make sure we don't get stuck with same brush on different tools
         if (toolName != oldToolname) {
-            QString lastBrushForTool = mEditor->preference()->get(QString(SETTING_MPBRUSHFORTOOL+toolName+currentPresetName).toLower());
+            QString lastBrushForTool = mEditor->preference()->get(QString(SETTING_MPBRUSHFORTOOL+toolName+subList.name).toLower());
             if (toolName == "empty") {
                 // Do nothing
             } else if (lastBrushForTool.isEmpty() || !subList.brushesForTool(toolName).contains(lastBrushForTool)) {
                 // No brush has been selected before, select the first
-                QString brushName (subList.brushesForTool(toolName).first());
-                selectBrush(brushName);
+
+                if (!subList.brushesForTool(toolName).isEmpty()) {
+                    QString brushName (subList.brushesForTool(toolName).first());
+                    selectBrush(brushName);
+                } else {
+                    qDebug() << "NO BRUSH EXISTS FOR TOOL";
+                }
             } else {
                 selectBrush(lastBrushForTool);
             }
@@ -280,24 +284,15 @@ void MPBrushSelector::loadToolBrushes(QString toolName)
 
 void MPBrushSelector::typeChanged(ToolType eToolMode)
 {
-    QString toolName = "";
+    QString toolName = QString(mEditor->getTool(eToolMode)->typeName()).toLower();
     switch ( eToolMode )
     {
     case ToolType::PENCIL:
-        toolName = "pencil";
-        break;
     case ToolType::ERASER:
-        toolName = "eraser";
-        break;
     case ToolType::PEN:
-        toolName = "pen";
-        break;
     case ToolType::BRUSH:
     case ToolType::POLYLINE:
-        toolName = "brush";
-        break;
     case ToolType::SMUDGE:
-        toolName = "smudge";
         break;
     default:
         toolName = "empty";
@@ -315,7 +310,7 @@ void MPBrushSelector::typeChanged(ToolType eToolMode)
 void MPBrushSelector::selectBrush(QString brushName)
 {
     Q_UNUSED(brushName)
-    if (!isValid()) return;
+    if (mEditor->brushes()->presets().isEmpty()) return;
     QListWidget* listWidget = currentListWidget;
     QListWidgetItem* itemWidget = nullptr;
 
@@ -359,24 +354,21 @@ void MPBrushSelector::openConfigurator()
         connect(this, &MPBrushSelector::brushSelected, mBrushConfiguratorWidget, &MPBrushConfigurator::updateConfig);
         connect(mBrushConfiguratorWidget, &MPBrushConfigurator::refreshBrushList, this, &MPBrushSelector::reloadBrushList);
         connect(mBrushConfiguratorWidget, &MPBrushConfigurator::updateBrushList, this, &MPBrushSelector::updateBrushList);
-        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::reloadBrushSettings, this, &MPBrushSelector::reloadCurrentBrush);
+        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::toggleSettingForBrushSetting, this, &MPBrushSelector::toggleSettingForBrushSetting);
+        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::brushSettingChanged, this, &MPBrushSelector::notifySettingChanged);
+        connect(this, &MPBrushSelector::notifySettingChanged, mBrushConfiguratorWidget, &MPBrushConfigurator::updateBrushSetting);
     } else {
         if (!mBrushConfiguratorWidget->isVisible()) {
             mBrushConfiguratorWidget->show();
         }
+        mBrushConfiguratorWidget->updateUI();
     }
-    emit brushSelected(currentToolType, currentPresetName, currentBrushName, currentBrushData);
-}
-
-void MPBrushSelector::reloadCurrentBrush()
-{
-    loadBrushFromFile(currentBrushName);
 }
 
 void MPBrushSelector::showPresetManager()
 {
     if (mPresetsWidget == nullptr) {
-        mPresetsWidget = new MPBrushPresetsWidget(mBrushPresets, this);
+        mPresetsWidget = new MPBrushPresetsWidget(mEditor->brushes()->presets(), this);
         connect(mPresetsWidget, &MPBrushPresetsWidget::presetsChanged, this, &MPBrushSelector::reloadBrushList);
     }
     mPresetsWidget->show();
@@ -390,7 +382,7 @@ void MPBrushSelector::changeBrushPreset(int index, QString name, int data)
     QSettings settings(PENCIL2D,PENCIL2D);
     settings.setValue(SETTING_MPBRUSHPRESET, name);
 
-    currentPresetName = name;
+    mEditor->brushes()->setCurrentPresetName(name);
     populateList();
 }
 

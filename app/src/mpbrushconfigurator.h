@@ -15,101 +15,16 @@
 
 #include <QPointer>
 
+#include "mpbrushmanager.h"
 #include "pencildef.h"
 #include "mpbrushinfodialog.h"
 
 class QVBoxLayout;
 class QSpacerItem;
-class BrushSettingWidget;
+class BrushSettingEditWidget;
 class QLabel;
 class MPBrushInfoDialog;
-
-struct InputChanges {
-    QVector<QPointF> mappedPoints;
-    BrushInputType inputType;
-    bool enabled;
-
-    InputChanges(QVector<QPointF> newMappedPoints, BrushInputType newInputType, bool newEnabled)
-    {
-        mappedPoints = newMappedPoints;
-        inputType = newInputType;
-        enabled = newEnabled;
-    }
-
-    InputChanges(QVector<QPointF> newMappedPoints, BrushInputType newInputType)
-    {
-        mappedPoints = newMappedPoints;
-        inputType = newInputType;
-        enabled = true;
-    }
-
-    void write(QJsonArray& object) const
-    {
-        for (int i = 0; i < mappedPoints.count(); i++) {
-            const auto mappedPoint = mappedPoints[i];
-            QJsonArray pointArray = { mappedPoint.x(), mappedPoint.y() };
-            object.removeAt(i);
-            object.insert(i, pointArray);
-        }
-    }
-};
-
-struct BrushChanges {
-    QHash<int, InputChanges> listOfinputChanges;
-    qreal baseValue;
-    BrushSettingType settingsType;
-
-    void write(QJsonObject& object) const
-    {
-        QJsonObject::iterator baseValueObjIt = object.find("base_value");
-
-        if (baseValueObjIt->isUndefined()) {
-            object.insert("base_value", baseValue);
-        } else {
-            object.remove("base_value");
-            object.insert("base_value", baseValue);
-        }
-
-        QJsonObject::iterator inputsObjIt = object.find("inputs");
-        if (inputsObjIt->isUndefined()) {
-            object.insert("inputs", QJsonObject());
-        }
-
-        QJsonValueRef inputsContainerRef = object.find("inputs").value();
-        QJsonObject inputsContainerObj = inputsContainerRef.toObject();
-        QHashIterator<int, InputChanges> inputIt(listOfinputChanges);
-        while (inputIt.hasNext()) {
-            inputIt.next();
-
-            InputChanges inputChanges = inputIt.value();
-
-            QString inputId = getBrushInputIdentifier(inputChanges.inputType);
-            QJsonObject::iterator inputContainerObjIt = inputsContainerObj.find(inputId);
-
-            if (inputContainerObjIt->isUndefined()) {
-                if (inputChanges.enabled) {
-                    QJsonArray inputArray;
-                    inputChanges.write(inputArray);
-                    inputsContainerObj.insert(inputId, inputArray);
-                }
-            } else {
-
-                if (inputChanges.enabled) {
-                    QJsonValueRef inputArrRef = inputContainerObjIt.value();
-                    QJsonArray inputArray = inputArrRef.toArray();
-                    inputChanges.write(inputArray);
-
-                    inputsContainerObj.remove(inputId);
-                    inputsContainerObj.insert(inputId, inputArray);
-                } else {
-                    QString inputKey = inputContainerObjIt.key();
-                    inputsContainerObj.remove(inputKey);
-                }
-            }
-            inputsContainerRef = inputsContainerObj;
-        }
-    }
-};
+class BrushSettingWidget;
 
 class MPBrushConfigurator : public QDialog
 {
@@ -122,24 +37,27 @@ public:
 
     void setCore(Editor* editor) { mEditor = editor; }
 
-    void updateConfig(ToolType toolName, const QString& brushGroup, const QString& brushName, const QByteArray& content);
+    void updateConfig();
+
+    void saveChanges(qreal startValue, qreal value, BrushSettingType settingType);
+    void updateBrushSetting(qreal value, BrushSettingType setting);
 
 signals:
     void updateBrushList(QString brushName, QString brushPreset);
     void refreshBrushList();
+    void brushSettingChanged(qreal value, BrushSettingType setting);
 
     /** reloadBrushSettings
      *  Reloads brush settings from disk
      *  Use in case the brush needs to refresh after modifications.
      */
     void reloadBrushSettings();
-
+    void toggleSettingForBrushSetting(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
 private:
 
     void updateMapValuesButton();
     void updateSettingsView(QTreeWidgetItem* item);
 
-    void updateBrushSetting(qreal oldValue, qreal value, BrushSettingType settingType);
     void updateBrushMapping(QVector<QPointF> points, BrushSettingType settingType, BrushInputType input);
     void removeBrushMappingForInput(BrushSettingType setting, BrushInputType input);
 
@@ -170,8 +88,8 @@ private:
     void pressedCloneBrush();
     void pressedDiscardBrush();
 
-    void applyChanges(QHash<int, BrushChanges> changes);
-    void writeModifications(QJsonDocument& document, QJsonParseError& error, QHash<int, BrushChanges> modifications);
+//    void applyChanges(QHash<int, BrushChanges> changes);
+//    void writeModifications(QJsonDocument& document, QJsonParseError& error, QHash<int, BrushChanges> modifications);
 
     void openBrushInfoWidget(DialogContext dialogContext);
 
@@ -196,7 +114,7 @@ private:
 
     Editor* mEditor = nullptr;
 
-    QList<BrushSettingWidget*> mBrushWidgets;
+    QList<BrushSettingEditWidget*> mBrushWidgets;
     QHash<int, BrushChanges> mCurrentModifications;
     QHash<int, BrushChanges> mOldModifications;
     QString mBrushName;
@@ -206,6 +124,8 @@ private:
     QSize mImageSize = QSize(32,32);
 
     QList<QMetaObject::Connection> mListOfConnections;
+//    QHash<int, BrushSettingWidget*> exportedBrushWidgets;
+//    QList<BrushSettingWidget*> mVisibleWidgets;
 
 };
 

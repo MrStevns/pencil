@@ -149,10 +149,6 @@ void ToolManager::setFeather(float newFeather)
 
 void ToolManager::setUseFeather(bool usingFeather)
 {
-    int usingAA = currentTool()->properties.useAA;
-    int value = propertySwitch(usingFeather, usingAA);
-
-    currentTool()->setAA(value);
     currentTool()->setUseFeather(usingFeather);
     Q_EMIT toolPropertyChanged(currentTool()->type(), USEFEATHER);
     Q_EMIT toolPropertyChanged(currentTool()->type(), ANTI_ALIASING);
@@ -188,12 +184,6 @@ void ToolManager::setPressure(bool isPressureOn)
     Q_EMIT toolPropertyChanged(currentTool()->type(), PRESSURE);
 }
 
-void ToolManager::setAA(int usingAA)
-{
-    currentTool()->setAA(usingAA);
-    Q_EMIT toolPropertyChanged(currentTool()->type(), ANTI_ALIASING);
-}
-
 void ToolManager::setStabilizerLevel(int level)
 {
     currentTool()->setStabilizerLevel(level);
@@ -213,31 +203,6 @@ void ToolManager::setUseFillContour(bool useFillContour)
 {
     currentTool()->setUseFillContour(useFillContour);
     Q_EMIT toolPropertyChanged(currentTool()->type(), FILLCONTOUR);
-}
-
-
-// Switches on/off two actions
-// eg. if x = true, then y = false
-int ToolManager::propertySwitch(bool condition, int tool)
-{
-    int value = 0;
-    int newValue = 0;
-
-    if (condition == true) {
-        value = -1;
-        newValue = mOldValue;
-        mOldValue = tool;
-    }
-
-    if (condition == false) {
-        if (newValue == 1) {
-            value = 1;
-        }
-        else {
-            value = mOldValue;
-        }
-    }
-    return value;
 }
 
 void ToolManager::tabletSwitchToEraser()
@@ -262,4 +227,10 @@ void ToolManager::tabletRestorePrevTool()
         }
         setCurrentTool(meTabletBackupTool);
     }
+}
+
+
+void ToolManager::setMPBrushSetting(qreal value, BrushSettingType setting)
+{
+    editor()->setMPBrushSetting(setting, static_cast<float>(value));
 }

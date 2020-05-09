@@ -47,6 +47,8 @@ void PolylineTool::loadSettings()
     mPropertyEnabled[BEZIER] = true;
     mPropertyEnabled[ANTI_ALIASING] = true;
 
+    mDefaultBrushSettings = { RadiusLog, Hardness, Opacity };
+
     QSettings settings(PENCIL2D, PENCIL2D);
 
     properties.width = settings.value("polyLineWidth", 8.0).toDouble();
@@ -54,7 +56,6 @@ void PolylineTool::loadSettings()
     properties.pressure = false;
     properties.invisibility = OFF;
     properties.preserveAlpha = OFF;
-    properties.useAA = settings.value("brushAA").toBool();
     properties.stabilizerLevel = -1;
 }
 
@@ -79,17 +80,6 @@ void PolylineTool::setFeather(const qreal feather)
 {
     Q_UNUSED(feather)
     properties.feather = -1;
-}
-
-void PolylineTool::setAA(const int AA)
-{
-    // Set current property
-    properties.useAA = AA;
-
-    // Update settings
-    QSettings settings(PENCIL2D, PENCIL2D);
-    settings.setValue("brushAA", AA);
-    settings.sync();
 }
 
 bool PolylineTool::isActive()

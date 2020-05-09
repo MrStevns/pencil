@@ -44,6 +44,8 @@ class Timeline2;
 class ActionCommands;
 class ImportImageSeqDialog;
 class BackupElement;
+class ToolBrushSettingsWidget;
+class MPBrushConfigurator;
 
 class MPBrushSelector;
 
@@ -159,6 +161,7 @@ private:
     ColorInspector*       mColorInspector = nullptr;
     OnionSkinWidget*      mOnionSkinWidget = nullptr;
     MPBrushSelector* mBrushSelectorWidget = nullptr;
+//    ToolBrushSettingsWidget* mToolBrushSettingsWidget = nullptr;
 
     // backup
     BackupElement* mBackupAtSave = nullptr;

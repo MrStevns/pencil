@@ -20,6 +20,8 @@ GNU General Public License for more details.
 
 #include <QDialog>
 
+#include "pencilerror.h"
+
 namespace Ui {
 class ErrorDialog;
 }
@@ -30,6 +32,7 @@ class ErrorDialog : public QDialog
 
 public:
     explicit ErrorDialog(QString title, QString description, QString details = QString(), QWidget *parent = nullptr);
+    ErrorDialog(Status status, QWidget *parent = nullptr);
     ~ErrorDialog();
 
 private:

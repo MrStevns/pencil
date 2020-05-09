@@ -16,6 +16,8 @@
 #include <QJsonObject>
 #include <QJsonParseError>
 
+#include "mpbrushmanager.h"
+
 #include "editor.h"
 #include <pencilerror.h>
 #include "filedialogex.h"
@@ -191,7 +193,7 @@ void MPBrushInfoDialog::initUI()
     if (fileOrder.open(QIODevice::ReadOnly))
     {
         // TODO: will probably have to create a brush importer
-        auto brushPresets = MPBrushParser::parseConfig(fileOrder, MPCONF::getBrushesPath());
+        auto brushPresets = mEditor->brushes()->parseConfig(fileOrder, MPCONF::getBrushesPath());
 
         for (MPBrushPreset preset : brushPresets) {
             mPresetComboBox->addItem(preset.name);
@@ -201,9 +203,9 @@ void MPBrushInfoDialog::initUI()
 
 void MPBrushInfoDialog::setBrushInfo(QString brushName, QString brushPreset, ToolType tool, QJsonDocument brushJsonDoc)
 {
-    auto status = MPBrushParser::readBrushFromFile(brushPreset, brushName);
+    auto status = mEditor->brushes()->readBrushFromFile(brushPreset, brushName);
 
-    if (status.errorcode != Status::OK) {
+    if (status != Status::OK) {
 
         QMessageBox::warning(this, tr("Parse error"), tr("Could not read brush file data"));
         // TODO: better error handling
@@ -321,18 +323,13 @@ void MPBrushInfoDialog::didPressSave()
                 return;
             }
         }
-        status = MPBrushParser::writeBrushToFile(mBrushPreset, noSpaceName, doc.toJson());
+        status = mEditor->brushes()->writeBrushToFile(mBrushPreset, noSpaceName, doc.toJson());
 
         if (status.fail()) {
             QMessageBox::warning(this, status.title(), status.description());
             return;
         } else {
-            status = MPCONF::addBrush(mToolName, mBrushPreset, noSpaceName);
-
-            if (status.fail()) {
-                QMessageBox::warning(this, status.title(), status.description());
-                return;
-            }
+            status = MPCONF::addBrushEntry(mToolName, mBrushPreset, noSpaceName);
         }
 
         if (status.fail()) {
@@ -362,5 +359,7 @@ void MPBrushInfoDialog::didUpdateVersion()
 
 void MPBrushInfoDialog::didUpdatePreset(int index, QString name, int data)
 {
+    Q_UNUSED(index)
+    Q_UNUSED(data)
     mBrushPreset = name;
 }

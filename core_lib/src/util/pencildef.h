@@ -255,6 +255,7 @@ inline LayerVisibility& operator--(LayerVisibility& vis)
 
 #define SETTING_MPBRUSHPRESET "MpBrushPreset"
 #define SETTING_MPBRUSHFORTOOL "LastBrushFor_"
+#define SETTING_BRUSHSETTINGTOOL "BrushSettingTool_"
 
 
 #define SETTING_DRAW_ON_EMPTY_FRAME_ACTION  "DrawOnEmptyFrameAction"

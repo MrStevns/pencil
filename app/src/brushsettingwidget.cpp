@@ -8,10 +8,9 @@
 #include <QToolButton>
 #include <QVector>
 
+#include "mpbrushmanager.h"
+
 #include "spinslider.h"
-#include "mpmappingwidget.h"
-#include "mappingdistributionwidget.h"
-#include "mpmappingoptionswidget.h"
 #include "editor.h"
 
 #include "mathutils.h"
@@ -19,12 +18,12 @@
 BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType settingType, qreal min, qreal max, QWidget* parent) : QWidget(parent),
     mSettingType(settingType), mParent(parent), mSettingName(name)
 {
-    QGridLayout* gridLayout = new QGridLayout(this);
-    setLayout(gridLayout);
+    mHBoxLayout = new QHBoxLayout(this);
+    setLayout(mHBoxLayout);
 
     mValueSlider = new SpinSlider(this);
     mValueSlider->init(name, SpinSlider::GROWTH_TYPE::LINEAR, SpinSlider::VALUE_TYPE::FLOAT, min, max);
-    mValueBox = new QDoubleSpinBox();
+    mValueBox = new QDoubleSpinBox(this);
 
     mValueBox->setRange(min, max);
 
@@ -39,15 +38,11 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
     mMappedMin = min;
     mMappedMax = max;
 
-    mMappingButton = new QToolButton(this);
-
-    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    gridLayout->setMargin(0);
-    gridLayout->addWidget(mValueSlider,0,0);
-    gridLayout->addWidget(mValueBox,0,1);
-    gridLayout->addWidget(mMappingButton,0,2);
-
-    gridLayout->addWidget(mVisualBox, 0, 1);
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+    mHBoxLayout->setMargin(0);
+    mHBoxLayout->addWidget(mValueSlider);
+    mHBoxLayout->addWidget(mValueBox);
+    mHBoxLayout->addWidget(mVisualBox);
 
     mVisualBox->setGeometry(mValueBox->geometry());
     mVisualBox->setHidden(true);
@@ -57,23 +52,22 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
     connect(mValueSlider, &SpinSlider::valueChanged, this, &BrushSettingWidget::onSliderChanged);
     connect(mValueSlider, &SpinSlider::valueOnRelease, this, &BrushSettingWidget::updateSetting);
     connect(mValueBox, static_cast<void(QDoubleSpinBox::*)(qreal)>(&QDoubleSpinBox::valueChanged), this, &BrushSettingWidget::updateSetting);
-    connect(mMappingButton, &QToolButton::pressed, this, &BrushSettingWidget::openMappingWindow);
 }
 
-void BrushSettingWidget::updateUI()
+void BrushSettingWidget::initUI()
 {
     BrushSettingInfo info = mEditor->getBrushSettingInfo(mSettingType);
 
     qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSetting(mSettingType));
     setValue(baseValue);
     setRange(static_cast<qreal>(info.min), static_cast<qreal>(info.max));
-
-    if (!first) {
-        mInitialValue = baseValue;
-        first = false;
-    }
     setToolTip(info.tooltip);
-    closeMappingWindow();
+}
+
+void BrushSettingWidget::updateUI()
+{
+    qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSetting(mSettingType));
+    setValue(baseValue);
 }
 
 void BrushSettingWidget::onSliderChanged(qreal value)
@@ -83,14 +77,17 @@ void BrushSettingWidget::onSliderChanged(qreal value)
 
 void BrushSettingWidget::setValue(qreal value)
 {
+    qDebug() << "value changing";
     qreal normalize = MathUtils::normalize(value, mMin, mMax);
     qreal mappedValue = MathUtils::mapFromNormalized(normalize, mMappedMin, mMappedMax);
 
     QSignalBlocker b(mValueSlider);
     mValueSlider->setValue(mappedValue);
+
     QSignalBlocker b2(mValueBox);
     mValueBox->setValue(mappedValue);
 
+    QSignalBlocker b3(mVisualBox);
     mVisualBox->setValue(value);
 
     mCurrentValue = value;
@@ -112,6 +109,8 @@ void BrushSettingWidget::setValueInternal(qreal value)
 
     qreal normalize = MathUtils::normalize(value, mMappedMin, mMappedMax);
     qreal mappedToOrig = MathUtils::mapFromNormalized(normalize, mMin, mMax);
+
+    QSignalBlocker b3(mVisualBox);
     mVisualBox->setValue(mappedToOrig);
 
     mCurrentValue = value;
@@ -123,6 +122,7 @@ void BrushSettingWidget::setRange(qreal min, qreal max)
     mMin = min;
     mMax = max;
 
+    mValueSlider->setRange(mMin, mMax);
     setValue(mCurrentValue);
 }
 
@@ -139,38 +139,5 @@ void BrushSettingWidget::updateSetting(qreal value)
 
     setValueInternal(value);
 
-    emit brushSettingChanged(mInitialValue, mappedToOrig, this->mSettingType);
+    emit brushSettingChanged(mappedToOrig, this->mSettingType);
 }
-
-void BrushSettingWidget::updateBrushMapping(QVector<QPointF> newPoints, BrushInputType inputType)
-{
-    qDebug() << "updating brush mapping";
-    emit brushMappingForInputChanged(newPoints, this->mSettingType, inputType);
-}
-
-void BrushSettingWidget::notifyInputMappingRemoved(BrushInputType input)
-{
-    emit brushMappingRemoved(mSettingType, input);
-}
-
-void BrushSettingWidget::openMappingWindow()
-{
-    QVector<QPointF> tempPoints = { QPointF(0.0,0.0), QPointF(0.5,0.5), QPointF(1.0,1.0) };
-    mMappingWidget = new MPMappingOptionsWidget(mSettingName, this->mSettingType);
-    mMappingWidget->setCore(mEditor);
-    mMappingWidget->initUI();
-
-    mMappingWidget->show();
-
-    connect(mMappingWidget, &MPMappingOptionsWidget::mappingForInputUpdated, this, &BrushSettingWidget::updateBrushMapping);
-    connect(mMappingWidget, &MPMappingOptionsWidget::removedInputOption, this, &BrushSettingWidget::notifyInputMappingRemoved);
-}
-
-void BrushSettingWidget::closeMappingWindow()
-{
-    if (mMappingWidget) {
-        mMappingWidget->close();
-    }
-}
-
-

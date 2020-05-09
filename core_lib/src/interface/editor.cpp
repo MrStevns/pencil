@@ -44,6 +44,7 @@ GNU General Public License for more details.
 #include "preferencemanager.h"
 #include "soundmanager.h"
 #include "selectionmanager.h"
+#include "mpbrushmanager.h"
 
 #include "scribblearea.h"
 #include "timeline.h"
@@ -82,6 +83,7 @@ bool Editor::init()
     mPreferenceManager = new PreferenceManager(this);
     mSoundManager = new SoundManager(this);
     mSelectionManager = new SelectionManager(this);
+    mMPBrushManager = new MPBrushManager(this);
 
     mAllManagers =
     {
@@ -92,7 +94,8 @@ bool Editor::init()
         mViewManager,
         mPreferenceManager,
         mSoundManager,
-        mSelectionManager
+        mSelectionManager,
+        mMPBrushManager
     };
 
     for (BaseManager* pManager : mAllManagers)
@@ -1198,12 +1201,9 @@ void Editor::clearCurrentFrame()
     mScribbleArea->clearCanvas();
 }
 
-void Editor::loadBrush(ToolType toolType, const QString preset, const QString& brushName, const QByteArray &content)
+void Editor::loadBrush()
 {
-    Q_UNUSED(toolType)
-    Q_UNUSED(preset)
-    Q_UNUSED(brushName)
-    mScribbleArea->loadMPBrush(content);
+    mScribbleArea->loadMPBrush(brushes()->currentBrushData());
 }
 
 void Editor::setMPBrushSetting(BrushSettingType setting, float value)

@@ -48,7 +48,6 @@ void MoveTool::loadSettings()
     properties.feather = -1;
     properties.useFeather = false;
     properties.stabilizerLevel = -1;
-    properties.useAA = -1;
     mRotationIncrement = mEditor->preference()->getInt(SETTING::ROTATION_INCREMENT);
 
     connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &MoveTool::updateSettings);

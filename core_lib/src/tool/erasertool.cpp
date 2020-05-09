@@ -47,6 +47,8 @@ void EraserTool::loadSettings()
     mPropertyEnabled[PRESSURE] = true;
     mPropertyEnabled[STABILIZATION] = true;
 
+    mDefaultBrushSettings = { RadiusLog, Hardness, PressureGain };
+
     QSettings settings(PENCIL2D, PENCIL2D);
 
     properties.width = settings.value("eraserWidth", 24.0).toDouble();

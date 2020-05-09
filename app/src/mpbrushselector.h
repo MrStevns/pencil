@@ -23,6 +23,7 @@ class MPBrushConfigurator;
 class ComboBox;
 class QVBoxLayout;
 class MPBrushPresetsWidget;
+class BrushSettingWidget;
 
 class MPBrushSelector : public BaseDockWidget
 {
@@ -31,7 +32,6 @@ class MPBrushSelector : public BaseDockWidget
 public:
   MPBrushSelector(QWidget* parent = nullptr );
 
-  bool isValid() { return !mBrushPresets.isEmpty(); }
   void loadToolBrushes(QString toolName);
 
   void initUI() override;
@@ -39,8 +39,10 @@ public:
 
   void setCore(Editor* editor) { mEditor = editor; }
 
+  MPBrushConfigurator* brushConfigurator() { return mBrushConfiguratorWidget; }
+
 public slots:
-  void reloadCurrentBrush();
+//  void reloadCurrentBrush();
   void selectBrush(QString brushName);
   void typeChanged(ToolType);
   void reloadBrushList();
@@ -48,11 +50,10 @@ public slots:
   void showPresetManager();
 
 signals:
-  void brushSelected (ToolType toolType, const QString& brushGroup, const QString& brushName, const QByteArray& content);
-
-protected:
-  QVector<MPBrushPreset> mBrushPresets;
-  QString mBrushesPath;
+  void brushSelected();
+  void toggleSettingForBrushSetting(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
+  void notifySettingChanged(qreal value, BrushSettingType setting);
+  void updateConfigSettings();
 
 protected slots:
   void itemClicked ( QListWidgetItem *);
@@ -71,8 +72,6 @@ private:
   void showNotImplementedPopup();
   void changeBrushPreset(int index, QString name, int data);
 
-//  QTabWidget* mTabWidget;
-
   QVBoxLayout* mVLayout = nullptr;
   QMap<QString, QListWidget*> mToolListWidgets;
   ComboBox* mPresetComboBox;
@@ -81,8 +80,8 @@ private:
 
   MPBrushConfigurator* mBrushConfiguratorWidget = nullptr;
 
-  QString currentPresetName;
-  QString currentBrushName;
+//  QString currentPresetName;
+//  QString currentBrushName;
   QString currentToolName;
   QString oldToolname;
   ToolType currentToolType;

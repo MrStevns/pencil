@@ -232,7 +232,7 @@ struct MPCONF {
     }
 
     // TODO: handle case where no conf file exists ...
-    static Status addBrush(const QString toolName, const QString& brushPreset, const QString& brushName)
+    static Status addBrushEntry(const QString toolName, const QString& brushPreset, const QString& brushName)
     {
         Status st = Status::OK;
         QString brushConfigPath = getBrushesPath() + QDir::separator() + BrushConfigFile;
@@ -648,86 +648,6 @@ struct MPBrushParser {
         }
     }
 
-    /// Parses the mypaint brush config ".conf" format and returns a map of the brush groups
-    static QVector<MPBrushPreset> parseConfig(QFile& file, QString brushesPath)
-    {
-
-        MPBrushPreset brushesForPreset;
-        QString currentTool;
-        QString currentPreset;
-        QStringList brushList;
-
-        QVector<MPBrushPreset> brushPresets;
-
-        int presetIndex = 0;
-        while (!file.atEnd())
-        {
-            QString line ( file.readLine().trimmed() );
-            if (line.isEmpty() || line.startsWith("#")) continue;
-
-            if (MPCONF::isPresetToken(line))
-            {
-                if (!brushesForPreset.isEmpty() && !currentTool.isEmpty()) {
-
-                    brushesForPreset.insert(currentTool, brushList);
-
-                    brushPresets[presetIndex] = brushesForPreset;
-                    presetIndex++;
-                }
-                currentPreset = MPCONF::getValue(line);
-                brushesForPreset.name = currentPreset;
-
-                brushesForPreset.clear();
-                brushList.clear();
-
-                brushPresets.append(brushesForPreset);
-                continue;
-            }
-
-            if (MPCONF::isToolToken(line))
-            {
-
-                if (!currentTool.isEmpty()) {
-                    brushesForPreset.insert(currentTool, brushList);
-                }
-
-                currentTool = MPCONF::getValue(line);
-                brushList.clear();
-                continue;
-            }
-
-            if (MPCONF::isBrushToken(line)) {
-
-                QString brush = MPCONF::getValue(line);
-                QString relativePath = currentPreset + QDir::separator() + brush;
-                if (QFileInfo(brushesPath + QDir::separator() + relativePath + BRUSH_CONTENT_EXT).isReadable()) {
-                    brushList << brush;
-                }
-                continue;
-            }
-
-            if (!currentTool.isEmpty() && !brushPresets.isEmpty()) {
-                brushPresets.append(brushesForPreset);
-            }
-
-            if (brushPresets.isEmpty()) {
-                // TODO: Handle error case
-            }
-        }
-
-        if (!brushesForPreset.isEmpty() && !currentTool.isEmpty()) {
-
-            brushesForPreset.insert(currentTool, brushList);
-
-            Q_ASSUME(presetIndex <= brushPresets.size());
-
-            brushPresets[presetIndex] = brushesForPreset;
-            presetIndex++;
-        }
-
-        return brushPresets;
-    }
-
     /// Copy internal brush resources to app data folder
     /// This is where brushes will be loaded from in the future.
     static Status copyResourcesToAppData()
@@ -829,31 +749,6 @@ struct MPBrushParser {
         return "";
     }
 
-    static Status::StatusData readBrushFromFile(const QString& brushPreset, const QString& brushName)
-    {
-        const QString& brushPath = MPCONF::getBrushesPath() + QDir::separator() + brushPreset + QDir::separator() + brushName;
-
-        QFile file(brushPath + BRUSH_CONTENT_EXT);
-
-        // satefy measure:
-        // if no local brush file exists, look at internal resources
-        // local brush files will overwrite the existence of the internal one
-        if (!file.exists()) {
-            file.setFileName(BRUSH_QRC + QDir::separator() + brushPreset + QDir::separator() + brushName + BRUSH_CONTENT_EXT);
-        }
-
-        auto status = Status::StatusData();
-        if (file.open( QIODevice::ReadOnly ))
-        {
-            QByteArray content = file.readAll();
-            status.data = content;
-            status.errorcode = Status::OK;
-        } else {
-            status.errorcode = Status::FAIL;
-        }
-        return status;
-    }
-
     static QString getBrushPath(const QString& brushPreset, const QString& brushName, const QString& extension)
     {
         QString brushPath = MPCONF::getBrushesPath() + QDir::separator() + brushPreset + QDir::separator() + brushName;
@@ -879,36 +774,6 @@ struct MPBrushParser {
             brushPath = QString(BRUSH_QRC) + QDir::separator() + extension;
         }
         return brushPath;
-    }
-
-    static Status writeBrushToFile(const QString& brushPreset, const QString& brushName, const QByteArray& data)
-    {
-        Status status = Status::OK;
-        QString brushesPath = MPCONF::getBrushesPath();
-        const QString& groupPath = brushesPath + QDir::separator() + brushPreset + QDir::separator();
-        const QString& brushPath = brushesPath + QDir::separator() + brushPreset + QDir::separator() + brushName;
-
-        QFile file(brushPath + BRUSH_CONTENT_EXT);
-
-        QDir dir(groupPath);
-        if (!dir.exists()) {
-            dir.mkpath(groupPath);
-        }
-
-        file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate);
-
-        if (file.error() == QFile::NoError) {
-            file.write(data);
-            file.close();
-
-            status = Status::OK;
-        } else {
-            status.setTitle(QObject::tr("Write error:"));
-            status.setDescription(file.errorString());
-            status = Status::FAIL;
-
-        }
-        return status;
     }
 
     static Status renameMoveBrushFileIfNeeded(QString originalPreset, QString originalName, QString newPreset, QString newName)

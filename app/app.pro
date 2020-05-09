@@ -40,10 +40,10 @@ INCLUDEPATH += \
     ../core_lib/src/external
 
 HEADERS += \
+    src/brushsettingeditwidget.h \
     src/mainwindow2.h \
     src/brushsettingitem.h \
     src/brushsettingwidget.h \
-    src/mpbrushutils.h \
     src/combobox.h \
     src/mapping/mappingconfiguratorwidget.h \
     src/mapping/mappingdistributionwidget.h \
@@ -75,6 +75,7 @@ HEADERS += \
     src/errordialog.h \
     src/aboutdialog.h \
     src/toolbox.h \
+    src/toolbrushsettingswidget.h \
     src/tooloptionwidget.h \
     src/importexportdialog.h \
     src/exportimagedialog.h \
@@ -87,6 +88,7 @@ HEADERS += \
     src/mpbrushselector.h
 
 SOURCES += \
+    src/brushsettingeditwidget.cpp \
     src/main.cpp \
     src/mainwindow2.cpp \
     src/brushsettingitem.cpp \
@@ -121,6 +123,7 @@ SOURCES += \
     src/errordialog.cpp \
     src/aboutdialog.cpp \
     src/toolbox.cpp \
+    src/toolbrushsettingswidget.cpp \
     src/tooloptionwidget.cpp \
     src/importexportdialog.cpp \
     src/exportimagedialog.cpp \

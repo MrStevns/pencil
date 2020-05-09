@@ -71,11 +71,6 @@ public:
         ERROR_NEED_AT_LEAST_ONE_CAMERA_LAYER
     };
 
-    struct StatusData{
-        QByteArray data;
-        ErrorCode errorcode = Status::OK;
-    };
-
     struct StatusInt{
         int value = 0;
         ErrorCode errorcode = Status::OK;
@@ -96,6 +91,7 @@ public:
     void setDescription(QString description) { mDescription = description; }
 
     bool operator==(ErrorCode code) const;
+    bool operator!=(ErrorCode code) const;
 
 private:
     ErrorCode mCode = OK;

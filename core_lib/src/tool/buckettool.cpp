@@ -53,7 +53,6 @@ void BucketTool::loadSettings()
     properties.width = settings.value("fillThickness", 4.0).toDouble();
     properties.feather = 10;
     properties.stabilizerLevel = StabilizationLevel::NONE;
-    properties.useAA = DISABLED;
     properties.tolerance = settings.value("tolerance", 32.0).toDouble();
 }
 

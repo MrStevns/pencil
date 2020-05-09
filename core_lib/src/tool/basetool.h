@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include <QHash>
 #include "movemode.h"
 #include "pencildef.h"
+#include "brushsetting.h"
 
 class Editor;
 class ScribbleArea;
@@ -46,7 +47,6 @@ public:
     bool  vectorMergeEnabled = false;
     bool  bezier_state = false;
     bool  useFeather = true;
-    int   useAA = 0;
     int   stabilizerLevel = 0;
     qreal tolerance = 0;
     bool  useFillContour = false;
@@ -112,7 +112,6 @@ public:
     virtual void setUseFeather(const bool usingFeather);
     virtual void setPreserveAlpha(const bool preserveAlpha);
     virtual void setVectorMergeEnabled(const bool vectorMergeEnabled);
-    virtual void setAA(const int useAA);
     virtual void setStabilizerLevel(const int level);
     virtual void setTolerance(const int tolerance);
     virtual void setUseFillContour(const bool useFillContour);
@@ -131,6 +130,8 @@ public:
     QPointF getLastPressPixel();
     QPointF getLastPressPoint();
 
+    QList<BrushSetting> enabledBrushSettings();
+
     bool isPropertyEnabled(ToolPropertyType t) { return mPropertyEnabled[t]; }
     bool isDrawingTool();
 
@@ -139,6 +140,7 @@ protected:
     Editor* editor() { return mEditor; }
 
     QHash<ToolPropertyType, bool> mPropertyEnabled;
+    QList<BrushSetting> mDefaultBrushSettings;
 
     Editor* mEditor = nullptr;
     ScribbleArea* mScribbleArea = nullptr;

@@ -34,6 +34,7 @@ GNU General Public License for more details.
 #include "scribblearea.h"
 #include "blitrect.h"
 #include "pointerevent.h"
+#include "brushsetting.h"
 
 
 BrushTool::BrushTool(QObject* parent) : StrokeTool(parent)
@@ -53,6 +54,8 @@ void BrushTool::loadSettings()
     mPropertyEnabled[INVISIBILITY] = true;
     mPropertyEnabled[STABILIZATION] = true;
 
+    mDefaultBrushSettings = { RadiusLog, PressureGain, Hardness };
+
     QSettings settings(PENCIL2D, PENCIL2D);
 
     properties.width = settings.value("brushWidth", 24.0).toDouble();
@@ -61,7 +64,6 @@ void BrushTool::loadSettings()
     properties.invisibility = settings.value("brushInvisibility", false).toBool();
     properties.preserveAlpha = OFF;
     properties.stabilizerLevel = settings.value("brushLineStabilization", StabilizationLevel::STRONG).toInt();
-    properties.useAA = DISABLED;
 
     if (properties.width <= 0) { setWidth(15); }
     if (std::isnan(properties.feather)) { setFeather(15); }

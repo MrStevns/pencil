@@ -41,6 +41,7 @@ class PlaybackManager;
 class ViewManager;
 class PreferenceManager;
 class SelectionManager;
+class MPBrushManager;
 class SoundManager;
 class ScribbleArea;
 class TimeLine;
@@ -62,6 +63,7 @@ class Editor : public QObject
         Q_PROPERTY(PreferenceManager* preference READ preference)
         Q_PROPERTY(SoundManager*    sound    READ sound)
         Q_PROPERTY(SelectionManager* select READ select)
+        Q_PROPERTY(MPBrushManager* brushes READ brushes)
 
 public:
     explicit Editor(QObject* parent = nullptr);
@@ -80,6 +82,7 @@ public:
     PreferenceManager* preference() const { return mPreferenceManager; }
     SoundManager*      sound() const { return mSoundManager; }
     SelectionManager*  select() const { return mSelectionManager; }
+    MPBrushManager*    brushes() const { return mMPBrushManager; }
 
     Object* object() const { return mObject.get(); }
     Status setObject(Object* object);
@@ -190,7 +193,7 @@ public: //slots
     void createNewCameraLayer(const QString& name);
 
     // mypaint
-    void loadBrush(ToolType toolType, const QString brushGroup, const QString& brushName, const QByteArray &content);
+    void loadBrush();
     void setMPBrushSetting(BrushSettingType setting, float value);
     float getMPBrushSetting(BrushSettingType settingType);
     const BrushSettingInfo getBrushSettingInfo(BrushSettingType settingType);
@@ -224,6 +227,7 @@ private:
     PreferenceManager* mPreferenceManager = nullptr;
     SoundManager*      mSoundManager = nullptr;
     SelectionManager* mSelectionManager = nullptr;
+    MPBrushManager* mMPBrushManager = nullptr;
 
     std::vector< BaseManager* > mAllManagers;
 
