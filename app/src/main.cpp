@@ -322,6 +322,8 @@ int main(int argc, char* argv[])
     Q_INIT_RESOURCE(core_lib);
 
     QSettings settings(PENCIL2D, PENCIL2D);
+
+//    settings.clear();
 #ifdef Q_OS_MACOS
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif

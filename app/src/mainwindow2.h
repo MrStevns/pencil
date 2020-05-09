@@ -101,6 +101,9 @@ public:
     void displayMessageBox(const QString& title, const QString& body);
     void displayMessageBoxNoTitle(const QString& body);
 
+    void displayErrorDialog(Status status);
+    void displayErrorDialog(QString title, QString description);
+
 Q_SIGNALS:
     void updateRecentFilesList(bool b);
 
