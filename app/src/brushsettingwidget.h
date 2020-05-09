@@ -32,9 +32,6 @@ public:
     BrushSettingType setting() { return mSettingType; }
     QString name() { return mSettingName; }
     qreal currentValue() { return mCurrentValue; }
-//    qreal initialValue() { return mInitialValue; }
-
-    SpinSlider* slider() { return mValueSlider; }
 
 Q_SIGNALS:
     void brushSettingChanged(qreal value, BrushSettingType setting);

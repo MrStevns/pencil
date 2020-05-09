@@ -10,7 +10,6 @@
 
 #include "mpbrushmanager.h"
 
-#include "spinslider.h"
 #include "editor.h"
 
 #include "mathutils.h"
