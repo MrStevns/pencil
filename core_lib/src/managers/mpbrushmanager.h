@@ -37,6 +37,14 @@ public:
     Status readBrushFromCurrentPreset(const QString& brushName);
     Status readBrushFromFile(const QString& brushPreset, const QString& brushName);
     Status writeBrushToFile(const QString& brushPreset, const QString& brushName, const QByteArray& data);
+    Status renameMoveBrushFileIfNeeded(QString originalPreset, QString originalName, QString newPreset, QString newName);
+    Status copyRenameBrushFileIfNeeded(const QString& originalPreset, const QString& originalName, const QString& newPreset, QString& newName);
+    Status writeBrushIcon(const QPixmap& iconPix, const QString brushPreset, const QString brushName);
+
+    QString getBrushPath(const QString& brushPreset, const QString& brushName, const QString& extension);
+    QString getBrushConfigPath(const QString extension = "");
+    QString getBrushImagePath(const QString& brushPreset, const QString& brushName);
+    QString getBrushPreviewImagePath(const QString& brushPreset, const QString brushName);
 
     QVector<MPBrushPreset> parseConfig(QFile& file, QString brushesPath);
 
@@ -46,6 +54,7 @@ Q_SIGNALS:
 
 private:
 
+    Status copyResourcesToAppData();
     QJsonDocument writeModifications(const QJsonDocument& doc, QJsonParseError& error, QHash<int, BrushChanges> modifications);
 
     QVector<MPBrushPreset> mBrushPresets;

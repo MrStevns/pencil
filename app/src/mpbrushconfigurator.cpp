@@ -160,7 +160,7 @@ void MPBrushConfigurator::updateUI()
     }
     mDiscardChangesButton->setEnabled(!mOldModifications.isEmpty());
 
-    QPixmap pix(QPixmap(MPBrushParser::getBrushImagePath(mPreset, mBrushName)));
+    QPixmap pix(QPixmap(mEditor->brushes()->getBrushImagePath(mPreset, mBrushName)));
     mBrushImageWidget->setPixmap(pix.scaled(mImageSize, Qt::KeepAspectRatio));
     mBrushNameWidget->setText(mBrushName);
 }

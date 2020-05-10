@@ -188,7 +188,7 @@ void MPBrushInfoDialog::initUI()
         mToolComboBox->addItem(mEditor->getTool(toolType)->typeName(), static_cast<int>(toolType));
     }
 
-    QFile fileOrder(MPBrushParser::getBrushConfigPath(BrushConfigFile));
+    QFile fileOrder(mEditor->brushes()->getBrushConfigPath(BrushConfigFile));
 
     if (fileOrder.open(QIODevice::ReadOnly))
     {
@@ -223,7 +223,7 @@ void MPBrushInfoDialog::setBrushInfo(QString brushName, QString brushPreset, Too
 
     mBrushInfo = mBrushInfo.read(mBrushInfoObject);
 
-    QString imagePath = MPBrushParser::getBrushPreviewImagePath(mOriginalPreset, mBrushName);
+    QString imagePath = mEditor->brushes()->getBrushPreviewImagePath(mOriginalPreset, mBrushName);
     QPixmap imagePix(imagePath);
     mImageLabel->setPixmap(imagePix);
 
@@ -298,7 +298,7 @@ void MPBrushInfoDialog::didPressSave()
         Status status = Status::OK;
         if (mDialogContext == DialogContext::Clone) {
 
-            status = MPBrushParser::copyRenameBrushFileIfNeeded(mOriginalPreset, mOriginalName, mBrushPreset, noSpaceName);
+            status = mEditor->brushes()->copyRenameBrushFileIfNeeded(mOriginalPreset, mOriginalName, mBrushPreset, noSpaceName);
 
             if (!status.ok()) {
                QMessageBox::warning(this, status.title(),
@@ -307,7 +307,7 @@ void MPBrushInfoDialog::didPressSave()
             }
 
             if (mIconModified) {
-                status = MPBrushParser::writeBrushIcon(*mImageLabel->pixmap(), mBrushPreset, noSpaceName);
+                status = mEditor->brushes()->writeBrushIcon(*mImageLabel->pixmap(), mBrushPreset, noSpaceName);
             }
 
             if (!status.ok()) {
@@ -316,7 +316,7 @@ void MPBrushInfoDialog::didPressSave()
                return;
             }
         } else { // Edit
-            status = MPBrushParser::renameMoveBrushFileIfNeeded(mOriginalPreset, mOriginalName, mBrushPreset, noSpaceName);
+            status = mEditor->brushes()->renameMoveBrushFileIfNeeded(mOriginalPreset, mOriginalName, mBrushPreset, noSpaceName);
 
             if (status.fail()) {
                 QMessageBox::warning(this, status.title(), status.description());
