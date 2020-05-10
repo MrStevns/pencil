@@ -1460,6 +1460,7 @@ void MainWindow2::makeConnections(Editor* editor, MPBrushSelector* brushSelector
     ToolManager* toolManager = editor->tools();
     connect(toolManager, &ToolManager::toolChanged, brushSelector, &MPBrushSelector::typeChanged);
     connect(brushSelector, &MPBrushSelector::brushSelected, editor, &Editor::loadBrush);
+    connect(brushSelector, &MPBrushSelector::brushSelected, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateUI);
     connect(brushSelector, &MPBrushSelector::toggleSettingForBrushSetting, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::toggleSetting);
     connect(brushSelector, &MPBrushSelector::notifySettingChanged, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateSetting);
     connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::notifyBrushSettingUpdated, brushSelector, &MPBrushSelector::notifySettingChanged);

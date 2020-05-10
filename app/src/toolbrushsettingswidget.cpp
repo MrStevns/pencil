@@ -38,14 +38,13 @@ void ToolBrushSettingsWidget::initUI()
     auto toolMan = mEditor->tools();
 
     ToolType currentToolType = toolMan->currentTool()->type();
-    QString toolGroupKey = QString(SETTING_BRUSHSETTINGTOOL + toolMan->getTool(currentToolType)->typeName()).toLower();
+    QString toolGroupKey = QString(SETTING_MPBRUSHSETTING)
+                           .arg(mEditor->tools()->currentTool()->typeName()).toLower();
 
     QSettings settings(PENCIL2D, PENCIL2D);
     auto groups = settings.childGroups();
 
     settings.beginGroup(toolGroupKey);
-
-//    qDebug() << settings.childGroups();
 
     setupSettings(currentToolType);
 
@@ -57,6 +56,11 @@ void ToolBrushSettingsWidget::initUI()
     mMainHorizontalLayout->setContentsMargins(0,0,0,0);
 
     setLayout(mMainHorizontalLayout);
+}
+
+void ToolBrushSettingsWidget::updateUI()
+{
+    setupSettingsForTool(mEditor->tools()->currentTool()->type());
 }
 
 void ToolBrushSettingsWidget::setupDefaultSettings()
@@ -82,7 +86,9 @@ void ToolBrushSettingsWidget::setupDefaultSettings()
         connect(settingWidget, &BrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
         mBrushSettingWidgets.insert(static_cast<int>(settingWidget->setting()), settingWidget);
 
-        QString toolSetting = QString(SETTING_BRUSHSETTINGTOOL + mEditor->tools()->currentTool()->typeName()).toLower();
+        QString toolSetting = QString(SETTING_MPBRUSHSETTING)
+                              .arg(mEditor->tools()->currentTool()->typeName()).toLower();
+
         QSettings settings(PENCIL2D, PENCIL2D);
 
         settings.beginGroup(toolSetting);
@@ -109,7 +115,8 @@ void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
     QSettings settings(PENCIL2D, PENCIL2D);
     auto groups = settings.childGroups();
 
-    QString toolGroup = QString(SETTING_BRUSHSETTINGTOOL + toolMan->getTool(toolType)->typeName()).toLower();
+    QString toolGroup = QString(SETTING_MPBRUSHSETTING)
+                        .arg(mEditor->tools()->currentTool()->typeName()).toLower();
 
     settings.beginGroup(toolGroup);
 
@@ -141,7 +148,8 @@ void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
 
 void ToolBrushSettingsWidget::setupSettings(ToolType toolType)
 {
-    QString toolGroupKey = QString(SETTING_BRUSHSETTINGTOOL + mEditor->tools()->getTool(toolType)->typeName()).toLower();
+    QString toolGroupKey = QString(SETTING_MPBRUSHSETTING)
+                           .arg(mEditor->tools()->currentTool()->typeName()).toLower();
 
     QSettings settings(PENCIL2D, PENCIL2D);
     auto groups = settings.childGroups();

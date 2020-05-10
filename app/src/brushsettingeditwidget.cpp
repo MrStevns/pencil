@@ -69,7 +69,8 @@ void BrushSettingEditWidget::updateSetting(qreal value, BrushSettingType setting
 
 void BrushSettingEditWidget::updateUIInternal()
 {
-    QString toolGroup = QString(SETTING_BRUSHSETTINGTOOL + mEditor->tools()->currentTool()->typeName()).toLower();
+    QString toolGroup = QString(SETTING_MPBRUSHSETTING)
+                        .arg(mEditor->tools()->currentTool()->typeName()).toLower();
 
     qDebug() << "getting value for : " << toolGroup;
     QSettings settings(PENCIL2D, PENCIL2D);
@@ -119,7 +120,9 @@ void BrushSettingEditWidget::notifyInputMappingRemoved(BrushInputType input)
 
 void BrushSettingEditWidget::visibilityChanged(bool state)
 {
-    QString toolSetting = QString(SETTING_BRUSHSETTINGTOOL + mEditor->tools()->currentTool()->typeName()).toLower();
+    QString toolSetting = QString(SETTING_MPBRUSHSETTING)
+                          .arg(mEditor->tools()->currentTool()->typeName()).toLower();
+
     QSettings settings(PENCIL2D, PENCIL2D);
 
     settings.beginGroup(toolSetting);

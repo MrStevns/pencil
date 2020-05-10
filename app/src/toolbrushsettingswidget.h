@@ -23,7 +23,7 @@ public:
     ~ToolBrushSettingsWidget() override;
 
     void initUI();
-//    void updateUI() override;
+    void updateUI();
 
     void setCore(Editor* editor) { mEditor = editor; }
 
