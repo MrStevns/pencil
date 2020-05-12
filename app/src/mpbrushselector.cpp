@@ -205,7 +205,7 @@ void MPBrushSelector::itemClicked(QListWidgetItem *itemWidget)
         QString brushName = "";
         int brushIndex = 0;
         for (const QString& brush : preset.brushesForTool(currentToolName)) {
-            if (brush == itemWidget->data(Qt::UserRole)) {
+            if (itemWidget->data(Qt::UserRole).toString().compare(brush, Qt::CaseInsensitive) == 0) {
                 brushName = brush;
                 break;
             }
@@ -264,9 +264,10 @@ void MPBrushSelector::loadToolBrushes(QString toolName)
         // Make sure we don't get stuck with same brush on different tools
         if (toolName != oldToolname) {
             QString lastBrushForTool = mEditor->preference()->get(QString(SETTING_MPBRUSHFORTOOL+toolName+subList.name).toLower());
+
             if (toolName == "empty") {
                 // Do nothing
-            } else if (lastBrushForTool.isEmpty() || !subList.brushesForTool(toolName).contains(lastBrushForTool)) {
+            } else if (lastBrushForTool.isEmpty() || !subList.brushesForTool(toolName).contains(lastBrushForTool, Qt::CaseInsensitive)) {
                 // No brush has been selected before, select the first
 
                 if (!subList.brushesForTool(toolName).isEmpty()) {
@@ -322,7 +323,7 @@ void MPBrushSelector::selectBrush(QString brushName)
     for (int i = 0; i < listWidget->count(); i++)
     {
         QListWidgetItem* item = listWidget->item(i);
-        if (item->data(Qt::UserRole) == brushName) {
+        if (item->data(Qt::UserRole).toString().compare(brushName, Qt::CaseInsensitive) == 0) {
             itemWidget = listWidget->item(listWidgetIdx);
             break;
         }
