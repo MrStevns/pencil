@@ -764,10 +764,16 @@ void BitmapImage::clear(QRect rectangle)
 {
     extend(QRect(rectangle.topLeft(), rectangle.size()));
 
-    QPainter painter(image());
+    QImage* newImage = new QImage(image()->size(), QImage::Format_ARGB32_Premultiplied);
+    newImage->fill(Qt::transparent);
+    QPainter painter(newImage);
+    painter.translate(-topLeft());
+    painter.drawImage(topLeft(), *image());
     painter.setCompositionMode(QPainter::CompositionMode_Clear);
-    painter.fillRect(QRect(rectangle.topLeft()-topLeft(), rectangle.size()), Qt::transparent);
+    painter.fillRect(QRect(rectangle.topLeft(), rectangle.size()), Qt::transparent);
     painter.end();
+
+    mImage.reset(newImage);
 
     modification();
 }
