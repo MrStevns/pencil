@@ -1113,7 +1113,9 @@ void ScribbleArea::paintEvent(QPaintEvent* event)
             } // end switch
         }
 
-        paintCanvasCursor(painter);
+        if (currentTool()->isDrawingTool()) {
+            paintCanvasCursor(painter);
+        }
 
         mCanvasPainter.renderGrid(painter);
         mCanvasPainter.renderOverlays(painter);
