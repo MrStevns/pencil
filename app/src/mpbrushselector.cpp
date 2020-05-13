@@ -135,6 +135,7 @@ void MPBrushSelector::addToolTabs()
         ToolType tool = static_cast<ToolType>(i);
         QString toolName = BaseTool::TypeName(tool);
 
+        listWidget->setFocusPolicy(Qt::NoFocus);
         mToolListWidgets.insert(toolName, listWidget);
     }
 }
