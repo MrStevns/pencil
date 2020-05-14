@@ -232,5 +232,8 @@ void ToolManager::tabletRestorePrevTool()
 
 void ToolManager::setMPBrushSetting(qreal value, BrushSettingType setting)
 {
+    if (setting == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
+        setWidth(static_cast<float>(value));
+    }
     editor()->setMPBrushSetting(setting, static_cast<float>(value));
 }

@@ -1247,6 +1247,9 @@ void ScribbleArea::setGaussianGradient(QGradient &gradient, QColor colour, qreal
 void ScribbleArea::loadMPBrush(const QByteArray &content)
 {
     mMyPaint->loadBrush(content);
+
+    forceUpdateMyPaintStates();
+    updateCanvasCursor();
 }
 
 void ScribbleArea::updateTile(MPSurface *surface, MPTile *tile)
@@ -1287,6 +1290,13 @@ void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float yt
 
     // update dirty region
     updateDirtyTiles();
+}
+
+void ScribbleArea::forceUpdateMyPaintStates()
+{
+    // Simulate stroke to force states to update
+    // this doesn't draw on canvas, because the cursor doesn't move
+    mMyPaint->strokeTo(mMyPaint->getBrushState(MYPAINT_BRUSH_STATE_X), mMyPaint->getBrushState(MYPAINT_BRUSH_STATE_Y),mMyPaint->getBrushState(MyPaintBrushState::MYPAINT_BRUSH_STATE_PRESSURE),0,0,deltaTime);
 }
 
 QColor ScribbleArea::pickColorFromSurface(QPointF point, int radius)
@@ -1666,10 +1676,10 @@ void ScribbleArea::paletteColorChanged(QColor color)
 void ScribbleArea::brushSettingChanged(BrushSettingType settingType, float value)
 {
     qDebug() << "value before mypaint: " << value;
-    mMyPaint->setBrushValue(static_cast<MyPaintBrushSetting>(settingType), value);
 
-    float brushWidth = mMyPaint->getBrushState(MyPaintBrushState::MYPAINT_BRUSH_STATE_ACTUAL_RADIUS);
-    qDebug() << "brushWidth after change: " << brushWidth;
+    mMyPaint->setBrushValue(static_cast<MyPaintBrushSetting>(settingType), value);
+    forceUpdateMyPaintStates();
+
     updateCanvasCursor();
 }
 

@@ -240,6 +240,11 @@ private:
      */
     void reloadMyPaint();
 
+    /** forceUpdateMyPaintStates
+     * Use this method if you intend to update brush states without causing a stroke on the canvas
+     */
+    void forceUpdateMyPaintStates();
+
     /** updatePixmapCache
      * Updates the qpixmap cache that is used for gettign the canvas images from cache, to render them faster
      */
