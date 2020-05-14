@@ -48,7 +48,7 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
 
     mValueSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-    connect(mValueSlider, &SpinSlider::valueChanged, this, &BrushSettingWidget::onSliderChanged);
+    connect(mValueSlider, &SpinSlider::valueChanged, this, &BrushSettingWidget::updateSetting);
     connect(mValueSlider, &SpinSlider::valueOnRelease, this, &BrushSettingWidget::updateSetting);
     connect(mValueBox, static_cast<void(QDoubleSpinBox::*)(qreal)>(&QDoubleSpinBox::valueChanged), this, &BrushSettingWidget::updateSetting);
 }
