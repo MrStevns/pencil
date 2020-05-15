@@ -553,10 +553,12 @@ void CanvasPainter::paintTransformedBitmap(QPainter& painter)
 
     painter.save();
     painter.setTransform(mViewTransform);
+    painter.setCompositionMode(QPainter::CompositionMode_Clear);
 
     // Fill the region where the selection started with white
     // to make it look like the surface has been modified
     painter.fillRect(selection, QColor(255,255,255,255));
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
     // Draw the selection image separately and on top
     painter.drawImage(movingSelection, *transformedImage.image());
