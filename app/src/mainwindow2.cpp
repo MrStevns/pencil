@@ -384,7 +384,8 @@ void MainWindow2::createMenus()
         mTimeLine->toggleViewAction(),
         mDisplayOptionWidget->toggleViewAction(),        
         mColorInspector->toggleViewAction(),
-        mOnionSkinWidget->toggleViewAction()
+        mOnionSkinWidget->toggleViewAction(),
+        mBrushSelectorWidget->toggleViewAction()
     };
 
     for (QAction* action : actions)
