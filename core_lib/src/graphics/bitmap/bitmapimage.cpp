@@ -194,7 +194,7 @@ void BitmapImage::moveTopLeft(QPoint point)
  */
 void BitmapImage::moveSelectionTransform(const QRect& selection, const QTransform& transform)
 {
-        BitmapImage transformedImage = transformed(selection, transform, false);
+        BitmapImage transformedImage = transformed(selection, transform, true);
         clear(selection);
         paste(&transformedImage, QPainter::CompositionMode_SourceOver);
 }

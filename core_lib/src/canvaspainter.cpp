@@ -560,8 +560,9 @@ void CanvasPainter::paintTransformedBitmap(QPainter& painter)
     painter.fillRect(selection, QColor(255,255,255,255));
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
+    painter.translate(-transformedImage.width()/2,-transformedImage.height()/2);
     // Draw the selection image separately and on top
-    painter.drawImage(movingSelection, *transformedImage.image());
+    painter.drawImage(movingSelection.center(), *transformedImage.image());
     painter.restore();
 }
 
