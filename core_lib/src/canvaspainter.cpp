@@ -358,9 +358,8 @@ void CanvasPainter::paintBitmapTilesOnImage(QPainter& painter, BitmapImage* imag
     auto tilesToRender = mOptions.tilesToBeRendered;
 
     if (image->bounds().isValid()) {
-        QImage imageCopy = image->image()->copy();
 
-        QPainter newPaint(&imageCopy);
+        QPainter newPaint(image->image());
 
         for (MPTile* item : tilesToRender) {
 
@@ -394,7 +393,7 @@ void CanvasPainter::paintBitmapTilesOnImage(QPainter& painter, BitmapImage* imag
 
         // Paint the modified layer image
         painter.setTransform(v);
-        painter.drawImage(image->bounds(), imageCopy, imageCopy.rect());
+        painter.drawImage(image->bounds(), *image->image(), image->image()->rect());
         painter.restore();
     } else {
         for (MPTile* item : tilesToRender) {
