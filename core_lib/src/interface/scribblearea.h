@@ -176,6 +176,7 @@ public slots:
     void refreshSurface();
 
     void updateTile(MPSurface* surface, MPTile* tile);
+    void clearTile(MPSurface *surface, MPTile *tile);
 
 
 protected:

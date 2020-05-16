@@ -78,20 +78,24 @@ public:
     void setOnUpdateTile(MPOnUpdateTileFunction onUpdateTileFunction);
     void setOnNewTile(MPOnUpdateTileFunction onNewTileFunction);
     void setOnClearedSurface(MPOnUpdateSurfaceFunction onNewTileFunction);
+    void setOnClearTile(MPOnUpdateTileFunction onNewTileFunction);
     void refreshSurface();
 
     void saveSurface(const QString path);
 
     MPOnUpdateTileFunction onUpdateTileFunction;
     MPOnUpdateTileFunction onNewTileFunction;
+    MPOnUpdateTileFunction onClearTileFunction;
     MPOnUpdateSurfaceFunction onClearedSurfaceFunction;
 
     void setSize(QSize size);
     QSize size();
 
     void clear();
+    void clearTile(MPTile* tile);
 
     void loadImage(const QImage &image, const QPoint topLeft);
+    void drawImageAt(const QImage& image, const QPoint topLeft);
     void clearArea(const QRect& bounds);
 
 private:

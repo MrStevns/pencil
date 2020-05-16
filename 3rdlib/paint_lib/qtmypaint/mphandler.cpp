@@ -62,6 +62,13 @@ onClearedSurface(MPSurface *surface)
     handler->clearedSurface(surface);
 }
 
+static void
+onClearTile(MPSurface* surface, MPTile* tile)
+{
+    MPHandler* handler = MPHandler::handler();
+    handler->clearTile(surface, tile);
+}
+
 MPHandler *
 MPHandler::handler()
 {
@@ -85,6 +92,7 @@ MPHandler::MPHandler()
     this->m_surface->setOnUpdateTile(onUpdatedTile);
     this->m_surface->setOnNewTile(onNewTile);
     this->m_surface->setOnClearedSurface(onClearedSurface);
+    this->m_surface->setOnClearTile(onClearTile);
 }
 
 MPHandler::~MPHandler()
@@ -117,6 +125,10 @@ void MPHandler::loadImage(const QImage &image, const QPoint topLeft)
     m_surface->loadImage(image, topLeft);
 }
 
+void MPHandler::drawImageAt(const QImage& image, const QPoint topLeft)
+{
+    m_surface->drawImageAt(image, topLeft);
+}
 /**
  * @brief MPHandler::saveSurface
  * Debug method to check the content of surface

@@ -154,7 +154,7 @@ void BitmapImage::paste(QPixmap& pixmap, QPoint point, QPainter::CompositionMode
 
     QPainter painter(image());
     painter.setCompositionMode(cm);
-    painter.drawPixmap(point-topLeft(), pixmap);
+    painter.drawPixmap(point-mBounds.topLeft(), pixmap);
     painter.end();
 
     modification();
@@ -194,7 +194,7 @@ void BitmapImage::moveTopLeft(QPoint point)
  */
 void BitmapImage::moveSelectionTransform(const QRect& selection, const QTransform& transform)
 {
-        BitmapImage transformedImage = transformed(selection, transform, true);
+        BitmapImage transformedImage = this->transformed(selection, transform, true);
         clear(selection);
         paste(&transformedImage, QPainter::CompositionMode_SourceOver);
 }
@@ -762,7 +762,10 @@ void BitmapImage::clear()
 
 void BitmapImage::clear(QRect rectangle)
 {
-    extend(QRect(rectangle.topLeft(), rectangle.size()));
+    QRect clearRectangle = mBounds.intersected(rectangle);
+    clearRectangle.moveTopLeft(clearRectangle.topLeft() - mBounds.topLeft());
+
+    setCompositionModeBounds(clearRectangle, true, QPainter::CompositionMode_Clear);
 
     QImage* newImage = new QImage(image()->size(), QImage::Format_ARGB32_Premultiplied);
     newImage->fill(Qt::transparent);

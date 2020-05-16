@@ -74,6 +74,7 @@ bool ScribbleArea::init()
 
     connect(mMyPaint, &MPHandler::newTile, this, &ScribbleArea::updateTile);
     connect(mMyPaint, &MPHandler::updateTile, this, &ScribbleArea::updateTile);
+    connect(mMyPaint, &MPHandler::clearTile, this, &ScribbleArea::clearTile);
 
     connect(mPrefs, &PreferenceManager::optionChanged, this, &ScribbleArea::settingUpdated);
     connect(mDoubleClickTimer, &QTimer::timeout, this, &ScribbleArea::handleDoubleClick);
@@ -205,7 +206,9 @@ void ScribbleArea::updateMyPaintCanvas(BitmapImage* bitmapImage)
     if (bitmapImage->bounds().isNull()) { return; }
 
     QImage image = *bitmapImage->image();
-    mMyPaint->loadImage(image, bitmapImage->topLeft());
+
+    // Autocrop should not be used here, otherwise the image is adjusted slightly from its original position..
+    mMyPaint->loadImage(image, bitmapImage->bounds().topLeft());
 }
 
 void ScribbleArea::prepareForDrawing()
@@ -1263,6 +1266,15 @@ void ScribbleArea::updateTile(MPSurface *surface, MPTile *tile)
     mBufferTiles.insert(QString::number(pos.x())+"_"+QString::number(pos.y()), tile);
 }
 
+void ScribbleArea::clearTile(MPSurface *surface, MPTile *tile)
+{
+    Q_UNUSED(surface)
+
+    QPointF pos = tile->pos();
+
+    mBufferTiles.remove(QString::number(pos.x())+"_"+QString::number(pos.y()));
+}
+
 /************************************************************************************/
 // Stroke Handling
 
@@ -1457,17 +1469,19 @@ void ScribbleArea::applyTransformedSelection()
 
         if (layer->type() == Layer::BITMAP)
         {
+            BitmapImage transformed = currentBitmapImage(layer)->transformed(selectMan->mySelectionRect().toRect(), selectMan->selectionTransform(), true);
             BitmapImage* bitmapImage = currentBitmapImage(layer);
             bitmapImage->moveSelectionTransform(selectMan->mySelectionRect().toRect(),
                                    selectMan->selectionTransform());
             mMyPaint->clearAreaFromSurface(selectMan->mySelectionRect().toRect());
-            updateMyPaintCanvas(bitmapImage);
+
+            QRect movedRect = selectMan->selectionTransform().mapRect(selectMan->mySelectionRect()).toRect();
+            mMyPaint->drawImageAt(*transformed.image(),movedRect.topLeft());
         }
         else if (layer->type() == Layer::VECTOR)
         {
             VectorImage* vectorImage = currentVectorImage(layer);
             vectorImage->applySelectionTransformation();
-
         }
 
         setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());

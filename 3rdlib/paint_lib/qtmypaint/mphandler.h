@@ -92,6 +92,7 @@ public:
 
     void clearSurface();
 
+    void drawImageAt(const QImage& image, const QPoint topLeft);
     void loadImage(const QImage &image, const QPoint pos);
     void loadTile(const QPixmap& pixmap, const QPoint pos);
     void clearAreaFromSurface(const QRect& bounds);
@@ -111,6 +112,7 @@ private:
 signals:
     void updateTile(MPSurface *surface, MPTile *tile) const;
     void newTile(MPSurface *surface, MPTile *tile) const;
+    void clearTile(MPSurface* surface, MPTile* tile) const;
     void clearedSurface(MPSurface *surface) const;
 
 };
