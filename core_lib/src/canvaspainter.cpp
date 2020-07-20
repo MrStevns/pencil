@@ -48,15 +48,16 @@ void CanvasPainter::setViewTransform(const QTransform view)
     mViewTransform = view;
 }
 
-void CanvasPainter::setTransformedSelection(QRect selection, QRect movingSelection, QTransform transform)
+void CanvasPainter::setTransformedSelection(QRect selectionBeforeTransform, QRect currentSeletion, QTransform transform, bool modified)
 {
     // Make sure that the selection is not empty
-    if (selection.width() > 0 && selection.height() > 0)
+    if (selectionBeforeTransform.width() > 0 && selectionBeforeTransform.height() > 0)
     {
-        mSelection = selection;
-        mMovingSelection = movingSelection;
+        mStartSelection = selectionBeforeTransform;
+        mCurrentSelection = currentSeletion;
         mSelectionTransform = transform;
         mRenderTransform = true;
+        mSelectionModified = modified;
     }
     else
     {
@@ -68,6 +69,7 @@ void CanvasPainter::setTransformedSelection(QRect selection, QRect movingSelecti
 void CanvasPainter::ignoreTransformedSelection()
 {
     mRenderTransform = false;
+    mModifiedTransformSet = false;
 }
 
 void CanvasPainter::paintCached()
@@ -538,30 +540,53 @@ void CanvasPainter::paintVectorFrame(QPainter& painter,
 void CanvasPainter::paintTransformedBitmap(QPainter& painter)
 {
     // Make sure there is something selected
-    if (mSelection.width() == 0 || mSelection.height() == 0)
+    if (mCurrentSelection.width() == 0 && mCurrentSelection.height() == 0)
         return;
 
     Layer* layer = mObject->getLayer(mCurrentLayerIndex);
 
     // Get the transformed image
     BitmapImage* bitmapImage = dynamic_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(mFrameNumber, 0);
-    BitmapImage transformedImage = bitmapImage->transformed(mSelection, mSelectionTransform, mOptions.bAntiAlias);
 
-    QRect selection = mSelection;
-    QRect movingSelection = mMovingSelection;
+    QImage tranformedImage = QImage(mStartSelection.size(), QImage::Format_ARGB32_Premultiplied);
+    tranformedImage.fill(Qt::transparent);
+
+    QPainter imagePainter(&tranformedImage);
+
+    imagePainter.save();
+    imagePainter.translate(-mStartSelection.topLeft());
+    imagePainter.drawImage(bitmapImage->bounds().topLeft(), *bitmapImage->image());
+    imagePainter.restore();
+    imagePainter.end();
 
     painter.save();
-    painter.setTransform(mViewTransform);
     painter.setCompositionMode(QPainter::CompositionMode_Clear);
 
-    // Fill the region where the selection started with white
-    // to make it look like the surface has been modified
-    painter.fillRect(selection, QColor(255,255,255,255));
+    QTransform selectionTransform = mSelectionTransform;
+
+
+    QRect fillRect = mStartSelection;
+
+    // avoid modifiying the origin fill area when it's been transformed.
+    if (mSelectionModified && mModifiedTransformSet) {
+        selectionTransform = mModifiedTransform;
+    } else {
+        mModifiedTransform = selectionTransform;
+        mModifiedTransformSet = true;
+    }
+
+    painter.setTransform(mViewTransform);
+
+    // Therefore translate back the corner back to center
+    painter.fillRect(fillRect, QColor(255,255,255,255));
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
-    painter.translate(-transformedImage.width()/2,-transformedImage.height()/2);
+    // Multiply the selection and view matrix to get proper rotation and scale values
+    // Now the image origin will be topleft
+    painter.setTransform(mSelectionTransform*mViewTransform);
+
     // Draw the selection image separately and on top
-    painter.drawImage(movingSelection.center(), *transformedImage.image());
+    painter.drawImage(mStartSelection, tranformedImage);
     painter.restore();
 }
 

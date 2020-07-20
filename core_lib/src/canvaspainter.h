@@ -81,7 +81,7 @@ public:
     void setCanvas(QPixmap* canvas);
     void setViewTransform(const QTransform view);
     void setOptions(const CanvasPainterOptions& p) { mOptions = p; }
-    void setTransformedSelection(QRect selection, QRect movingSelection, QTransform transform);
+    void setTransformedSelection(QRect selection, QRect movingSelection, QTransform transform, bool modified);
     void ignoreTransformedSelection();
     QRect getCameraRect();
 
@@ -177,9 +177,13 @@ private:
 
     // Handle selection transformation
     bool mRenderTransform = false;
-    QRect mSelection;
-    QRect mMovingSelection;
+    QRect mCurrentSelection;
+    QRect mStartSelection;
     QTransform mSelectionTransform;
+    bool mSelectionModified = false;
+
+    bool mModifiedTransformSet = false;
+    QTransform mModifiedTransform;
 
     QLoggingCategory mLog;
 

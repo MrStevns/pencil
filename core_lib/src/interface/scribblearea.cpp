@@ -1407,7 +1407,10 @@ void ScribbleArea::paintTransformedSelection()
     {
         if (layer->type() == Layer::BITMAP)
         {
-            mCanvasPainter.setTransformedSelection(selectMan->mySelectionRect().toRect(), selectMan->myTempTransformedSelectionRect().toRect(), selectMan->selectionTransform());
+            mCanvasPainter.setTransformedSelection(selectMan->mySelectionRect().toRect(),
+                                                   selectMan->myTempTransformedSelectionRect().toRect(),
+                                                   selectMan->selectionTransform(),
+                                                   selectMan->transformHasBeenModified());
         }
         else if (layer->type() == Layer::VECTOR)
         {
