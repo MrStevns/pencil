@@ -7,11 +7,11 @@
 #include <QPointer>
 
 #include "brushsetting.h"
+#include "mpmappingwidget.h"
 
 class Editor;
 class QGridLayout;
 class ComboBox;
-class MPMappingWidget;
 class QHBoxLayout;
 class MPInputButton;
 
