@@ -365,7 +365,7 @@ void MPBrushSelector::showPresetManager()
 {
     if (mPresetsWidget == nullptr) {
         mPresetsWidget = new MPBrushPresetsWidget(mEditor->brushes()->presets(), this);
-        connect(mPresetsWidget, &MPBrushPresetsWidget::presetsChanged, this, &MPBrushSelector::reloadBrushList);
+        connect(mPresetsWidget, SIGNAL(presetsChanged()), this, SLOT(reloadBrushList()));
     }
     mPresetsWidget->show();
 }
