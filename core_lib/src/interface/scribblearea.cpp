@@ -619,7 +619,7 @@ void ScribbleArea::pointerPressEvent(PointerEvent* event)
     const bool isPressed = event->buttons() & Qt::LeftButton;
     if (isPressed && mQuickSizing)
     {
-        if (isDoingAssistedToolAdjustment(event->modifiers()))
+        if (currentTool()->startAdjusting(event->modifiers(), 1))
         {
             return;
         }
@@ -791,30 +791,6 @@ void ScribbleArea::resizeEvent(QResizeEvent* event)
     QWidget::resizeEvent( event );
 }
 
-bool ScribbleArea::isDoingAssistedToolAdjustment(Qt::KeyboardModifiers keyMod)
-{
-    if ((keyMod == Qt::ShiftModifier) && (currentTool()->properties.width > -1))
-    {
-        //adjust width if not locked
-        currentTool()->startAdjusting(WIDTH, 1);
-        return true;
-    }
-    if ((keyMod == Qt::ControlModifier) && (currentTool()->properties.feather > -1))
-    {
-        //adjust feather if not locked
-        currentTool()->startAdjusting(FEATHER, 1);
-        return true;
-    }
-    if ((keyMod == (Qt::ControlModifier | Qt::AltModifier)) &&
-        (currentTool()->properties.feather > -1))
-    {
-        //adjust feather if not locked
-        currentTool()->startAdjusting(FEATHER, 0);
-        return true;
-    }
-    return false;
-}
-
 void ScribbleArea::showLayerNotVisibleWarning()
 {
     QMessageBox::warning(this, tr("Warning"),
@@ -933,8 +909,7 @@ void ScribbleArea::updateCanvasCursor()
 
     if (currentTool()->isAdjusting())
     {
-        qreal brushFeather = currentTool()->properties.feather;
-        mCursorImg = currentTool()->quickSizeCursor(static_cast<float>(brushWidth), static_cast<float>(brushFeather), scalingFac);
+        mCursorImg = currentTool()->quickSizeCursor(scalingFac);
     }
     else if (mEditor->preference()->isOn(SETTING::DOTTED_CURSOR))
     {
@@ -1534,13 +1509,13 @@ void ScribbleArea::displaySelectionProperties()
                 mEditor->tools()->setFeather(vectorImage->curve(selectedCurve).getFeather());
                 mEditor->tools()->setInvisibility(vectorImage->curve(selectedCurve).isInvisible());
                 mEditor->tools()->setPressure(vectorImage->curve(selectedCurve).getVariableWidth());
-                mEditor->color()->setColorNumber(vectorImage->curve(selectedCurve).getColourNumber());
+                mEditor->color()->setColorNumber(vectorImage->curve(selectedCurve).getColorNumber());
             }
 
             int selectedArea = vectorImage->getFirstSelectedArea();
             if (selectedArea != -1)
             {
-                mEditor->color()->setColorNumber(vectorImage->mArea[selectedArea].mColourNumber);
+                mEditor->color()->setColorNumber(vectorImage->mArea[selectedArea].mColorNumber);
             }
         }
     }

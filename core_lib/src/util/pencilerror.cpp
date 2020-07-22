@@ -57,7 +57,7 @@ DebugDetails& DebugDetails::operator<<(const QString& s)
 
 void DebugDetails::appendSystemInfo()
 {
-    if (mDetails.last() == "end")
+    if (mDetails.empty() || mDetails.last() == "end")
         return;
 
 #if QT_VERSION >= 0x050400
@@ -119,7 +119,7 @@ bool Status::operator==(Status::ErrorCode code) const
     return (mCode == code);
 }
 
-bool Status::operator!=(ErrorCode code) const
+bool Status::operator!=(Status::ErrorCode code) const
 {
     return (mCode != code);
 }

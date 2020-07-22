@@ -26,6 +26,7 @@ GNU General Public License for more details.
 
 class QListWidgetItem;
 class PreferenceManager;
+class QSettings;
 
 namespace Ui {
 class PreferencesDialog;
@@ -51,6 +52,8 @@ public slots:
 
 Q_SIGNALS:
     void windowOpacityChange(int);
+    void soundScrubChanged(bool b);
+    void soundScrubMsecChanged(int mSec);
     void curveOpacityChange(int);
     void clearRecentList();
     void updateRecentFileListBtn();
@@ -120,7 +123,7 @@ public slots:
 
     void timelineLengthChanged(int);
     void fontSizeChanged(int);
-    void scrubChanged(int);    
+    void scrubChanged(int);
     void drawEmptyKeyRadioButtonToggled(bool);
     void flipRollMsecSliderChanged(int value);
     void flipRollMsecSpinboxChanged(int value);
@@ -128,8 +131,15 @@ public slots:
     void flipRollNumDrawingdSpinboxChanged(int value);
     void flipInbetweenMsecSliderChanged(int value);
     void flipInbetweenMsecSpinboxChanged(int value);
+    void soundScrubActiveChanged(int i);
+    void soundScrubMsecSliderChanged(int value);
+    void soundScrubMsecSpinboxChanged(int value);
     void layerVisibilityChanged(int);
     void layerVisibilityThresholdChanged(int);
+
+signals:
+    void soundScrubChanged(bool b);
+    void soundScrubMsecChanged(int mSec);
 
 private:
     Ui::TimelinePage* ui = nullptr;

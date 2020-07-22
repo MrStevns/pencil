@@ -20,6 +20,7 @@ GNU General Public License for more details.
 #include <QDebug>
 #include <QtMath>
 #include <QFile>
+#include <QPainterPath>
 #include "util.h"
 #include "bitmaputils.h"
 
@@ -37,11 +38,11 @@ BitmapImage::BitmapImage(const BitmapImage& a) : KeyFrame(a)
     mImage = std::make_shared<QImage>(*a.mImage);
 }
 
-BitmapImage::BitmapImage(const QRect& rectangle, const QColor& colour)
+BitmapImage::BitmapImage(const QRect& rectangle, const QColor& color)
 {
     mBounds = rectangle;
     mImage = std::make_shared<QImage>(mBounds.size(), QImage::Format_ARGB32_Premultiplied);
-    mImage->fill(colour.rgba());
+    mImage->fill(color.rgba());
     mMinBound = false;
 }
 
@@ -652,7 +653,7 @@ void BitmapImage::drawPath(QPainterPath path, QPen pen, QBrush brush,
         painter.setPen(pen);
         painter.setBrush(brush);
         painter.setTransform(QTransform().translate(-mBounds.left(), -mBounds.top()));
-        painter.setMatrixEnabled(true);
+        painter.setWorldMatrixEnabled(true);
         if (path.length() > 0)
         {
             /*
@@ -738,7 +739,7 @@ Status BitmapImage::writeFile(const QString& filename)
         bool b = mImage->save(filename);
         return (b) ? Status::OK : Status::FAIL;
     }
-    
+
     if (bounds().isEmpty())
     {
         QFile f(filename);

@@ -20,6 +20,8 @@ GNU General Public License for more details.
 
 #include "basetool.h"
 
+class LayerBitmap;
+class LayerVector;
 
 class EyedropperTool : public BaseTool
 {
@@ -29,7 +31,7 @@ public:
     ToolType type() override { return EYEDROPPER; }
     void loadSettings() override;
     QCursor cursor() override;
-    QCursor cursor( const QColor colour );
+    QCursor cursor( const QColor color );
 
     void pointerPressEvent( PointerEvent* ) override;
     void pointerReleaseEvent( PointerEvent* event ) override;
@@ -39,7 +41,10 @@ public:
     void updateFrontColor();
 
 private:
-    QColor mPickedColor;
+    /** Retrieves color of the pixel under the cursor for a bitmap layer */
+    QColor getBitmapColor(LayerBitmap* layer);
+    /** Retrieves the color index of the pixel under the cursor for a vector layer */
+    int getVectorColor(LayerVector *layer);
 };
 
 #endif // EYEDROPPERTOOL_H

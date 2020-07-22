@@ -40,7 +40,7 @@ bool LayerManager::init()
     return true;
 }
 
-Status LayerManager::load(Object* o)
+Status LayerManager::load(Object*)
 {
     mLastCameraLayerIdx = 0;
     // Do not emit layerCountChanged here because the editor has not updated to this object yet
@@ -175,7 +175,8 @@ QString LayerManager::nameSuggestLayer(const QString& name)
     int newIndex = 2;
     QString newName = name;
     do {
-        newName = name + " " + QString::number(newIndex++);
+        newName = QStringLiteral("%1 %2")
+            .arg(name).arg(QString::number(newIndex++));
     } while (sLayers.contains(newName));
     return newName;
 }
@@ -188,16 +189,7 @@ LayerBitmap* LayerManager::createBitmapLayer(const QString& strLayerName)
     layer->setName(name);
 
     Q_EMIT layerCountChanged(count());
-
-    return layer;
-}
-
-LayerBitmapSurface* LayerManager::createBitmapSurfaceLayer(const QString &strLayerName)
-{
-    LayerBitmapSurface* layer = object()->addNewBitmapSurfaceLayer();
-    layer->setName(strLayerName);
-
-    Q_EMIT layerCountChanged(count());
+    setCurrentLayer(getLastLayerIndex());
 
     return layer;
 }
@@ -209,6 +201,7 @@ LayerVector* LayerManager::createVectorLayer(const QString& strLayerName)
     layer->setName(name);
 
     Q_EMIT layerCountChanged(count());
+    setCurrentLayer(getLastLayerIndex());
 
     return layer;
 }
@@ -220,6 +213,7 @@ LayerCamera* LayerManager::createCameraLayer(const QString& strLayerName)
     layer->setName(name);
 
     Q_EMIT layerCountChanged(count());
+    setCurrentLayer(getLastLayerIndex());
 
     return layer;
 }
@@ -231,6 +225,7 @@ LayerSound* LayerManager::createSoundLayer(const QString& strLayerName)
     layer->setName(name);
 
     Q_EMIT layerCountChanged(count());
+    setCurrentLayer(getLastLayerIndex());
 
     return layer;
 }

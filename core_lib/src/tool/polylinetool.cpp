@@ -21,6 +21,7 @@ GNU General Public License for more details.
 #include "editor.h"
 #include "scribblearea.h"
 #include "mphandler.h"
+#include "pencilsettings.h"
 
 #include "strokemanager.h"
 #include "layermanager.h"
@@ -256,7 +257,7 @@ void PolylineTool::endPolyline(QList<QPointF> points)
         {
             curve.setWidth(properties.width);
         }
-        curve.setColourNumber(mEditor->color()->frontColorNumber());
+        curve.setColorNumber(mEditor->color()->frontColorNumber());
         curve.setVariableWidth(false);
         curve.setInvisibility(mScribbleArea->makeInvisible());
 

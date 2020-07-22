@@ -17,35 +17,35 @@ GNU General Public License for more details.
 #ifndef LayerBitmapSurface_H
 #define LayerBitmapSurface_H
 
-#include "layer.h"
+//#include "layer.h"
 
-class BitmapSurface;
-class QDir;
+//class BitmapSurface;
+//class QDir;
 
-class LayerBitmapSurface : public Layer
-{
-    Q_OBJECT
+//class LayerBitmapSurface : public Layer
+//{
+//    Q_OBJECT
 
-public:
-    LayerBitmapSurface(Object* object);
-    ~LayerBitmapSurface();
+//public:
+//    LayerBitmapSurface(Object* object);
+//    ~LayerBitmapSurface();
 
-    QDomElement createDomElement(QDomDocument& doc) override;
-    void loadDomElement(QDomElement element, QString dataDirPath, ProgressCallback progressStep) override;
-    Status presave(const QString& sDataFolder) override;
+//    QDomElement createDomElement(QDomDocument& doc) override;
+//    void loadDomElement(QDomElement element, QString dataDirPath, ProgressCallback progressStep) override;
+//    Status presave(const QString& sDataFolder) override;
 
-    BitmapSurface* getBitmapImageAtFrame(int frameNumber);
-    BitmapSurface* getLastBitmapImageAtFrame(int frameNumber, int increment = 0);
+//    BitmapSurface* getBitmapImageAtFrame(int frameNumber);
+//    BitmapSurface* getLastBitmapImageAtFrame(int frameNumber, int increment = 0);
 
-protected:
-    Status saveKeyFrameFile(KeyFrame*, QString strPath) override;
-    KeyFrame* createKeyFrame(int position, Object*) override;
+//protected:
+//    Status saveKeyFrameFile(KeyFrame*, QString strPath) override;
+//    KeyFrame* createKeyFrame(int position, Object*) override;
 
-private:
-    void loadImageAtFrame(QString strFilePath, QPoint topLeft, int frameNumber);
-    QString filePath(KeyFrame* key, const QDir& dataFolder) const;
-    QString fileName(KeyFrame* key) const;
-    bool needSaveFrame(KeyFrame* key, const QString& strSavePath);
-};
+//private:
+//    void loadImageAtFrame(QString strFilePath, QPoint topLeft, int frameNumber);
+//    QString filePath(KeyFrame* key, const QDir& dataFolder) const;
+//    QString fileName(KeyFrame* key) const;
+//    bool needSaveFrame(KeyFrame* key, const QString& strSavePath);
+//};
 
 #endif

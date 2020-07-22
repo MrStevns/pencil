@@ -32,7 +32,7 @@ GNU General Public License for more details.
 ToolOptionWidget::ToolOptionWidget(QWidget* parent) : BaseDockWidget(parent)
 {
     setWindowTitle(tr("Options", "Window title of tool option panel like pen width, feather etc.."));
-    
+
     QWidget* innerWidget = new QWidget;
     setWidget(innerWidget);
     ui = new Ui::ToolOptions;
@@ -43,6 +43,7 @@ ToolOptionWidget::ToolOptionWidget(QWidget* parent) : BaseDockWidget(parent)
 
 ToolOptionWidget::~ToolOptionWidget()
 {
+    delete ui;
 }
 
 void ToolOptionWidget::initUI()
@@ -73,7 +74,7 @@ void ToolOptionWidget::updateUI()
     Q_ASSERT(currentTool);
 
     disableAllOptions();
-    
+
     setVisibility(currentTool);
 
     const Properties& p = currentTool->properties;
@@ -91,7 +92,7 @@ void ToolOptionWidget::updateUI()
 }
 
 void ToolOptionWidget::createUI()
-{} 
+{}
 
 void ToolOptionWidget::makeConnectionToEditor(Editor* editor)
 {
@@ -244,57 +245,57 @@ void ToolOptionWidget::onToolChanged(ToolType)
 
 void ToolOptionWidget::setPenWidth(qreal width)
 {
-    SignalBlocker b(ui->sizeSlider);
+    QSignalBlocker b(ui->sizeSlider);
     ui->sizeSlider->setEnabled(true);
     ui->sizeSlider->setValue(width);
 
-    SignalBlocker b2(ui->brushSpinBox);
+    QSignalBlocker b2(ui->brushSpinBox);
     ui->brushSpinBox->setEnabled(true);
     ui->brushSpinBox->setValue(width);
 }
 
 void ToolOptionWidget::setPenFeather(qreal featherValue)
 {
-    SignalBlocker b(ui->featherSlider);
+    QSignalBlocker b(ui->featherSlider);
     ui->featherSlider->setEnabled(true);
     ui->featherSlider->setValue(featherValue);
 
-    SignalBlocker b2(ui->featherSpinBox);
+    QSignalBlocker b2(ui->featherSpinBox);
     ui->featherSpinBox->setEnabled(true);
     ui->featherSpinBox->setValue(featherValue);
 }
 
 void ToolOptionWidget::setUseFeather(bool useFeather)
 {
-    SignalBlocker b(ui->useFeatherBox);
+    QSignalBlocker b(ui->useFeatherBox);
     ui->useFeatherBox->setEnabled(true);
     ui->useFeatherBox->setChecked(useFeather);
 }
 
 void ToolOptionWidget::setPenInvisibility(int x)
 {
-    SignalBlocker b(ui->makeInvisibleBox);
+    QSignalBlocker b(ui->makeInvisibleBox);
     ui->makeInvisibleBox->setEnabled(true);
     ui->makeInvisibleBox->setChecked(x > 0);
 }
 
 void ToolOptionWidget::setPressure(int x)
 {
-    SignalBlocker b(ui->usePressureBox);
+    QSignalBlocker b(ui->usePressureBox);
     ui->usePressureBox->setEnabled(true);
     ui->usePressureBox->setChecked(x > 0);
 }
 
 void ToolOptionWidget::setPreserveAlpha(int x)
 {
-    SignalBlocker b(ui->preserveAlphaBox);
+    QSignalBlocker b(ui->preserveAlphaBox);
     ui->preserveAlphaBox->setEnabled(true);
     ui->preserveAlphaBox->setChecked(x > 0);
 }
 
 void ToolOptionWidget::setVectorMergeEnabled(int x)
 {
-    SignalBlocker b(ui->vectorMergeBox);
+    QSignalBlocker b(ui->vectorMergeBox);
     ui->vectorMergeBox->setEnabled(true);
     ui->vectorMergeBox->setChecked(x > 0);
 }
@@ -306,25 +307,25 @@ void ToolOptionWidget::setStabilizerLevel(int x)
 
 void ToolOptionWidget::setTolerance(int tolerance)
 {
-    SignalBlocker b(ui->toleranceSlider);
+    QSignalBlocker b(ui->toleranceSlider);
     ui->toleranceSlider->setEnabled(true);
     ui->toleranceSlider->setValue(tolerance);
 
-    SignalBlocker b2(ui->toleranceSpinBox);
+    QSignalBlocker b2(ui->toleranceSpinBox);
     ui->toleranceSpinBox->setEnabled(true);
     ui->toleranceSpinBox->setValue(tolerance);
 }
 
 void ToolOptionWidget::setFillContour(int useFill)
 {
-    SignalBlocker b(ui->fillContourBox);
+    QSignalBlocker b(ui->fillContourBox);
     ui->fillContourBox->setEnabled(true);
     ui->fillContourBox->setChecked(useFill > 0);
 }
 
 void ToolOptionWidget::setBezier(bool useBezier)
 {
-    SignalBlocker b(ui->useBezierBox);
+    QSignalBlocker b(ui->useBezierBox);
     ui->useBezierBox->setChecked(useBezier);
 }
 

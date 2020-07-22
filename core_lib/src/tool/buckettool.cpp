@@ -18,6 +18,7 @@ GNU General Public License for more details.
 
 #include <QPixmap>
 #include <QPainter>
+#include "pencilsettings.h"
 #include "pointerevent.h"
 
 #include "layer.h"
@@ -186,8 +187,8 @@ void BucketTool::paintVector(Layer* layer)
     }
 
     vectorImage->applyWidthToSelection(properties.width);
-    vectorImage->applyColourToSelectedCurve(mEditor->color()->frontColorNumber());
-    vectorImage->applyColourToSelectedArea(mEditor->color()->frontColorNumber());
+    vectorImage->applyColorToSelectedCurve(mEditor->color()->frontColorNumber());
+    vectorImage->applyColorToSelectedArea(mEditor->color()->frontColorNumber());
 
     applyChanges();
 

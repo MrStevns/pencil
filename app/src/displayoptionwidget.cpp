@@ -25,6 +25,7 @@ GNU General Public License for more details.
 #include "scribblearea.h"
 #include "editor.h"
 #include "util.h"
+#include "flowlayout.h"
 
 
 DisplayOptionWidget::DisplayOptionWidget(QWidget *parent) :
@@ -44,13 +45,36 @@ void DisplayOptionWidget::initUI()
     updateUI();
     makeConnections();
 
+    delete ui->innerWidget->layout();
+
+    FlowLayout *layout = new FlowLayout;
+    layout->setAlignment(Qt::AlignHCenter);
+    layout->addWidget(ui->mirrorButton);
+    layout->addWidget(ui->mirrorVButton);
+    layout->addWidget(ui->thinLinesButton);
+    layout->addWidget(ui->outLinesButton);
+    layout->addWidget(ui->overlayCenterButton);
+    layout->addWidget(ui->overlayThirdsButton);
+    layout->addWidget(ui->overlayGoldenRatioButton);
+    layout->addWidget(ui->overlaySafeAreaButton);
+
+    ui->innerWidget->setLayout(layout);
+
 #ifdef __APPLE__
     // Mac only style. ToolButtons are naturally borderless on Win/Linux.
     QString stylesheet =
         "QToolButton { border: 0px; } "
         "QToolButton:pressed{ border: 1px solid #FFADAD; border-radius: 2px; background-color: #D5D5D5; }"
         "QToolButton:checked{ border: 1px solid #ADADAD; border-radius: 2px; background-color: #D5D5D5; }";
-    setStyleSheet(this->styleSheet().append(stylesheet));
+
+    ui->mirrorButton->setStyleSheet(stylesheet);
+    ui->mirrorVButton->setStyleSheet(stylesheet);
+    ui->thinLinesButton->setStyleSheet(stylesheet);
+    ui->outLinesButton->setStyleSheet(stylesheet);
+    ui->overlayCenterButton->setStyleSheet(stylesheet);
+    ui->overlayThirdsButton->setStyleSheet(stylesheet);
+    ui->overlayGoldenRatioButton->setStyleSheet(stylesheet);
+    ui->overlaySafeAreaButton->setStyleSheet(stylesheet);
 #endif
 }
 
@@ -78,22 +102,22 @@ void DisplayOptionWidget::updateUI()
 {
     PreferenceManager* prefs = editor()->preference();
 
-    SignalBlocker b1(ui->thinLinesButton);
+    QSignalBlocker b1(ui->thinLinesButton);
     ui->thinLinesButton->setChecked(prefs->isOn(SETTING::INVISIBLE_LINES));
 
-    SignalBlocker b2(ui->outLinesButton);
+    QSignalBlocker b2(ui->outLinesButton);
     ui->outLinesButton->setChecked(prefs->isOn(SETTING::OUTLINES));
 
-    SignalBlocker b9(ui->overlayCenterButton);
+    QSignalBlocker b9(ui->overlayCenterButton);
     ui->overlayCenterButton->setChecked(prefs->isOn(SETTING::OVERLAY_CENTER));
 
-    SignalBlocker b10(ui->overlayThirdsButton);
+    QSignalBlocker b10(ui->overlayThirdsButton);
     ui->overlayThirdsButton->setChecked(prefs->isOn(SETTING::OVERLAY_THIRDS));
 
-    SignalBlocker b11(ui->overlayGoldenRatioButton);
+    QSignalBlocker b11(ui->overlayGoldenRatioButton);
     ui->overlayGoldenRatioButton->setChecked(prefs->isOn(SETTING::OVERLAY_GOLDEN));
 
-    SignalBlocker b12(ui->overlaySafeAreaButton);
+    QSignalBlocker b12(ui->overlaySafeAreaButton);
     ui->overlaySafeAreaButton->setChecked(prefs->isOn(SETTING::OVERLAY_SAFE));
 
     if (prefs->isOn(SETTING::ACTION_SAFE_ON) || prefs->isOn(SETTING::TITLE_SAFE_ON))
@@ -105,11 +129,16 @@ void DisplayOptionWidget::updateUI()
 
     ViewManager* view = editor()->view();
 
-    SignalBlocker b3(ui->mirrorButton);
+    QSignalBlocker b3(ui->mirrorButton);
     ui->mirrorButton->setChecked(view->isFlipHorizontal());
 
-    SignalBlocker b4(ui->mirrorVButton);
+    QSignalBlocker b4(ui->mirrorVButton);
     ui->mirrorVButton->setChecked(view->isFlipVertical());
+}
+
+int DisplayOptionWidget::getMinHeightForWidth(int width)
+{
+    return ui->innerWidget->layout()->heightForWidth(width);
 }
 
 void DisplayOptionWidget::toggleMirror(bool isOn)

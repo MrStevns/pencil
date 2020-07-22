@@ -9,7 +9,7 @@
 QT += core widgets gui xml xmlpatterns multimedia svg concurrent
 
 TEMPLATE = lib
-CONFIG += qt staticlib
+CONFIG += qt staticlib precompile_header
 
 RESOURCES += data/core_lib.qrc
 
@@ -28,15 +28,17 @@ INCLUDEPATH += src \
     src/managers \
     src/external
 
-# Input
+PRECOMPILED_HEADER = src/corelib-pch.h
+
 HEADERS +=  \
+    src/corelib-pch.h \
     src/graphics/bitmap/bitmapsurface.h \
     src/graphics/bitmap/bitmapimage.h \
     src/graphics/bitmap/bitmaputils.h \
     src/graphics/surface.h \
     src/graphics/vector/bezierarea.h \
     src/graphics/vector/beziercurve.h \
-    src/graphics/vector/colourref.h \
+    src/graphics/vector/colorref.h \
     src/graphics/vector/vectorimage.h \
     src/graphics/vector/vectorselection.h \
     src/graphics/vector/vertexref.h \
@@ -60,6 +62,7 @@ HEADERS +=  \
     src/managers/viewmanager.h \
     src/managers/preferencemanager.h \
     src/managers/soundmanager.h \
+    src/movieimporter.h \
     src/structure/brushchanges.h \
     src/structure/camera.h \
     src/structure/keyframe.h \
@@ -91,6 +94,7 @@ HEADERS +=  \
     src/util/blitrect.h \
     src/util/colordictionary.h \
     src/util/fileformat.h \
+    src/util/filetype.h \
     src/util/mathutils.h \
     src/util/pencildef.h \
     src/util/pencilerror.h \
@@ -116,7 +120,7 @@ SOURCES += \
     src/graphics/bitmap/bitmapimage.cpp \
     src/graphics/vector/bezierarea.cpp \
     src/graphics/vector/beziercurve.cpp \
-    src/graphics/vector/colourref.cpp \
+    src/graphics/vector/colorref.cpp \
     src/graphics/vector/vectorimage.cpp \
     src/graphics/vector/vectorselection.cpp \
     src/graphics/vector/vertexref.cpp \
@@ -138,6 +142,7 @@ SOURCES += \
     src/managers/preferencemanager.cpp \
     src/managers/playbackmanager.cpp \
     src/managers/viewmanager.cpp \
+    src/movieimporter.cpp \
     src/structure/camera.cpp \
     src/structure/keyframe.cpp \
     src/structure/layer.cpp \
@@ -168,6 +173,7 @@ SOURCES += \
     src/util/fileformat.cpp \
     src/util/pencilerror.cpp \
     src/util/pencilsettings.cpp \
+    src/util/log.cpp \
     src/util/util.cpp \
     src/canvaspainter.cpp \
     src/soundplayer.cpp \

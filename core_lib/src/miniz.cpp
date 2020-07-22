@@ -2989,6 +2989,9 @@ void tinfl_decompressor_free(tinfl_decompressor *pDecomp)
 #if defined(_MSC_VER) || defined(__MINGW64__)
 #include <codecvt>
 #include <string>
+#endif
+
+#ifdef __MINGW64__
 #include <locale>
 #endif
 

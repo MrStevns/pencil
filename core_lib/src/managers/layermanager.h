@@ -25,7 +25,6 @@ class LayerBitmap;
 class LayerVector;
 class LayerCamera;
 class LayerSound;
-class LayerBitmapSurface;
 
 
 class LayerManager : public BaseManager
@@ -63,7 +62,6 @@ public:
     LayerVector* createVectorLayer(const QString& strLayerName);
     LayerCamera* createCameraLayer(const QString& strLayerName);
     LayerSound*  createSoundLayer(const QString& strLayerName);
-    LayerBitmapSurface* createBitmapSurfaceLayer(const QString& strLayerName);
 
     // KeyFrame Management
     int LastFrameAtFrame(int frameIndex);
@@ -74,6 +72,7 @@ public:
     void notifyAnimationLengthChanged();
 
     QString nameSuggestLayer(const QString& name);
+    int getLastLayerIndex() { return count() - 1; }
 
 Q_SIGNALS:
     void currentLayerChanged(int index);

@@ -72,6 +72,7 @@ public slots:
     void openPegAlignDialog();
     void closePegAlignDialog();
     void currentLayerChanged();
+    void selectionChanged();
 
 public:
     void newDocument(bool force = false);
@@ -84,13 +85,18 @@ public:
     // import
     void importImage();
     void importImageSequence();
+    void importImageSequenceNumbered();
+    void addLayerByFilename(QString strFilePath);
     void importPredefinedImageSet();
     void importLayers();
-    void importMovie();
+    void importMovieVideo();
     void importGIF();
+    void importMovieAudio();
 
     void lockWidgets(bool shouldLock);
 
+    void setSoundScrubActive(bool b);
+    void setSoundScrubMsec(int msec);
     void setOpacity(int opacity);
     void preferences();
  
@@ -126,7 +132,7 @@ private:
     void setupKeyboardShortcuts();
     void clearKeyboardShortcuts();
     void updateZoomLabel();
-    void showPresetDialog();
+    void tryLoadPreset();
 
     void openPalette();
     void importPalette();

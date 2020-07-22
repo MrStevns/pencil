@@ -37,7 +37,7 @@ GNU General Public License for more details.
 #include "log.h"
 #include "pencildef.h"
 #include "bitmapimage.h"
-#include "colourref.h"
+#include "colorref.h"
 #include "vectorselection.h"
 #include "canvaspainter.h"
 #include "preferencemanager.h"
@@ -167,8 +167,6 @@ public slots:
 
     void updateToolCursor();
     void paletteColorChanged(QColor);
-
-    bool isDoingAssistedToolAdjustment(Qt::KeyboardModifiers keyMod);
 
     void showLayerNotVisibleWarning();
 

@@ -18,6 +18,8 @@ GNU General Public License for more details.
 
 #include <QDebug>
 #include <QSettings>
+#include <QPainter>
+#include <QDomElement>
 #include "keyframe.h"
 #include "object.h"
 #include "timelinecells.h"
@@ -340,16 +342,18 @@ void Layer::paintTrack(QPainter& painter, TimeLineCells* cells,
         }
         else
         {
+            painter.save();
             QLinearGradient linearGrad(QPointF(0, y), QPointF(0, y + height));
             linearGrad.setColorAt(0, QColor(255,255,255,150));
             linearGrad.setColorAt(1, QColor(0,0,0,0));
             painter.setCompositionMode(QPainter::CompositionMode_Overlay);
             painter.setBrush(linearGrad);
             painter.drawRect(x, y - 1, width, height);
-            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+            painter.restore();
         }
 
-        paintFrames(painter, cells, y, height, selected, frameSize);
+        paintFrames(painter, col, cells, y, height, selected, frameSize);
+
         painter.restore();
     }
     else
@@ -360,7 +364,7 @@ void Layer::paintTrack(QPainter& painter, TimeLineCells* cells,
     }
 }
 
-void Layer::paintFrames(QPainter& painter, TimeLineCells* cells, int y, int height, bool selected, int frameSize)
+void Layer::paintFrames(QPainter& painter, QColor trackCol, TimeLineCells* cells, int y, int height, bool selected, int frameSize)
 {
     painter.setPen(QPen(QBrush(QColor(40, 40, 40)), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
@@ -381,13 +385,19 @@ void Layer::paintFrames(QPainter& painter, TimeLineCells* cells, int y, int heig
             recWidth = frameSize * key->length() - 2;
         }
 
+        if (selected && key->pos() == cells->getCurrentFrame()) {
+            painter.setPen(Qt::white);
+        } else {
+            painter.setPen(QPen(QBrush(QColor(40, 40, 40)), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        }
+
         if (pair.second->isSelected())
         {
             painter.setBrush(QColor(60, 60, 60));
         }
         else if (selected)
         {
-            painter.setBrush(QColor(60, 60, 60, 120));
+            painter.setBrush(QColor(trackCol.red(), trackCol.green(), trackCol.blue(), 150));
         }
 
         painter.drawRect(recLeft, recTop, recWidth, recHeight);
@@ -701,7 +711,7 @@ QDomElement Layer::createBaseDomElement(QDomDocument& doc)
     return layerTag;
 }
 
-void Layer::loadBaseDomElement(QDomElement& elem)
+void Layer::loadBaseDomElement(const QDomElement& elem)
 {
     if (!elem.attribute("id").isNull())
     {

@@ -89,6 +89,7 @@ public:
 
     void setTitle(QString title) { mTitle = title; }
     void setDescription(QString description) { mDescription = description; }
+    void setDetails(DebugDetails dd) { mDetails = dd; }
 
     bool operator==(ErrorCode code) const;
     bool operator!=(ErrorCode code) const;

@@ -15,6 +15,7 @@ GNU General Public License for more details.
 
 */
 
+#include <QPainterPath>
 #include "viewmanager.h"
 #include "editor.h"
 #include "object.h"
@@ -37,6 +38,10 @@ ViewManager::ViewManager(Editor* editor) : BaseManager(editor)
 {
     mDefaultEditorCamera = new Camera;
     mCurrentCamera = mDefaultEditorCamera;
+}
+
+ViewManager::~ViewManager() {
+    delete mDefaultEditorCamera;
 }
 
 bool ViewManager::init()

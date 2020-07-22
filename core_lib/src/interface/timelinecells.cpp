@@ -20,6 +20,7 @@ GNU General Public License for more details.
 #include <QResizeEvent>
 #include <QMouseEvent>
 #include <QInputDialog>
+#include <QPainter>
 
 #include "object.h"
 #include "editor.h"
@@ -29,7 +30,7 @@ GNU General Public License for more details.
 #include "preferencemanager.h"
 #include "toolmanager.h"
 
-
+#include <QDebug>
 TimeLineCells::TimeLineCells(TimeLine* parent, Editor* editor, TIMELINE_CELL_TYPE type) : QWidget(parent)
 {
     mTimeLine = parent;
@@ -181,6 +182,8 @@ void TimeLineCells::drawContent()
         }
     }
 
+    mCurrentFrame = mEditor->currentFrame();
+
     QPainter painter(mCache);
 
     Object* object = mEditor->object();
@@ -203,6 +206,7 @@ void TimeLineCells::drawContent()
             continue;
         }
         Layer* layeri = object->getLayer(i);
+
         if (layeri != nullptr)
         {
             switch (mType)
@@ -595,6 +599,11 @@ void TimeLineCells::mousePressEvent(QMouseEvent* event)
                         {
                             mEditor->playback()->stop();
                         }
+                        if (mEditor->playback()->getSoundScrubActive() && mLastScrubFrame != frameNumber)
+                        {
+                            mEditor->playback()->playScrub(frameNumber);
+                            mLastScrubFrame = frameNumber;
+                        }
 
                         mEditor->scrubTo(frameNumber);
 
@@ -629,6 +638,11 @@ void TimeLineCells::mouseMoveEvent(QMouseEvent* event)
         {
             if (mTimeLine->scrubbing)
             {
+                if (mEditor->playback()->getSoundScrubActive() && mLastScrubFrame != frameNumber)
+                {
+                    mEditor->playback()->playScrub(frameNumber);
+                    mLastScrubFrame = frameNumber;
+                }
                 mEditor->scrubTo(frameNumber);
             }
             else
@@ -720,7 +734,7 @@ void TimeLineCells::mouseDoubleClickEvent(QMouseEvent* event)
     int layerNumber = getLayerNumber(event->pos().y());
 
     // -- short scrub --
-    if (event->pos().y() < 20 && event->pos().x() > 20)
+    if (event->pos().y() < 20)
     {
         mPrefs->set(SETTING::SHORT_SCRUB, !mbShortScrub);
     }

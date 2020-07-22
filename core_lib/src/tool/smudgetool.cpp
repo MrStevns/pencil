@@ -17,6 +17,7 @@ GNU General Public License for more details.
 #include "smudgetool.h"
 #include <QPixmap>
 
+#include "pencilsettings.h"
 #include "pointerevent.h"
 #include "vectorimage.h"
 #include "editor.h"

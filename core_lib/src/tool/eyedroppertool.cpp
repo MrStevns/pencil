@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 Pencil - Traditional Animation Software
 Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
@@ -30,7 +30,7 @@ GNU General Public License for more details.
 #include "editor.h"
 #include "layermanager.h"
 #include "scribblearea.h"
-
+#include "util.h"
 
 EyedropperTool::EyedropperTool(QObject* parent) : BaseTool(parent)
 {
@@ -55,7 +55,7 @@ QCursor EyedropperTool::cursor()
     }
 }
 
-QCursor EyedropperTool::cursor(const QColor colour)
+QCursor EyedropperTool::cursor(const QColor color)
 {
     QPixmap icon(":icons/eyedropper.png");
 
@@ -65,7 +65,7 @@ QCursor EyedropperTool::cursor(const QColor colour)
     QPainter painter(&pixmap);
     painter.drawPixmap(0, 0, icon);
     painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    painter.setBrush(colour);
+    painter.setBrush(color);
     painter.drawRect(16, 16, 15, 15);
     painter.end();
 
@@ -77,26 +77,32 @@ void EyedropperTool::pointerPressEvent(PointerEvent*)
 
 void EyedropperTool::pointerMoveEvent(PointerEvent*)
 {
-
-    mPickedColor = mScribbleArea->pickColorFromSurface(getCurrentPoint(), 10);
     Layer* layer = mEditor->layers()->currentLayer();
-//    if (layer == NULL) { return; }
+    if (layer == nullptr) { return; }
 
     if (layer->type() == Layer::BITMAP)
     {
-            if (mPickedColor.alpha() != 0)
-            {
-                mScribbleArea->setCursor(cursor(mPickedColor));
-            }
-            else
-            {
-                mScribbleArea->setCursor(cursor());
-            }
-//        }
-//        else
-//        {
-//            mScribbleArea->setCursor(cursor());
-//        }
+        QColor pickedColor = getBitmapColor(static_cast<LayerBitmap*>(layer));
+        if (pickedColor.isValid())
+        {
+            mScribbleArea->setCursor(cursor(pickedColor));
+        }
+        else
+        {
+            mScribbleArea->setCursor(cursor());
+        }
+    }
+    if (layer->type() == Layer::VECTOR)
+    {
+        int pickedColor = getVectorColor(static_cast<LayerVector*>(layer));
+        if (pickedColor >= 0)
+        {
+            mScribbleArea->setCursor(cursor(mEditor->object()->getColor(pickedColor).color));
+        }
+        else
+        {
+            mScribbleArea->setCursor(cursor());
+        }
     }
 //    if (layer->type() == Layer::VECTOR)
 //    {
@@ -117,7 +123,6 @@ void EyedropperTool::pointerReleaseEvent(PointerEvent* event)
 {
     if (event->button() == Qt::LeftButton)
     {
-        qDebug() << "was left button or tablet button";
         updateFrontColor();
 
         // reset cursor
@@ -127,30 +132,49 @@ void EyedropperTool::pointerReleaseEvent(PointerEvent* event)
 
 void EyedropperTool::updateFrontColor()
 {
+    Layer* layer = mEditor->layers()->currentLayer();
+    if (layer == nullptr) { return; }
+    if (layer->type() == Layer::BITMAP)
+    {
+        QColor pickedColor = getBitmapColor(static_cast<LayerBitmap*>(layer));
+        if (pickedColor.isValid())
+        {
+            mEditor->color()->setColor(pickedColor);
+        }
+    }
+    else if (layer->type() == Layer::VECTOR)
+    {
+        int pickedColor = getVectorColor(static_cast<LayerVector*>(layer));
+        if (pickedColor >= 0)
+        {
+            mEditor->color()->setColorNumber(pickedColor);
+        }
+    }
+}
 
-    mEditor->color()->setColor(mPickedColor);
-//    Layer* layer = mEditor->layers()->currentLayer();
-//    if (layer == nullptr) { return; }
-//    if (layer->type() == Layer::BITMAP)
-//    {
-//        BitmapImage* targetImage = ((LayerBitmap*)layer)->getLastBitmapImageAtFrame(mEditor->currentFrame(), 0);
-//        QColor pickedColour;
-//        pickedColour.setRgba(targetImage->pixel(getLastPoint().x(), getLastPoint().y()));
-//        int transp = 255 - pickedColour.alpha();
-//        pickedColour.setRed(pickedColour.red() + transp);
-//        pickedColour.setGreen(pickedColour.green() + transp);
-//        pickedColour.setBlue(pickedColour.blue() + transp);
-//        if (pickedColour.alpha() != 0)
-//        {
-//        }
-//    }
-//    else if (layer->type() == Layer::VECTOR)
-//    {
-//        VectorImage* vectorImage = ((LayerVector*)layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-//        int colourNumber = vectorImage->getColourNumber(getLastPoint());
-//        if (colourNumber != -1)
-//        {
-//            mEditor->color()->setColorNumber(colourNumber);
-//        }
-//    }
+QColor EyedropperTool::getBitmapColor(LayerBitmap* layer)
+{
+    QColor pickedColor = mScribbleArea->pickColorFromSurface(getCurrentPoint(), 10);
+    if (pickedColor.alpha() <= 0) pickedColor = QColor();
+    return pickedColor;
+}
+
+int EyedropperTool::getVectorColor(LayerVector* layer)
+{
+    auto vectorImage = static_cast<VectorImage*>(layer->getLastKeyFrameAtPosition(mEditor->currentFrame()));
+    if (vectorImage == nullptr) return -1;
+
+    // Check curves
+    const qreal toleranceDistance = 10.0;
+    const QList<int> closestCurves = vectorImage->getCurvesCloseTo(getCurrentPoint(), toleranceDistance);
+    const QList<int> visibleClosestCurves = filter(closestCurves, [vectorImage](int i) { return vectorImage->isCurveVisible(i); });
+
+    if (!visibleClosestCurves.isEmpty())
+    {
+        return vectorImage->getCurvesColor(visibleClosestCurves.last());
+    }
+
+    // Check fills
+    int colorNumber = vectorImage->getColorNumber(getCurrentPoint());
+    return colorNumber;
 }

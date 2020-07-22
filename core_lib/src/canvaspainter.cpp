@@ -25,11 +25,11 @@ GNU General Public License for more details.
 #include "vectorimage.h"
 #include "util.h"
 
+#include <QtMath>
 
-CanvasPainter::CanvasPainter(QObject* parent) : QObject(parent)
-, mLog("CanvasRenderer")
+
+CanvasPainter::CanvasPainter()
 {
-    ENABLE_DEBUG_LOG(mLog, false);
 }
 
 CanvasPainter::~CanvasPainter()
@@ -488,7 +488,6 @@ void CanvasPainter::paintVectorFrame(QPainter& painter,
     LayerVector* vectorLayer = static_cast<LayerVector*>(layer);
 #endif
 
-    qCDebug(mLog) << "Paint Onion skin vector, Frame = " << nFrame;
     VectorImage* vectorImage = nullptr;
     if (useLastKeyFrame)
     {
@@ -798,7 +797,7 @@ void CanvasPainter::paintOverlaySafeAreas(QPainter &painter)
         painter.drawRect(safeAction);
 
         if (mOptions.bShowSafeAreaHelperText) {
-            painter.drawText(safeAction.x(), safeAction.y()-1, tr("Safe Action area %1 %").arg(action));
+            painter.drawText(safeAction.x(), safeAction.y()-1, QObject::tr("Safe Action area %1 %").arg(action));
         }
     }
     if (mOptions.bTitleSafe)
@@ -808,7 +807,7 @@ void CanvasPainter::paintOverlaySafeAreas(QPainter &painter)
         painter.drawRect(safeTitle);
 
         if (mOptions.bShowSafeAreaHelperText) {
-            painter.drawText(safeTitle.x(), safeTitle.y()-1, tr("Safe Title area %1 %").arg(title));
+            painter.drawText(safeTitle.x(), safeTitle.y()-1, QObject::tr("Safe Title area %1 %").arg(title));
         }
     }
 

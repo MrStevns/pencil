@@ -22,12 +22,12 @@ GNU General Public License for more details.
 #include <QString>
 #include <QCursor>
 #include <QPointF>
-#include <QPixmap>
 #include <QHash>
 #include "movemode.h"
 #include "pencildef.h"
 #include "brushsetting.h"
 
+class QPixmap;
 class Editor;
 class ScribbleArea;
 class QKeyEvent;
@@ -83,15 +83,15 @@ public:
     virtual bool keyReleaseEvent(QKeyEvent*) { return false; }
 
     // dynamic cursor adjustment
-    virtual void startAdjusting(ToolPropertyType argSettingType, qreal argStep);
+    virtual bool startAdjusting(Qt::KeyboardModifiers modifiers, qreal argStep);
     virtual void stopAdjusting();
-    virtual void adjustCursor(Qt::KeyboardModifiers keyMod);
+    virtual void adjustCursor(Qt::KeyboardModifiers modifiers);
 
     virtual void clearToolData() {}
     virtual void resetToDefault() {}
 
     static QPixmap canvasCursor(float brushWidth, float scalingFac, int windowWidth);
-    static QPixmap quickSizeCursor(float brushWidth, float brushFeather, float scalingFac);
+    QPixmap quickSizeCursor(qreal scalingFac);
     static QCursor selectMoveCursor(MoveMode mode, ToolType type);
     static bool isAdjusting() { return msIsAdjusting; }
 
@@ -144,6 +144,8 @@ protected:
 
     Editor* mEditor = nullptr;
     ScribbleArea* mScribbleArea = nullptr;
+
+    QHash<Qt::KeyboardModifiers, ToolPropertyType> mQuickSizingProperties;
 
 private:
     StrokeManager* mStrokeManager = nullptr;

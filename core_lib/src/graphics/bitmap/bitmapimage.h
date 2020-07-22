@@ -27,7 +27,7 @@ class BitmapImage : public KeyFrame
 public:
     BitmapImage();
     BitmapImage(const BitmapImage&);
-    BitmapImage(const QRect &rectangle, const QColor& colour);
+    BitmapImage(const QRect &rectangle, const QColor& color);
     BitmapImage(const QPoint& topLeft, const QImage& image);
     BitmapImage(const QPoint& topLeft, const QString& path);
 

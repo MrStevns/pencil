@@ -17,6 +17,9 @@ GNU General Public License for more details.
 #include "layervector.h"
 
 #include "vectorimage.h"
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
 
 
 LayerVector::LayerVector(Object* object) : Layer(object, Layer::VECTOR)
@@ -28,25 +31,25 @@ LayerVector::~LayerVector()
 {
 }
 
-bool LayerVector::usesColour(int colorIndex)
+bool LayerVector::usesColor(int colorIndex)
 {
     bool bUseColor = false;
     foreachKeyFrame([&](KeyFrame* pKeyFrame)
     {
         auto pVecImage = static_cast<VectorImage*>(pKeyFrame);
 
-        bUseColor = bUseColor || pVecImage->usesColour(colorIndex);
+        bUseColor = bUseColor || pVecImage->usesColor(colorIndex);
     });
 
     return bUseColor;
 }
 
-void LayerVector::removeColour(int colorIndex)
+void LayerVector::removeColor(int colorIndex)
 {
     foreachKeyFrame([=](KeyFrame* pKeyFrame)
     {
         auto pVecImage = static_cast<VectorImage*>(pKeyFrame);
-        pVecImage->removeColour(colorIndex);
+        pVecImage->removeColor(colorIndex);
     });
 }
 
@@ -144,7 +147,7 @@ QDomElement LayerVector::createDomElement(QDomDocument& doc)
     return layerElem;
 }
 
-void LayerVector::loadDomElement(QDomElement element, QString dataDirPath, ProgressCallback progressStep)
+void LayerVector::loadDomElement(const QDomElement& element, QString dataDirPath, ProgressCallback progressStep)
 {
     this->loadBaseDomElement(element);
 

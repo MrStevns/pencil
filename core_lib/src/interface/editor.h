@@ -29,6 +29,7 @@ GNU General Public License for more details.
 
 class QDragEnterEvent;
 class QDropEvent;
+class QTemporaryDir;
 class Object;
 class KeyFrame;
 class LayerCamera;
@@ -95,6 +96,7 @@ public:
     int currentFrame();
     int previousFrame();
     int fps();
+    void setFps(int fps);
 
     int  currentLayerIndex() { return mCurrentLayerIndex; }
     void setCurrentLayerIndex(int i);
@@ -117,8 +119,6 @@ public:
     void selectAll();
 
     QString workingDir() const;
-
-    void importMovie(QString filePath, int fps);
 
     // backup
     int mBackupIndex;
@@ -181,6 +181,9 @@ public: //slots
 
     void toogleOnionSkinType();
 
+    void clearTemporary();
+    void addTemporaryDir(QTemporaryDir* const dir);
+
     void settingUpdated(SETTING);
 
     void dontAskAutoSave(bool b) { mAutosaveNeverAskAgain = b; }
@@ -240,6 +243,8 @@ private:
 
     void makeConnections();
     KeyFrame* addKeyFrame(int layerNumber, int frameNumber);
+
+    QList<QTemporaryDir*> mTemporaryDirs;
 
     // backup
     void clearUndoStack();
