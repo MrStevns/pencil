@@ -5,11 +5,12 @@ TEMPLATE = lib
 CONFIG += staticlib
 DEFINES += HAVE_JSON_C
 
+QMAKE_CFLAGS += -std=c99
+QMAKE_CFLAGS += -D_XOPEN_SOURCE=600
+QMAKE_CFLAGS += -Ofast
+
 win32-g++ {
     QMAKE_CXXFLAGS += -std=c++11
-    QMAKE_CFLAGS += -std=c99
-    QMAKE_CFLAGS += -D_XOPEN_SOURCE=600
-    QMAKE_CFLAGS += -Ofast
     QMAKE_CC = gcc
 }
 
