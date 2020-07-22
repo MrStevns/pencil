@@ -70,6 +70,8 @@ signals:
     void removedInputOption(BrushInputType inputType);
 
 private:
+
+    void updateMappingForInput(QVector<QPointF> points, BrushInputType inputType);
     MPMappingOption createMappingOption(BrushInputType input);
     void removeAction(BrushInputType input);
     void addOptionField(int index, QString name, int value);
