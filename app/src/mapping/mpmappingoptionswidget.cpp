@@ -147,7 +147,7 @@ void MPMappingOptionsWidget::showInputMapper(BrushInputType inputType)
     mMappingWidget = new MPMappingWidget(getBrushInputName(inputType), info.soft_min, info.soft_max, inputType, mapping.controlPoints.points, 8, this);
     mHBoxLayout->addWidget(mMappingWidget);
 
-    connect(mMappingWidget, &MPMappingWidget::mappingForInputUpdated, this, &MPMappingOptionsWidget::updateMappingForInput);
+    connect(mMappingWidget, SIGNAL(mappingForInputUpdated()), this, SLOT(updateMappingForInput()));
 }
 
 void MPMappingOptionsWidget::addOptionField(int index, QString name, int value)
