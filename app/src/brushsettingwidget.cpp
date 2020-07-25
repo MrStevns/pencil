@@ -99,6 +99,11 @@ void BrushSettingWidget::changeText()
     mValueBox->setHidden(!shouldHide);
 }
 
+void BrushSettingWidget::setValueFromUnmapped(qreal value)
+{
+    updateSetting(value);
+}
+
 void BrushSettingWidget::setValueInternal(qreal value)
 {
     QSignalBlocker b(mValueSlider);

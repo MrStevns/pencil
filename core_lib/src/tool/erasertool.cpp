@@ -57,6 +57,8 @@ void EraserTool::loadSettings()
     properties.invisibility = DISABLED;
     properties.preserveAlpha = OFF;
     properties.stabilizerLevel = settings.value("stabilizerLevel", StabilizationLevel::NONE).toInt();
+
+    mQuickSizingProperties.insert(Qt::ShiftModifier, BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC);
 }
 
 void EraserTool::resetToDefault()

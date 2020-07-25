@@ -891,6 +891,7 @@ void ScribbleArea::paintCanvasCursor(QPainter& painter)
     mCursorCenterPos.setX(centerCal);
     mCursorCenterPos.setY(centerCal);
 
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     painter.drawPixmap(QPoint(static_cast<int>(mTransformedCursorPos.x() - mCursorCenterPos.x()),
                               static_cast<int>(mTransformedCursorPos.y() - mCursorCenterPos.y())),
                        mCursorImg);
@@ -904,12 +905,13 @@ void ScribbleArea::paintCanvasCursor(QPainter& painter)
 
 void ScribbleArea::updateCanvasCursor()
 {
-    float scalingFac = mEditor->view()->scaling();
+    qreal scalingFac = static_cast<qreal>(mEditor->view()->scaling());
     float brushWidth = mMyPaint->getBrushState(MyPaintBrushState::MYPAINT_BRUSH_STATE_ACTUAL_RADIUS);
 
+    qDebug() << "brush width from state: " << brushWidth;
     if (currentTool()->isAdjusting())
     {
-        mCursorImg = currentTool()->quickSizeCursor(scalingFac);
+        mCursorImg = currentTool()->quickSizeCursor(scalingFac, brushWidth);
     }
     else if (mEditor->preference()->isOn(SETTING::DOTTED_CURSOR))
     {
@@ -1283,7 +1285,10 @@ void ScribbleArea::forceUpdateMyPaintStates()
 {
     // Simulate stroke to force states to update
     // this doesn't draw on canvas, because the cursor doesn't move
-    mMyPaint->strokeTo(mMyPaint->getBrushState(MYPAINT_BRUSH_STATE_X), mMyPaint->getBrushState(MYPAINT_BRUSH_STATE_Y),mMyPaint->getBrushState(MyPaintBrushState::MYPAINT_BRUSH_STATE_PRESSURE),0,0,deltaTime);
+    mMyPaint->strokeTo(mMyPaint->getBrushState(MYPAINT_BRUSH_STATE_X),
+                       mMyPaint->getBrushState(MYPAINT_BRUSH_STATE_Y),
+                       mMyPaint->getBrushState(MyPaintBrushState::MYPAINT_BRUSH_STATE_PRESSURE),
+                       0,0, calculateDeltaTime());
 }
 
 QColor ScribbleArea::pickColorFromSurface(QPointF point, int radius)
@@ -1671,7 +1676,6 @@ void ScribbleArea::brushSettingChanged(BrushSettingType settingType, float value
 
     mMyPaint->setBrushValue(static_cast<MyPaintBrushSetting>(settingType), value);
     forceUpdateMyPaintStates();
-
     updateCanvasCursor();
 }
 

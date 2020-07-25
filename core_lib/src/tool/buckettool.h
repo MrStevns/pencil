@@ -18,6 +18,7 @@ GNU General Public License for more details.
 #ifndef BUCKETTOOL_H
 #define BUCKETTOOL_H
 
+#include <QSize>
 #include "stroketool.h"
 
 class Layer;

@@ -161,6 +161,16 @@ void ToolBrushSettingsWidget::setupSettings(ToolType toolType)
     }
 }
 
+void ToolBrushSettingsWidget::updateFromUnmappedSetting(qreal value, BrushSettingType setting)
+{
+    qDebug() << "notify setting was updated";
+    auto settingWidget = mBrushSettingWidgets.find(static_cast<int>(setting)).value();
+
+    if (mBrushSettingWidgets.contains(static_cast<int>(setting))) {
+        settingWidget->setValueFromUnmapped(value);
+    }
+}
+
 void ToolBrushSettingsWidget::updateSetting(qreal value, BrushSettingType setting)
 {
     qDebug() << "notify setting was updated";

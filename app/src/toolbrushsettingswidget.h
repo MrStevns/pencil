@@ -32,11 +32,11 @@ public:
 
     void setupSettings(ToolType toolType);
 
+    void updateFromUnmappedSetting(qreal value, BrushSettingType setting);
+
 Q_SIGNALS:
     void notifySettingsUpdated();
     void notifyBrushSettingUpdated(qreal value, BrushSettingType setting);
-
-    void settingUpdated(BrushSettingType setting, qreal value);
 
 private:
     void setupSettingsForTool(ToolType toolType);

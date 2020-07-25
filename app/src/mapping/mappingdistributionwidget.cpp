@@ -1,6 +1,6 @@
 #include "mappingdistributionwidget.h"
 
-#include <QPainter>
+#include <QPainterPath>
 #include <QMouseEvent>
 #include <QVBoxLayout>
 #include <QHBoxLayout>

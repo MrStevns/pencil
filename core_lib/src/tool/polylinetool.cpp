@@ -58,6 +58,8 @@ void PolylineTool::loadSettings()
     properties.invisibility = OFF;
     properties.preserveAlpha = OFF;
     properties.stabilizerLevel = -1;
+
+    mQuickSizingProperties.insert(Qt::ShiftModifier, BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC);
 }
 
 void PolylineTool::resetToDefault()

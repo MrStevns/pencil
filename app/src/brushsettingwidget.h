@@ -33,6 +33,8 @@ public:
     QString name() { return mSettingName; }
     qreal currentValue() { return mCurrentValue; }
 
+    void setValueFromUnmapped(qreal value);
+
 Q_SIGNALS:
     void brushSettingChanged(qreal value, BrushSettingType setting);
 

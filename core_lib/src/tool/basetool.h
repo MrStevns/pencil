@@ -91,7 +91,7 @@ public:
     virtual void resetToDefault() {}
 
     static QPixmap canvasCursor(float brushWidth, float scalingFac, int windowWidth);
-    QPixmap quickSizeCursor(qreal scalingFac);
+    QPixmap quickSizeCursor(qreal scalingFac, qreal width);
     static QCursor selectMoveCursor(MoveMode mode, ToolType type);
     static bool isAdjusting() { return msIsAdjusting; }
 
@@ -145,7 +145,7 @@ protected:
     Editor* mEditor = nullptr;
     ScribbleArea* mScribbleArea = nullptr;
 
-    QHash<Qt::KeyboardModifiers, ToolPropertyType> mQuickSizingProperties;
+    QHash<Qt::KeyboardModifiers, BrushSettingType> mQuickSizingProperties;
 
 private:
     StrokeManager* mStrokeManager = nullptr;

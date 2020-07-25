@@ -127,6 +127,7 @@ void ToolOptionWidget::makeConnectionToEditor(Editor* editor)
     connect(toolManager, &ToolManager::toolChanged, this, &ToolOptionWidget::onToolChanged);
     connect(toolManager, &ToolManager::toolPropertyChanged, this, &ToolOptionWidget::onToolPropertyChanged);
     connect(toolManager, &ToolManager::toolChanged, ui->brushSettingsWidget, &ToolBrushSettingsWidget::setupSettings);
+    connect(toolManager, &ToolManager::brushPropertyChanged, ui->brushSettingsWidget, &ToolBrushSettingsWidget::updateFromUnmappedSetting);
 }
 
 void ToolOptionWidget::onToolPropertyChanged(ToolType, ToolPropertyType ePropertyType)

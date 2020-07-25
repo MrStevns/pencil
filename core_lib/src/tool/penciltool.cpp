@@ -55,6 +55,8 @@ void PencilTool::loadSettings()
     properties.stabilizerLevel = settings.value("pencilLineStabilization", StabilizationLevel::STRONG).toInt();
     properties.useFeather = true;
     properties.useFillContour = false;
+
+    mQuickSizingProperties.insert(Qt::ShiftModifier, BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC);
 }
 
 void PencilTool::resetToDefault()

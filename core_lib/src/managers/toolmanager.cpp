@@ -229,11 +229,16 @@ void ToolManager::tabletRestorePrevTool()
     }
 }
 
+/// Unmapped values needs to be properly mapped via their respective widget
+/// Currently the only usecase here is the quick-size cursor
+/// but other functionality may require it too.
+void ToolManager::mapToBrushSettingValue(qreal value, BrushSettingType setting)
+{
+    emit brushPropertyChanged(value, setting);
+}
 
+/// Already mapped values can go diectly to mypaint backend and update the engine.
 void ToolManager::setMPBrushSetting(qreal value, BrushSettingType setting)
 {
-    if (setting == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
-        setWidth(static_cast<float>(value));
-    }
     editor()->setMPBrushSetting(setting, static_cast<float>(value));
 }

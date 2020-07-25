@@ -62,8 +62,7 @@ GNU General Public License for more details.
 #include "timeline.h"
 #include "toolbox.h"
 #include "onionskinwidget.h"
-#include "toolbrushsettingswidget.h"
-#include "mpbrushconfigurator.h"
+#include "toolbrushsettingswidget.h" 
 
 //#include "preview.h"
 #include "timeline2.h"

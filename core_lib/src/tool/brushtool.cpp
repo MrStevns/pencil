@@ -67,6 +67,8 @@ void BrushTool::loadSettings()
 
     if (properties.width <= 0) { setWidth(15); }
     if (std::isnan(properties.feather)) { setFeather(15); }
+
+    mQuickSizingProperties.insert(Qt::ShiftModifier, BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC);
 }
 
 void BrushTool::resetToDefault()
