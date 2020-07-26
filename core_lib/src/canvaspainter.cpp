@@ -46,6 +46,7 @@ void CanvasPainter::setCanvas(QPixmap* canvas)
 void CanvasPainter::setViewTransform(const QTransform view)
 {
     mViewTransform = view;
+    resetLayerCache();
 }
 
 void CanvasPainter::setTransformedSelection(QRect selectionBeforeTransform, QRect currentSeletion, QTransform transform, bool modified)
