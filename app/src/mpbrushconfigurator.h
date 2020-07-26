@@ -9,10 +9,6 @@
 #include "brushsetting.h"
 #include "brushsettingitem.h"
 
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonParseError>
-
 #include <QPointer>
 
 #include "mpbrushmanager.h"
@@ -88,15 +84,11 @@ private:
     void pressedCloneBrush();
     void pressedDiscardBrush();
 
-//    void applyChanges(QHash<int, BrushChanges> changes);
-//    void writeModifications(QJsonDocument& document, QJsonParseError& error, QHash<int, BrushChanges> modifications);
-
     void openBrushInfoWidget(DialogContext dialogContext);
 
     BrushSettingItem* addTreeRoot(BrushSettingItem::Category category, QTreeWidget* treeWidget, const QString name);
     BrushSettingItem* addTreeChild(BrushSettingItem::Category category, QTreeWidgetItem* parent, const QString name);
 
-//    QWidget* addBrushSetting(const QString name, BrushSettingType setting);
     void brushCategorySelected(QTreeWidgetItem* item, int);
     void brushCategorySelectionChanged(const QItemSelection &selected, const QItemSelection &);
 
@@ -124,9 +116,6 @@ private:
     QSize mImageSize = QSize(32,32);
 
     QList<QMetaObject::Connection> mListOfConnections;
-//    QHash<int, BrushSettingWidget*> exportedBrushWidgets;
-//    QList<BrushSettingWidget*> mVisibleWidgets;
-
 };
 
 #endif // MPBRUSHCONFIGURATOR_H

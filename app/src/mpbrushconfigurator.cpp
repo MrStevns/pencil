@@ -12,11 +12,7 @@
 #include <QMessageBox>
 #include <QLabel>
 #include <QCheckBox>
-
-#include <QJsonObject>
-#include <QJsonValueRef>
 #include <QJsonDocument>
-#include <QJsonArray>
 
 #include "toolmanager.h"
 
