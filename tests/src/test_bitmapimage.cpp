@@ -16,6 +16,7 @@ GNU General Public License for more details.
 #include "catch.hpp"
 
 #include "bitmapimage.h"
+#include "bitmaputils.h"
 
 TEST_CASE("BitmapImage constructors")
 {
@@ -73,7 +74,7 @@ TEST_CASE("BitmapImage constructors")
         {
             for (int y = 0; y < b->height(); ++y)
             {
-                QRgb color = b->pixel(x, y);
+                QRgb color = BitmapUtils::pixel(*b->image(), b->topLeft(), x, y);
                 REQUIRE(qAlpha(color) == 0);
             }
         }

@@ -111,12 +111,6 @@ void LayerManager::setCurrentLayer(int layerIndex)
         return;
     }
 
-    Layer::LAYER_TYPE layerType = object()->getLayer(layerIndex)->type();
-
-    if (currentLayer()->type() != layerType) {
-        emit layerTypeChanged(layerType);
-    }
-
     // Do not check if layer index has changed
     // because the current layer may have changed either way
     editor()->setCurrentLayerIndex(layerIndex);
@@ -128,6 +122,14 @@ void LayerManager::setCurrentLayer(int layerIndex)
         {
             mLastCameraLayerIdx = layerIndex;
         }
+    }
+
+
+    Layer::LAYER_TYPE layerType = object()->getLayer(layerIndex)->type();
+
+    // TODO: currently unused, we should hide or disable the brush selector whenever the layer is vector
+    if (currentLayer()->type() != layerType) {
+        emit layerTypeChanged(layerType);
     }
 }
 

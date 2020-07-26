@@ -32,7 +32,7 @@ TEST_CASE("LayerManager::init()")
         LayerManager* layerMgr = new LayerManager(editor);
         layerMgr->init();
 
-        object->init(); 
+        object->init();
         object->createDefaultLayers(); // create default 3 layers
         REQUIRE(layerMgr->count() == 3);
         REQUIRE(layerMgr->currentLayerIndex() == 2);

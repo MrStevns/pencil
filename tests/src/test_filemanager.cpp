@@ -234,11 +234,11 @@ TEST_CASE("FileManager File-saving")
         o1->init();
         o1->createDefaultLayers();
 
-        LayerBitmapSurface* layer = dynamic_cast<LayerBitmapSurface*>(o1->getLayer(2));
+        LayerBitmap* layer = static_cast<LayerBitmap*>(o1->getLayer(2));
         REQUIRE(layer->addNewKeyFrameAt(2));
 
-        BitmapSurface* b1 = layer->getBitmapImageAtFrame(2);
-        b1->drawRect(QRect(0, 0, 300,300), QColor(255, 0, 0));
+        BitmapImage* b1 = layer->getBitmapImageAtFrame(2);
+        b1->drawRect(QRect(0, 0, 300,300), QColor(255, 0, 0), Qt::NoBrush, QPainter::CompositionMode_SourceOver, false);
 
         QTemporaryDir testDir("PENCIL_TEST_XXXXXXXX");
         QString animationPath = testDir.path() + "/abc.pclx";
@@ -247,9 +247,9 @@ TEST_CASE("FileManager File-saving")
 
         // 2. load the animation, and then clear the red frame, save it.
         Object* o2 = fm.load(animationPath);
-        layer = dynamic_cast<LayerBitmapSurface*>(o2->getLayer(2));
+        layer = dynamic_cast<LayerBitmap*>(o2->getLayer(2));
 
-        BitmapSurface* b2 = layer->getBitmapImageAtFrame(2);
+        BitmapImage* b2 = layer->getBitmapImageAtFrame(2);
         b2->clear();
 
         fm.save(o2, animationPath);
@@ -257,9 +257,9 @@ TEST_CASE("FileManager File-saving")
 
         // 3. load the animation again, check whether it's an empty frame
         Object* o3 = fm.load(animationPath);
-        layer = dynamic_cast<LayerBitmapSurface*>(o3->getLayer(2));
+        layer = dynamic_cast<LayerBitmap*>(o3->getLayer(2));
 
-        BitmapSurface* b3 = layer->getBitmapImageAtFrame(2);
+        BitmapImage* b3 = layer->getBitmapImageAtFrame(2);
         REQUIRE(b3->bounds().isEmpty());
 
         delete o3;
