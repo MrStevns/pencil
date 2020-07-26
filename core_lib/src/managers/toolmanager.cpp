@@ -229,12 +229,16 @@ void ToolManager::tabletRestorePrevTool()
     }
 }
 
-/// Unmapped values needs to be properly mapped via their respective widget
+/// Map quick property type to the appropriate widget type
 /// Currently the only usecase here is the quick-size cursor
 /// but other functionality may require it too.
-void ToolManager::mapToBrushSettingValue(qreal value, BrushSettingType setting)
+void ToolManager::mapQuickPropertyToBrushSettingValue(qreal value, QuickPropertyType setting)
 {
-    emit brushPropertyChanged(value, setting);
+    switch (setting) {
+    case QuickPropertyType::WIDTH:
+        emit brushPropertyChanged(value, BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC);
+        break;
+    }
 }
 
 /// Already mapped values can go diectly to mypaint backend and update the engine.

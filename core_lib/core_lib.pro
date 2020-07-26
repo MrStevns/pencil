@@ -99,6 +99,7 @@ HEADERS +=  \
     src/util/pencildef.h \
     src/util/pencilerror.h \
     src/util/pencilsettings.h \
+    src/util/quickpropertytype.h \
     src/util/util.h \
     src/util/log.h \
     src/util/movemode.h \

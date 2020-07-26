@@ -56,7 +56,7 @@ void PencilTool::loadSettings()
     properties.useFeather = true;
     properties.useFillContour = false;
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, QuickPropertyType::WIDTH);
 }
 
 void PencilTool::resetToDefault()

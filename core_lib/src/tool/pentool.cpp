@@ -54,7 +54,7 @@ void PenTool::loadSettings()
     properties.preserveAlpha = OFF;
     properties.stabilizerLevel = settings.value("penLineStabilization", StabilizationLevel::STRONG).toInt();
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, QuickPropertyType::WIDTH);
 }
 
 void PenTool::resetToDefault()

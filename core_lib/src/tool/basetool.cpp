@@ -210,7 +210,6 @@ QCursor BaseTool::selectMoveCursor(MoveMode mode, ToolType type)
             }
             default:
                 return (type == SELECT) ? Qt::CrossCursor : Qt::ArrowCursor;
-                break;
         }
         cursorPainter.end();
     }
@@ -251,7 +250,7 @@ QPixmap BaseTool::quickSizeCursor(qreal scalingFac, qreal width)
         cursorPainter.setPen(QColor(0, 0, 0, 255));
         cursorPainter.drawLine(cursorRect.center() - QPoint(2, 0), cursorRect.center() + QPoint(2, 0));
         cursorPainter.drawLine(cursorRect.center() - QPoint(0, 2), cursorRect.center() + QPoint(0, 2));
-//        cursorPainter.fillRect()
+
 
         cursorPainter.end();
     }
@@ -263,24 +262,13 @@ bool BaseTool::startAdjusting(Qt::KeyboardModifiers modifiers, qreal step)
     if (mQuickSizingProperties.contains(modifiers))
     {
         switch (mQuickSizingProperties.value(modifiers)) {
-        case BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC:
+        case QuickPropertyType::WIDTH:
             msOriginalPropertyValue = properties.width;
             break;
-//        case FEATHER:
-//            msOriginalPropertyValue = properties.feather;
-//            break;
-//        case TOLERANCE:
-//            msOriginalPropertyValue = properties.tolerance;
-//            break;
-        default:
-            qDebug() << "Unhandled quick sizing property for tool" << typeName();
-            Q_ASSERT(false);
-            return false;
         }
 
         msIsAdjusting = true;
         mAdjustmentStep = step;
-        mScribbleArea->updateCanvasCursor();
         return true;
     }
     return false;
@@ -291,7 +279,6 @@ void BaseTool::stopAdjusting()
     msIsAdjusting = false;
     mAdjustmentStep = 0;
     msOriginalPropertyValue = 0;
-    mEditor->getScribbleArea()->updateCanvasCursor();
 }
 
 void BaseTool::adjustCursor(Qt::KeyboardModifiers modifiers)
@@ -305,29 +292,13 @@ void BaseTool::adjustCursor(Qt::KeyboardModifiers modifiers)
     }
 
 //    newValue = qPow(newValue, 2) / 100;
-//    if (mAdjustmentStep > 0)
-//    {
-//        int tempValue = (int)(newValue / mAdjustmentStep); // + 0.5 ?
-//        newValue = tempValue * mAdjustmentStep;
-//    }
+    if (mAdjustmentStep > 0)
+    {
+        int tempValue = (int)(newValue / mAdjustmentStep); // + 0.5 ?
+        newValue = tempValue * mAdjustmentStep;
+    }
 
-//    switch (mQuickSizingProperties.value(modifiers))
-
-//    {
-//    case BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC:
-        mEditor->tools()->mapToBrushSettingValue(newValue, mQuickSizingProperties.value(modifiers));
-//        break;
-//    case FEATHER:
-//        mEditor->tools()->setFeather(qBound(2., newValue, 200.));
-//        break;
-//    case TOLERANCE:
-//        mEditor->tools()->setTolerance(qBound(0., newValue, 100.));
-//        break;
-//    default:
-//        qDebug() << "Unhandled quick sizing property for tool" << typeName();
-//        Q_ASSERT(false);
-//        break;
-//    };
+    mEditor->tools()->mapQuickPropertyToBrushSettingValue(newValue, mQuickSizingProperties.value(modifiers));
 }
 
 QPointF BaseTool::getCurrentPressPixel()

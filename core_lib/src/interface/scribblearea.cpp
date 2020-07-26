@@ -621,6 +621,7 @@ void ScribbleArea::pointerPressEvent(PointerEvent* event)
     {
         if (currentTool()->startAdjusting(event->modifiers(), 1))
         {
+            updateCanvasCursor();
             return;
         }
     }
@@ -635,10 +636,6 @@ void ScribbleArea::pointerMoveEvent(PointerEvent* event)
 {
 
      updateCanvasCursor();
-//    if (mEditor->view()->transformUpdated()) {
-//        mEditor->view()->transformUpdatedState(false);
-//        update();
-//    }
 
     if (event->buttons() & (Qt::LeftButton | Qt::RightButton))
     {
@@ -666,7 +663,7 @@ void ScribbleArea::pointerReleaseEvent(PointerEvent* event)
     if (currentTool()->isAdjusting())
     {
         currentTool()->stopAdjusting();
-        mEditor->tools()->setWidth(static_cast<float>(currentTool()->properties.width));
+        updateCanvasCursor();
         return; // [SHIFT]+drag OR [CTRL]+drag
     }
 

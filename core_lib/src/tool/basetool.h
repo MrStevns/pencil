@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include "movemode.h"
 #include "pencildef.h"
 #include "brushsetting.h"
+#include "quickpropertytype.h"
 
 class QPixmap;
 class Editor;
@@ -145,7 +146,7 @@ protected:
     Editor* mEditor = nullptr;
     ScribbleArea* mScribbleArea = nullptr;
 
-    QHash<Qt::KeyboardModifiers, BrushSettingType> mQuickSizingProperties;
+    QHash<Qt::KeyboardModifiers, QuickPropertyType> mQuickSizingProperties;
 
 private:
     StrokeManager* mStrokeManager = nullptr;

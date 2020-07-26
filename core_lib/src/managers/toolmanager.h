@@ -48,7 +48,7 @@ public:
     int propertySwitch(bool condition, int property);
 
     void setMPBrushSetting(qreal value, BrushSettingType setting);
-    void mapToBrushSettingValue(qreal value, BrushSettingType setting);
+    void mapQuickPropertyToBrushSettingValue(qreal value, QuickPropertyType setting);
 
 Q_SIGNALS:
     void penWidthValueChanged(float);
