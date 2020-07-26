@@ -361,7 +361,8 @@ void CanvasPainter::paintBitmapTilesOnImage(QPainter& painter, BitmapImage* imag
 
     if (image->bounds().isValid()) {
 
-        QPainter newPaint(image->image());
+        QImage renderImage = QImage(*image->image());
+        QPainter newPaint(&renderImage);
 
         for (MPTile* item : tilesToRender) {
 
@@ -373,21 +374,39 @@ void CanvasPainter::paintBitmapTilesOnImage(QPainter& painter, BitmapImage* imag
 
                 // Tools that require continous clearing should not get in here
                 // eg. polyline because it's already clearing its surface per dab it creates
-                if (!mOptions.useCanvasBuffer) {
+
+                // Fixes not drawing on the same tile, that could otherwise cause small artifacts.
+                if (mOptions.useCanvasBuffer) {
+                    if (image->bounds().contains(rawRect)) {
+
+                        newPaint.save();
+                        newPaint.translate(-image->bounds().topLeft());
+                        newPaint.setCompositionMode(QPainter::CompositionMode_SourceOver);
+                        newPaint.drawPixmap(rawRect, pix, pix.rect());
+                        newPaint.restore();
+                    } else {
+                        // Fixes polyline being rendered on top of itself because the image has been painted already
+                        painter.save();
+                        painter.translate(-mCanvas->rect().width()/2, -mCanvas->rect().height()/2);
+                        painter.setTransform(v);
+                        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+                        painter.drawPixmap(rawRect, pix, pix.rect());
+                        painter.restore();
+                    }
+                } else {
                     newPaint.save();
                     newPaint.setCompositionMode(QPainter::CompositionMode_Source);
                     newPaint.translate(-image->bounds().topLeft());
                     newPaint.drawPixmap(rawRect, pix, pix.rect());
                     newPaint.restore();
-                }
 
-                // Fixes not drawing on the same tile, that could otherwise cause small artifacts.
-                if (!image->bounds().contains(rawRect) || mOptions.useCanvasBuffer) {
-                    painter.save();
-                    painter.translate(-mCanvas->rect().width()/2, -mCanvas->rect().height()/2);
-                    painter.setTransform(v);
-                    painter.drawPixmap(rawRect, pix, pix.rect());
-                    painter.restore();
+                    if (!image->bounds().contains(rawRect)) {
+                        painter.save();
+                        painter.translate(-mCanvas->rect().width()/2, -mCanvas->rect().height()/2);
+                        painter.setTransform(v);
+                        painter.drawPixmap(rawRect, pix, pix.rect());
+                        painter.restore();
+                    }
                 }
             }
         }
@@ -395,7 +414,7 @@ void CanvasPainter::paintBitmapTilesOnImage(QPainter& painter, BitmapImage* imag
 
         // Paint the modified layer image
         painter.setTransform(v);
-        painter.drawImage(image->bounds(), *image->image(), image->image()->rect());
+        painter.drawImage(image->bounds(), renderImage, renderImage.rect());
         painter.restore();
     } else {
         for (MPTile* item : tilesToRender) {
