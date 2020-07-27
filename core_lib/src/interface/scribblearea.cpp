@@ -905,7 +905,6 @@ void ScribbleArea::updateCanvasCursor()
     qreal scalingFac = static_cast<qreal>(mEditor->view()->scaling());
     float brushWidth = mMyPaint->getBrushState(MyPaintBrushState::MYPAINT_BRUSH_STATE_ACTUAL_RADIUS);
 
-    qDebug() << "brush width from state: " << brushWidth;
     if (currentTool()->isAdjusting())
     {
         mCursorImg = currentTool()->quickSizeCursor(scalingFac, brushWidth);
