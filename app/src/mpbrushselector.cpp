@@ -180,7 +180,7 @@ void MPBrushSelector::populateList()
         int brushIndex = 0;
         for (const QString& brush : subList.brushesForTool(toolListIt.key().toLower())) {
 
-            QIcon preview(mEditor->brushes()->brushesPath() + QDir::separator() + currentPresetName + QDir::separator() + brush + BRUSH_PREVIEW_EXT);
+            QIcon preview(mEditor->brushes()->brushesPath() + "/" + currentPresetName + "/" + brush + BRUSH_PREVIEW_EXT);
             QListWidgetItem* p_item = new QListWidgetItem(preview, nullptr, widget, brushIndex);
             p_item->setToolTip(QString("%1").arg(brush));
             p_item->setData(Qt::UserRole, QVariant::fromValue(brush));

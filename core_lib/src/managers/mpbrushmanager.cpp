@@ -136,7 +136,7 @@ QJsonDocument MPBrushManager::writeModifications(const QJsonDocument& doc, QJson
 
 Status MPBrushManager::readBrushFromFile(const QString& brushPreset, const QString& brushName)
 {
-    const QString& brushPath = MPCONF::getBrushesPath() + QDir::separator() + brushPreset + QDir::separator() + brushName;
+    const QString& brushPath = MPCONF::getBrushesPath() + "/" + brushPreset + "/" + brushName;
 
     QFile file(brushPath + BRUSH_CONTENT_EXT);
 
@@ -144,7 +144,7 @@ Status MPBrushManager::readBrushFromFile(const QString& brushPreset, const QStri
     // if no local brush file exists, look at internal resources
     // local brush files will overwrite the existence of the internal one
     if (!file.exists()) {
-        file.setFileName(BRUSH_QRC + QDir::separator() + brushPreset + QDir::separator() + brushName + BRUSH_CONTENT_EXT);
+        file.setFileName(BRUSH_QRC + "/" + brushPreset + "/" + brushName + BRUSH_CONTENT_EXT);
     }
 
     Status status = Status::OK;
@@ -212,8 +212,8 @@ QVector<MPBrushPreset> MPBrushManager::parseConfig(QFile& file, QString brushesP
         if (MPCONF::isBrushToken(line)) {
 
             QString brush = MPCONF::getValue(line);
-            QString relativePath = currentPreset + QDir::separator() + brush;
-            if (QFileInfo(brushesPath + QDir::separator() + relativePath + BRUSH_CONTENT_EXT).isReadable()) {
+            QString relativePath = currentPreset + "/" + brush;
+            if (QFileInfo(brushesPath + "/" + relativePath + BRUSH_CONTENT_EXT).isReadable()) {
                 brushList << brush;
             }
             continue;
@@ -241,8 +241,8 @@ Status MPBrushManager::writeBrushToFile(const QString& brushPreset, const QStrin
 {
     Status status = Status::OK;
     QString brushesPath = MPCONF::getBrushesPath();
-    const QString& groupPath = brushesPath + QDir::separator() + brushPreset + QDir::separator();
-    const QString& brushPath = brushesPath + QDir::separator() + brushPreset + QDir::separator() + brushName;
+    const QString& groupPath = brushesPath + "/" + brushPreset + "/";
+    const QString& brushPath = brushesPath + "/" + brushPreset + "/" + brushName;
 
     QFile file(brushPath + BRUSH_CONTENT_EXT);
 
@@ -291,9 +291,9 @@ Status MPBrushManager::copyResourcesToAppData()
 
     dir.setPath(BRUSH_QRC);
 
-    QString internalBrushConfigPath = BRUSH_QRC + QDir::separator() + BrushConfigFile;
+    QString internalBrushConfigPath = BRUSH_QRC + "/" + BrushConfigFile;
 
-    QFile appDataFile(appDataBrushesPath+QDir::separator()+BrushConfigFile);
+    QFile appDataFile(appDataBrushesPath+"/"+BrushConfigFile);
     if (!appDataFile.exists()) {
         QFile resFile(internalBrushConfigPath);
         bool success = resFile.copy(appDataFile.fileName());
@@ -320,10 +320,10 @@ Status MPBrushManager::copyResourcesToAppData()
             continue;
         }
 
-        QDir internalBrushDir(BRUSH_QRC + QDir::separator() + entry);
-        QDir externalBrushDir(appDataBrushesPath + QDir::separator() + entry);
+        QDir internalBrushDir(BRUSH_QRC + "/" + entry);
+        QDir externalBrushDir(appDataBrushesPath + "/" + entry);
         if (!externalBrushDir.exists()) {
-            bool success = externalBrushDir.mkpath(appDataBrushesPath + QDir::separator() + entry);
+            bool success = externalBrushDir.mkpath(appDataBrushesPath + "/" + entry);
 
             if (!success) {
                 st = Status::FAIL;
@@ -335,8 +335,8 @@ Status MPBrushManager::copyResourcesToAppData()
 
         QStringList dirContent = internalBrushDir.entryList();
         for (QString entryDown : dirContent) {
-            QFile internalBrushFile(internalBrushDir.path() + QDir::separator() +entryDown);
-            QFile brushFile(externalBrushDir.path() + QDir::separator() + entryDown);
+            QFile internalBrushFile(internalBrushDir.path() + "/" +entryDown);
+            QFile brushFile(externalBrushDir.path() + "/" + entryDown);
 
             if (!brushFile.exists()) {
                 bool success = internalBrushFile.copy(brushFile.fileName());
@@ -362,9 +362,9 @@ Status MPBrushManager::renameMoveBrushFileIfNeeded(QString originalPreset, QStri
 {
     Status status = Status::OK;
     QString brushesPath = MPCONF::getBrushesPath();
-    const QString presetPath = brushesPath + QDir::separator() + newPreset;
-    const QString brushPath = brushesPath + QDir::separator() + newPreset + QDir::separator() + newName;
-    const QString oldBrushPath = brushesPath + QDir::separator() + originalPreset + QDir::separator() + originalName;
+    const QString presetPath = brushesPath + "/" + newPreset;
+    const QString brushPath = brushesPath + "/" + newPreset + "/" + newName;
+    const QString oldBrushPath = brushesPath + "/" + originalPreset + "/" + originalName;
 
     QDir presetDir(presetPath);
 
@@ -423,11 +423,11 @@ Status MPBrushManager::renameMoveBrushFileIfNeeded(QString originalPreset, QStri
 Status MPBrushManager::copyRenameBrushFileIfNeeded(const QString& originalPreset, const QString& originalName, const QString& newPreset, QString& newName)
 {
     QString brushesPath = MPCONF::getBrushesPath();
-    QString presetPath = brushesPath + QDir::separator() + newPreset;
-    QString brushPath = brushesPath + QDir::separator() + newPreset + QDir::separator() + newName;
+    QString presetPath = brushesPath + "/" + newPreset;
+    QString brushPath = brushesPath + "/" + newPreset + "/" + newName;
 
-    QString oldPresetPath = brushesPath + QDir::separator() + originalPreset;
-    QString oldBrushPath = brushesPath + QDir::separator() + originalPreset + QDir::separator() + originalName;
+    QString oldPresetPath = brushesPath + "/" + originalPreset;
+    QString oldBrushPath = brushesPath + "/" + originalPreset + "/" + originalName;
 
     Status status = Status::OK;
     QFile file(brushPath + BRUSH_CONTENT_EXT);
@@ -495,7 +495,7 @@ Status MPBrushManager::copyRenameBrushFileIfNeeded(const QString& originalPreset
                 clonedName = clonedName.append(clonePostFix+QString::number(countClones));
             }
 
-            QString clonedPath = oldPresetPath + QDir::separator() + clonedName;
+            QString clonedPath = oldPresetPath + "/" + clonedName;
             QString newFileName = clonedPath+BRUSH_CONTENT_EXT;
             QString newImageName = clonedPath+BRUSH_PREVIEW_EXT;
             file.copy(newFileName);
@@ -519,7 +519,7 @@ Status MPBrushManager::copyRenameBrushFileIfNeeded(const QString& originalPreset
 
 QString MPBrushManager::getBrushPreviewImagePath(const QString& brushPreset, const QString brushName)
 {
-    const QString& brushPath = MPCONF::getBrushesPath() + QDir::separator() + brushPreset + QDir::separator() + brushName;
+    const QString& brushPath = MPCONF::getBrushesPath() + "/" + brushPreset + "/" + brushName;
     QFile file(brushPath+BRUSH_PREVIEW_EXT);
 
     if (file.exists()) {
@@ -530,11 +530,11 @@ QString MPBrushManager::getBrushPreviewImagePath(const QString& brushPreset, con
 
 QString MPBrushManager::getBrushPath(const QString& brushPreset, const QString& brushName, const QString& extension)
 {
-    QString brushPath = MPCONF::getBrushesPath() + QDir::separator() + brushPreset + QDir::separator() + brushName;
+    QString brushPath = MPCONF::getBrushesPath() + "/" + brushPreset + "/" + brushName;
 
     QFile file(brushPath+extension);
     if (!file.exists()) {
-        brushPath = QString(BRUSH_QRC) + QDir::separator() + brushPreset + QDir::separator() + brushName;
+        brushPath = QString(BRUSH_QRC) + "/" + brushPreset + "/" + brushName;
     }
     return brushPath + extension;
 }
@@ -546,11 +546,11 @@ QString MPBrushManager::getBrushImagePath(const QString& brushPreset, const QStr
 
 QString MPBrushManager::getBrushConfigPath(const QString extension)
 {
-    QString brushPath = MPCONF::getBrushesPath() + QDir::separator() + extension;
+    QString brushPath = MPCONF::getBrushesPath() + "/" + extension;
 
     QFile file(brushPath);
     if (!file.exists()) {
-        brushPath = QString(BRUSH_QRC) + QDir::separator() + extension;
+        brushPath = QString(BRUSH_QRC) + "/" + extension;
     }
     return brushPath;
 }
@@ -558,7 +558,7 @@ QString MPBrushManager::getBrushConfigPath(const QString extension)
 Status MPBrushManager::writeBrushIcon(const QPixmap& iconPix, const QString brushPreset, const QString brushName) {
     Status status = Status::OK;
 
-    const QString brushPath = MPCONF::getBrushesPath() + QDir::separator() + brushPreset + QDir::separator() + brushName;
+    const QString brushPath = MPCONF::getBrushesPath() + "/" + brushPreset + "/" + brushName;
 
     const QString brushFileName = brushPath+BRUSH_PREVIEW_EXT;
     if (iconPix.save(brushPath+BRUSH_PREVIEW_EXT) == false) {

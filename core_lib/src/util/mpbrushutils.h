@@ -36,7 +36,7 @@ struct MPCONF {
     static Status renamePreset(const QString& oldName, const QString& newName)
     {
         Status st = Status::OK;
-        QString brushConfigPath = getBrushesPath() + QDir::separator() + BrushConfigFile;
+        QString brushConfigPath = getBrushesPath() + "/" + BrushConfigFile;
 
         QFile file(brushConfigPath);
         file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -96,7 +96,7 @@ struct MPCONF {
     static Status addPreset(const QString& presetName)
     {
         Status st = Status::OK;
-        QString brushConfigPath = getBrushesPath() + QDir::separator() + BrushConfigFile;
+        QString brushConfigPath = getBrushesPath() + "/" + BrushConfigFile;
 
         QFile file(brushConfigPath);
         file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -168,7 +168,7 @@ struct MPCONF {
     static Status removePreset(const QString presetName)
     {
         Status st = Status::OK;
-        QString brushConfigPath = getBrushesPath() + QDir::separator() + BrushConfigFile;
+        QString brushConfigPath = getBrushesPath() + "/" + BrushConfigFile;
 
         QFile file(brushConfigPath);
         file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -235,7 +235,7 @@ struct MPCONF {
     static Status addBrushEntry(const QString toolName, const QString& brushPreset, const QString& brushName)
     {
         Status st = Status::OK;
-        QString brushConfigPath = getBrushesPath() + QDir::separator() + BrushConfigFile;
+        QString brushConfigPath = getBrushesPath() + "/" + BrushConfigFile;
 
         QFile file(brushConfigPath);
         file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -322,7 +322,7 @@ struct MPCONF {
     static Status removeBrush(const QString& brushPreset, const QString& toolName, const QString& brushName)
     {
         Status st = Status::OK;
-        QString brushConfigPath = getBrushesPath() + QDir::separator() + BrushConfigFile;
+        QString brushConfigPath = getBrushesPath() + "/" + BrushConfigFile;
 
         QFile file(brushConfigPath);
 
@@ -402,7 +402,7 @@ struct MPCONF {
     static Status blackListBrushFile(const QString& brushPreset, const QString& brushName)
     {
         Status st = Status::OK;
-        QString brushConfigPath = getBrushesPath() + QDir::separator() + BrushConfigFile;
+        QString brushConfigPath = getBrushesPath() + "/" + BrushConfigFile;
 
         QFile file(brushConfigPath);
 
@@ -468,7 +468,7 @@ struct MPCONF {
     static QString getBrushesPath()
     {
         QStringList pathList = QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
-        return pathList.first() + QDir::separator() + "brushes";
+        return pathList.first() + "/" + "brushes";
     }
 
     static QString getValue(const QString& text) {
