@@ -670,7 +670,11 @@ bool MainWindow2::openObject(QString strFilePath)
         return false;
     }
 
-    mEditor->setObject(object);
+    Status st = mEditor->setObject(object);
+
+    if (st.fail()) {
+        QMessageBox::warning(this, tr("Load error - ") + st.title(), st.description());
+    }
 
     QSettings settings(PENCIL2D, PENCIL2D);
     settings.setValue(LAST_PCLX_PATH, object->filePath());

@@ -21,12 +21,7 @@ Status MPBrushManager::load(Object*)
 {
     Status st = copyResourcesToAppData();
     mBrushesPath = MPCONF::getBrushesPath();
-
-    if (st.fail()) {
-        // TODO: emit failure to UI
-//        emit()
-    }
-    return Status::OK;
+    return st;
 }
 
 Status MPBrushManager::save(Object *o)
@@ -158,6 +153,11 @@ Status MPBrushManager::readBrushFromFile(const QString& brushPreset, const QStri
         mCurrentBrushData = file.readAll();
     } else {
         status = Status::FAIL;
+
+        DebugDetails details;
+
+        details << "\n\ntried to get brushes from: " + brushPath;
+        status.setDetails(details);
     }
     return status;
 }

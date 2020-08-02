@@ -206,9 +206,7 @@ void MPBrushInfoDialog::setBrushInfo(QString brushName, QString brushPreset, Too
     auto status = mEditor->brushes()->readBrushFromFile(brushPreset, brushName);
 
     if (status != Status::OK) {
-
-        QMessageBox::warning(this, tr("Parse error"), tr("Could not read brush file data"));
-        // TODO: better error handling
+        QMessageBox::warning(this, tr("Parse error"), tr("Could not read brush file data \n\nDetails:") + status.details().str());
         return;
     }
 

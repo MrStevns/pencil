@@ -703,7 +703,11 @@ Status Editor::setObject(Object* newObject)
 
     for (BaseManager* m : mAllManagers)
     {
-        m->load(mObject.get());
+        Status st = m->load(mObject.get());
+
+        if (st.fail()) {
+            return st;
+        }
     }
 
     g_clipboardVectorImage.setObject(newObject);
