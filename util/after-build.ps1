@@ -55,7 +55,8 @@ Remove-Item -Path "./Pencil2D/*.ilk"
 Compress-Archive -Path "./Pencil2D" -DestinationPath "./Pencil2D.zip"
 
 $today = Get-Date -Format "yyyy-MM-dd"
-$zipFileName = "pencil2d-$arch-$today.zip"
+$branch = $env:APPVEYOR_REPO_BRANCH
+$zipFileName = "pencil2d-$arch-$branch-$today.zip"
 
 echo ">>> Zip filename: $zipFileName"
 Rename-Item -Path "./Pencil2D.zip" -NewName $zipFileName
