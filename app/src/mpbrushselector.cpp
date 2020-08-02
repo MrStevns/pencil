@@ -88,34 +88,33 @@ void MPBrushSelector::loadBrushes()
 {
     auto st = mEditor->brushes()->loadPresets();
 
-    if (st.ok())
+    if (st.fail())
     {
-        QVector<MPBrushPreset> presets = mEditor->brushes()->presets();
-        if (mPresetComboBox->count() > 0) {
-            mPresetComboBox->clear();
-        }
-
-        for (MPBrushPreset preset : presets) {
-            mPresetComboBox->addItem(preset.name);
-        }
-
-        QSettings settings(PENCIL2D,PENCIL2D);
-        QString lastPreset = settings.value(SETTING_MPBRUSHPRESET).toString();
-
-        if (!lastPreset.isEmpty()) {
-////            currentPresetName = presets.first().name;
-////            settings.setValue(SETTING_MPBRUSHPRESET, currentPresetName);
-//        } else {
-////            currentPresetName = lastPreset;
-            mPresetComboBox->setCurrentItemFrom(lastPreset);
-        }
-
-        if (!mTabsLoaded) {
-            addToolTabs();
-            mTabsLoaded = true;
-        }
-        populateList();
+        QMessageBox::information(this, st.title(), st.description() + "\n\n" + st.details().str());
+        return;
     }
+
+    QVector<MPBrushPreset> presets = mEditor->brushes()->presets();
+    if (mPresetComboBox->count() > 0) {
+        mPresetComboBox->clear();
+    }
+
+    for (MPBrushPreset preset : presets) {
+        mPresetComboBox->addItem(preset.name);
+    }
+
+    QSettings settings(PENCIL2D,PENCIL2D);
+    QString lastPreset = settings.value(SETTING_MPBRUSHPRESET).toString();
+
+    if (!lastPreset.isEmpty()) {
+        mPresetComboBox->setCurrentItemFrom(lastPreset);
+    }
+
+    if (!mTabsLoaded) {
+        addToolTabs();
+        mTabsLoaded = true;
+    }
+    populateList();
 }
 
 void MPBrushSelector::addToolTabs()
