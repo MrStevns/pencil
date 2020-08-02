@@ -40,17 +40,17 @@ QString BaseTool::TypeName(ToolType type)
 
     if (map[0].isEmpty())
     {
-        map[PENCIL] = tr("Pencil");
-        map[ERASER] = tr("Eraser");
-        map[SELECT] = tr("Select");
-        map[MOVE] = tr("Move");
-        map[HAND] = tr("Hand");
-        map[SMUDGE] = tr("Smudge");
-        map[PEN] = tr("Pen");
-        map[POLYLINE] = tr("Polyline");
-        map[BUCKET] = tr("Bucket");
-        map[EYEDROPPER] = tr("Eyedropper");
-        map[BRUSH] = tr("Brush");
+        map[PENCIL] = "Pencil";
+        map[ERASER] = "Eraser";
+        map[SELECT] = "Select";
+        map[MOVE] = "Move";
+        map[HAND] = "Hand";
+        map[SMUDGE] = "Smudge";
+        map[PEN] = "Pen";
+        map[POLYLINE] = "Polyline";
+        map[BUCKET] = "Bucket";
+        map[EYEDROPPER] = "Eyedropper";
+        map[BRUSH] = "Brush";
     }
     return map.at(type);
 }

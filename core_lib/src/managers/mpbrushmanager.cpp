@@ -42,8 +42,12 @@ Status MPBrushManager::loadPresets()
 
         if (mBrushPresets.isEmpty() || mBrushPresets.first().allBrushes().isEmpty()) {
             st = Status::FAIL;
+            DebugDetails dd;
+
+            dd << "file path: " + fileOrder.fileName();
             st.setTitle(tr("Parse error!"));
             st.setDescription(tr("Not able to parse brush config"));
+            st.setDetails(dd);
         }
 
         QSettings settings(PENCIL2D,PENCIL2D);
@@ -550,7 +554,7 @@ QString MPBrushManager::getBrushConfigPath(const QString extension)
 
     QFile file(brushPath);
     if (!file.exists()) {
-        brushPath = QString(BRUSH_QRC) + "/" + extension;
+        brushPath = BRUSH_QRC + "/" + extension;
     }
     return brushPath;
 }
