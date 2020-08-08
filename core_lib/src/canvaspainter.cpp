@@ -300,7 +300,7 @@ void CanvasPainter::paintOnionSkin(QPainter& painter)
 void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize, bool isCurrentLayer, bool isCurrentFrame)
 {
     LayerBitmap* bitmapLayer = static_cast<LayerBitmap*>(layer);
-    BitmapImage* bitmapImage = bitmapLayer->getLastBitmapImageAtFrame(nFrame);
+    BitmapImage* bitmapImage = bitmapLayer->getBitmapImageAtFrame(nFrame);
 
     if (bitmapImage == nullptr) { return; }
 
@@ -310,21 +310,15 @@ void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame
 
     if (!isPainting || !isCurrentFrame || !isCurrentLayer) {
         painter.save();
-        painter.setTransform(v);
 
-        QImage imageFromBitmap = *bitmapImage->image();
-        QPainter imagePainter(&imageFromBitmap);
+        ImagePainter imagePainter;
+        imagePainter.paint(painter, v, *bitmapImage->image(), bitmapImage->topLeft(), colorize, mFrameNumber, nFrame);
 
-        if (colorize) {
-            paintColoredOnionSkin(imagePainter, imageFromBitmap.rect(), nFrame);
-        }
-
-        painter.drawImage(bitmapImage->bounds(), imageFromBitmap);
         painter.restore();
     }
 
     if (mRenderTransform) {
-        paintTransformedBitmap(painter);
+//        paintTransformedBitmap(painter);
     }
 }
 
@@ -448,24 +442,6 @@ bool CanvasPainter::isRectInsideCanvas(const QRect& rect) const
                                     -rect.width(),
                                     rect.width(),
                                     rect.width()).contains(rect);
-}
-
-void CanvasPainter::paintColoredOnionSkin(QPainter& painter, const QRect& bitmapRect, const int frameIndex)
-{
-    QBrush colorBrush = QBrush(Qt::transparent); // No color for the current frame
-
-    if (frameIndex < mFrameNumber)
-    {
-        colorBrush = QBrush(Qt::red);
-    }
-    else if (frameIndex > mFrameNumber)
-    {
-        colorBrush = QBrush(Qt::blue);
-    }
-
-    painter.setBrush(colorBrush);
-    painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
-    painter.drawRect(bitmapRect);
 }
 
 void CanvasPainter::prescale(BitmapImage* bitmapImage)

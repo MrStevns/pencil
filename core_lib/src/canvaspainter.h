@@ -24,6 +24,8 @@ GNU General Public License for more details.
 #include "log.h"
 #include "pencildef.h"
 
+#include "imagepainter.h"
+
 #include "layer.h"
 
 class Object;
@@ -147,8 +149,6 @@ private:
     void paintCameraBorder(QPainter& painter);
     void paintAxis(QPainter& painter);
     void prescale(BitmapImage* bitmapImage);
-
-    void paintColoredOnionSkin(QPainter& painter, const QRect& bitmapRect, const int frameIndex);
 
     /** Check if the given rect lies inside the canvas, assumes that the input rect is mapped correctly **/
     inline bool isRectInsideCanvas(const QRect& rect) const;

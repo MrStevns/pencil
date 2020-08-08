@@ -42,6 +42,7 @@ HEADERS +=  \
     src/graphics/vector/vectorimage.h \
     src/graphics/vector/vectorselection.h \
     src/graphics/vector/vertexref.h \
+    src/imagepainter.h \
     src/interface/backupelement.h \
     src/interface/editor.h \
     src/interface/flowlayout.h \
@@ -125,6 +126,7 @@ SOURCES += \
     src/graphics/vector/vectorimage.cpp \
     src/graphics/vector/vectorselection.cpp \
     src/graphics/vector/vertexref.cpp \
+    src/imagepainter.cpp \
     src/interface/editor.cpp \
     src/interface/flowlayout.cpp \
     src/interface/recentfilemenu.cpp \
