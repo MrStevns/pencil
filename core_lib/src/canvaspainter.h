@@ -122,12 +122,12 @@ private:
      */
     void paintCurrentBitmapFrame(QPainter& painter, Layer* layer);
 
-    /** paintBitmapTilesOnImage
+    /** paintBitmapTiles
      * Paints tiled images on top of the given bitmap image and canvas painter if needed.
      * @param painter
      * @param image
      */
-    void paintBitmapTilesOnImage(QPainter& painter, BitmapImage* image);
+    void paintBitmapTiles(QPainter& painter, BitmapImage* image);
 
     /** paintBitmapFrame
      * Paints bitmap frames to any given layer, do not use on current frame at current layer.

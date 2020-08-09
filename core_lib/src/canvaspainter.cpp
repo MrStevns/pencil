@@ -312,7 +312,7 @@ void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame
         painter.save();
 
         ImagePainter imagePainter;
-        imagePainter.paint(painter, v, *bitmapImage->image(), bitmapImage->topLeft(), colorize, mFrameNumber, nFrame);
+        imagePainter.paint(painter, mCanvasRect, v, *bitmapImage->image(), bitmapImage->topLeft(), colorize, mFrameNumber, nFrame);
 
         painter.restore();
     }
@@ -334,12 +334,12 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
 
     // Only paint with tiles for the frame we are painting on
     if (isPainting) {
-        paintBitmapTilesOnImage(painter, bitmapImage);
+        paintBitmapTiles(painter, bitmapImage);
     } else {
         painter.save();
-        painter.setTransform(v);
+        ImagePainter imagePainter;
+        imagePainter.paint(painter, mCanvasRect, v, *bitmapImage->image(), bitmapImage->topLeft());
 
-        painter.drawImage(bitmapImage->bounds(), *bitmapImage->image());
         painter.restore();
     }
 
@@ -348,92 +348,28 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
     }
 }
 
-void CanvasPainter::paintBitmapTilesOnImage(QPainter& painter, BitmapImage* image)
+void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
 {
     QTransform v = mViewTransform;
 
     auto tilesToRender = mOptions.tilesToBeRendered;
 
-    if (image->bounds().isValid()) {
+    painter.save();
+    ImagePainter imagePainter;
 
-        QImage renderImage = QImage(*image->image());
-        QPainter newPaint(&renderImage);
-
-        for (MPTile* item : tilesToRender) {
-
-            QPixmap pix = item->pixmap();
-
-            QRect rawRect = QRect(QPoint(item->pos()), QSize(item->boundingRect().size()));
-            QRect alignedRect = v.mapRect(rawRect);
-            if (isRectInsideCanvas(alignedRect)) {
-
-                // Tools that require continous clearing should not get in here
-                // eg. polyline because it's already clearing its surface per dab it creates
-
-                // Fixes not drawing on the same tile, that could otherwise cause small artifacts.
-                if (mOptions.useCanvasBuffer) {
-                    if (image->bounds().contains(rawRect)) {
-
-                        newPaint.save();
-                        newPaint.translate(-image->bounds().topLeft());
-                        newPaint.setCompositionMode(QPainter::CompositionMode_SourceOver);
-                        newPaint.drawPixmap(rawRect, pix, pix.rect());
-                        newPaint.restore();
-                    } else {
-                        // Fixes polyline being rendered on top of itself because the image has been painted already
-                        painter.save();
-                        painter.translate(-mCanvas->rect().width()/2, -mCanvas->rect().height()/2);
-                        painter.setTransform(v);
-                        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-                        painter.drawPixmap(rawRect, pix, pix.rect());
-                        painter.restore();
-                    }
-                } else {
-                    newPaint.save();
-                    newPaint.setCompositionMode(QPainter::CompositionMode_Source);
-                    newPaint.translate(-image->bounds().topLeft());
-                    newPaint.drawPixmap(rawRect, pix, pix.rect());
-                    newPaint.restore();
-
-                    if (!image->bounds().contains(rawRect)) {
-                        painter.save();
-                        painter.translate(-mCanvas->rect().width()/2, -mCanvas->rect().height()/2);
-                        painter.setTransform(v);
-                        painter.drawPixmap(rawRect, pix, pix.rect());
-                        painter.restore();
-                    }
-                }
-            }
-        }
-        painter.save();
-
-        // Paint the modified layer image
-        painter.setTransform(v);
-        painter.drawImage(image->bounds(), renderImage, renderImage.rect());
-        painter.restore();
-    } else {
-        for (MPTile* item : tilesToRender) {
-            QRectF tileRect = QRectF(item->pos(),
-                                     QSizeF(item->boundingRect().width(),
-                                            item->boundingRect().height()));
-            tileRect = v.mapRect(tileRect);
-
-            QPixmap pix = item->pixmap();
-
-            QRect alignedRect = tileRect.toRect();
-
-            if (isRectInsideCanvas(alignedRect)) {
-                QRectF rawRect = QRectF(item->pos(), item->boundingRect().size());
-
-                painter.save();
-                painter.translate(-mCanvas->rect().width()/2, -mCanvas->rect().height()/2);
-                painter.setTransform(v);
-
-                painter.drawPixmap(rawRect, pix, pix.rect());
-                painter.restore();
-            }
-        }
+    QRect imageBounds = image->bounds();
+    if (image->bounds().isEmpty()) {
+        imageBounds = QRect(0,0,1,1);
     }
+    QPixmap renderPixmap = QPixmap(imageBounds.size());
+    renderPixmap.fill(Qt::transparent);
+    QPainter imagePaintDevice(&renderPixmap);
+
+    for (MPTile* item : tilesToRender) {
+        imagePainter.paintTiled(painter, imagePaintDevice, mCanvasRect, v, mOptions.useCanvasBuffer, *image->image(), image->bounds(), item->pixmap(), item->pos());
+    }
+    imagePainter.paintPixmap(painter, mCanvasRect, v, renderPixmap, image->topLeft());
+    painter.restore();
 }
 
 bool CanvasPainter::isRectInsideCanvas(const QRect& rect) const
