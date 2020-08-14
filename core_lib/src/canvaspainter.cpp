@@ -339,7 +339,6 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
         painter.save();
         ImagePainter imagePainter;
         imagePainter.paint(painter, mCanvasRect, v, *bitmapImage->image(), bitmapImage->topLeft());
-
         painter.restore();
     }
 
@@ -357,18 +356,27 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
     painter.save();
     ImagePainter imagePainter;
 
-    QRect imageBounds = image->bounds();
-    if (image->bounds().isEmpty()) {
-        imageBounds = QRect(0,0,1,1);
-    }
-    QPixmap renderPixmap = QPixmap(imageBounds.size());
+    QPixmap renderPixmap = QPixmap(mCanvasRect.size());
     renderPixmap.fill(Qt::transparent);
+
     QPainter imagePaintDevice(&renderPixmap);
 
+    imagePainter.paint(imagePaintDevice, mCanvasRect, v, *image->image(), image->topLeft());
+
     for (MPTile* item : tilesToRender) {
-        imagePainter.paintTiled(painter, imagePaintDevice, mCanvasRect, v, mOptions.useCanvasBuffer, *image->image(), image->bounds(), item->pixmap(), item->pos());
+        QPixmap pix = item->pixmap();
+
+        QRect tileRect = QRect(QPoint(item->pos()), QSize(item->pixmap().size()));
+
+        imagePaintDevice.save();
+        imagePaintDevice.translate(-painter.viewport().width()/2, -painter.viewport().height()/2);
+        imagePaintDevice.setTransform(v);
+        imagePaintDevice.setCompositionMode(QPainter::CompositionMode_Source);
+        imagePaintDevice.drawPixmap(tileRect, pix, pix.rect());
+        imagePaintDevice.restore();
     }
-    imagePainter.paintPixmap(painter, mCanvasRect, v, renderPixmap, image->topLeft());
+
+    painter.drawPixmap(QPoint(), renderPixmap);
     painter.restore();
 }
 
