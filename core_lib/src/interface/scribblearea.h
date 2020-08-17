@@ -192,7 +192,6 @@ protected:
 public:
     void startStroke();
     void strokeTo(QPointF point, float pressure, float xtilt, float ytilt);
-    void setBrushWidth(float width);
     void endStroke();
     QColor pickColorFromSurface(QPointF point, int radius);
 

@@ -1263,12 +1263,6 @@ void ScribbleArea::startStroke()
     mIsPainting = true;
 }
 
-void ScribbleArea::setBrushWidth(float width)
-{
-    Q_UNUSED(width)
-//    mMyPaint->setBrushWidth(width);
-}
-
 void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float ytilt)
 {
     mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, calculateDeltaTime());

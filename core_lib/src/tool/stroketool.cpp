@@ -60,7 +60,6 @@ void StrokeTool::startStroke()
     }
 
     mScribbleArea->startStroke();
-    mScribbleArea->setBrushWidth(static_cast<float>(qLn(properties.width)));
 
     mFirstDraw = true;
     mLastPixel = getCurrentPixel();
