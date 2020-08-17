@@ -132,7 +132,7 @@ void StrokeTool::drawStroke(const QPointF pos)
     if ( pixel != mLastPixel || !mFirstDraw )
     {
         mLastPixel = pixel;
-        mStrokePoints << mEditor->view()->mapScreenToCanvas( pixel );
+        mStrokePoints << pixel;
         mStrokePressures << strokeManager()->getPressure();
     }
     else
@@ -144,7 +144,6 @@ void StrokeTool::drawStroke(const QPointF pos)
 void StrokeTool::drawStroke()
 {
     QPointF pixel = getCurrentPoint();
-
     drawStroke(pixel);
 }
 
