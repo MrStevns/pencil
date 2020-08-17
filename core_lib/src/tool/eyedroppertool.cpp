@@ -31,6 +31,7 @@ GNU General Public License for more details.
 #include "layermanager.h"
 #include "scribblearea.h"
 #include "util.h"
+#include "bitmaputils.h"
 
 EyedropperTool::EyedropperTool(QObject* parent) : BaseTool(parent)
 {
@@ -154,9 +155,13 @@ void EyedropperTool::updateFrontColor()
 
 QColor EyedropperTool::getBitmapColor(LayerBitmap* layer)
 {
-    QColor pickedColor = mScribbleArea->pickColorFromSurface(getCurrentPoint(), 10);
-    if (pickedColor.alpha() <= 0) pickedColor = QColor();
-    return pickedColor;
+    BitmapImage* targetImage = layer->getLastBitmapImageAtFrame(mEditor->currentFrame(), 0);
+    if (targetImage == nullptr || !targetImage->contains(getLastPoint())) return QColor();
+
+    QColor pickedColour;
+    pickedColour.setRgba(qUnpremultiply(BitmapUtils::pixel(*targetImage->image(), getLastPoint().toPoint(), targetImage->topLeft())));
+    if (pickedColour.alpha() <= 0) pickedColour = QColor();
+    return pickedColour;
 }
 
 int EyedropperTool::getVectorColor(LayerVector* layer)
