@@ -37,9 +37,7 @@ public:
     void pointerReleaseEvent(PointerEvent*) override;
 
     void drawStroke();
-    void paintAt(QPointF point);
-    void paintVectorStroke(Layer *layer);
-    void paintBitmapStroke();
+    void endStroke();
 
     void setWidth(const qreal width) override;
     void setPressure(const bool pressure) override;

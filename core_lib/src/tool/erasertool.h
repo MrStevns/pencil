@@ -36,7 +36,8 @@ public:
     void pointerReleaseEvent(PointerEvent*) override;
 
     void drawStroke();
-    void paintAt(QPointF point);
+    void endStroke();
+
     void removeVectorPaint();
     void updateStrokes();
 

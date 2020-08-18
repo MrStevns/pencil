@@ -132,18 +132,9 @@ void PenTool::pointerReleaseEvent(PointerEvent*)
     endStroke();
 }
 
-// draw a single paint dab at the given location
-void PenTool::paintAt(QPointF point)
-{
-    Q_UNUSED(point);
-    // TODO: reimplement dabbing
-    // mypaint doesn't seem to support it...
-}
-
 void PenTool::drawStroke()
 {
     StrokeTool::drawStroke();
-    QList<QPointF> p = strokeManager()->interpolateStroke();
 
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -158,52 +149,28 @@ void PenTool::drawStroke()
                  brushWidth * mEditor->view()->scaling(),
                  Qt::SolidLine,
                  Qt::RoundCap,
-                 Qt::RoundJoin);
+                 Qt::MiterJoin);
 
-        if (p.size() == 4)
+        QList<QPointF> p = strokeManager()->interpolateStroke();
+
+        if (p.size() >= 2)
         {
             QPainterPath path(p[0]);
-            path.cubicTo(p[1], p[2], p[3]);
+            path.quadTo(p.first(), p.last());
             mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
             mScribbleArea->refreshVector(path.boundingRect().toRect(), rad);
         }
     }
 }
 
-void PenTool::paintBitmapStroke()
+void PenTool::endStroke()
 {
-    mScribbleArea->paintBitmapBuffer();
-}
+    Layer* layer = mEditor->layers()->currentLayer();
 
-void PenTool::paintVectorStroke(Layer* layer)
-{
-    if (mStrokePoints.empty())
-        return;
+    if (layer->type() == Layer::BITMAP)
+        StrokeTool::paintBitmapStroke();
+    else if (layer->type() == Layer::VECTOR)
+        StrokeTool::paintVectorStroke();
 
-    // Clear the temporary pixel path
-    mScribbleArea->clearBitmapBuffer();
-    qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
-
-    BezierCurve curve(mStrokePoints, mStrokePressures, tol);
-    curve.setWidth(properties.width);
-    curve.setFeather(properties.feather);
-    curve.setFilled(false);
-    curve.setInvisibility(properties.invisibility);
-    curve.setVariableWidth(properties.pressure);
-    curve.setColorNumber(mEditor->color()->frontColorNumber());
-
-    auto pLayerVector = static_cast<LayerVector*>(layer);
-    VectorImage* vectorImage = pLayerVector->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-    if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
-    vectorImage->addCurve(curve, mEditor->view()->scaling(), false);
-
-    if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
-    {
-        mEditor->deselectAll();
-    }
-
-    vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
-
-    mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-    mScribbleArea->setAllDirty();
+    StrokeTool::endStroke();
 }

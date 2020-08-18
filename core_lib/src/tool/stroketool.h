@@ -55,8 +55,6 @@ protected:
     float mCurrentXTilt = .0f;
     float mCurrentYTilt = .0f;
 
-    bool isBrushDab = false;
-
     /// Whether to enable the "drawing on empty frame" preference.
     /// If true, then the user preference is honored.
     /// If false, then the stroke is drawn on the previous key-frame (i.e. the

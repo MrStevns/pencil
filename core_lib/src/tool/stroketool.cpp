@@ -102,15 +102,6 @@ bool StrokeTool::emptyFrameActionEnabled()
 
 void StrokeTool::endStroke()
 {
-    Layer* layer = mEditor->layers()->currentLayer();
-    qreal distance = QLineF(getCurrentPixel(), mMouseDownPoint).length();
-    if (distance < 1) { isBrushDab = true; } else { isBrushDab = false; }
-
-    if (layer->type() == Layer::BITMAP)
-        paintBitmapStroke();
-    else if (layer->type() == Layer::VECTOR)
-        paintVectorStroke();
-
     strokeManager()->interpolateEnd();
     mStrokePressures << strokeManager()->getPressure();
     mStrokePoints.clear();

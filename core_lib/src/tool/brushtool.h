@@ -33,14 +33,12 @@ public:
     void resetToDefault() override;
     QCursor cursor() override;
 
+    void endStroke();
+    void drawStroke();
+
     void pointerMoveEvent(PointerEvent*) override;
     void pointerPressEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
-
-//    void drawStroke();
-    void paintVectorStroke();
-    void paintBitmapStroke();
-    void paintAt(QPointF point);
 
     void setWidth(const qreal width) override;
     void setFeather(const qreal feather) override;
