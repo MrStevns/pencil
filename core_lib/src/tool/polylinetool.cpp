@@ -104,31 +104,36 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
 {
     Layer* layer = mEditor->layers()->currentLayer();
 
-    mScribbleArea->mMyPaint->clearSurface();
-    mEditor->backup(typeName());
-
     if (event->button() == Qt::LeftButton)
     {
+
+        if (layer->type() == Layer::BITMAP) {
+            mScribbleArea->mMyPaint->clearSurface();
+        }
+
+        mEditor->backup(typeName());
         if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR)
         {
             mScribbleArea->handleDrawingOnEmptyFrame();
 
             if (layer->type() == Layer::VECTOR)
             {
-                ((LayerVector *)layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0)->deselectAll();
+                mScribbleArea->clearBitmapBuffer();
+                static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0)->deselectAll();
                 if (mScribbleArea->makeInvisible() && !mEditor->preference()->isOn(SETTING::INVISIBLE_LINES))
                 {
                     mScribbleArea->toggleThinLines();
                 }
-            }
+            } else if (layer->type() == Layer::BITMAP) {
 
-            if (!mPoints.isEmpty()) {
+                if (!mPoints.isEmpty()) {
 
-                for(int i=0; i < mPoints.size(); i++) {
-                    drawStroke(mPoints[i]);
+                    for(int i=0; i < mPoints.size(); i++) {
+                        drawStroke(mPoints[i]);
+                    }
+
+                    mPoints.takeAt(0);
                 }
-
-                mPoints.takeAt(0);
             }
 
             if (previousPoint.isNull()) {
@@ -136,14 +141,18 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
             } else {
                 mPoints << previousPoint;
             }
+            mScribbleArea->setAllDirty();
         }
     }
 
-    mScribbleArea->mMyPaint->startStroke();
-    mScribbleArea->setIsPainting(true);
+    if (layer->type() == Layer::BITMAP)
+    {
+        mScribbleArea->mMyPaint->startStroke();
+        mScribbleArea->setIsPainting(true);
 
-    mScribbleArea->paintBitmapBuffer(QPainter::CompositionMode_SourceOver);
-    mScribbleArea->clearTilesBuffer();
+        mScribbleArea->paintBitmapBuffer(QPainter::CompositionMode_SourceOver);
+        mScribbleArea->clearTilesBuffer();
+    }
 }
 
 void PolylineTool::pointerMoveEvent(PointerEvent*)
@@ -202,37 +211,61 @@ bool PolylineTool::keyPressEvent(QKeyEvent* event)
 
 void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint)
 {
+    Layer* layer = mEditor->layers()->currentLayer();
     if (points.size() > 0)
     {
-        mScribbleArea->mMyPaint->clearSurface();
-        mScribbleArea->mMyPaint->startStroke();
-        for(int i=0; i<points.size(); i++) {
-            drawStroke(points[i]);
+
+        if (layer->type() == Layer::BITMAP) {
+            mScribbleArea->mMyPaint->clearSurface();
+            mScribbleArea->mMyPaint->startStroke();
+            for(int i=0; i<points.size(); i++) {
+                drawStroke(points[i]);
+            }
+            drawStroke(endPoint);
+            mScribbleArea->updateCurrentFrame();
+            mScribbleArea->mMyPaint->endStroke();
         }
-        drawStroke(endPoint);
-        mScribbleArea->updateCurrentFrame();
-        mScribbleArea->mMyPaint->endStroke();
+        else if (layer->type() == Layer::VECTOR)
+        {
+            QPen pen(mEditor->color()->frontColor(),
+                     properties.width,
+                     Qt::SolidLine,
+                     Qt::RoundCap,
+                     Qt::RoundJoin);
+            Layer* layer = mEditor->layers()->currentLayer();
 
+            // Bitmap by default
+            QPainterPath tempPath;
+            if (properties.bezier_state)
+            {
+                tempPath = BezierCurve(points).getSimplePath();
+            }
+            else
+            {
+                tempPath = BezierCurve(points).getStraightPath();
+            }
+            tempPath.lineTo(endPoint);
 
-        // Vector otherwise
-//        if (layer->type() == Layer::VECTOR)
-//        {
-//            if (mEditor->layers()->currentLayer()->type() == Layer::VECTOR)
-//            {
-//                tempPath = mEditor->view()->mapCanvasToScreen(tempPath);
-//                if (mScribbleArea->makeInvisible() == true)
-//                {
-//                    pen.setWidth(0);
-//                    pen.setStyle(Qt::DotLine);
-//                }
-//                else
-//                {
-//                    pen.setWidth(properties.width * mEditor->view()->scaling());
-//                }
-//            }
-//        }
+            // Vector otherwise
+            if (layer->type() == Layer::VECTOR)
+            {
+                if (mEditor->layers()->currentLayer()->type() == Layer::VECTOR)
+                {
+                    tempPath = mEditor->view()->mapCanvasToScreen(tempPath);
+                    if (mScribbleArea->makeInvisible() == true)
+                    {
+                        pen.setWidth(0);
+                        pen.setStyle(Qt::DotLine);
+                    }
+                    else
+                    {
+                        pen.setWidth(properties.width * mEditor->view()->scaling());
+                    }
+                }
+            }
 
-//        mScribbleArea->drawPolyline(tempPath, pen, properties.useAA);
+            mScribbleArea->drawPolyline(tempPath, pen, true);
+        }
     }
 }
 
@@ -250,6 +283,7 @@ void PolylineTool::endPolyline(QList<QPointF> points)
 
     if (layer->type() == Layer::VECTOR)
     {
+        mScribbleArea->clearBitmapBuffer();
         BezierCurve curve = BezierCurve(points, properties.bezier_state);
         if (mScribbleArea->makeInvisible() == true)
         {
@@ -263,14 +297,14 @@ void PolylineTool::endPolyline(QList<QPointF> points)
         curve.setVariableWidth(false);
         curve.setInvisibility(mScribbleArea->makeInvisible());
 
-        ((LayerVector *)layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0)->addCurve(curve, mEditor->view()->scaling());
+        static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0)->addCurve(curve, mEditor->view()->scaling());
     }
     if (layer->type() == Layer::BITMAP)
     {
         drawPolyline(points, points.last());
+        mScribbleArea->prepareForDrawing();
     }
     mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-    mScribbleArea->prepareForDrawing();
 
     endStroke();
 }
