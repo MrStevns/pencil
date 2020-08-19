@@ -371,7 +371,12 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
         imagePaintDevice.save();
         imagePaintDevice.translate(-painter.viewport().width()/2, -painter.viewport().height()/2);
         imagePaintDevice.setTransform(v);
-        imagePaintDevice.setCompositionMode(QPainter::CompositionMode_Source);
+
+        if (mOptions.useCanvasBuffer) {
+            imagePaintDevice.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        } else {
+            imagePaintDevice.setCompositionMode(QPainter::CompositionMode_Source);
+        }
         imagePaintDevice.drawPixmap(tileRect, pix, pix.rect());
         imagePaintDevice.restore();
     }
