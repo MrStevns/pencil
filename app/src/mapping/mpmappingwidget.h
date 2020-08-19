@@ -7,6 +7,7 @@
 class MPMappingWidget : public MappingConfiguratorWidget
 {
     Q_OBJECT
+    Q_ENUM(BrushInputType)
 public:
     MPMappingWidget(QWidget* parent = nullptr);
     MPMappingWidget(QString description, qreal min, qreal max, BrushInputType inputType, QVector<QPointF> points, int maxPoints, QWidget* parent = nullptr);

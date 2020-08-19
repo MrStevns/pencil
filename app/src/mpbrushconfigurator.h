@@ -25,6 +25,8 @@ class BrushSettingWidget;
 class MPBrushConfigurator : public QDialog
 {
     Q_OBJECT
+    Q_ENUM(BrushSettingType)
+    Q_ENUM(BrushInputType)
 public:
     MPBrushConfigurator(QWidget* parent = nullptr);
 
