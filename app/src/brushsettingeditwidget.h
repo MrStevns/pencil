@@ -23,6 +23,9 @@ public:
     void updateUI();
     void initUI();
 
+
+    void hideMappingUI();
+
     void setValue(qreal value);
 
     void closeMappingWindow();

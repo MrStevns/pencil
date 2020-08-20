@@ -1391,6 +1391,22 @@ void MainWindow2::openPalette()
     }
 }
 
+void MainWindow2::hideBrushSelectorWidgetIfNeeded()
+{
+    Layer* layer = mEditor->layers()->currentLayer();
+
+    QAction* menuAction = mBrushSelectorWidget->toggleViewAction();
+    if (layer->type() != Layer::BITMAP) {
+        mBrushSelectorWidget->setHidden(true);
+        menuAction->setDisabled(true);
+        mBrushSelectorWidget->showPresetManager(false);
+        mBrushSelectorWidget->showBrushConfigurator(false);
+    } else {
+        mBrushSelectorWidget->setHidden(false);
+        menuAction->setDisabled(false);
+    }
+}
+
 void MainWindow2::makeConnections(Editor* editor)
 {
     connect(editor, &Editor::updateBackup, this, &MainWindow2::updateSaveState);
@@ -1494,7 +1510,7 @@ void MainWindow2::makeConnections(Editor* editor, MPBrushSelector* brushSelector
     connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::notifyBrushSettingUpdated, brushSelector, &MPBrushSelector::notifySettingChanged);
     connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateSetting, brushSelector, &MPBrushSelector::notifySettingChanged);
 //    connect(toolManager, &ToolManager::toolChanged, mToolBrushSettingsWidget, &ToolBrushSettingsWidget::setupSettings);
-//    connect(editor->layers(), &LayerManager::layerTypeChanged, mToolBrushSettingsWidget, &ToolBrushSettingsWidget::showIfRelevant);
+    connect(editor->layers(), &LayerManager::currentLayerChanged, this, &MainWindow2::hideBrushSelectorWidgetIfNeeded);
 }
 
 void MainWindow2::bindActionWithSetting(QAction* action, SETTING setting)

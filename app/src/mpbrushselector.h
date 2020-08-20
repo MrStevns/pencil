@@ -47,7 +47,8 @@ public slots:
   void typeChanged(ToolType);
   void reloadBrushList();
   void updateBrushList(QString brushName, QString brushPreset);
-  void showPresetManager();
+  void showPresetManager(bool show);
+  void showBrushConfigurator(bool show);
 
 signals:
   void brushSelected();
@@ -68,7 +69,6 @@ private:
   void loadBrushes();
   void addToolTabs();
 
-  void openConfigurator();
   void showNotImplementedPopup();
   void changeBrushPreset(int index, QString name, int data);
 

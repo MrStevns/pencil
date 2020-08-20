@@ -123,14 +123,6 @@ void LayerManager::setCurrentLayer(int layerIndex)
             mLastCameraLayerIdx = layerIndex;
         }
     }
-
-
-    Layer::LAYER_TYPE layerType = object()->getLayer(layerIndex)->type();
-
-    // TODO: currently unused, we should hide or disable the brush selector whenever the layer is vector
-    if (currentLayer()->type() != layerType) {
-        emit layerTypeChanged(layerType);
-    }
 }
 
 void LayerManager::setCurrentLayer(Layer* layer)

@@ -161,6 +161,19 @@ void MPBrushConfigurator::updateUI()
     mBrushNameWidget->setText(mBrushName);
 }
 
+void MPBrushConfigurator::hideUI()
+{
+    hide();
+    for (BrushSettingEditWidget* widget : mBrushWidgets) {
+        if (widget) {
+            widget->hideMappingUI();
+        }
+    }
+    if (mBrushInfoWidget && mBrushInfoWidget->isVisible()) {
+        mBrushInfoWidget->hide();
+    }
+}
+
 void MPBrushConfigurator::updateConfig()
 {
     auto currentBrushName = mEditor->brushes()->currentBrushName();

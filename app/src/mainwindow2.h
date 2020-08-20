@@ -99,6 +99,8 @@ public:
     void setSoundScrubMsec(int msec);
     void setOpacity(int opacity);
     void preferences();
+
+    void hideBrushSelectorWidgetIfNeeded();
  
     void openFile(QString filename);
 

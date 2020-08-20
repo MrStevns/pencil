@@ -32,6 +32,7 @@ public:
 
     void initUI();
     void updateUI();
+    void hideUI();
 
     void setCore(Editor* editor) { mEditor = editor; }
 

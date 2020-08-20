@@ -47,6 +47,13 @@ BrushSettingEditWidget::BrushSettingEditWidget(const QString name, BrushSettingT
     connect(mSettingWidget, &BrushSettingWidget::brushSettingChanged, this, &BrushSettingEditWidget::updateSetting);
 }
 
+void BrushSettingEditWidget::hideMappingUI()
+{
+    if (mMappingWidget && mMappingWidget->isVisible()) {
+        mMappingWidget->hide();
+    }
+}
+
 void BrushSettingEditWidget::setCore(Editor* editor)
 {
     mEditor = editor;

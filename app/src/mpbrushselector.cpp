@@ -68,9 +68,9 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
     containerWidget->setLayout(mVLayout);
     setWidget(containerWidget);
 
-    connect(configuratorButton, &QToolButton::pressed, this, &MPBrushSelector::openConfigurator);
-    connect(presetsManagerButton, &QToolButton::pressed, this, &MPBrushSelector::showPresetManager);
+    connect(configuratorButton, &QToolButton::pressed, [=](void) { showBrushConfigurator(true); } );
     connect(mPresetComboBox, &ComboBox::activated, this, &MPBrushSelector::changeBrushPreset);
+    connect(presetsManagerButton, &QToolButton::pressed, [=](void) { showPresetManager(true); });
 }
 
 void MPBrushSelector::initUI()
@@ -338,13 +338,12 @@ void MPBrushSelector::selectBrush(QString brushName)
     }
 }
 
-void MPBrushSelector::openConfigurator()
+void MPBrushSelector::showBrushConfigurator(bool show)
 {
     if (mBrushConfiguratorWidget == nullptr) {
         mBrushConfiguratorWidget = new MPBrushConfigurator(this);
         mBrushConfiguratorWidget->setCore(mEditor);
         mBrushConfiguratorWidget->initUI();
-        mBrushConfiguratorWidget->show();
 
         connect(this, &MPBrushSelector::brushSelected, mBrushConfiguratorWidget, &MPBrushConfigurator::updateConfig);
         connect(mBrushConfiguratorWidget, &MPBrushConfigurator::refreshBrushList, this, &MPBrushSelector::reloadBrushList);
@@ -352,21 +351,32 @@ void MPBrushSelector::openConfigurator()
         connect(mBrushConfiguratorWidget, &MPBrushConfigurator::toggleSettingForBrushSetting, this, &MPBrushSelector::toggleSettingForBrushSetting);
         connect(mBrushConfiguratorWidget, &MPBrushConfigurator::brushSettingChanged, this, &MPBrushSelector::notifySettingChanged);
         connect(this, &MPBrushSelector::notifySettingChanged, mBrushConfiguratorWidget, &MPBrushConfigurator::updateBrushSetting);
-    } else {
+    }
+
+    if (show) {
         if (!mBrushConfiguratorWidget->isVisible()) {
             mBrushConfiguratorWidget->show();
         }
         mBrushConfiguratorWidget->updateUI();
+    } else {
+        mBrushConfiguratorWidget->hideUI();
     }
 }
 
-void MPBrushSelector::showPresetManager()
+void MPBrushSelector::showPresetManager(bool show)
 {
     if (mPresetsWidget == nullptr) {
         mPresetsWidget = new MPBrushPresetsWidget(mEditor->brushes()->presets(), this);
         connect(mPresetsWidget.data(), &MPBrushPresetsWidget::presetsChanged, this, &MPBrushSelector::reloadBrushList);
     }
-    mPresetsWidget->show();
+
+    if (show) {
+        if (!mPresetsWidget->isVisible()) {
+            mPresetsWidget->show();
+        }
+    } else {
+        mPresetsWidget->hide();
+    }
 }
 
 void MPBrushSelector::changeBrushPreset(int index, QString name, int data)
