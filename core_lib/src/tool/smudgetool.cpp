@@ -226,6 +226,11 @@ void SmudgeTool::pointerMoveEvent(PointerEvent* event)
             selectMan->setVertices(vectorImage->getVerticesCloseTo(getCurrentPoint(), selectMan->selectionTolerance()));
         }
     }
+
+    if (layer->type() == Layer::VECTOR) {
+        mScribbleArea->update();
+        mScribbleArea->setAllDirty();
+    }
 }
 
 void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
