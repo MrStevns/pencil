@@ -104,66 +104,121 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
 {
     Layer* layer = mEditor->layers()->currentLayer();
 
-    if (event->button() == Qt::LeftButton)
+    if (event->button() != Qt::LeftButton)
     {
-
-        if (layer->type() == Layer::BITMAP) {
-            mScribbleArea->mMyPaint->clearSurface();
-        }
-
-        mEditor->backup(typeName());
-        if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR)
-        {
-            mScribbleArea->handleDrawingOnEmptyFrame();
-
-            if (layer->type() == Layer::VECTOR)
-            {
-                mScribbleArea->clearBitmapBuffer();
-                static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0)->deselectAll();
-                if (mScribbleArea->makeInvisible() && !mEditor->preference()->isOn(SETTING::INVISIBLE_LINES))
-                {
-                    mScribbleArea->toggleThinLines();
-                }
-            } else if (layer->type() == Layer::BITMAP) {
-
-                if (!mPoints.isEmpty()) {
-
-                    for(int i=0; i < mPoints.size(); i++) {
-                        drawStroke(mPoints[i]);
-                    }
-
-                    mPoints.takeAt(0);
-                }
-            }
-
-            if (previousPoint.isNull()) {
-                mPoints << getCurrentPoint();
-            } else {
-                mPoints << previousPoint;
-            }
-            mScribbleArea->setAllDirty();
-        }
+        return;
     }
 
-    if (layer->type() == Layer::BITMAP)
-    {
-        mScribbleArea->mMyPaint->startStroke();
-        mScribbleArea->setIsPainting(true);
-
-        mScribbleArea->paintBitmapBuffer(QPainter::CompositionMode_SourceOver);
-        mScribbleArea->clearTilesBuffer();
+    if (layer->type() == Layer::VECTOR) {
+        pointerPressOnVector(event);
+    } else if (layer->type() == Layer::BITMAP) {
+        pointerPressOnBitmap(event);
     }
+
+    if (previousPoint.isNull()) {
+        mPoints << getCurrentPoint();
+    } else {
+        mPoints << previousPoint;
+    }
+    mScribbleArea->setAllDirty();
 }
 
-void PolylineTool::pointerMoveEvent(PointerEvent*)
+void PolylineTool::pointerPressOnVector(PointerEvent*)
 {
     Layer* layer = mEditor->layers()->currentLayer();
 
-    if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR)
+    mEditor->backup(typeName());
+    mScribbleArea->handleDrawingOnEmptyFrame();
+
+    mScribbleArea->clearBitmapBuffer();
+    static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0)->deselectAll();
+    if (mScribbleArea->makeInvisible() && !mEditor->preference()->isOn(SETTING::INVISIBLE_LINES))
     {
-        drawPolyline(mPoints, getCurrentPoint());
+        mScribbleArea->toggleThinLines();
+    }
+}
+
+void PolylineTool::pointerPressOnBitmap(PointerEvent*)
+{
+    mScribbleArea->mMyPaint->clearSurface();
+
+    mEditor->backup(typeName());
+    mScribbleArea->handleDrawingOnEmptyFrame();
+
+    if (!mPoints.isEmpty()) {
+
+        for(int i=0; i < mPoints.size(); i++) {
+            drawStroke(mPoints[i]);
+        }
+
+        mPoints.takeAt(0);
+    }
+
+    mScribbleArea->setIsPainting(true);
+
+    mScribbleArea->paintBitmapBuffer(QPainter::CompositionMode_SourceOver);
+    mScribbleArea->clearTilesBuffer();
+}
+
+void PolylineTool::pointerMoveEvent(PointerEvent* event)
+{
+    Layer* layer = mEditor->layers()->currentLayer();
+
+    if (mPoints.size() > 0)
+    {
+        if (layer->type() == Layer::VECTOR)
+        {
+            pointerMoveOnVector(event);
+        } else if (layer->type() == Layer::BITMAP) {
+            pointerMoveOnBitmap(event);
+        }
     }
     previousPoint = getCurrentPoint();
+}
+
+void PolylineTool::pointerMoveOnVector(PointerEvent *)
+{
+    QPen pen(mEditor->color()->frontColor(),
+             properties.width,
+             Qt::SolidLine,
+             Qt::RoundCap,
+             Qt::RoundJoin);
+
+    QPainterPath tempPath;
+    if (properties.bezier_state)
+    {
+        tempPath = BezierCurve(mPoints).getSimplePath();
+    }
+    else
+    {
+        tempPath = BezierCurve(mPoints).getStraightPath();
+    }
+    tempPath.lineTo(getCurrentPoint());
+
+    tempPath = mEditor->view()->mapCanvasToScreen(tempPath);
+    if (mScribbleArea->makeInvisible() == true)
+    {
+        pen.setWidth(0);
+        pen.setStyle(Qt::DotLine);
+    }
+    else
+    {
+        pen.setWidth(properties.width * mEditor->view()->scaling());
+    }
+
+    mScribbleArea->drawPolyline(tempPath, pen, true);
+}
+
+void PolylineTool::pointerMoveOnBitmap(PointerEvent *)
+{
+    mScribbleArea->mMyPaint->clearSurface();
+    for(int i=0; i<mPoints.size(); i++) {
+        mScribbleArea->mMyPaint->startStroke();
+        drawStroke(mPoints[i]);
+    }
+    drawStroke(getCurrentPoint());
+
+    mScribbleArea->updateCurrentFrame();
 }
 
 void PolylineTool::pointerReleaseEvent(PointerEvent *)

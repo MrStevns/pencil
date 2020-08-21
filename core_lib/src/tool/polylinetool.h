@@ -40,6 +40,12 @@ public:
     void pointerMoveEvent(PointerEvent* event) override;
     void pointerDoubleClickEvent(PointerEvent*) override;
 
+    void pointerPressOnVector(PointerEvent*);
+    void pointerPressOnBitmap(PointerEvent*);
+
+    void pointerMoveOnVector(PointerEvent*);
+    void pointerMoveOnBitmap(PointerEvent*);
+
     bool keyPressEvent(QKeyEvent* event) override;
 
     void clearToolData() override;
