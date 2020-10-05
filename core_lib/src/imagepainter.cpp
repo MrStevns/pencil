@@ -39,6 +39,8 @@ void ImagePainter::paint(QPainter& painter, QRect visibleArea, QTransform viewTr
     QRectF croppedRect = visibleArea;
     croppedRect = viewTransform.inverted().mapRect(croppedRect);
 
+    painter.setWorldMatrixEnabled(false);
+
     painter.drawPixmap(QPoint(), colorDevice);
 }
 

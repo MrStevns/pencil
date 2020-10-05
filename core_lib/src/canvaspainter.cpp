@@ -316,10 +316,6 @@ void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame
 
         painter.restore();
     }
-
-    if (mRenderTransform) {
-//        paintTransformedBitmap(painter);
-    }
 }
 
 void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
@@ -332,6 +328,8 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
     QTransform v = mViewTransform;
     bool isPainting = mOptions.isPainting;
 
+
+    painter.setWorldMatrixEnabled(false);
     // Only paint with tiles for the frame we are painting on
     if (isPainting) {
         paintBitmapTiles(painter, bitmapImage);
