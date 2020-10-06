@@ -159,7 +159,8 @@ QColor EyedropperTool::getBitmapColor(LayerBitmap* layer)
     if (targetImage == nullptr || !targetImage->contains(getLastPoint())) return QColor();
 
     QColor pickedColour;
-    pickedColour.setRgba(qUnpremultiply(BitmapUtils::pixel(*targetImage->image(), getLastPoint().toPoint(), targetImage->topLeft())));
+    pickedColour.setRgba(qUnpremultiply(BitmapUtils::pixel(*targetImage->image(), targetImage->topLeft(), getLastPoint().toPoint())));
+
     if (pickedColour.alpha() <= 0) pickedColour = QColor();
     return pickedColour;
 }
