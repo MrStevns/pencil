@@ -53,11 +53,12 @@ StrokeTool::StrokeTool(QObject* parent) : BaseTool(parent)
 
 void StrokeTool::startStroke()
 {
-    mEditor->backup(typeName());
     if (emptyFrameActionEnabled())
     {
         mScribbleArea->handleDrawingOnEmptyFrame();
     }
+
+    mEditor->backup(typeName());
 
     mScribbleArea->startStroke();
 
