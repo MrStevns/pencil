@@ -90,6 +90,13 @@ void BrushSettingWidget::setValue(qreal value)
     mVisualBox->setValue(value);
 
     mCurrentValue = value;
+
+#ifdef Q_OS_MAC
+    // HACK: Qt bug prevents the view from being updated properly, so sliders that needs to be
+    // updated at the same time, intertwine and causes offsetting...
+    // there's still some of it left even after this but it does make it somewhat useable now...
+    repaint();
+#endif
 }
 
 void BrushSettingWidget::changeText()
