@@ -247,7 +247,7 @@ void CanvasPainter::paintOnionSkin(QPainter& painter)
         int onionFrameNumber = mFrameNumber;
         if (mOptions.bIsOnionAbsolute)
         {
-            onionFrameNumber = layer->getPreviousFrameNumber(onionFrameNumber+1, true);
+            onionFrameNumber = layer->getPreviousFrameNumber(onionFrameNumber + 1, true);
         }
         onionFrameNumber = layer->getPreviousFrameNumber(onionFrameNumber, mOptions.bIsOnionAbsolute);
 
@@ -259,7 +259,7 @@ void CanvasPainter::paintOnionSkin(QPainter& painter)
 
             switch (layer->type())
             {
-            case Layer::BITMAP: { paintBitmapFrame(painter, layer, onionFrameNumber, mOptions.bColorizePrevOnion, false, false); break; }
+            case Layer::BITMAP: { paintBitmapFrame(painter, layer, onionFrameNumber, mOptions.bColorizePrevOnion, false, false, false); break; }
             case Layer::VECTOR: { paintVectorFrame(painter, layer, onionFrameNumber, mOptions.bColorizePrevOnion, false, false); break; }
             default: break;
             }
@@ -285,7 +285,7 @@ void CanvasPainter::paintOnionSkin(QPainter& painter)
 
             switch (layer->type())
             {
-            case Layer::BITMAP: { paintBitmapFrame(painter, layer, onionFrameNumber, mOptions.bColorizeNextOnion, false, false); break; }
+            case Layer::BITMAP: { paintBitmapFrame(painter, layer, onionFrameNumber, mOptions.bColorizeNextOnion, false, false, false); break; }
             case Layer::VECTOR: { paintVectorFrame(painter, layer, onionFrameNumber, mOptions.bColorizeNextOnion, false, false); break; }
             default: break;
             }
@@ -297,10 +297,20 @@ void CanvasPainter::paintOnionSkin(QPainter& painter)
     }
 }
 
-void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize, bool isCurrentLayer, bool isCurrentFrame)
+void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize, bool exposeFrame, bool isCurrentLayer, bool isCurrentFrame)
 {
     LayerBitmap* bitmapLayer = static_cast<LayerBitmap*>(layer);
-    BitmapImage* bitmapImage = bitmapLayer->getLastBitmapImageAtFrame(nFrame);
+
+    BitmapImage* bitmapImage = nullptr;
+    if (exposeFrame)
+    {
+        bitmapImage = bitmapLayer->getLastBitmapImageAtFrame(nFrame, 0);
+        CANVASPAINTER_LOG("      Actual frame = %d", paintedImage->pos());
+    }
+    else
+    {
+        bitmapImage = bitmapLayer->getBitmapImageAtFrame(nFrame);
+    }
 
     if (bitmapImage == nullptr) { return; }
 
@@ -562,7 +572,7 @@ void CanvasPainter::paintCurrentFrameAtLayer(QPainter& painter, int startLayer, 
 
         switch (layer->type())
         {
-        case Layer::BITMAP: { paintBitmapFrame(painter, layer, mFrameNumber, false, i == mCurrentLayerIndex, true); break; }
+        case Layer::BITMAP: { paintBitmapFrame(painter, layer, mFrameNumber, false, true, i == mCurrentLayerIndex, true); break; }
         case Layer::VECTOR: { paintVectorFrame(painter, layer, mFrameNumber, false, true, i == mCurrentLayerIndex); break; }
         default: break;
         }
