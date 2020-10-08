@@ -75,10 +75,10 @@ QCursor EyedropperTool::cursor(const QColor color)
     painter.drawPixmap(0, 0, icon);
     painter.save();
     painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    painter.setBrush(QColor(red, green, blue));
     painter.restore();
     painter.drawRect(17, 17, 13, 13);
     painter.setPen(QPen(Qt::white, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setBrush(QColor(red, green, blue));
     painter.drawRect(16, 16, 15, 15);
     painter.end();
 
