@@ -1617,6 +1617,8 @@ void ScribbleArea::deleteSelection()
         if (layer->type() == Layer::VECTOR) { currentVectorImage(layer)->deleteSelection(); }
         if (layer->type() == Layer::BITMAP) { currentBitmapImage(layer)->clear(selectMan->mySelectionRect()); }
         updateAllFrames();
+
+        mMyPaint->clearAreaFromSurface(selectMan->mySelectionRect().toRect());
     }
 }
 
