@@ -96,6 +96,7 @@ HEADERS +=  \
     src/util/colordictionary.h \
     src/util/fileformat.h \
     src/util/filetype.h \
+    src/util/imagecompositor.h \
     src/util/mathutils.h \
     src/util/pencildef.h \
     src/util/pencilerror.h \
@@ -174,6 +175,7 @@ SOURCES += \
     src/tool/stroketool.cpp \
     src/util/blitrect.cpp \
     src/util/fileformat.cpp \
+    src/util/imagecompositor.cpp \
     src/util/pencilerror.cpp \
     src/util/pencilsettings.cpp \
     src/util/log.cpp \

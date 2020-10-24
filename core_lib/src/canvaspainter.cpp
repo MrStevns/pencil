@@ -24,6 +24,7 @@ GNU General Public License for more details.
 #include "layercamera.h"
 #include "vectorimage.h"
 #include "util.h"
+#include <imagecompositor.h>
 
 #include <QtMath>
 
@@ -321,8 +322,23 @@ void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame
     if (!isPainting || !isCurrentFrame || !isCurrentLayer) {
         painter.save();
 
-        ImagePainter imagePainter;
-        imagePainter.paint(painter, mCanvasRect, v, *bitmapImage->image(), bitmapImage->topLeft(), colorize, mFrameNumber, nFrame);
+        ImageCompositor compositor(mCanvasRect, bitmapImage->topLeft(), mViewTransform);
+        QColor colorizeColor = Qt::black;
+        if (colorize) {
+            if (nFrame < mFrameNumber)
+            {
+                colorizeColor = Qt::red;
+            }
+            else if (nFrame > mFrameNumber)
+            {
+                colorizeColor = Qt::blue;
+            }
+        }
+
+        compositor.addImage(*bitmapImage->image());
+        compositor.addEffect(CompositeEffect::Colorize, colorizeColor);
+
+        painter.drawImage(QPoint(), compositor.output());
 
         painter.restore();
     }
@@ -338,20 +354,23 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
     QTransform v = mViewTransform;
     bool isPainting = mOptions.isPainting;
 
-
     painter.setWorldMatrixEnabled(false);
     // Only paint with tiles for the frame we are painting on
     if (isPainting) {
         paintBitmapTiles(painter, bitmapImage);
     } else {
         painter.save();
-        ImagePainter imagePainter;
-        imagePainter.paint(painter, mCanvasRect, v, *bitmapImage->image(), bitmapImage->topLeft());
-        painter.restore();
-    }
+        ImageCompositor compositor(mCanvasRect, bitmapImage->topLeft(), mViewTransform);
+        compositor.addImage(*bitmapImage->image());
 
-    if (mRenderTransform) {
-        paintTransformedBitmap(painter);
+        if (mRenderTransform) {
+            compositor.addEffect(CompositeEffect::Transformation, mSelectionTransform, mStartSelection);
+        }
+        auto output = compositor.output();
+
+        painter.drawImage(QPoint(), compositor.output());
+
+        painter.restore();
     }
 }
 
@@ -362,14 +381,13 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
     auto tilesToRender = mOptions.tilesToBeRendered;
 
     painter.save();
-    ImagePainter imagePainter;
 
-    QPixmap renderPixmap = QPixmap(mCanvasRect.size());
-    renderPixmap.fill(Qt::transparent);
+    ImageCompositor compositor(mCanvasRect, image->topLeft(), mViewTransform);
 
-    QPainter imagePaintDevice(&renderPixmap);
+    compositor.addImage(*image->image());
+    auto output = compositor.output();
 
-    imagePainter.paint(imagePaintDevice, mCanvasRect, v, *image->image(), image->topLeft());
+    QPainter imagePaintDevice(&output);
 
     for (MPTile* item : tilesToRender) {
         QPixmap pix = item->pixmap();
@@ -389,7 +407,7 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
         imagePaintDevice.restore();
     }
 
-    painter.drawPixmap(QPoint(), renderPixmap);
+    painter.drawImage(QPoint(), output);
     painter.restore();
 }
 
@@ -491,59 +509,6 @@ void CanvasPainter::paintVectorFrame(QPainter& painter,
     // Paint buffer pasted on top of vector image:
     // fixes polyline not being rendered properly
     rasterizedVectorImage.paintImage(painter);
-}
-
-void CanvasPainter::paintTransformedBitmap(QPainter& painter)
-{
-    // Make sure there is something selected
-    if (mCurrentSelection.width() == 0 && mCurrentSelection.height() == 0)
-        return;
-
-    Layer* layer = mObject->getLayer(mCurrentLayerIndex);
-
-    // Get the transformed image
-    BitmapImage* bitmapImage = dynamic_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(mFrameNumber, 0);
-
-    QImage tranformedImage = QImage(mStartSelection.size(), QImage::Format_ARGB32_Premultiplied);
-    tranformedImage.fill(Qt::transparent);
-
-    QPainter imagePainter(&tranformedImage);
-
-    imagePainter.save();
-    imagePainter.translate(-mStartSelection.topLeft());
-    imagePainter.drawImage(bitmapImage->bounds().topLeft(), *bitmapImage->image());
-    imagePainter.restore();
-    imagePainter.end();
-
-    painter.save();
-    painter.setCompositionMode(QPainter::CompositionMode_Clear);
-
-    QTransform selectionTransform = mSelectionTransform;
-
-
-    QRect fillRect = mStartSelection;
-
-    // avoid modifiying the origin fill area when it's been transformed.
-    if (mSelectionModified && mModifiedTransformSet) {
-        selectionTransform = mModifiedTransform;
-    } else {
-        mModifiedTransform = selectionTransform;
-        mModifiedTransformSet = true;
-    }
-
-    painter.setTransform(mViewTransform);
-
-    // Therefore translate back the corner back to center
-    painter.fillRect(fillRect, QColor(255,255,255,255));
-    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-
-    // Multiply the selection and view matrix to get proper rotation and scale values
-    // Now the image origin will be topleft
-    painter.setTransform(mSelectionTransform*mViewTransform);
-
-    // Draw the selection image separately and on top
-    painter.drawImage(mStartSelection, tranformedImage);
-    painter.restore();
 }
 
 /** Paints layers within the specified range for the current frame.

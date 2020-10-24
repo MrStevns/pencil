@@ -140,7 +140,6 @@ private:
     void paintBitmapFrame(QPainter&, Layer* layer, int nFrame, bool colorize, bool exposeFrame, bool isCurrentLayer, bool isCurrentFrame);
     void paintVectorFrame(QPainter&, Layer* layer, int nFrame, bool colorize, bool useLastKeyFrame, bool isCurrentFrame);
 
-    void paintTransformedBitmap(QPainter& painter);
     void paintGrid(QPainter& painter);
     void paintOverlayCenter(QPainter& painter);
     void paintOverlayThirds(QPainter& painter);
