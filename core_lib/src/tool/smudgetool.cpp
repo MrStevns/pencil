@@ -240,13 +240,7 @@ void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
 
     if (event->button() == Qt::LeftButton)
     {
-//        mEditor->backup(typeName());
-
-        if (layer->type() == Layer::BITMAP)
-        {
-            endStroke();
-        }
-        else if (layer->type() == Layer::VECTOR)
+        if (layer->type() == Layer::VECTOR)
         {
             VectorImage *vectorImage = ((LayerVector *)layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
             vectorImage->applySelectionTransformation();
@@ -260,6 +254,15 @@ void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
             }
             mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
         }
+
+        Layer* layer = mEditor->layers()->currentLayer();
+
+        if (layer->type() == Layer::BITMAP)
+            StrokeTool::paintBitmapStroke();
+        else if (layer->type() == Layer::VECTOR)
+            StrokeTool::paintVectorStroke();
+
+        StrokeTool::endStroke();
     }
 }
 
