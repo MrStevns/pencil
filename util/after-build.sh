@@ -125,7 +125,7 @@ if [ "${TRAVIS_BRANCH}" = "master" ] || [ "${TRAVIS_BRANCH}" = "release" ] || [ 
   upload_default
 fi
 
-if [ "${TRAVIS_PULL_REQUEST_SLUG}" = "pencil2d/pencil"] || ["${FORCE_PULLREQUEST_UPLOAD}" = "yes" ]; then
+if [ "${TRAVIS_PULL_REQUEST_SLUG}" = "pencil2d/pencil" ] || [ "${FORCE_PULLREQUEST_UPLOAD}" = "yes" ]; then
   upload_pr
 fi
 
