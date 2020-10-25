@@ -71,7 +71,7 @@ static void onTileRequestStart(MyPaintTiledSurface *tiled_surface, MyPaintTileRe
     } else {
 
         MPTile* tile = self->getTileFromIdx(QPoint(tx,ty));
-        tile_pointer = tile ? tile->Bits(false) : nullptr;
+        tile_pointer = tile ? tile->bits(false) : nullptr;
     }
 
     // here we send our buffer data to mypaint

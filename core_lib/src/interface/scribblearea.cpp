@@ -1232,7 +1232,7 @@ void ScribbleArea::updateTile(MPSurface *surface, MPTile *tile)
 {
     Q_UNUSED(surface)
 
-    QPointF pos = tile->pos();
+    QPoint pos = tile->pos();
 
     tile->setDirty(true);
 

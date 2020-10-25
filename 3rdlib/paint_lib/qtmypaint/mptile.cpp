@@ -32,7 +32,7 @@ QRect MPTile::boundingRect() const
     return m_cache_pix.rect();
 }
 
-uint16_t* MPTile::Bits(bool readOnly)
+uint16_t* MPTile::bits(bool readOnly)
 {
     // Correct C++ way of doing things is using "const" but MyPaint API is not compatible here
     m_cache_valid = readOnly ? m_cache_valid : false;
@@ -59,7 +59,7 @@ void MPTile::updateCache()
     QRgb* dst = (reinterpret_cast<QRgb*>(m_cache_img.bits()));
     for (int y = 0 ; y < k_tile_dim ; y++) {
          for (int x = 0 ; x < k_tile_dim ; x++) {
-              uint16_t alpha = t_pixels[y][x][k_alpha];
+              uint16_t& alpha = t_pixels[y][x][k_alpha];
               *dst = alpha ? qRgba(
               CONV_16_8(t_pixels[y][x][k_red]),
               CONV_16_8(t_pixels[y][x][k_green]),
@@ -69,7 +69,7 @@ void MPTile::updateCache()
          }
     }
 
-    m_cache_pix = QPixmap::fromImage(m_cache_img, Qt::ImageConversionFlag::NoFormatConversion);
+    m_cache_pix.convertFromImage(m_cache_img, Qt::ImageConversionFlag::NoFormatConversion);
     m_cache_valid = true;
 }
 
@@ -84,11 +84,11 @@ void MPTile::setPixmap(const QPixmap& pixmap)
 
 void MPTile::updateMyPaintBuffer(const QSize& tileSize, const QPixmap& pixmap)
 {
-    QImage image = pixmap.toImage();
+    QImage image (pixmap.toImage());
     for (int y = 0 ; y < tileSize.height(); y++) {
          for (int x = 0 ; x < tileSize.width() ; x++) {
 
-            const QRgb pixelColor = *(reinterpret_cast<const QRgb*>(image.constScanLine(y))+x);
+            const QRgb& pixelColor = *(reinterpret_cast<const QRgb*>(image.constScanLine(y))+x);
 
             t_pixels[y][x][k_alpha]    = static_cast<uint16_t>CONV_8_16(qAlpha(pixelColor));
             t_pixels[y][x][k_red]      = static_cast<uint16_t>CONV_8_16(qRed(pixelColor));

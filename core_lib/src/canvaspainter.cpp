@@ -397,7 +397,7 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
     imagePaintDevice.translate(-painter.viewport().width()/2, -painter.viewport().height()/2);
     imagePaintDevice.setTransform(mViewTransform);
     for (MPTile* item : tilesToRender) {
-        QPixmap pix = item->pixmap();
+        const QPixmap& pix = item->pixmap();
 
         QRect tileRect = QRect(item->pos(), item->pixmap().size());
 
