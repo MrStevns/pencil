@@ -260,7 +260,7 @@ void CanvasPainter::paintOnionSkin(QPainter& painter)
 
             switch (layer->type())
             {
-            case Layer::BITMAP: { paintBitmapFrame(painter, layer, onionFrameNumber, mOptions.bColorizePrevOnion, false, false, false); break; }
+            case Layer::BITMAP: { paintBitmapOnionSkinFrame(painter, layer, onionFrameNumber, mOptions.bColorizePrevOnion); break; }
             case Layer::VECTOR: { paintVectorFrame(painter, layer, onionFrameNumber, mOptions.bColorizePrevOnion, false, false); break; }
             default: break;
             }
@@ -286,7 +286,7 @@ void CanvasPainter::paintOnionSkin(QPainter& painter)
 
             switch (layer->type())
             {
-            case Layer::BITMAP: { paintBitmapFrame(painter, layer, onionFrameNumber, mOptions.bColorizeNextOnion, false, false, false); break; }
+            case Layer::BITMAP: { paintBitmapOnionSkinFrame(painter, layer, onionFrameNumber, mOptions.bColorizeNextOnion); break; }
             case Layer::VECTOR: { paintVectorFrame(painter, layer, onionFrameNumber, mOptions.bColorizeNextOnion, false, false); break; }
             default: break;
             }
@@ -298,48 +298,57 @@ void CanvasPainter::paintOnionSkin(QPainter& painter)
     }
 }
 
-void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize, bool exposeFrame, bool isCurrentLayer, bool isCurrentFrame)
+void CanvasPainter::paintBitmapOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize)
 {
     LayerBitmap* bitmapLayer = static_cast<LayerBitmap*>(layer);
 
-    BitmapImage* bitmapImage = nullptr;
-    if (exposeFrame)
-    {
-        bitmapImage = bitmapLayer->getLastBitmapImageAtFrame(nFrame, 0);
-        CANVASPAINTER_LOG("      Actual frame = %d", paintedImage->pos());
-    }
-    else
-    {
-        bitmapImage = bitmapLayer->getBitmapImageAtFrame(nFrame);
-    }
+    BitmapImage* bitmapImage = bitmapLayer->getLastBitmapImageAtFrame(nFrame, 0);
 
     if (bitmapImage == nullptr) { return; }
 
-    QTransform v = mViewTransform;
+    painter.save();
+    painter.setWorldMatrixEnabled(false);
+
+    ImageCompositor compositor(mCanvasRect, bitmapImage->topLeft(), mViewTransform);
+
+    compositor.addImage(*bitmapImage->image());
+    QColor colorizeColor = Qt::black;
+    if (colorize) {
+        if (nFrame < mFrameNumber)
+        {
+            colorizeColor = Qt::red;
+        }
+        else if (nFrame > mFrameNumber)
+        {
+            colorizeColor = Qt::blue;
+        }
+    }
+
+    compositor.addEffect(CompositeEffect::Colorize, colorizeColor);
+
+    painter.drawImage(QPoint(), compositor.output());
+    painter.restore();
+}
+
+void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame, bool isCurrentFrame, bool isCurrentLayer)
+{
+    LayerBitmap* bitmapLayer = static_cast<LayerBitmap*>(layer);
+
+    BitmapImage* bitmapImage = bitmapLayer->getLastBitmapImageAtFrame(nFrame, 0);
+
+    if (bitmapImage == nullptr) { return; }
 
     bool isPainting = mOptions.isPainting;
 
     if (!isPainting || !isCurrentFrame || !isCurrentLayer) {
         painter.save();
+        painter.setWorldMatrixEnabled(false);
 
         ImageCompositor compositor(mCanvasRect, bitmapImage->topLeft(), mViewTransform);
-        QColor colorizeColor = Qt::black;
-        if (colorize) {
-            if (nFrame < mFrameNumber)
-            {
-                colorizeColor = Qt::red;
-            }
-            else if (nFrame > mFrameNumber)
-            {
-                colorizeColor = Qt::blue;
-            }
-        }
 
         compositor.addImage(*bitmapImage->image());
-        compositor.addEffect(CompositeEffect::Colorize, colorizeColor);
 
         painter.drawImage(QPoint(), compositor.output());
-
         painter.restore();
     }
 }
@@ -350,8 +359,6 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
     BitmapImage* bitmapImage = bitmapLayer->getLastBitmapImageAtFrame(mFrameNumber);
 
     if (bitmapImage == nullptr) { return; }
-
-    QTransform v = mViewTransform;
     bool isPainting = mOptions.isPainting;
 
     painter.setWorldMatrixEnabled(false);
@@ -376,8 +383,6 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
 
 void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
 {
-    QTransform v = mViewTransform;
-
     auto tilesToRender = mOptions.tilesToBeRendered;
 
     painter.save();
@@ -389,14 +394,12 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
 
     QPainter imagePaintDevice(&output);
 
+    imagePaintDevice.translate(-painter.viewport().width()/2, -painter.viewport().height()/2);
+    imagePaintDevice.setTransform(mViewTransform);
     for (MPTile* item : tilesToRender) {
         QPixmap pix = item->pixmap();
 
-        QRect tileRect = QRect(QPoint(item->pos()), QSize(item->pixmap().size()));
-
-        imagePaintDevice.save();
-        imagePaintDevice.translate(-painter.viewport().width()/2, -painter.viewport().height()/2);
-        imagePaintDevice.setTransform(v);
+        QRect tileRect = QRect(item->pos(), item->pixmap().size());
 
         if (mOptions.useCanvasBuffer) {
             imagePaintDevice.setCompositionMode(QPainter::CompositionMode_SourceOver);
@@ -404,7 +407,6 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
             imagePaintDevice.setCompositionMode(QPainter::CompositionMode_Source);
         }
         imagePaintDevice.drawPixmap(tileRect, pix, pix.rect());
-        imagePaintDevice.restore();
     }
 
     painter.drawImage(QPoint(), output);
@@ -521,7 +523,6 @@ void CanvasPainter::paintCurrentFrameAtLayer(QPainter& painter, int startLayer, 
 {
     painter.setOpacity(1.0);
 
-
     bool isCameraLayer = mObject->getLayer(mCurrentLayerIndex)->type() == Layer::CAMERA;
 
     for (int i = startLayer; i <= endLayer; ++i)
@@ -535,10 +536,12 @@ void CanvasPainter::paintCurrentFrameAtLayer(QPainter& painter, int startLayer, 
             painter.setOpacity(calculateRelativeOpacityForLayer(i));
         }
 
+        bool isCurrentLayer = i == mCurrentLayerIndex;
+
         switch (layer->type())
         {
-        case Layer::BITMAP: { paintBitmapFrame(painter, layer, mFrameNumber, false, true, i == mCurrentLayerIndex, true); break; }
-        case Layer::VECTOR: { paintVectorFrame(painter, layer, mFrameNumber, false, true, i == mCurrentLayerIndex); break; }
+        case Layer::BITMAP: { paintBitmapFrame(painter, layer, mFrameNumber, true, isCurrentLayer); break; }
+        case Layer::VECTOR: { paintVectorFrame(painter, layer, mFrameNumber, false, true, isCurrentLayer); break; }
         default: break;
         }
     }

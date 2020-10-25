@@ -137,7 +137,7 @@ private:
      * @param isCurrentLayer
      * @param isCurrentFrame
      */
-    void paintBitmapFrame(QPainter&, Layer* layer, int nFrame, bool colorize, bool exposeFrame, bool isCurrentLayer, bool isCurrentFrame);
+    void paintBitmapFrame(QPainter&, Layer* layer, int nFrame, bool isCurrentFrame, bool isCurrentLayer);
     void paintVectorFrame(QPainter&, Layer* layer, int nFrame, bool colorize, bool useLastKeyFrame, bool isCurrentFrame);
 
     void paintGrid(QPainter& painter);
@@ -157,6 +157,9 @@ private:
 
     void savePaintResult(QString layerName, int frameNum);
 private:
+
+    void paintBitmapOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize);
+
     CanvasPainterOptions mOptions;
 
     const Object* mObject = nullptr;

@@ -4,25 +4,19 @@
 
 ImageCompositor::ImageCompositor(QRect compositorRect, QPoint origin, QTransform compsitorView)
 {
-    QImage outputImage = QImage(compositorRect.size(), QImage::Format_ARGB32_Premultiplied);
-    outputImage.fill(Qt::transparent);
     mCanvasTransform = compsitorView;
-    mOutputImage = outputImage;
+    mOutputImage = QImage(compositorRect.size(), QImage::Format_ARGB32_Premultiplied);
     mOutputOrigin = origin;
+
+    mOutputImage.fill(Qt::transparent);
 }
 
 void ImageCompositor::addImage(QImage& image)
 {
     QPainter mainCompositor(&mOutputImage);
-    QPixmap drawingDevice = QPixmap(image.size());
-    drawingDevice.fill(Qt::transparent);
-
-    mainCompositor.save();
     mainCompositor.setTransform(mCanvasTransform);
     mainCompositor.translate(mOutputOrigin);
     mainCompositor.drawImage(QPoint(), image);
-
-    mainCompositor.restore();
 
     mComposedImages.append(image);
 }
