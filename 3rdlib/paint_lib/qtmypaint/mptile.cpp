@@ -7,8 +7,6 @@
  */
 
 #include "mptile.h"
-#include "qdebug.h"
-#include "qelapsedtimer.h"
 
 MPTile::MPTile(const MPTile* tile):
     m_cache_img(k_tile_dim,k_tile_dim,QImage::Format_ARGB32_Premultiplied),
