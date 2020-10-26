@@ -1611,7 +1611,7 @@ void ScribbleArea::deleteSelection()
         Layer* layer = mEditor->layers()->currentLayer();
         if (layer == nullptr) { return; }
 
-////        mEditor->backup(tr("Delete Selection", "Undo Step: clear the selection area."));
+        mEditor->backup(tr("Delete Selection", "Undo Step: clear the selection area."));
 
         selectMan->clearCurves();
         if (layer->type() == Layer::VECTOR) { currentVectorImage(layer)->deleteSelection(); }
@@ -1629,7 +1629,7 @@ void ScribbleArea::clearCanvas()
 
     if (layer->type() == Layer::VECTOR)
     {
-//        mEditor->backup(tr("Clear Image", "Undo step text"));
+        mEditor->backup(tr("Clear Image", "Undo step text"));
 
         currentVectorImage(layer)->clear();
         mEditor->select()->clearCurves();
@@ -1637,7 +1637,7 @@ void ScribbleArea::clearCanvas()
     }
     else if (layer->type() == Layer::BITMAP)
     {
-//        mEditor->backup(tr("Clear Image", "Undo step text"));
+        mEditor->backup(tr("Clear Image", "Undo step text"));
         currentBitmapImage(layer)->clear();
     }
     else

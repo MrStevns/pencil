@@ -163,7 +163,6 @@ void BrushTool::pointerMoveEvent(PointerEvent* event)
 
 void BrushTool::pointerReleaseEvent(PointerEvent*)
 {
-//    mEditor->backup(typeName());
     endStroke();
 }
 

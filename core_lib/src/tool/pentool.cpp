@@ -128,7 +128,6 @@ void PenTool::pointerMoveEvent(PointerEvent* event)
 
 void PenTool::pointerReleaseEvent(PointerEvent*)
 {
-//    mEditor->backup(typeName());
     endStroke();
 }
 
