@@ -26,9 +26,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <QPainter>
-#include "mpsurface.h"
-#include "qdebug.h"
+#include <QDebug>
+#include <QtMath>
 
+#include "mpsurface.h"
 #include "qrect.h"
 
 static void freeTiledSurface(MyPaintSurface *surface)
@@ -302,7 +303,7 @@ void MPSurface::saveSurface(const QString path)
  */
 QList<QPoint> MPSurface::findCorrespondingTiles(const QRect& rect)
 {
-    QRect searchRect = QRect(rect.topLeft(), rect.size());
+    QRect searchRect = rect;
     const int tileWidth = MYPAINT_TILE_SIZE;
     const int tileHeight = MYPAINT_TILE_SIZE;
     const float imageWidth = searchRect.width();
@@ -509,12 +510,12 @@ MPTile* MPSurface::getTileFromIdx(const QPoint& idx)
 
 inline QPoint MPSurface::getTilePos(const QPoint& idx)
 {
-    return QPoint(MYPAINT_TILE_SIZE*idx.x(), MYPAINT_TILE_SIZE*idx.y());
+    return QPoint(qRound(MYPAINT_TILE_SIZE*static_cast<qreal>(idx.x())), qRound(MYPAINT_TILE_SIZE*static_cast<qreal>(idx.y())));
 }
 
 inline QPoint MPSurface::getTileIndex(const QPoint& pos)
 {
-    return QPoint(pos.x()/MYPAINT_TILE_SIZE, pos.y()/MYPAINT_TILE_SIZE);
+    return QPoint(qRound(static_cast<qreal>(pos.x())/MYPAINT_TILE_SIZE), qRound(static_cast<qreal>(pos.y())/MYPAINT_TILE_SIZE));
 }
 
 inline QPointF MPSurface::getTileFIndex(const QPoint& pos)
