@@ -1583,8 +1583,6 @@ void ScribbleArea::setCurrentTool(ToolType eToolMode)
         }
     }
 
-    mPrevToolType = currentTool()->type();
-
     // change cursor
     setCursor(currentTool()->cursor());
     updateCanvasCursor();
