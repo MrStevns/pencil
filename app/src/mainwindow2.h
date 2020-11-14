@@ -126,6 +126,7 @@ private slots:
 private:
 
     void hideBrushSelectorWidgetIfNeeded(const bool hide);
+    bool shouldHideBrushSelectorWidget(const Layer* layer, ToolType toolType);
     bool newObject();
     bool newObjectFromPresets(int presetIndex);
     bool openObject(QString strFilename);

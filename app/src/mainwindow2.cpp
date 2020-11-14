@@ -1397,17 +1397,13 @@ void MainWindow2::hideBrushSelectorForLayer(int layerIndex)
 {
     Layer* layer = mEditor->layers()->getLayer(layerIndex);
 
-    if (layer->type() == Layer::BITMAP) {
-        hideBrushSelectorWidgetIfNeeded(false);
-    } else {
-        hideBrushSelectorWidgetIfNeeded(true);
-    }
+    bool shouldHide = shouldHideBrushSelectorWidget(layer, mEditor->tools()->currentTool()->type());
+    hideBrushSelectorWidgetIfNeeded(shouldHide);
 }
 
-void MainWindow2::hideBrushSelectorForToolType(ToolType toolType)
+bool MainWindow2::shouldHideBrushSelectorWidget(const Layer* layer, ToolType toolType)
 {
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer->type() != Layer::BITMAP) { return; }
+    if (layer->type() != Layer::BITMAP) { return true; }
 
     switch (toolType) {
     case ToolType::BRUSH:
@@ -1415,12 +1411,18 @@ void MainWindow2::hideBrushSelectorForToolType(ToolType toolType)
     case ToolType::PENCIL:
     case ToolType::PEN:
     case ToolType::SMUDGE:
-    case ToolType::POLYLINE:
-        hideBrushSelectorWidgetIfNeeded(false);
-        break;
-    default:
-        hideBrushSelectorWidgetIfNeeded(true);
+    case ToolType::POLYLINE: {
+        return false;
     }
+    default:
+        return true;
+    }
+}
+
+void MainWindow2::hideBrushSelectorForToolType(ToolType toolType)
+{
+    bool shouldHide = shouldHideBrushSelectorWidget(mEditor->layers()->currentLayer(), toolType);
+    hideBrushSelectorWidgetIfNeeded(shouldHide);
 }
 
 void MainWindow2::hideBrushSelectorWidgetIfNeeded(const bool hide)
