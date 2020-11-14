@@ -3,6 +3,9 @@ QT += core
 TARGET = paint_lib
 TEMPLATE = lib
 CONFIG += staticlib
+
+# This seems to be neccesary now since all warnings are interepreted as errors...
+CONFIG +=  warn_off
 DEFINES += HAVE_JSON_C
 
 QMAKE_CFLAGS += -std=c99

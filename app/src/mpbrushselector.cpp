@@ -59,11 +59,7 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
     hLayout->addWidget(presetsManagerButton);
 
     mVLayout->addLayout(hLayout);
-
-    QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
-
     mVLayout->setContentsMargins(8,2,8,8);
-    mVLayout->addSpacerItem(spacer);
 
     containerWidget->setLayout(mVLayout);
     setWidget(containerWidget);

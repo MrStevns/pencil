@@ -100,7 +100,8 @@ public:
     void setOpacity(int opacity);
     void preferences();
 
-    void hideBrushSelectorWidgetIfNeeded();
+    void hideBrushSelectorForLayer(int layerIndex);
+    void hideBrushSelectorForToolType(ToolType toolType);
  
     void openFile(QString filename);
 
@@ -123,6 +124,8 @@ private slots:
     void resetAndDockAllSubWidgets();
 
 private:
+
+    void hideBrushSelectorWidgetIfNeeded(const bool hide);
     bool newObject();
     bool newObjectFromPresets(int presetIndex);
     bool openObject(QString strFilename);

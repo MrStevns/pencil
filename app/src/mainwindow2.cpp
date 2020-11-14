@@ -1393,12 +1393,37 @@ void MainWindow2::openPalette()
     }
 }
 
-void MainWindow2::hideBrushSelectorWidgetIfNeeded()
+void MainWindow2::hideBrushSelectorForLayer(int layerIndex)
 {
-    Layer* layer = mEditor->layers()->currentLayer();
+    Layer* layer = mEditor->layers()->getLayer(layerIndex);
 
-    QAction* menuAction = mBrushSelectorWidget->toggleViewAction();
     if (layer->type() != Layer::BITMAP) {
+        hideBrushSelectorWidgetIfNeeded(false);
+    } else {
+        hideBrushSelectorWidgetIfNeeded(true);
+    }
+}
+
+void MainWindow2::hideBrushSelectorForToolType(ToolType toolType)
+{
+    switch (toolType) {
+    case ToolType::BRUSH:
+    case ToolType::ERASER:
+    case ToolType::PENCIL:
+    case ToolType::PEN:
+    case ToolType::SMUDGE:
+    case ToolType::POLYLINE:
+        hideBrushSelectorWidgetIfNeeded(false);
+        break;
+    default:
+        hideBrushSelectorWidgetIfNeeded(true);
+    }
+}
+
+void MainWindow2::hideBrushSelectorWidgetIfNeeded(const bool hide)
+{
+    QAction* menuAction = mBrushSelectorWidget->toggleViewAction();
+    if (hide) {
         mBrushSelectorWidget->setHidden(true);
         menuAction->setDisabled(true);
         mBrushSelectorWidget->showPresetManager(false);
@@ -1505,6 +1530,8 @@ void MainWindow2::makeConnections(Editor* editor, MPBrushSelector* brushSelector
 {
     ToolManager* toolManager = editor->tools();
     connect(toolManager, &ToolManager::toolChanged, brushSelector, &MPBrushSelector::typeChanged);
+    connect(toolManager, &ToolManager::toolChanged, this, &MainWindow2::hideBrushSelectorForToolType);
+    connect(editor->layers(), &LayerManager::currentLayerChanged, this, &MainWindow2::hideBrushSelectorForLayer);
     connect(brushSelector, &MPBrushSelector::brushSelected, editor, &Editor::loadBrush);
     connect(brushSelector, &MPBrushSelector::brushSelected, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateUI);
     connect(brushSelector, &MPBrushSelector::toggleSettingForBrushSetting, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::toggleSetting);
