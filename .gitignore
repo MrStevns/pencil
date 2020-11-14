@@ -53,6 +53,13 @@ xcshareddata
 *.mak
 *.app
 
+# MyPaint
+*.deps
+*.gir
+*.typelib
+3rdlib/paint_lib/json-c/config.h
+
+
 # Visual Studio
 
 *.sln
