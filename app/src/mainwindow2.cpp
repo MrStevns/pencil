@@ -1397,7 +1397,7 @@ void MainWindow2::hideBrushSelectorForLayer(int layerIndex)
 {
     Layer* layer = mEditor->layers()->getLayer(layerIndex);
 
-    if (layer->type() != Layer::BITMAP) {
+    if (layer->type() == Layer::BITMAP) {
         hideBrushSelectorWidgetIfNeeded(false);
     } else {
         hideBrushSelectorWidgetIfNeeded(true);
@@ -1406,6 +1406,9 @@ void MainWindow2::hideBrushSelectorForLayer(int layerIndex)
 
 void MainWindow2::hideBrushSelectorForToolType(ToolType toolType)
 {
+    Layer* layer = mEditor->layers()->currentLayer();
+    if (layer->type() != Layer::BITMAP) { return; }
+
     switch (toolType) {
     case ToolType::BRUSH:
     case ToolType::ERASER:
@@ -1424,13 +1427,21 @@ void MainWindow2::hideBrushSelectorWidgetIfNeeded(const bool hide)
 {
     QAction* menuAction = mBrushSelectorWidget->toggleViewAction();
     if (hide) {
-        mBrushSelectorWidget->setHidden(true);
+
+        // Avoid widget jumping when using temporary tools
+        if (!mEditor->tools()->temporaryToolActive()) {
+            mBrushSelectorWidget->setHidden(true);
+        }
+
         menuAction->setDisabled(true);
         mBrushSelectorWidget->showPresetManager(false);
         mBrushSelectorWidget->showBrushConfigurator(false);
     } else {
-        mBrushSelectorWidget->setHidden(false);
         menuAction->setDisabled(false);
+        mBrushSelectorWidget->setHidden(false);
+        mBrushSelectorWidget->show();
+
+        qDebug() << mBrushSelectorWidget->isHidden();
     }
 }
 
@@ -1538,8 +1549,6 @@ void MainWindow2::makeConnections(Editor* editor, MPBrushSelector* brushSelector
     connect(brushSelector, &MPBrushSelector::notifySettingChanged, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateSetting);
     connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::notifyBrushSettingUpdated, brushSelector, &MPBrushSelector::notifySettingChanged);
     connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateSetting, brushSelector, &MPBrushSelector::notifySettingChanged);
-//    connect(toolManager, &ToolManager::toolChanged, mToolBrushSettingsWidget, &ToolBrushSettingsWidget::setupSettings);
-    connect(editor->layers(), &LayerManager::currentLayerChanged, this, &MainWindow2::hideBrushSelectorWidgetIfNeeded);
 }
 
 void MainWindow2::bindActionWithSetting(QAction* action, SETTING setting)

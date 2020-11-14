@@ -24,6 +24,7 @@ GNU General Public License for more details.
 #include "layermanager.h"
 #include "colormanager.h"
 #include "selectionmanager.h"
+#include "toolmanager.h"
 
 #include "beziercurve.h"
 #include "vectorimage.h"
@@ -81,10 +82,10 @@ bool StrokeTool::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key()) {
     case Qt::Key_Alt:
-        mScribbleArea->setTemporaryTool(EYEDROPPER);
+        mEditor->tools()->setTemporaryTool(EYEDROPPER);
         return true;
     case Qt::Key_Space:
-        mScribbleArea->setTemporaryTool(HAND); // just call "setTemporaryTool()" to activate temporarily any tool
+        mEditor->tools()->setTemporaryTool(HAND); // just call "setTemporaryTool()" to activate temporarily any tool
         return true;
     }
     return false;

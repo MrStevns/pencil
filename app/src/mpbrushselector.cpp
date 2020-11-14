@@ -45,6 +45,7 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
 
     mVLayout->setContentsMargins(2,2,2,2);
     QHBoxLayout* hLayout = new QHBoxLayout();
+    hLayout->setContentsMargins(2,2,2,2);
 
     mPresetComboBox = new ComboBox();
 
@@ -53,6 +54,10 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
 
     configuratorButton->setText(tr("config"));
     configuratorButton->setToolTip(tr("Open brush configurator window"));
+
+    mTopAreaWidget = new QWidget();
+    mVLayout->addWidget(mTopAreaWidget);
+    mTopAreaWidget->setLayout(hLayout);
 
     hLayout->addWidget(configuratorButton);
     hLayout->addWidget(mPresetComboBox);
@@ -228,6 +233,12 @@ void MPBrushSelector::loadToolBrushes(QString toolName)
         QListWidget* newWidget = widgetIt.value();
 
         newWidget->setHidden(true);
+
+        if (toolName == "empty") {
+            mTopAreaWidget->setVisible(false);
+        } else {
+            mTopAreaWidget->setVisible(true);
+        }
         if (toolNameKey.compare(toolName,Qt::CaseInsensitive) == 0) {
 
             // make sure the widget exists already and has been added to the layout

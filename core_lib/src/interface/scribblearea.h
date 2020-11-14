@@ -118,15 +118,12 @@ public:
     BaseTool* currentTool() const;
     BaseTool* getTool(ToolType eToolMode);
     void setCurrentTool(ToolType eToolMode);
-    void setTemporaryTool(ToolType eToolMode);
-    void setPrevTool();
 
     void floodFillError(int errorType);
 
     bool isMouseInUse() const { return mMouseInUse; }
     bool isTabletInUse() const { return mTabletInUse; }
     bool isPointerInUse() const { return mMouseInUse || mTabletInUse; }
-    bool isTemporaryTool() const { return mInstantTool; }
 
     void showCurrentFrame();
 
@@ -317,9 +314,6 @@ private:
     QPoint mCursorCenterPos;
 
     QPointF mTransformedCursorPos;
-
-    //instant tool (temporal eg. eraser)
-    bool mInstantTool = false; //whether or not using temporal tool
 
     bool mIsPainting = false;
 

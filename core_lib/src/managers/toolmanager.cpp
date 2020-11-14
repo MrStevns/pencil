@@ -97,6 +97,24 @@ void ToolManager::setCurrentTool(ToolType eToolType)
     Q_EMIT toolChanged(eToolType);
 }
 
+void ToolManager::setTemporaryTool(ToolType eToolMode)
+{
+    // Only switch to temporary tool if not already in this state
+    // and temporary tool is not already the current tool.
+    if (!mTemporaryTool && currentTool()->type() != eToolMode)
+    {
+        mTemporaryTool = true; // used to return to previous tool when finished (keyRelease).
+        mNonTemporaryTool = currentTool()->type();
+        setCurrentTool(eToolMode);
+    }
+}
+
+void ToolManager::deactivateTemporaryTool() {
+    mTemporaryTool = false;
+    setCurrentTool(mNonTemporaryTool);
+//    mTemporaryTool = INVALID_TOOL;
+}
+
 bool ToolManager::leavingThisTool()
 {
     return mCurrentTool->leavingThisTool();

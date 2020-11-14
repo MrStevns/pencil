@@ -27,6 +27,7 @@ GNU General Public License for more details.
 #include "editor.h"
 #include "strokemanager.h"
 #include "viewmanager.h"
+#include "toolmanager.h"
 #include "scribblearea.h"
 
 
@@ -72,7 +73,7 @@ void HandTool::pointerReleaseEvent(PointerEvent* event)
     if (event->button() == Qt::MidButton)
     {
         qDebug("[HandTool] Stop Hand Tool");
-        mScribbleArea->setPrevTool();
+        mEditor->tools()->deactivateTemporaryTool();
     }
     mIsHeld = false;
     mScribbleArea->updateToolCursor();

@@ -75,6 +75,7 @@ private:
   QVBoxLayout* mVLayout = nullptr;
   QMap<QString, QListWidget*> mToolListWidgets;
   ComboBox* mPresetComboBox;
+  QWidget* mTopAreaWidget = nullptr;
 
   MPBrushPreset currentBrushPreset;
 

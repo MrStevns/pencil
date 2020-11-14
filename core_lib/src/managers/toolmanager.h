@@ -40,6 +40,9 @@ public:
     BaseTool* getTool(ToolType eToolType);
     void setDefaultTool();
     void setCurrentTool(ToolType eToolType);
+    void setTemporaryTool(ToolType eToolType);
+    bool temporaryToolActive() { return mTemporaryTool; }
+    void deactivateTemporaryTool();
     void cleanupAllToolsData();
     bool leavingThisTool();
 
@@ -79,6 +82,9 @@ private:
     ToolType  meTabletBackupTool = PENCIL;
     bool mIsSwitchedToEraser = false;
     QHash<ToolType, BaseTool*> mToolSetHash;
+
+    bool mTemporaryTool = false;
+    ToolType mNonTemporaryTool = INVALID_TOOL;
 
     int mOldValue = 0;
 

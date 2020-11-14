@@ -369,7 +369,7 @@ void ScribbleArea::keyPressEvent(QKeyEvent *event)
     mKeyboardInUse = true;
 
     if (isPointerInUse()) { return; } // prevents shortcuts calls while drawing
-    if (mInstantTool) { return; } // prevents shortcuts calls while using instant tool
+    if (mEditor->tools()->temporaryToolActive()) { return; } // prevents shortcuts calls while using instant tool
 
     if (currentTool()->keyPressEvent(event))
     {
@@ -379,7 +379,7 @@ void ScribbleArea::keyPressEvent(QKeyEvent *event)
     // --- fixed control key shortcuts ---
     if (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))
     {
-        setTemporaryTool(ERASER);
+        mEditor->tools()->setTemporaryTool(ERASER);
         return;
     }
 
@@ -428,7 +428,7 @@ void ScribbleArea::keyEventForSelection(QKeyEvent* event)
         mEditor->deselectAll();
         break;
     case Qt::Key_Space:
-        setTemporaryTool(HAND); // just call "setTemporaryTool()" to activate temporarily any tool
+        mEditor->tools()->setTemporaryTool(HAND); // just call "setTemporaryTool()" to activate temporarily any tool
         break;
     default:
         event->ignore();
@@ -459,7 +459,7 @@ void ScribbleArea::keyEvent(QKeyEvent* event)
         event->ignore();
         break;
     case Qt::Key_Space:
-        setTemporaryTool(HAND); // just call "setTemporaryTool()" to activate temporarily any tool
+        mEditor->tools()->setTemporaryTool(HAND); // just call "setTemporaryTool()" to activate temporarily any tool
         break;
     default:
         event->ignore();
@@ -478,10 +478,10 @@ void ScribbleArea::keyReleaseEvent(QKeyEvent *event)
 
     if (isPointerInUse()) { return; }
 
-    if (mInstantTool) // temporary tool
+    if (mEditor->tools()->temporaryToolActive()) // temporary tool
     {
         currentTool()->keyReleaseEvent(event);
-        setPrevTool();
+        mEditor->tools()->deactivateTemporaryTool();
         return;
     }
     if (currentTool()->keyReleaseEvent(event))
@@ -613,7 +613,7 @@ void ScribbleArea::pointerPressEvent(PointerEvent* event)
 
     if (event->buttons() & (Qt::MidButton | Qt::RightButton))
     {
-        setTemporaryTool(HAND);
+        mEditor->tools()->setTemporaryTool(HAND);
     }
 
     const bool isPressed = event->buttons() & Qt::LeftButton;
@@ -678,9 +678,9 @@ void ScribbleArea::pointerReleaseEvent(PointerEvent* event)
     currentTool()->pointerReleaseEvent(event);
 
     // ---- last check (at the very bottom of mouseRelease) ----
-    if (mInstantTool && !mKeyboardInUse) // temp tool and released all keys ?
+    if (mEditor->tools()->temporaryToolActive() && !mKeyboardInUse) // temp tool and released all keys ?
     {
-        setPrevTool();
+        mEditor->tools()->deactivateTemporaryTool();
     }
     updateCanvasCursor();
 }
@@ -1591,18 +1591,6 @@ void ScribbleArea::setCurrentTool(ToolType eToolMode)
     //qDebug() << "fn: setCurrentTool " << "call: setCursor()" << "current tool" << currentTool()->typeName();
 }
 
-void ScribbleArea::setTemporaryTool(ToolType eToolMode)
-{
-    // Only switch to temporary tool if not already in this state
-    // and temporary tool is not already the current tool.
-    if (!mInstantTool && currentTool()->type() != eToolMode)
-    {
-        mInstantTool = true; // used to return to previous tool when finished (keyRelease).
-        mPrevTemporalToolType = currentTool()->type();
-        editor()->tools()->setCurrentTool(eToolMode);
-    }
-}
-
 void ScribbleArea::deleteSelection()
 {
     auto selectMan = mEditor->select();
@@ -1647,12 +1635,6 @@ void ScribbleArea::clearCanvas()
 
     setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
     mMyPaint->clearSurface();
-}
-
-void ScribbleArea::setPrevTool()
-{
-    editor()->tools()->setCurrentTool(mPrevTemporalToolType);
-    mInstantTool = false;
 }
 
 // TODO: move somewhere else... scribblearea is bloated enough already.

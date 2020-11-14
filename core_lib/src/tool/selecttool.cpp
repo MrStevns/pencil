@@ -240,7 +240,7 @@ bool SelectTool::keyPressEvent(QKeyEvent* event)
     switch (event->key())
     {
     case Qt::Key_Alt:
-        mScribbleArea->setTemporaryTool(MOVE);
+        mEditor->tools()->setTemporaryTool(MOVE);
         break;
     default:
         break;
