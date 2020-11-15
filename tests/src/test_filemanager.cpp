@@ -1,7 +1,7 @@
-﻿/*
+/*
 
-Pencil - Traditional Animation Software
-Copyright (C) 2012-2018 Matthew Chiawen Chang
+Pencil2D - Traditional Animation Software
+Copyright (C) 2012-2020 Matthew Chiawen Chang
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -66,7 +66,7 @@ TEST_CASE("FileManager invalid operations")
         FileManager fm;
         Object* pObj = fm.load(strBadXMLPath);
 
-        REQUIRE(pObj == NULL);
+        REQUIRE(pObj == nullptr);
         REQUIRE(fm.error().code() == Status::ERROR_INVALID_XML_FILE);
     }
 
@@ -84,7 +84,7 @@ TEST_CASE("FileManager invalid operations")
         FileManager fm;
         Object* pObj = fm.load(strBadXMLPath);
 
-        REQUIRE(pObj == NULL);
+        REQUIRE(pObj == nullptr);
         REQUIRE(fm.error().code() == Status::ERROR_INVALID_PENCIL_FILE);
     }
 }
@@ -216,7 +216,7 @@ TEST_CASE("FileManager Loading XML Tests")
 }
 
 // Turn a Qt resource file into an actual file on disk
-QString getQtResourceFile(QString rscPath, QTemporaryDir& tempDir)
+QString QtResourceToFile(QString rscPath, QString filename, QTemporaryDir& tempDir)
 {
     QFile fin(rscPath);
     if (!fin.open(QFile::ReadOnly))
@@ -227,9 +227,7 @@ QString getQtResourceFile(QString rscPath, QTemporaryDir& tempDir)
     QByteArray content = fin.readAll();
     fin.close();
 
-    QFileInfo info(rscPath);
-    QString filePathOnDisk = tempDir.filePath(info.fileName());
-
+    QString filePathOnDisk = tempDir.filePath(filename);
     QFile fout(filePathOnDisk);
     if (!fout.open(QFile::WriteOnly))
     {
@@ -247,7 +245,7 @@ TEST_CASE("FileManager Load PCLX")
         QTemporaryDir tempDir;
 
         FileManager fm;
-        Object* o = fm.load(getQtResourceFile(":/empty.pclx", tempDir));
+        Object* o = fm.load(QtResourceToFile(":/empty.pclx", "empty.pclx", tempDir));
         REQUIRE(o != nullptr);
         if (o)
         {
@@ -262,7 +260,7 @@ TEST_CASE("FileManager Load PCLX")
         QTemporaryDir tempDir;
 
         FileManager fm;
-        Object* o = fm.load(getQtResourceFile(":/許功蓋.pclx", tempDir));
+        Object* o = fm.load(QtResourceToFile(":/cjk-test.pclx", "許功蓋.pclx", tempDir));
         REQUIRE(o != nullptr);
         if (o)
         {
@@ -277,7 +275,7 @@ TEST_CASE("FileManager Load PCLX")
         QTemporaryDir tempDir;
 
         FileManager fm;
-        Object* o = fm.load(getQtResourceFile(":/構わない.pclx", tempDir));
+        Object* o = fm.load(QtResourceToFile(":/cjk-test.pclx", "構わない.pclx", tempDir));
         REQUIRE(o != nullptr);
         if (o)
         {
@@ -292,7 +290,7 @@ TEST_CASE("FileManager Load PCLX")
         QTemporaryDir tempDir;
 
         FileManager fm;
-        Object* o = fm.load(getQtResourceFile(":/대박이야.pclx", tempDir));
+        Object* o = fm.load(QtResourceToFile(":/cjk-test.pclx", "대박이야.pclx", tempDir));
         REQUIRE(o != nullptr);
         if (o)
         {
@@ -432,7 +430,7 @@ TEST_CASE("Empty Sound Frames")
             REQUIRE(newObj->getLayer(0)->type() == 4);
             REQUIRE(newObj->getLayer(0)->id() == 5);
             REQUIRE(newObj->getLayer(0)->name() == "GoodLayer");
-            REQUIRE(newObj->getLayer(0)->getVisibility() == 1);
+            REQUIRE(newObj->getLayer(0)->getVisibility() == true);
             REQUIRE(newObj->getLayer(0)->getKeyFrameAt(1) == nullptr);
 
             delete newObj;

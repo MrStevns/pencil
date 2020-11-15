@@ -1,7 +1,7 @@
 /*
 
-Pencil - Traditional Animation Software
-Copyright (C) 2012-2018 Matthew Chiawen Chang
+Pencil2D - Traditional Animation Software
+Copyright (C) 2012-2020 Matthew Chiawen Chang
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -46,8 +46,12 @@ void CanvasPainter::setCanvas(QPixmap* canvas)
 
 void CanvasPainter::setViewTransform(const QTransform view)
 {
-    mViewTransform = view;
-    resetLayerCache();
+    if (mViewTransform != view) {
+        mViewTransform = view;
+    }
+
+    // TODO:
+    // resetLayerCache()? maybe this too
 }
 
 void CanvasPainter::setTransformedSelection(QRect selectionBeforeTransform, QRect currentSeletion, QTransform transform, bool modified)
@@ -744,8 +748,10 @@ void CanvasPainter::renderGrid(QPainter& painter)
 {
     if (mOptions.bGrid)
     {
+        painter.save();
         painter.setWorldTransform(mViewTransform);
         paintGrid(painter);
+        painter.restore();
     }
 }
 
@@ -753,24 +759,33 @@ void CanvasPainter::renderOverlays(QPainter &painter)
 {
     if (mOptions.bCenter)
     {
+        painter.save();
         painter.setWorldTransform(mViewTransform);
         paintOverlayCenter(painter);
+        painter.restore();
     }
     if (mOptions.bThirds)
     {
+        painter.save();
         painter.setWorldTransform(mViewTransform);
         paintOverlayThirds(painter);
+        painter.restore();
     }
     if (mOptions.bGoldenRatio)
     {
+        painter.save();
         painter.setWorldTransform(mViewTransform);
         paintOverlayGolden(painter);
+        painter.restore();
     }
     if (mOptions.bSafeArea)
     {
+        painter.save();
         painter.setWorldTransform(mViewTransform);
         paintOverlaySafeAreas(painter);
+        painter.restore();
     }
+
 }
 
 void CanvasPainter::paintCameraBorder(QPainter &painter)

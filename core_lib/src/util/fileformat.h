@@ -1,8 +1,8 @@
 /*
 
-Pencil - Traditional Animation Software
+Pencil2D - Traditional Animation Software
 Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
-Copyright (C) 2012-2018 Matthew Chiawen Chang
+Copyright (C) 2012-2020 Matthew Chiawen Chang
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,15 +19,18 @@ GNU General Public License for more details.
 
 #include <QString>
 
-//Pencil File Format
-//PFF - acronym for "Pencil File Format"
+//Pencil2D File Format
+//PFF - acronym for "Pencil2D File Format"
 #define PFF_OLD_EXTENSION				".pcl"
 #define PFF_OLD_BIG_LETTER_EXTENSION	"PCL"
 #define PFF_EXTENSION				    ".pclx"
 #define PFF_BIG_LETTER_EXTENSION	    "PCLX"
 
-#define PFF_PROJECT_EXT_FILTER \
-    QObject::tr("Pencil formats") + " (*.pclx *.pcl);;" + QObject::tr("Pencil Project") + " (*.pclx);;" + QObject::tr("Legacy Pencil Project") + " (*.pcl)"
+#define PFF_OPEN_PROJECT_EXT_FILTER \
+    QObject::tr("Pencil2D formats") + " (*.pclx *.pcl);;" + QObject::tr("Pencil2D Project") + " (*.pclx);;" + QObject::tr("Legacy Pencil2D Project") + " (*.pcl)"
+
+#define PFF_SAVE_PROJECT_EXT_FILTER \
+    QObject::tr("Pencil2D Project") + " (*.pclx);;" + QObject::tr("Legacy Pencil2D Project") + " (*.pcl)"
 
 #define PFF_MOVIE_EXT \
     QObject::tr("Movie formats") + "*.avi *.mpg *.mpeg *.mov *.mp4 *.mkv *.ogv *.swf *.flv *.webm *.wmv);;" \
@@ -41,7 +44,7 @@ GNU General Public License for more details.
     QObject::tr( "Image formats") + " (*.png *.jpg *.jpeg *.bmp *.tif *.tiff);;PNG (*.png);;JPG(*.jpg *.jpeg);;BMP(*.bmp);;TIFF(*.tif *.tiff)"
 
 #define PFF_PALETTE_EXT_FILTER \
-    QObject::tr("Palette formats") + " (*.xml *.gpl);;" + QObject::tr("Pencil Palette") + " (*.xml);;" + QObject::tr("GIMP Palette") + " (*.gpl)"
+    QObject::tr("Palette formats") + " (*.xml *.gpl);;" + QObject::tr("Pencil2D Palette") + " (*.xml);;" + QObject::tr("GIMP Palette") + " (*.gpl)"
 
 #define PFF_GIF_EXT_FILTER \
     QObject::tr("Animated GIF") + " (*.gif)"
@@ -71,8 +74,9 @@ GNU General Public License for more details.
 #define PFF_TMP_DECOMPRESS_EXT 	"Y2xD"
 #define PFF_PALETTE_FILE        "palette.xml"
 
-bool removePFFTmpDirectory (const QString& dirName);
+bool removePFFTmpDirectory(const QString& dirName);
 QString uniqueString(int len);
+QString retrieveProjectNameFromTempPath(const QString& path);
 
 
 #endif

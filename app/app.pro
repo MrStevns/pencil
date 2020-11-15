@@ -55,6 +55,7 @@ HEADERS += \
     src/mpbrushconfigurator.h \
     src/mpbrushinfodialog.h \
     src/mpbrushpresetswidget.h \
+    src/mpbrushselector.h \
     src/importlayersdialog.h \
     src/importpositiondialog.h \
     src/onionskinwidget.h \
@@ -64,13 +65,17 @@ HEADERS += \
     src/timeline2.h \
     src/actioncommands.h \
     src/preferencesdialog.h \
+    src/filespage.h \
+    src/generalpage.h \
     src/shortcutspage.h \
+    src/timelinepage.h \
+    src/toolspage.h \
     src/preview.h \
     src/colorbox.h \
     src/colorinspector.h \
     src/colorpalettewidget.h \
     src/colorwheel.h \
-    src/filedialogex.h \
+    src/filedialog.h \
     src/displayoptionwidget.h \
     src/pencilapplication.h \
     src/exportmoviedialog.h \
@@ -87,8 +92,7 @@ HEADERS += \
     src/doubleprogressdialog.h \
     src/colorslider.h \
     src/checkupdatesdialog.h \
-    src/presetdialog.h \
-    src/mpbrushselector.h
+    src/presetdialog.h
 
 SOURCES += \
     src/brushsettingeditwidget.cpp \
@@ -104,6 +108,7 @@ SOURCES += \
     src/mpbrushconfigurator.cpp \
     src/mpbrushinfodialog.cpp \
     src/mpbrushpresetswidget.cpp \
+    src/mpbrushselector.cpp \
     src/onionskinwidget.cpp \
     src/predefinedsetmodel.cpp \
     src/pegbaralignmentdialog.cpp \
@@ -113,13 +118,17 @@ SOURCES += \
     src/timeline2.cpp \
     src/actioncommands.cpp \
     src/preferencesdialog.cpp \
+    src/filespage.cpp \
+    src/generalpage.cpp \
     src/shortcutspage.cpp \
+    src/timelinepage.cpp \
+    src/toolspage.cpp \
     src/preview.cpp \
     src/colorbox.cpp \
     src/colorinspector.cpp \
     src/colorpalettewidget.cpp \
     src/colorwheel.cpp \
-    src/filedialogex.cpp \
+    src/filedialog.cpp \
     src/displayoptionwidget.cpp \
     src/pencilapplication.cpp \
     src/exportmoviedialog.cpp \
@@ -135,8 +144,8 @@ SOURCES += \
     src/doubleprogressdialog.cpp \
     src/colorslider.cpp \
     src/checkupdatesdialog.cpp \
-    src/mpbrushselector.cpp \
-    src/presetdialog.cpp
+    src/presetdialog.cpp \
+    src/app_util.cpp
 
 FORMS += \
     ui/mainwindow2.ui \
@@ -187,12 +196,9 @@ macx {
     QMAKE_BUNDLE_DATA += FILE_ICONS
 
     QMAKE_TARGET_BUNDLE_PREFIX += org.pencil2d
-
-    LIBS += -framework AppKit
 }
 
 win32 {
-    CONFIG -= flat
     RC_FILE = data/pencil2d.rc
 }
 

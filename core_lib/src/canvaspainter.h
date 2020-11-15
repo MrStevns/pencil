@@ -1,7 +1,7 @@
 /*
 
-Pencil - Traditional Animation Software
-Copyright (C) 2012-2018 Matthew Chiawen Chang
+Pencil2D - Traditional Animation Software
+Copyright (C) 2012-2020 Matthew Chiawen Chang
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -61,7 +61,7 @@ struct CanvasPainterOptions
     bool  bOutlines = false;
     bool  bIsOnionAbsolute = false;
     LayerVisibility eLayerVisibility = LayerVisibility::RELATED;
-    float fLayerVisibilityThreshold;
+    float fLayerVisibilityThreshold = 0.f;
     float scaling = 1.0f;
     bool isPlaying = false;
     bool onionWhilePlayback = false;
@@ -97,8 +97,8 @@ private:
     /**
      * CanvasPainter::initializePainter
      * Enriches the painter with a context and sets it's initial matrix.
-     * @param The in/out painter
-     * @param The paint device ie. a pixmap
+     * @param painter The in/out painter
+     * @param pixmap The paint device ie. a pixmap
      */
     void initializePainter(QPainter& painter, QPixmap& pixmap);
 
@@ -155,7 +155,6 @@ private:
     /** Calculate layer opacity based on current layer offset */
     qreal calculateRelativeOpacityForLayer(int layerIndex) const;
 
-    void savePaintResult(QString layerName, int frameNum);
 private:
 
     void paintBitmapOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize);
@@ -190,7 +189,7 @@ private:
     // Caches specifically for when drawing on the canvas
     std::unique_ptr<QPixmap> mPreLayersCache, mPostLayersCache;
 
-    constexpr static int OVERLAY_SAFE_CENTER_CROSS_SIZE = 25;
+    const static int OVERLAY_SAFE_CENTER_CROSS_SIZE = 25;
 };
 
 #endif // CANVASRENDERER_H

@@ -1,8 +1,8 @@
 ﻿/*
 
-Pencil - Traditional Animation Software
+Pencil2D - Traditional Animation Software
 Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
-Copyright (C) 2012-2018 Matthew Chiawen Chang
+Copyright (C) 2012-2020 Matthew Chiawen Chang
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@ GNU General Public License for more details.
 #include <QPainter>
 #include <QPixmap>
 #include <QBitmap>
+#include <QtMath>
 #include "pointerevent.h"
 
 #include "vectorimage.h"
@@ -63,22 +64,13 @@ QCursor EyedropperTool::cursor(const QColor color)
     QPixmap pixmap(32, 32);
     pixmap.fill(Qt::transparent);
 
-
-    /// Color should not blend with background
-    qreal alpha = color.alpha() / 255.0;
-    qreal oneMinusAlpha = 1.0 - alpha;
-    int red = static_cast<int>((color.red() * alpha) + (oneMinusAlpha * 255));
-    int green = static_cast<int>((color.green() * alpha) + (oneMinusAlpha * 255));
-    int blue = static_cast<int>((color.blue() * alpha) + (oneMinusAlpha * 255));
-
     QPainter painter(&pixmap);
     painter.drawPixmap(0, 0, icon);
-    painter.save();
-    painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    painter.restore();
+
+    painter.setBrush(Qt::white);
     painter.drawRect(17, 17, 13, 13);
     painter.setPen(QPen(Qt::white, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    painter.setBrush(QColor(red, green, blue));
+    painter.setBrush(color);
     painter.drawRect(16, 16, 15, 15);
     painter.end();
 
@@ -161,8 +153,8 @@ QColor EyedropperTool::getBitmapColor(LayerBitmap* layer)
     const QRgb pixelColor = BitmapUtils::constScanLine(*targetImage->image(),
                                                        targetImage->bounds(),
                                                        targetImage->topLeft(),
-                                                       qFloor(qMin(getCurrentPoint().x(),getLastPoint().x())),
-                                                       qFloor(qMin(getCurrentPoint().y(),getLastPoint().y())));
+                                                       qFloor(getCurrentPoint().x()),
+                                                       qFloor(getCurrentPoint().y()));
     pickedColour.setRgba(pixelColor);
 
     if (pickedColour.alpha() <= 0) pickedColour = QColor();

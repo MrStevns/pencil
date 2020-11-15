@@ -20,9 +20,9 @@
 
 #include "editor.h"
 #include <pencilerror.h>
-#include "filedialogex.h"
 #include "combobox.h"
 #include "mpbrushutils.h"
+#include "filedialog.h"
 
 MPBrushInfoDialog::MPBrushInfoDialog(DialogContext dialogContext, QWidget* parent)
     : QDialog(parent), mDialogContext(dialogContext)
@@ -238,8 +238,7 @@ void MPBrushInfoDialog::setBrushInfo(QString brushName, QString brushPreset, Too
 
 void MPBrushInfoDialog::didPressSetImage()
 {
-    FileDialog fileDialog(this);
-    QString strFilePath = fileDialog.openFile(FileType::IMAGE);
+    QString strFilePath = FileDialog::getOpenFileName(this, FileType::IMAGE);
 
     if (strFilePath.isEmpty()) { return; }
 

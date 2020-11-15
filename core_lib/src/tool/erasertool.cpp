@@ -1,8 +1,8 @@
 /*
 
-Pencil - Traditional Animation Software
+Pencil2D - Traditional Animation Software
 Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
-Copyright (C) 2012-2018 Matthew Chiawen Chang
+Copyright (C) 2012-2020 Matthew Chiawen Chang
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -117,18 +117,18 @@ QCursor EraserTool::cursor()
     return Qt::CrossCursor;
 }
 
-void EraserTool::pointerPressEvent(PointerEvent*)
+void EraserTool::pointerPressEvent(PointerEvent *event)
 {
     mScribbleArea->setAllDirty();
 
-    startStroke();
+    startStroke(event->inputType());
     mLastBrushPoint = getCurrentPoint();
     mMouseDownPoint = getCurrentPoint();
 }
 
 void EraserTool::pointerMoveEvent(PointerEvent* event)
 {
-    if (event->buttons() & Qt::LeftButton)
+    if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         mCurrentPressure = strokeManager()->getPressure();
         updateStrokes();
@@ -137,9 +137,9 @@ void EraserTool::pointerMoveEvent(PointerEvent* event)
     }
 }
 
-void EraserTool::pointerReleaseEvent(PointerEvent*)
+void EraserTool::pointerReleaseEvent(PointerEvent *event)
 {
-    drawStroke();
+    if (event->inputType() != mCurrentInputType) return;
     removeVectorPaint();
     endStroke();
 }

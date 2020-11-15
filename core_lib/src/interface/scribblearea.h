@@ -1,8 +1,8 @@
 /*
 
-Pencil - Traditional Animation Software
+Pencil2D - Traditional Animation Software
 Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
-Copyright (C) 2012-2018 Matthew Chiawen Chang
+Copyright (C) 2012-2020 Matthew Chiawen Chang
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -89,7 +89,6 @@ public:
     void cancelTransformedSelection();
 
     bool isLayerPaintable() const;
-    bool allowSmudging();
 
     QVector<QPoint> calcSelectionCenterPoints();
 
@@ -104,7 +103,12 @@ public:
     QPointF getCentralPoint();
 
     void updateCurrentFrame();
+
+    /** Check if the cache should be invalidated for all frames since the last paint operation
+     */
+    void updateAllFramesIfNeeded();
     void updateFrame(int frame);
+    void updateOnionSkinsAround(int frame);
     void updateAllFrames();
     void updateAllVectorLayersAtCurrentFrame();
     void updateAllVectorLayersAt(int frameNumber);
@@ -143,6 +147,15 @@ public:
 
     void setBrushInputMapping(QVector<QPointF> points, BrushSettingType settingType, BrushInputType inputType);
     const BrushInputMapping getBrushInputMapping(BrushSettingType settingType, BrushInputType inputType);
+
+    /** Check if the content of the canvas depends on the active layer.
+      *
+      * Currently layers are only affected by Onion skins are displayed only for the active layer, and the opacity of all layers
+      * is affected when relative layer visiblity is active.
+      *
+      * @return True if the active layer could potentially influence the content of the canvas. False otherwise.
+      */
+    bool isAffectedByActiveLayer() const;
 
     void keyEvent(QKeyEvent* event);
     void keyEventForSelection(QKeyEvent* event);
@@ -243,13 +256,12 @@ private:
     /** updatePixmapCache
      * Updates the qpixmap cache that is used for gettign the canvas images from cache, to render them faster
      */
-    void updatePixmapCache();
+    void updatePixmapCache(const int frame);
 
     void prepCanvas(int frame, QRect rect);
     void settingUpdated(SETTING setting);
-    void paintSelectionVisuals();
+    void paintSelectionVisuals(QPainter &painter);
 
-    void updateFrame();
     void drawCanvas(int frame);
 
     /**
@@ -283,7 +295,7 @@ private:
     bool mMakeInvisible = false;
     bool mToolCursors = true;
     qreal mCurveSmoothingLevel = 0.0;
-    bool mMultiLayerOnionSkin; // future use. If required, just add a checkbox to updated it.
+    bool mMultiLayerOnionSkin = false; // future use. If required, just add a checkbox to updated it.
     QColor mOnionColor;
 
     bool mNeedUpdateAll = false;
@@ -322,11 +334,10 @@ private:
     SelectionPainter mSelectionPainter;
 
     // Pixmap Cache keys
-    std::vector<QPixmapCache::Key> mPixmapCacheKeys;
+    QMap<unsigned int, QPixmapCache::Key> mPixmapCacheKeys;
 
     // debug
     QRectF mDebugRect;
-    QLoggingCategory mLog;
     std::deque<clock_t> mDebugTimeQue;
 
     bool isInPreviewMode = false;

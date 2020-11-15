@@ -1,8 +1,8 @@
 /*
 
-Pencil - Traditional Animation Software
+Pencil2D - Traditional Animation Software
 Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
-Copyright (C) 2013-2018 Matt Chiawen Chang
+Copyright (C) 2012-2020 Matthew Chiawen Chang
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -56,6 +56,10 @@ ShortcutsPage::ShortcutsPage( QWidget* parent )
 
     ui->treeView->selectionModel()->select(QItemSelection(m_treeModel->index(0, 0), m_treeModel->index(0, m_treeModel->columnCount() - 1)), QItemSelectionModel::Select);
     tableItemClicked(m_treeModel->index(0, 0));
+}
+
+ShortcutsPage::~ShortcutsPage() {
+    delete ui;
 }
 
 void ShortcutsPage::tableItemClicked( const QModelIndex& modelIndex )
@@ -235,6 +239,12 @@ void ShortcutsPage::treeModelLoadShortcutsSetting()
     int row = 0;
     foreach (QString strCmdName, settings.allKeys())
     {
+        const QString &strShortcutName = getHumanReadableShortcutName(strCmdName);
+        if (strShortcutName.isEmpty()) {
+            // Shortcut not supported by this version of Pencil2D
+            continue;
+        }
+
         QString strKeySequence = settings.value(strCmdName).toString();
 
         //convert to native format
@@ -246,13 +256,14 @@ void ShortcutsPage::treeModelLoadShortcutsSetting()
             m_treeModel->setItem(row, KEY_SEQ_COLUMN, new QStandardItem());
 
         m_treeModel->item(row, ACT_NAME_COLUMN)->setData(strCmdName);
-        m_treeModel->item(row, ACT_NAME_COLUMN)->setText(getHumanReadableShortcutName(strCmdName));
+        m_treeModel->item(row, ACT_NAME_COLUMN)->setText(strShortcutName);
         m_treeModel->item(row, ACT_NAME_COLUMN)->setEditable(false);
         m_treeModel->item(row, KEY_SEQ_COLUMN)->setText(strKeySequence);
         m_treeModel->item(row, KEY_SEQ_COLUMN)->setEditable(false);
 
         row++;
     }
+    m_treeModel->setRowCount(row);
     settings.endGroup();
 
     ui->treeView->resizeColumnToContents( 0 );
@@ -330,12 +341,15 @@ static QString getHumanReadableShortcutName(const QString& cmdName)
         {CMD_PASTE, QObject::tr("Paste", "Shortcut")},
         {CMD_PLAY, QObject::tr("Play/Stop", "Shortcut")},
         {CMD_PREFERENCE, QObject::tr("Preferences", "Shortcut")},
+        {CMD_PREVIEW, QObject::tr("Preview", "Shortcut")},
         {CMD_REDO, QObject::tr("Redo", "Shortcut")},
         {CMD_REMOVE_FRAME, QObject::tr("Remove Frame", "Shortcut")},
         {CMD_RESET_WINDOWS, QObject::tr("Reset Windows", "Shortcut")},
-        {CMD_RESET_ZOOM_ROTATE, QObject::tr("Reset Zoom/Rotate", "Shortcut")},
+        {CMD_RESET_ZOOM_ROTATE, QObject::tr("Reset View", "Shortcut")},
+        {CMD_CENTER_VIEW, QObject::tr("Center View", "Shortcut")},
         {CMD_ROTATE_ANTI_CLOCK, QObject::tr("Rotate Anticlockwise", "Shortcut")},
         {CMD_ROTATE_CLOCK, QObject::tr("Rotate Clockwise", "Shortcut")},
+        {CMD_RESET_ROTATION, QObject::tr("Reset Rotation", "Shortcut")},
         {CMD_SAVE_AS, QObject::tr("Save File As", "Shortcut")},
         {CMD_SAVE_FILE, QObject::tr("Save File", "Shortcut")},
         {CMD_SELECT_ALL, QObject::tr("Select All", "Shortcut")},
@@ -370,5 +384,5 @@ static QString getHumanReadableShortcutName(const QString& cmdName)
         {CMD_ZOOM_OUT, QObject::tr("Zoom Out", "Shortcut")},
     };
 
-    return humanReadableShortcutNames.value(cmdName, cmdName);
+    return humanReadableShortcutNames.value(cmdName, QString());
 }

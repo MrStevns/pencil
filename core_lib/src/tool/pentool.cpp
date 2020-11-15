@@ -1,8 +1,8 @@
 /*
 
-Pencil - Traditional Animation Software
+Pencil2D - Traditional Animation Software
 Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
-Copyright (C) 2012-2018 Matthew Chiawen Chang
+Copyright (C) 2012-2020 Matthew Chiawen Chang
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -105,19 +105,19 @@ QCursor PenTool::cursor()
     return Qt::CrossCursor;
 }
 
-void PenTool::pointerPressEvent(PointerEvent *)
+void PenTool::pointerPressEvent(PointerEvent *event)
 {
     mScribbleArea->setAllDirty();
 
     mMouseDownPoint = getCurrentPoint();
     mLastBrushPoint = getCurrentPoint();
 
-    startStroke();
+    startStroke(event->inputType());
 }
 
 void PenTool::pointerMoveEvent(PointerEvent* event)
 {
-    if (event->buttons() & Qt::LeftButton)
+    if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         mCurrentPressure = strokeManager()->getPressure();
         drawStroke();
@@ -126,8 +126,9 @@ void PenTool::pointerMoveEvent(PointerEvent* event)
     }
 }
 
-void PenTool::pointerReleaseEvent(PointerEvent*)
+void PenTool::pointerReleaseEvent(PointerEvent *event)
 {
+    if (event->inputType() != mCurrentInputType) return;
     endStroke();
 }
 

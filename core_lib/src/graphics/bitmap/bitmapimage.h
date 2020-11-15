@@ -1,8 +1,8 @@
 /*
 
-Pencil - Traditional Animation Software
+Pencil2D - Traditional Animation Software
 Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
-Copyright (C) 2012-2018 Matthew Chiawen Chang
+Copyright (C) 2012-2020 Matthew Chiawen Chang
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -38,6 +38,7 @@ public:
     void loadFile() override;
     void unloadFile() override;
     bool isLoaded() override;
+    quint64 memoryUsage() override;
 
     void paintImage(QPainter& painter);
     void paintImage(QPainter &painter, QImage &image, QRect sourceRect, QRect destRect);
@@ -92,8 +93,8 @@ public:
     QSize size() { autoCrop(); return mBounds.size(); }
 
     // peg bar alignment
-    Status::StatusInt findLeft(QRectF rect, int grayValue);
-    Status::StatusInt findTop(QRectF rect, int grayValue);
+    PegbarResult findLeft(QRectF rect, int grayValue);
+    PegbarResult findTop(QRectF rect, int grayValue);
 
     QRect& bounds() { return mBounds; }
     void setBounds(QRect bounds) { mBounds = bounds; }
@@ -126,8 +127,8 @@ protected:
     void setCompositionModeBounds(QRect sourceBounds, bool isSourceMinBounds, QPainter::CompositionMode cm);
 
 private:
-    std::shared_ptr< QImage > mImage;
-    QRect   mBounds;
+    std::unique_ptr<QImage> mImage;
+    QRect mBounds;
 
     /** @see isMinimallyBounded() */
     bool mMinBound = true;

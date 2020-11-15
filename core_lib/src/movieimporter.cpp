@@ -1,3 +1,19 @@
+/*
+
+Pencil2D - Traditional Animation Software
+Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
+Copyright (C) 2012-2020 Matthew Chiawen Chang
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; version 2 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+*/
 #include "movieimporter.h"
 
 #include <QDebug>
@@ -187,16 +203,25 @@ Status MovieImporter::run(const QString &filePath, int fps, FileType type,
             if (!canProceed) { return Status::CANCELED; }
         }
 
-        return importMovieVideo(filePath, fps, frames, [&progress, this](int prog) {
+        auto progressCallback = [&progress, this](int prog) -> bool
+        {
             progress(prog); return !mCanceled;
-        }, [&progressMessage](QString message) {
+        };
+        auto progressMsgCallback = [&progressMessage](QString message)
+        {
             progressMessage(message);
-        });
-    } else if (type == FileType::SOUND) {
-        return importMovieAudio(filePath, [&progress, this](int prog) {
+        };
+        return importMovieVideo(filePath, fps, frames, progressCallback, progressMsgCallback);
+    }
+    else if (type == FileType::SOUND)
+    {
+        return importMovieAudio(filePath, [&progress, this](int prog) -> bool
+        {
             progress(prog); return !mCanceled;
         });
-    } else {
+    }
+    else
+    {
         Status st = Status::FAIL;
         st.setTitle(tr("Unknown error"));
         st.setTitle(tr("This should not happen..."));
@@ -205,7 +230,7 @@ Status MovieImporter::run(const QString &filePath, int fps, FileType type,
 }
 
 Status MovieImporter::importMovieVideo(const QString &filePath, int fps, int frameEstimate,
-                                       std::function<void(int)> progress,
+                                       std::function<bool(int)> progress,
                                        std::function<void(QString)> progressMessage)
 {
     Status status = Status::OK;
@@ -235,12 +260,13 @@ Status MovieImporter::importMovieVideo(const QString &filePath, int fps, int fra
 
     progress(50);
 
-    return generateFrames([this, &progress](int prog) {
+    return generateFrames([this, &progress](int prog) -> bool
+    {
         progress(prog); return mCanceled;
     });
 }
 
-Status MovieImporter::generateFrames(std::function<void (int)> progress)
+Status MovieImporter::generateFrames(std::function<bool(int)> progress)
 {
     Layer* layer = mEditor->layers()->currentLayer();
     Status status = Status::OK;
@@ -278,14 +304,14 @@ Status MovieImporter::generateFrames(std::function<void (int)> progress)
     if (!QFileInfo::exists(tempDir.filePath("00001.png"))) {
         status = Status::FAIL;
         status.setTitle(tr("Failed import"));
-        status.setDescription(tr("Was unable to find internal files, import unsucessful."));
+        status.setDescription(tr("Was unable to find internal files, import unsuccessful."));
         return status;
     }
 
     return status;
 }
 
-Status MovieImporter::importMovieAudio(const QString& filePath, std::function<void(int)> progress)
+Status MovieImporter::importMovieAudio(const QString& filePath, std::function<bool(int)> progress)
 {
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -310,6 +336,7 @@ Status MovieImporter::importMovieAudio(const QString& filePath, std::function<vo
             status.setDescription(QObject::tr("A frame already exists on frame: ") + QString::number(currentFrame) + tr(" Move the scrubber to a empty position on the timeline and try again"));
             return status;
         }
+        layer->removeKeyFrame(currentFrame);
     }
 
     QString audioPath = QDir(mTempDir->path()).filePath("audio.wav");
