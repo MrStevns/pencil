@@ -10,6 +10,9 @@ CONFIG += ordered
 SUBDIRS += core_lib
 core_lib.subdir = core_lib
 
+SUBDIRS += paint_lib
+paint_lib.subdir = 3rdlib/paint_lib
+
 SUBDIRS += app
 app.subdir      = app
 app.depends = core_lib
@@ -23,9 +26,6 @@ tests.depends = paint_lib
 NO_TESTS {
   SUBDIRS -= tests
 }
-
-SUBDIRS += paint_lib
-paint_lib.subdir = 3rdlib/paint_lib
 
 TRANSLATIONS += translations/pencil.ts \
                 translations/pencil_ar.ts \
