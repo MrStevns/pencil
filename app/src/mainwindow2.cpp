@@ -199,7 +199,6 @@ void MainWindow2::createDockWidgets()
         << mOnionSkinWidget
         << mToolOptions
         << mToolBox
-//        << mToolBrushSettingsWidget
         << mBrushSelectorWidget;
 
     mBrushSelectorWidget->show();
@@ -1578,7 +1577,6 @@ void MainWindow2::makeConnections(Editor* editor, MPBrushSelector* brushSelector
     connect(brushSelector, &MPBrushSelector::toggleSettingForBrushSetting, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::toggleSetting);
     connect(brushSelector, &MPBrushSelector::notifySettingChanged, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateSetting);
     connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::notifyBrushSettingUpdated, brushSelector, &MPBrushSelector::notifySettingChanged);
-    connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateSetting, brushSelector, &MPBrushSelector::notifySettingChanged);
 }
 
 void MainWindow2::bindActionWithSetting(QAction* action, SETTING setting)

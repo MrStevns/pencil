@@ -54,7 +54,6 @@ signals:
   void brushSelected();
   void toggleSettingForBrushSetting(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
   void notifySettingChanged(qreal value, BrushSettingType setting);
-  void updateConfigSettings();
 
 protected slots:
   void itemClicked ( QListWidgetItem *);

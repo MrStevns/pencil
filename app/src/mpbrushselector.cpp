@@ -39,6 +39,7 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
     : BaseDockWidget(parent)
 {
     setWindowTitle(tr("Brush Selector", "Window title of mypaint brush selector"));
+    setObjectName("MPBrushSelector");
 
     QWidget* containerWidget = new QWidget(parent);
     mVLayout = new QVBoxLayout();
@@ -63,7 +64,6 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
     hLayout->addWidget(mPresetComboBox);
     hLayout->addWidget(presetsManagerButton);
 
-    mVLayout->addLayout(hLayout);
     mVLayout->setContentsMargins(8,2,8,8);
 
     containerWidget->setLayout(mVLayout);

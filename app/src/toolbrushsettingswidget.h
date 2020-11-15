@@ -35,7 +35,6 @@ public:
     void updateFromUnmappedSetting(qreal value, BrushSettingType setting);
 
 Q_SIGNALS:
-    void notifySettingsUpdated();
     void notifyBrushSettingUpdated(qreal value, BrushSettingType setting);
 
 private:
