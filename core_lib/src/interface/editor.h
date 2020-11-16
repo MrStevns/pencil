@@ -134,6 +134,7 @@ signals:
 
     void changeThinLinesButton(bool);
     void currentFrameChanged(int n);
+    void currentFrameRemoved(int n);
     void fpsChanged(int fps);
 
     void needSave();

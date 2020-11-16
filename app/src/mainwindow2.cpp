@@ -117,7 +117,6 @@ MainWindow2::MainWindow2(QWidget* parent) :
     ui->scribbleArea->init();
 
     mEditor->setScribbleArea(ui->scribbleArea);
-    makeConnections(mEditor, ui->scribbleArea);
 
     mCommands = new ActionCommands(this);
     mCommands->setCore(mEditor);
@@ -238,6 +237,7 @@ void MainWindow2::createDockWidgets()
     addDockWidget( Qt::RightDockWidgetArea, mPreview );
     */
 
+    makeConnections(mEditor, ui->scribbleArea);
     makeConnections(mEditor);
     makeConnections(mEditor, mTimeLine);
     makeConnections(mEditor, mColorBox);
@@ -1501,8 +1501,10 @@ void MainWindow2::makeConnections(Editor* editor, ScribbleArea* scribbleArea)
     // TODO: figure out to one first or second of these signals...
     connect(editor, &Editor::currentFrameChanged, scribbleArea, &ScribbleArea::showCurrentFrame );
     connect(editor, &Editor::currentFrameChanged, scribbleArea, &ScribbleArea::updateCurrentFrame);
+    connect(editor, &Editor::currentFrameRemoved, scribbleArea, &ScribbleArea::updateFrame);
 
     connect(editor->view(), &ViewManager::viewChanged, scribbleArea, &ScribbleArea::updateAllFrames);
+    connect(mTimeLine, &TimeLine::notifyFramesMoved, scribbleArea, &ScribbleArea::updateAllFrames);
 
 }
 
