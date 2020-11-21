@@ -94,7 +94,6 @@ void ToolManager::setCurrentTool(ToolType eToolType)
     }
 
     mCurrentTool = getTool(eToolType);
-    mNonTemporaryTool = eToolType;
     emit toolChanged(eToolType);
 }
 
@@ -105,15 +104,13 @@ void ToolManager::setTemporaryTool(ToolType eToolMode)
     if (!mTemporaryTool && currentTool()->type() != eToolMode)
     {
         mTemporaryTool = true; // used to return to previous tool when finished (keyRelease).
-        mNonTemporaryTool = currentTool()->type();
-        setCurrentTool(eToolMode);
+        emit toolChanged(eToolMode);
     }
 }
 
 void ToolManager::deactivateTemporaryTool() {
     mTemporaryTool = false;
-    setCurrentTool(mNonTemporaryTool);
-//    mTemporaryTool = INVALID_TOOL;
+    emit toolChanged(mCurrentTool->type());
 }
 
 bool ToolManager::leavingThisTool()

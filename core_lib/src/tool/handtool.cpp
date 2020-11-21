@@ -70,12 +70,6 @@ void HandTool::pointerMoveEvent(PointerEvent* event)
 
 void HandTool::pointerReleaseEvent(PointerEvent* event)
 {
-    //---- stop the hand tool if this was mid button
-    if (event->buttons() & (Qt::MidButton | Qt::RightButton))
-    {
-        qDebug("[HandTool] Stop Hand Tool");
-        mEditor->tools()->deactivateTemporaryTool();
-    }
     mIsHeld = false;
     mScribbleArea->updateToolCursor();
 }

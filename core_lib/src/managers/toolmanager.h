@@ -80,11 +80,10 @@ public slots:
 private:
     BaseTool* mCurrentTool = nullptr;
     ToolType  meTabletBackupTool = PENCIL;
-    bool mIsSwitchedToEraser = false;
     QHash<ToolType, BaseTool*> mToolSetHash;
 
+    bool mIsSwitchedToEraser = false;
     bool mTemporaryTool = false;
-    ToolType mNonTemporaryTool = INVALID_TOOL;
 
     int mOldValue = 0;
 
