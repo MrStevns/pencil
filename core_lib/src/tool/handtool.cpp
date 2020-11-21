@@ -68,7 +68,7 @@ void HandTool::pointerMoveEvent(PointerEvent* event)
     mLastPixel = getCurrentPixel();
 }
 
-void HandTool::pointerReleaseEvent(PointerEvent* event)
+void HandTool::pointerReleaseEvent(PointerEvent*)
 {
     mIsHeld = false;
     mScribbleArea->updateToolCursor();

@@ -268,14 +268,7 @@ void ScribbleArea::updateCurrentFrame()
 
 void ScribbleArea::updateFrame(int frame)
 {
-    //QString cachedFrameKey = getCachedFrameKey(frame);
-    //QPixmapCache::remove( cachedFrameKey );
-
-    qDebug() << "update frame";
-
-    //if (mEditor) {
-        //updateFrame();
-    //}
+   qDebug() << "update frame";
 
     updatePixmapCache(frame);
     updateOnionSkinsAround(frame);
@@ -898,7 +891,8 @@ void ScribbleArea::paintBitmapBuffer(QPainter::CompositionMode composition)
     layer->setModified(frameNumber, true);
     emit modification(frameNumber);
 
-    updatePixmapCache(frameNumber);
+    // Update the cache for the last key-frame.
+    updateFrame(frameNumber);
     update();
 }
 
