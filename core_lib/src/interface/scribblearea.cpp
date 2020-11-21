@@ -1615,8 +1615,7 @@ BaseTool* ScribbleArea::getTool(ToolType eToolType)
     return editor()->tools()->getTool(eToolType);
 }
 
-// TODO: check this method
-void ScribbleArea::setCurrentTool(ToolType eToolMode)
+void ScribbleArea::currentToolSet(ToolType eToolMode)
 {
     if (currentTool() != nullptr && eToolMode != currentTool()->type())
     {

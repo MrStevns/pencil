@@ -82,6 +82,9 @@ private:
     ToolType  meTabletBackupTool = PENCIL;
     QHash<ToolType, BaseTool*> mToolSetHash;
 
+    ToolType mCurrentToolType = PENCIL;
+    ToolType mOldToolType = INVALID_TOOL;
+
     bool mIsSwitchedToEraser = false;
     bool mTemporaryTool = false;
 

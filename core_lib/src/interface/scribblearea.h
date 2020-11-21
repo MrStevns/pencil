@@ -123,7 +123,7 @@ public:
 
     BaseTool* currentTool() const;
     BaseTool* getTool(ToolType eToolMode);
-    void setCurrentTool(ToolType eToolMode);
+    void currentToolSet(ToolType eToolMode);
 
     void floodFillError(int errorType);
 
