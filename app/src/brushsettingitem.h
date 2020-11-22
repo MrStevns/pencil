@@ -10,6 +10,7 @@ public:
     enum Category {
         Basic,
         Advanced,
+        Active,
         Opacity,
         Dab,
         Speed,

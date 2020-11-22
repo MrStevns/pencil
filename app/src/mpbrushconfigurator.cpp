@@ -13,6 +13,7 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QJsonDocument>
+#include <QSettings>
 
 #include "toolmanager.h"
 
@@ -129,6 +130,7 @@ void MPBrushConfigurator::initUI()
     mBrushName = mEditor->brushes()->currentBrushName();
     mPreset = mEditor->brushes()->currentPresetName();
 
+    mActiveTreeRoot = addTreeRoot(BrushSettingItem::Active, mNavigatorWidget, tr("Active settings"));
     auto basicRoot = addTreeRoot(BrushSettingItem::Basic, mNavigatorWidget, tr("Basic settings"));
 
     auto advanceRoot = addTreeRoot(BrushSettingItem::Advanced, mNavigatorWidget, tr("Advanced settings"));
@@ -196,6 +198,33 @@ void MPBrushConfigurator::prepareBasicBrushSettings()
     mBrushWidgets.append(new BrushSettingEditWidget(Hardness));
     mBrushWidgets.append(new BrushSettingEditWidget(AntiAliasing));
     mBrushWidgets.append(new BrushSettingEditWidget(PressureGain));
+}
+
+void MPBrushConfigurator::prepareActiveSettings()
+{
+    QSettings settings(PENCIL2D, PENCIL2D);
+    auto groups = settings.childGroups();
+
+    QString toolGroup = QString(SETTING_MPBRUSHSETTING)
+                        .arg(mEditor->tools()->currentTool()->typeName()).toLower();
+
+    settings.beginGroup(toolGroup);
+
+    for (QString key : settings.childGroups())
+    {
+        settings.beginGroup(key);
+
+        bool show = settings.value("visible").toBool();
+        QString name = settings.value("name").toString();
+        qreal min = settings.value("min").toReal();
+        qreal max = settings.value("max").toReal();
+        settings.endGroup();
+
+        if (show) {
+            BrushSettingEditWidget* settingWidget = new BrushSettingEditWidget(name, getBrushSetting(key), min, max, this);
+            mBrushWidgets.append(settingWidget);
+        }
+    }
 }
 
 void MPBrushConfigurator::prepareAdvancedBrushSettings()
@@ -338,7 +367,6 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
 {
     if (!mBrushWidgets.isEmpty()) {
         qDeleteAll(mBrushSettingsWidget->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly));
-
         for (int i = 0; i < mListOfConnections.count(); i++) {
             disconnect(mListOfConnections.takeAt(i));
         }
@@ -348,6 +376,7 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
     removeBrushSettingSpacers();
 
     switch(static_cast<BrushSettingItem*>(item)->ItemCategory()) {
+        case BrushSettingItem::Active: prepareActiveSettings(); break;
         case BrushSettingItem::Basic: prepareBasicBrushSettings(); break;
         case BrushSettingItem::Advanced: prepareAdvancedBrushSettings(); break;
         case BrushSettingItem::Opacity: prepareOpacitySettings(); break;

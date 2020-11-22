@@ -63,6 +63,8 @@ private:
     void addBrushSettingsSpacer();
     void removeBrushSettingSpacers();
 
+    void prepareActiveSettings();
+
     void prepareBasicBrushSettings();
     void prepareAdvancedBrushSettings();
 
@@ -100,6 +102,8 @@ private:
     QTreeWidget* mNavigatorWidget = nullptr;
     QLabel* mBrushImageWidget = nullptr;
     QLabel* mBrushNameWidget = nullptr;
+
+    BrushSettingItem* mActiveTreeRoot = nullptr;
 
     QPointer<MPBrushInfoDialog> mBrushInfoWidget = nullptr;
 

@@ -164,4 +164,9 @@ void BrushSettingEditWidget::closeMappingWindow()
     }
 }
 
+bool BrushSettingEditWidget::isChecked() const
+{
+    return mVisibleCheck->checkState();
+}
+
 

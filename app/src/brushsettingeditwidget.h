@@ -35,6 +35,7 @@ public:
     QString settingName();
 
     qreal initialValue() { return mInitialValue; }
+    bool isChecked() const;
 
 public slots:
     void notifyInputMappingRemoved(BrushInputType input);
