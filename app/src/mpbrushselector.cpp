@@ -26,6 +26,7 @@
 #include "editor.h"
 #include "toolmanager.h"
 #include "combobox.h"
+#include <errordialog.h>
 
 #include "preferencemanager.h"
 #include "mpbrushmanager.h"
@@ -220,6 +221,9 @@ void MPBrushSelector::loadBrushFromFile(const QString& brushName)
     if (status == Status::OK)
     {
         emit brushSelected(); // Read the whole file and broadcast is as a char* buffer
+    } else {
+        ErrorDialog errorDialog(status.title(), status.description(), status.details().str());
+        errorDialog.exec();
     }
 }
 

@@ -151,10 +151,32 @@ Status MPBrushManager::readBrushFromFile(const QString& brushPreset, const QStri
         file.setFileName(BRUSH_QRC + "/" + brushPreset + "/" + brushName + BRUSH_CONTENT_EXT);
     }
 
+    // TODO: mypaint v2 uses a new format... either we should update to that or simply mention that the brush is not supported
+
     Status status = Status::OK;
     if (file.open( QIODevice::ReadOnly ))
     {
-        mCurrentBrushData = file.readAll();
+        QTextStream stream(&file);
+
+        while (!stream.atEnd()) {
+            QString line = stream.readLine();
+
+            // Only libmypaint v1 brushes supported currently.
+            if (line.at(0) != "{") {
+
+                DebugDetails details;
+                status = Status::FAIL;
+                status.setTitle("Mypaint v2 brush format detected");
+                status.setDescription("This brush is not compatible with the current brush engine");
+                status.setDetails(details);
+                return status;
+            }
+            break;
+        }
+        // reset position
+        stream.seek(0);
+
+        mCurrentBrushData = stream.readAll().toUtf8();
     } else {
         status = Status::FAIL;
 
