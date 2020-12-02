@@ -166,6 +166,7 @@ MPHandler::strokeTo(float x, float y)
 void
 MPHandler::endStroke()
 {
+    mypaint_brush_reset(m_brush->brush);
 }
 
 float MPHandler::getBrushValue(MyPaintBrushSetting setting)
