@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <string.h>
 #include <QImage>
+#include <QHash>
 
 extern "C" {
 #include "mypaint-glib-compat.h"
@@ -46,10 +47,12 @@ extern "C" {
 #include "mpbrush.h"
 #include "mptile.h"
 
+class MPHandler;
+
 class MPSurface : public MyPaintTiledSurface
 {
 public:
-    MPSurface(QSize size);
+    MPSurface(MPHandler* parentHandler, QSize size);
     ~MPSurface();
 
     uint16_t *tile_buffer; // Stores tiles in a linear chunk of memory (16bpc RGBA)
@@ -72,21 +75,13 @@ public:
     inline QPoint getTileIndex(const QPoint& pos);
     inline QPointF getTileFIndex(const QPoint& pos);
 
-    typedef void (*MPOnUpdateTileFunction) (MPSurface *surface, MPTile *tile);
-    typedef void (*MPOnUpdateSurfaceFunction) (MPSurface *surface);
-
-    void setOnUpdateTile(MPOnUpdateTileFunction onUpdateTileFunction);
-    void setOnNewTile(MPOnUpdateTileFunction onNewTileFunction);
-    void setOnClearedSurface(MPOnUpdateSurfaceFunction onNewTileFunction);
-    void setOnClearTile(MPOnUpdateTileFunction onNewTileFunction);
+    void onUpdateTile(MPSurface *surface, MPTile *tile);
+    void onNewTile(MPSurface *surface, MPTile *tile);
+    void onClearTile(MPSurface *surface, MPTile *tile);
+    void onClearedSurface(MPSurface *surface);
     void refreshSurface();
 
     void saveSurface(const QString path);
-
-    MPOnUpdateTileFunction onUpdateTileFunction;
-    MPOnUpdateTileFunction onNewTileFunction;
-    MPOnUpdateTileFunction onClearTileFunction;
-    MPOnUpdateSurfaceFunction onClearedSurfaceFunction;
 
     void setSize(QSize size);
     QSize size();
@@ -97,6 +92,8 @@ public:
     void loadImage(const QImage &image, const QPoint topLeft);
     void drawImageAt(const QImage& image, const QPoint topLeft);
     void clearArea(const QRect& bounds);
+
+    QHash<QString, MPTile*> getTiles() { return m_Tiles; }
 
 private:
     void resetNullTile();
@@ -115,6 +112,7 @@ private:
 
 protected:
     QHash<QString, MPTile*> m_Tiles;
+    MPHandler* mParentHandler;
 };
 
 #endif // MPSURFACE_H

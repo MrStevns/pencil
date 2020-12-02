@@ -69,11 +69,11 @@ bool ScribbleArea::init()
 {
     mPrefs = mEditor->preference();
     mDoubleClickTimer = new QTimer(this);
-    mMyPaint = MPHandler::handler();
+    mMyPaint = new MPHandler();
 
-    connect(mMyPaint, &MPHandler::newTile, this, &ScribbleArea::updateTile);
-    connect(mMyPaint, &MPHandler::updateTile, this, &ScribbleArea::updateTile);
-    connect(mMyPaint, &MPHandler::clearTile, this, &ScribbleArea::clearTile);
+    connect(mMyPaint, &MPHandler::tileAdded, this, &ScribbleArea::updateTile);
+    connect(mMyPaint, &MPHandler::tileUpdated, this, &ScribbleArea::updateTile);
+    connect(mMyPaint, &MPHandler::tileCleared, this, &ScribbleArea::clearTile);
 
     connect(mPrefs, &PreferenceManager::optionChanged, this, &ScribbleArea::settingUpdated);
     connect(mDoubleClickTimer, &QTimer::timeout, this, &ScribbleArea::handleDoubleClick);

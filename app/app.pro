@@ -263,7 +263,11 @@ unix {
 
 # --- paint_lib ---
 
-INCLUDEPATH += $$PWD/../3rdlib/paint_lib
+INCLUDEPATH += $$PWD/../3rdlib/paint_lib/json-c \
+               $$PWD/../3rdlib/paint_lib/libmypaint \
+               $$PWD/../3rdlib/paint_lib/qtmypaint \
+               $$PWD/../3rdlib/paint_lib
+
 DEPENDPATH += $$PWD/../3rdlib/paint_lib
 
 win32-msvc* {

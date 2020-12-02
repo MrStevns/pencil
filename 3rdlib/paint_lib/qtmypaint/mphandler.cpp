@@ -36,63 +36,12 @@ extern "C" {
 #include "mypaint-surface.h"
 }
 
-#define DEFAULT_BRUSHES_PATH ":brushes"
-
-bool MPHandler::instanceFlag = false;
-MPHandler* MPHandler::currentHandler = nullptr;
-
-static void
-onUpdatedTile(MPSurface *surface, MPTile *tile)
-{
-    MPHandler* handler = MPHandler::handler();
-    handler->updateTile(surface, tile);
-}
-
-static void
-onNewTile(MPSurface *surface, MPTile *tile)
-{
-    MPHandler* handler = MPHandler::handler();
-    handler->newTile(surface, tile);
-}
-
-static void
-onClearedSurface(MPSurface *surface)
-{
-    MPHandler* handler = MPHandler::handler();
-    handler->clearedSurface(surface);
-}
-
-static void
-onClearTile(MPSurface* surface, MPTile* tile)
-{
-    MPHandler* handler = MPHandler::handler();
-    handler->clearTile(surface, tile);
-}
-
-MPHandler *
-MPHandler::handler()
-{
-    if(! instanceFlag)
-    {
-        currentHandler = new MPHandler();
-        instanceFlag = true;
-    }
-
-    return currentHandler;
-
-}
-
 MPHandler::MPHandler()
 {
     QSize defaultSize = QSize(QTMYPAINT_SURFACE_WIDTH, QTMYPAINT_SURFACE_HEIGHT);
 
     m_brush = new MPBrush();
-    m_surface = new MPSurface(defaultSize);
-
-    this->m_surface->setOnUpdateTile(onUpdatedTile);
-    this->m_surface->setOnNewTile(onNewTile);
-    this->m_surface->setOnClearedSurface(onClearedSurface);
-    this->m_surface->setOnClearTile(onClearTile);
+    m_surface = new MPSurface(this, defaultSize);
 }
 
 MPHandler::~MPHandler()

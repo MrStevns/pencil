@@ -53,11 +53,10 @@ class MPHandler : public QObject
     Q_OBJECT
 
 public:
+    MPHandler();
     ~MPHandler();
 
     static MPHandler *handler();
-
-    typedef void (*MPOnUpdateFunction) (MPHandler *handler, MPSurface *surface, MPTile *tile);
 
     void startStroke();
     void strokeTo(float x, float y, float pressure, float xtilt, float ytilt, double dtime);
@@ -97,23 +96,18 @@ public:
     void loadTile(const QPixmap& pixmap, const QPoint pos);
     void clearAreaFromSurface(const QRect& bounds);
 
+signals:
+    void tileUpdated(MPSurface *surface, MPTile *tile) const;
+    void tileAdded(MPSurface *surface, MPTile *tile) const;
+    void tileCleared(MPSurface* surface, MPTile* tile) const;
+    void surfaceCleared(MPSurface *surface) const;
 
 public slots:
     void loadBrush(const QByteArray& content);
 
 private:
-    MPHandler();
-    static bool instanceFlag;
-    static MPHandler *currentHandler;
-
     MPBrush *   m_brush;
     MPSurface * m_surface;
-
-signals:
-    void updateTile(MPSurface *surface, MPTile *tile) const;
-    void newTile(MPSurface *surface, MPTile *tile) const;
-    void clearTile(MPSurface* surface, MPTile* tile) const;
-    void clearedSurface(MPSurface *surface) const;
 
 };
 

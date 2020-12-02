@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QtMath>
 
 #include "mpsurface.h"
+#include "mphandler.h"
 #include "qrect.h"
 
 static void freeTiledSurface(MyPaintSurface *surface)
@@ -91,19 +92,20 @@ static void onTileRequestEnd(MyPaintTiledSurface *tiled_surface, MyPaintTileRequ
         tile->updateCache();
     }
 
-    self->onUpdateTileFunction(self, tile);
+    self->onUpdateTile(self, tile);
 }
 
-MPSurface::MPSurface(QSize size)
+MPSurface::MPSurface(MPHandler* parentHandler, QSize size)
 {
     // Init callbacks
     //
-    this->onUpdateTileFunction   = defaultUpdateFunction;
-    this->onNewTileFunction      = defaultUpdateFunction;
-    this->onClearTileFunction = defaultUpdateFunction;
+//    this->onUpdateTileFunction   = defaultUpdateFunction;
+//    this->onNewTileFunction      = defaultUpdateFunction;
+//    this->onClearTileFunction = defaultUpdateFunction;
 
     // MPSurface vfuncs
     this->parent.destroy = freeTiledSurface;
+    this->mParentHandler = parentHandler;
 
     resetSurface(size);
 
@@ -115,31 +117,31 @@ MPSurface::~MPSurface()
 {
 }
 
-void MPSurface::setOnUpdateTile(MPOnUpdateTileFunction onUpdateFunction)
+void MPSurface::onUpdateTile(MPSurface *surface, MPTile *tile)
 {
-    this->onUpdateTileFunction = onUpdateFunction;
+    mParentHandler->tileUpdated(surface, tile);
 }
 
-void MPSurface::setOnNewTile(MPOnUpdateTileFunction onNewTileFunction)
+void MPSurface::onNewTile(MPSurface *surface, MPTile *tile)
 {
-    this->onNewTileFunction = onNewTileFunction;
+    mParentHandler->tileAdded(surface, tile);
 }
 
-void MPSurface::setOnClearedSurface(MPOnUpdateSurfaceFunction onClearedSurfaceFunction)
+void MPSurface::onClearedSurface(MPSurface *surface)
 {
-    this->onClearedSurfaceFunction = onClearedSurfaceFunction;
+    mParentHandler->surfaceCleared(surface);
 }
 
-void MPSurface::setOnClearTile(MPOnUpdateTileFunction onClearTileFunction)
+void MPSurface::onClearTile(MPSurface *surface, MPTile *tile)
 {
-    this->onClearTileFunction = onClearTileFunction;
+    mParentHandler->tileCleared(surface, tile);
 }
 
 void MPSurface::loadTile(const QPixmap& pixmap, const QPoint& pos)
 {
     MPTile* tile = getTileFromPos(pos);
     tile->setPixmap(pixmap);
-    this->onUpdateTileFunction(this, tile);
+    this->onUpdateTile(this, tile);
 }
 
 void MPSurface::loadTiles(const QList<std::shared_ptr<QPixmap>>& pixmaps, const QList<QPoint>& positions)
@@ -157,7 +159,7 @@ void MPSurface::loadTiles(const QList<std::shared_ptr<QPixmap>>& pixmaps, const 
 
             MPTile *tile = getTileFromPos(pos);
             tile->setPixmap(pixmap);
-            this->onUpdateTileFunction(this, tile);
+            this->onUpdateTile(this, tile);
         }
     }
 }
@@ -371,7 +373,7 @@ void MPSurface::clear()
         }
     }
 
-    this->onClearedSurfaceFunction(this);
+    this->onClearedSurface(this);
 }
 
 void MPSurface::clearTile(MPTile* tile)
@@ -389,7 +391,7 @@ void MPSurface::clearTile(MPTile* tile)
             m_Tiles.remove(i.key());
         }
     }
-    onClearTileFunction(this, tile);
+    this->onClearTile(this, tile);
 }
 
 int MPSurface::getTilesWidth()
@@ -473,7 +475,7 @@ bool MPSurface::isFullyTransparent(QImage image)
 void MPSurface::refreshSurface()
 {
     for (MPTile* tile : m_Tiles) {
-        this->onUpdateTileFunction(this, tile);
+        this->onUpdateTile(this, tile);
     }
 }
 
@@ -500,9 +502,9 @@ MPTile* MPSurface::getTileFromIdx(const QPoint& idx)
         QPoint tilePos (getTilePos(idx));
         selectedTile->setPos(tilePos);
 
-        this->onNewTileFunction(this, selectedTile);
+        this->onNewTile(this, selectedTile);
     } else {
-        this->onUpdateTileFunction(this, selectedTile);
+        this->onUpdateTile(this, selectedTile);
     }
 
     return selectedTile;
