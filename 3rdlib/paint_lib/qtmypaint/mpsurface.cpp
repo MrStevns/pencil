@@ -43,13 +43,6 @@ static void freeTiledSurface(MyPaintSurface *surface)
     free(self);
 }
 
-static void defaultUpdateFunction(MPSurface *surface, MPTile *tile)
-{
-    Q_UNUSED(surface)
-    Q_UNUSED(tile)
-    // Things to do if no update callback has been affected
-}
-
 static void onTileRequestStart(MyPaintTiledSurface *tiled_surface, MyPaintTileRequest *request)
 {
     MPSurface *self = static_cast<MPSurface*>(tiled_surface);
@@ -97,12 +90,6 @@ static void onTileRequestEnd(MyPaintTiledSurface *tiled_surface, MyPaintTileRequ
 
 MPSurface::MPSurface(MPHandler* parentHandler, QSize size)
 {
-    // Init callbacks
-    //
-//    this->onUpdateTileFunction   = defaultUpdateFunction;
-//    this->onNewTileFunction      = defaultUpdateFunction;
-//    this->onClearTileFunction = defaultUpdateFunction;
-
     // MPSurface vfuncs
     this->parent.destroy = freeTiledSurface;
     this->mParentHandler = parentHandler;
