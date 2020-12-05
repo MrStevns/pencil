@@ -46,23 +46,23 @@ void MPBrush::initBrush()
     brush = mypaint_brush_new();
     mypaint_brush_from_defaults(brush);
 
-    setValue(MYPAINT_BRUSH_SETTING_COLOR_H, 0);
-    setValue(MYPAINT_BRUSH_SETTING_COLOR_S, 0);
-    setValue(MYPAINT_BRUSH_SETTING_COLOR_V, 0);
-    setValue(MYPAINT_BRUSH_SETTING_SNAP_TO_PIXEL, 0.0);
-    setValue(MYPAINT_BRUSH_SETTING_ANTI_ALIASING, 1.0);
-    setValue(MYPAINT_BRUSH_SETTING_RADIUS_LOGARITHMIC, 0.3);
-//    setValue(MYPAINT_BRUSH_SETTING_STROKE_DURATION_LOGARITHMIC, 4.0);
-//    setValue(MYPAINT_BRUSH_SETTING_SPEED2_SLOWNESS, 0.8);
-//    setValue(MYPAINT_BRUSH_SETTING_SPEED2_GAMMA, 10);
-//    setValue(MYPAINT_BRUSH_SETTING_SPEED1_SLOWNESS, 0.04);
-//    setValue(MYPAINT_BRUSH_SETTING_SPEED1_GAMMA, 10);
-//    setValue(MYPAINT_BRUSH_SETTING_SMUDGE_LENGTH, 0.5);
-//    setValue(MYPAINT_BRUSH_SETTING_SLOW_TRACKING_PER_DAB, 1.5);
-//    setValue(MYPAINT_BRUSH_SETTING_SLOW_TRACKING, 1.03);
-//    setValue(MYPAINT_BRUSH_SETTING_OFFSET_BY_RANDOM, 0.5);
-    setValue(MYPAINT_BRUSH_SETTING_DIRECTION_FILTER, 10.0);
-    setValue(MYPAINT_BRUSH_SETTING_DABS_PER_ACTUAL_RADIUS, 4.0);
+    setBaseValue(MYPAINT_BRUSH_SETTING_COLOR_H, 0);
+    setBaseValue(MYPAINT_BRUSH_SETTING_COLOR_S, 0);
+    setBaseValue(MYPAINT_BRUSH_SETTING_COLOR_V, 0);
+    setBaseValue(MYPAINT_BRUSH_SETTING_SNAP_TO_PIXEL, 0.0);
+    setBaseValue(MYPAINT_BRUSH_SETTING_ANTI_ALIASING, 1.0);
+    setBaseValue(MYPAINT_BRUSH_SETTING_RADIUS_LOGARITHMIC, 0.3);
+//    setBaseValue(MYPAINT_BRUSH_SETTING_STROKE_DURATION_LOGARITHMIC, 4.0);
+//    setBaseValue(MYPAINT_BRUSH_SETTING_SPEED2_SLOWNESS, 0.8);
+//    setBaseValue(MYPAINT_BRUSH_SETTING_SPEED2_GAMMA, 10);
+//    setBaseValue(MYPAINT_BRUSH_SETTING_SPEED1_SLOWNESS, 0.04);
+//    setBaseValue(MYPAINT_BRUSH_SETTING_SPEED1_GAMMA, 10);
+//    setBaseValue(MYPAINT_BRUSH_SETTING_SMUDGE_LENGTH, 0.5);
+//    setBaseValue(MYPAINT_BRUSH_SETTING_SLOW_TRACKING_PER_DAB, 1.5);
+//    setBaseValue(MYPAINT_BRUSH_SETTING_SLOW_TRACKING, 1.03);
+//    setBaseValue(MYPAINT_BRUSH_SETTING_OFFSET_BY_RANDOM, 0.5);
+    setBaseValue(MYPAINT_BRUSH_SETTING_DIRECTION_FILTER, 10.0);
+    setBaseValue(MYPAINT_BRUSH_SETTING_DABS_PER_ACTUAL_RADIUS, 4.0);
 }
 
 void MPBrush::load(const QByteArray& content)
@@ -96,17 +96,17 @@ void MPBrush::setColor(QColor newColor)
 //    float opacity = m_color.alpha()/255.0;
 //    mypaint_brush_set_base_value(brush, MYPAINT_BRUSH_SETTING_OPAQUE, opacity);
 
-    setValue(MYPAINT_BRUSH_SETTING_COLOR_H, h);
-    setValue(MYPAINT_BRUSH_SETTING_COLOR_S, s);
-    setValue(MYPAINT_BRUSH_SETTING_COLOR_V, v);
+    setBaseValue(MYPAINT_BRUSH_SETTING_COLOR_H, h);
+    setBaseValue(MYPAINT_BRUSH_SETTING_COLOR_S, s);
+    setBaseValue(MYPAINT_BRUSH_SETTING_COLOR_V, v);
 }
 
 void MPBrush::setWidth(const float size)
 {
-    setValue(MYPAINT_BRUSH_SETTING_RADIUS_LOGARITHMIC, size);
+    setBaseValue(MYPAINT_BRUSH_SETTING_RADIUS_LOGARITHMIC, size);
 }
 
-float MPBrush::getValue(MyPaintBrushSetting setting)
+float MPBrush::getBaseValue(MyPaintBrushSetting setting)
 {
     return mypaint_brush_get_base_value(brush, setting);
 }
@@ -116,7 +116,7 @@ float MPBrush::getState(MyPaintBrushState state)
     return mypaint_brush_get_state(brush, state);
 }
 
-void MPBrush::setValue(MyPaintBrushSetting setting, float value)
+void MPBrush::setBaseValue(MyPaintBrushSetting setting, float value)
 {
     mypaint_brush_set_base_value(brush, setting, value);
 }

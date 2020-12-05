@@ -57,7 +57,7 @@ void BrushSettingWidget::initUI()
 {
     BrushSettingInfo info = mEditor->getBrushSettingInfo(mSettingType);
 
-    qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSetting(mSettingType));
+    qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(mSettingType));
     setValue(baseValue);
     setRange(static_cast<qreal>(info.min), static_cast<qreal>(info.max));
     setToolTip(info.tooltip);
@@ -65,7 +65,7 @@ void BrushSettingWidget::initUI()
 
 void BrushSettingWidget::updateUI()
 {
-    qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSetting(mSettingType));
+    qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(mSettingType));
     setValue(baseValue);
 }
 

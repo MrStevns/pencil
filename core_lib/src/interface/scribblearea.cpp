@@ -1701,14 +1701,14 @@ void ScribbleArea::brushSettingChanged(BrushSettingType settingType, float value
 {
     qDebug() << "value before mypaint: " << value;
 
-    mMyPaint->setBrushValue(static_cast<MyPaintBrushSetting>(settingType), value);
+    mMyPaint->setBrushBaseValue(static_cast<MyPaintBrushSetting>(settingType), value);
     forceUpdateMyPaintStates();
     updateCanvasCursor();
 }
 
-float ScribbleArea::getBrushSetting(BrushSettingType settingType)
+float ScribbleArea::getBrushSettingBaseValue(BrushSettingType settingType)
 {
-    return mMyPaint->getBrushValue(static_cast<MyPaintBrushSetting>(settingType));
+    return mMyPaint->getBrushSettingBaseValue(static_cast<MyPaintBrushSetting>(settingType));
 }
 
 void ScribbleArea::setBrushInputMapping(QVector<QPointF> points, BrushSettingType settingType, BrushInputType inputType)
@@ -1733,7 +1733,7 @@ const BrushInputMapping ScribbleArea::getBrushInputMapping(BrushSettingType sett
     controlPoints.numberOfPoints = mappingPoints->n;
     inputMapping.controlPoints = controlPoints;
     inputMapping.inputsUsed = mMyPaint->getBrushInputsUsed(static_cast<MyPaintBrushSetting>(settingType));
-    inputMapping.baseValue = mMyPaint->getBrushValue(static_cast<MyPaintBrushSetting>(settingType));
+    inputMapping.baseValue = mMyPaint->getBrushSettingBaseValue(static_cast<MyPaintBrushSetting>(settingType));
 
     return inputMapping;
 }

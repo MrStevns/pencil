@@ -263,5 +263,5 @@ void ToolManager::mapQuickPropertyToBrushSettingValue(qreal value, QuickProperty
 /// Already mapped values can go diectly to mypaint backend and update the engine.
 void ToolManager::setMPBrushSetting(qreal value, BrushSettingType setting)
 {
-    editor()->setMPBrushSetting(setting, static_cast<float>(value));
+    editor()->setMPBrushSettingBaseValue(setting, static_cast<float>(value));
 }

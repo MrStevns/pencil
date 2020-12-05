@@ -481,7 +481,7 @@ void MPBrushConfigurator::prepareBrushChanges(qreal value, BrushSettingType sett
         mDiscardChangesButton->setEnabled(true);
     }
 
-    mEditor->setMPBrushSetting(setting, static_cast<float>(value));
+    mEditor->setMPBrushSettingBaseValue(setting, static_cast<float>(value));
 
     auto st = mEditor->brushes()->applyChangesToBrushFile(mCurrentModifications);
 
@@ -498,10 +498,10 @@ void MPBrushConfigurator::backupBrushSetting(BrushSettingType setting)
     int settingTypeInt = static_cast<int>(setting);
     // Adds old brush value and only save once, so we can discard it later if needed
     if (!mOldModifications.contains(settingTypeInt)) {
-        auto settingInfo = mEditor->getBrushSettingInfo(setting);
+        float baseValue = mEditor->getMPBrushSettingBaseValue(setting);
 
         BrushChanges changes;
-        changes.baseValue = static_cast<qreal>(settingInfo.defaultValue);
+        changes.baseValue = static_cast<qreal>(baseValue);
         changes.settingsType = setting;
         mOldModifications.insert(settingTypeInt, changes);
     }
@@ -554,7 +554,7 @@ void MPBrushConfigurator::prepareBrushInputChanges(QVector<QPointF> points, Brus
     backupBrushMapping(setting, input);
 
     // if no base value has been provided, use the default value from brush settings
-    qreal baseValue = static_cast<qreal>(mEditor->getBrushSettingInfo(setting).defaultValue);
+    qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(setting));
 
     // TODO: this will only work for one instance... we need to keep current modifications
     // per brush and store it somewhere that has a longer lifetime...
@@ -612,7 +612,7 @@ void MPBrushConfigurator::removeBrushMappingForInput(BrushSettingType setting, B
     backupBrushMapping(setting, input);
 
     BrushChanges changes;
-    changes.baseValue = static_cast<qreal>(mEditor->getBrushSettingInfo(setting).defaultValue);
+    changes.baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(setting));
     changes.settingsType = setting;
 
     changes.listOfinputChanges.insert(static_cast<int>(input), InputChanges { {}, input, false });
@@ -692,7 +692,7 @@ void MPBrushConfigurator::pressedDiscardBrush()
     while (changesIt.hasNext()) {
         changesIt.next();
 
-        mEditor->setMPBrushSetting(static_cast<BrushSettingType>(changesIt.key()),
+        mEditor->setMPBrushSettingBaseValue(static_cast<BrushSettingType>(changesIt.key()),
                                    static_cast<float>(changesIt.value().baseValue));
 
         const auto brushChanges = changesIt.value();

@@ -63,13 +63,13 @@ public:
     void strokeTo(float x, float y);
     void endStroke();
 
-    float getBrushValue(MyPaintBrushSetting setting);
+    float getBrushSettingBaseValue(MyPaintBrushSetting setting);
     float getBrushState(MyPaintBrushState state);
 
     QColor getSurfaceColor(float x, float y, int radius);
 
     void setBrushColor(QColor newColor);
-    void setBrushValue(MyPaintBrushSetting setting, float value);
+    void setBrushBaseValue(MyPaintBrushSetting setting, float value);
     void setBrushWidth(float width);
 
     int getBrushNumberOfMappingPoints(MyPaintBrushSetting setting, MyPaintBrushInput input);

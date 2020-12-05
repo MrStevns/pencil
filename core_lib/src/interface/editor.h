@@ -209,8 +209,8 @@ public: //slots
 
     // mypaint
     void loadBrush();
-    void setMPBrushSetting(BrushSettingType setting, float value);
-    float getMPBrushSetting(BrushSettingType settingType);
+    void setMPBrushSettingBaseValue(BrushSettingType setting, float value);
+    float getMPBrushSettingBaseValue(BrushSettingType settingType);
     const BrushSettingInfo getBrushSettingInfo(BrushSettingType settingType);
     const BrushInputInfo getBrushInputInfo(BrushInputType input);
 

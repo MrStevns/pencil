@@ -169,9 +169,9 @@ MPHandler::endStroke()
     mypaint_brush_reset(m_brush->brush);
 }
 
-float MPHandler::getBrushValue(MyPaintBrushSetting setting)
+float MPHandler::getBrushSettingBaseValue(MyPaintBrushSetting setting)
 {
-    return this->m_brush->getValue(setting);
+    return this->m_brush->getBaseValue(setting);
 }
 
 float MPHandler::getBrushState(MyPaintBrushState state)
@@ -185,9 +185,9 @@ MPHandler::setBrushColor(QColor newColor)
     this->m_brush->setColor(newColor);
 }
 
-void MPHandler::setBrushValue(MyPaintBrushSetting setting, float value)
+void MPHandler::setBrushBaseValue(MyPaintBrushSetting setting, float value)
 {
-    this->m_brush->setValue(setting, value);
+    this->m_brush->setBaseValue(setting, value);
 }
 
 int  MPHandler::getBrushNumberOfMappingPoints(MyPaintBrushSetting setting, MyPaintBrushInput input)

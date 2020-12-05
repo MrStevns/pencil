@@ -142,7 +142,7 @@ public:
     // mypaint
     void loadMPBrush(const QByteArray &content);
     void brushSettingChanged(BrushSettingType settingType, float value);
-    float getBrushSetting(BrushSettingType settingType);
+    float getBrushSettingBaseValue(BrushSettingType settingType);
 
     const BrushSettingInfo getBrushSettingInfo(BrushSettingType setting);
     const BrushInputInfo getBrushInputInfo(BrushInputType input);

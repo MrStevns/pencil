@@ -1240,14 +1240,14 @@ void Editor::loadBrush()
     mScribbleArea->loadMPBrush(brushes()->currentBrushData());
 }
 
-void Editor::setMPBrushSetting(BrushSettingType setting, float value)
+void Editor::setMPBrushSettingBaseValue(BrushSettingType setting, float value)
 {
     mScribbleArea->brushSettingChanged(setting, value);
 }
 
-float Editor::getMPBrushSetting(BrushSettingType settingType)
+float Editor::getMPBrushSettingBaseValue(BrushSettingType settingType)
 {
-    return mScribbleArea->getBrushSetting(settingType);
+    return mScribbleArea->getBrushSettingBaseValue(settingType);
 }
 
 const BrushSettingInfo Editor::getBrushSettingInfo(BrushSettingType settingType)
