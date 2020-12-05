@@ -33,7 +33,7 @@ public:
 
 signals:
     void clicked();
-    void mappingUpdated(QVector<QPointF> points);
+    void pointsUpdatedFromMappingWidget(QVector<QPointF> points);
 
 public slots:
     void resetMapping();

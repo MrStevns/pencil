@@ -142,7 +142,7 @@ void MappingDistributionWidget::resetMapping()
     }
 
     mPoints = mapPointsFromWidget();
-    emit mappingUpdated(mPoints);
+    emit pointsUpdatedFromMappingWidget(mPoints);
 
     update();
 }
@@ -235,7 +235,7 @@ void MappingDistributionWidget::initializePoints()
     }
 
     mPoints = mapPointsFromWidget();
-    emit mappingUpdated(mPoints);
+    emit pointsUpdatedFromMappingWidget(mPoints);
 }
 
 void MappingDistributionWidget::mousePressEvent(QMouseEvent *e)
@@ -331,9 +331,12 @@ void MappingDistributionWidget::mouseMoveEvent(QMouseEvent *e)
             if (mActivePoint == mMappedPoints.size()-1 || mActivePoint == 0) {
                 mMappedPoints[mActivePoint].setY(pos.y());
             }
+            emit pointsUpdatedFromMappingWidget(mapPointsFromWidget());
         }
+
+        // Only update when dragging a point
+        update();
     }
-    update();
 }
 
 void MappingDistributionWidget::mouseReleaseEvent(QMouseEvent *)
@@ -341,7 +344,7 @@ void MappingDistributionWidget::mouseReleaseEvent(QMouseEvent *)
     mCanDrag = false;
 
     mPoints = mapPointsFromWidget();
-    emit mappingUpdated(mPoints);
+    emit pointsUpdatedFromMappingWidget(mPoints);
 }
 
 void MappingDistributionWidget::keyPressEvent(QKeyEvent *event)

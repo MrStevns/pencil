@@ -82,7 +82,7 @@ void MappingConfiguratorWidget::setupUI()
     if (mMappingDistributionWidget) {
         layoutGrid->addWidget(mMappingDistributionWidget, 0,1, 1, 1);
 
-        connect(mMappingDistributionWidget, &MappingDistributionWidget::mappingUpdated, this, &MappingConfiguratorWidget::updateMapping);
+        connect(mMappingDistributionWidget, &MappingDistributionWidget::pointsUpdatedFromMappingWidget, this, &MappingConfiguratorWidget::updateMapping);
         connect(resetButton, &QToolButton::pressed, mMappingDistributionWidget, &MappingDistributionWidget::resetMapping);
 
     } else {
