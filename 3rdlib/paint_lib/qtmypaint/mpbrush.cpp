@@ -67,7 +67,7 @@ void MPBrush::initBrush()
 
 void MPBrush::load(const QByteArray& content)
 {
-    mypaint_brush_from_defaults(brush);
+    brush = mypaint_brush_new();
 
     if (!mypaint_brush_from_string(brush, content.constData()))
     {
