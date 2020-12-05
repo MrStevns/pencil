@@ -28,12 +28,13 @@ struct InputChanges {
 
     void write(QJsonArray& object) const
     {
+        QJsonArray inputArray = { };
         for (int i = 0; i < mappedPoints.count(); i++) {
             const auto mappedPoint = mappedPoints[i];
             QJsonArray pointArray = { mappedPoint.x(), mappedPoint.y() };
-            object.removeAt(i);
-            object.insert(i, pointArray);
+            inputArray.insert(i, pointArray);
         }
+        object = inputArray;
     }
 };
 
