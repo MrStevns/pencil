@@ -84,6 +84,7 @@ void MappingConfiguratorWidget::setupUI()
 
         connect(mMappingDistributionWidget, &MappingDistributionWidget::pointsUpdatedFromMappingWidget, this, &MappingConfiguratorWidget::updateMapping);
         connect(resetButton, &QToolButton::pressed, mMappingDistributionWidget, &MappingDistributionWidget::resetMapping);
+        connect(this, &MappingConfiguratorWidget::setPointsInMappingWidget, mMappingDistributionWidget, &MappingDistributionWidget::setPoints);
 
     } else {
         QWidget* cosmetic = new QWidget(this);

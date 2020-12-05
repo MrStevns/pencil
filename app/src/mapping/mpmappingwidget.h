@@ -18,6 +18,7 @@ public slots:
     void updateMapping(QVector<QPointF> points);
 
 signals:
+    void updateMappingWidget(QVector<QPointF> points, BrushInputType inputType);
     void mappingForInputUpdated(QVector<QPointF> points, BrushInputType inputType);
 private:
     BrushInputType mInputType;

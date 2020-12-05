@@ -65,13 +65,16 @@ public:
     void showInputMapper(BrushInputType inputType);
     void initUI();
 
+    void updateMappingForInput(QVector<QPointF> points, BrushInputType inputType);
+
+    void updateMappingWidgetForInput(BrushInputType inputType);
+
 signals:
+    void notifyMappingWidgetNeedsUpdate(BrushInputType inputType);
     void mappingForInputUpdated(QVector<QPointF> points, BrushInputType inputType);
     void removedInputOption(BrushInputType inputType);
 
 private:
-
-    void updateMappingForInput(QVector<QPointF> points, BrushInputType inputType);
     MPMappingOption createMappingOption(BrushInputType input);
     void removeAction(BrushInputType input);
     void addOptionField(int index, QString name, int value);

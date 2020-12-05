@@ -32,7 +32,7 @@ BrushSettingEditWidget::BrushSettingEditWidget(const QString name, BrushSettingT
     setLayout(gridLayout);
 
     mSettingWidget = new BrushSettingWidget(name, settingType, min, max, this);
-
+    mSettingType = settingType;
     mVisibleCheck = new QCheckBox(this);
     mMappingButton = new QToolButton(this);
 
@@ -49,8 +49,8 @@ BrushSettingEditWidget::BrushSettingEditWidget(const QString name, BrushSettingT
 
 void BrushSettingEditWidget::hideMappingUI()
 {
-    if (mMappingWidget && mMappingWidget->isVisible()) {
-        mMappingWidget->hide();
+    if (mMappingOptionsWidget && mMappingOptionsWidget->isVisible()) {
+        mMappingOptionsWidget->hide();
     }
 }
 
@@ -71,7 +71,7 @@ QString BrushSettingEditWidget::settingName()
 
 void BrushSettingEditWidget::updateSetting(qreal value, BrushSettingType setting)
 {
-    emit brushSettingChanged(mInitialValue, value, setting);
+    emit brushSettingChanged(value, setting);
 }
 
 void BrushSettingEditWidget::updateUIInternal()
@@ -98,7 +98,6 @@ void BrushSettingEditWidget::initUI()
     mSettingWidget->setCore(mEditor);
     mSettingWidget->initUI();
 
-    mInitialValue = mSettingWidget->currentValue();
     updateUIInternal();
     closeMappingWindow();
 }
@@ -107,6 +106,10 @@ void BrushSettingEditWidget::updateUI()
 {
     updateUIInternal();
     mSettingWidget->updateUI();
+
+    if (mMappingOptionsWidget) {
+        mMappingOptionsWidget->notifyMappingWidgetNeedsUpdate(mCurrentInputType);
+    }
 }
 
 void BrushSettingEditWidget::setValue(qreal value)
@@ -116,6 +119,7 @@ void BrushSettingEditWidget::setValue(qreal value)
 
 void BrushSettingEditWidget::updateBrushMapping(QVector<QPointF> newPoints, BrushInputType inputType)
 {
+    mCurrentInputType = inputType;
     qDebug() << "updating brush mapping";
     emit brushMappingForInputChanged(newPoints, settingType(), inputType);
 }
@@ -147,20 +151,21 @@ void BrushSettingEditWidget::visibilityChanged(bool state)
 void BrushSettingEditWidget::openMappingWindow()
 {
     QVector<QPointF> tempPoints = { QPointF(0.0,0.0), QPointF(0.5,0.5), QPointF(1.0,1.0) };
-    mMappingWidget = new MPMappingOptionsWidget(settingName(), settingType());
-    mMappingWidget->setCore(mEditor);
-    mMappingWidget->initUI();
+    mMappingOptionsWidget = new MPMappingOptionsWidget(settingName(), settingType());
+    mMappingOptionsWidget->setCore(mEditor);
+    mMappingOptionsWidget->initUI();
 
-    mMappingWidget->show();
+    mMappingOptionsWidget->show();
 
-    connect(mMappingWidget, &MPMappingOptionsWidget::mappingForInputUpdated, this, &BrushSettingEditWidget::updateBrushMapping);
-    connect(mMappingWidget, &MPMappingOptionsWidget::removedInputOption, this, &BrushSettingEditWidget::notifyInputMappingRemoved);
+    connect(mMappingOptionsWidget, &MPMappingOptionsWidget::mappingForInputUpdated, this, &BrushSettingEditWidget::updateBrushMapping);
+    connect(mMappingOptionsWidget, &MPMappingOptionsWidget::removedInputOption, this, &BrushSettingEditWidget::notifyInputMappingRemoved);
+    connect(this, &BrushSettingEditWidget::notifyMappingWidgetNeedsUpdate, mMappingOptionsWidget, &MPMappingOptionsWidget::notifyMappingWidgetNeedsUpdate);
 }
 
 void BrushSettingEditWidget::closeMappingWindow()
 {
-    if (mMappingWidget) {
-        mMappingWidget->close();
+    if (mMappingOptionsWidget) {
+        mMappingOptionsWidget->close();
     }
 }
 

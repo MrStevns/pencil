@@ -147,7 +147,8 @@ void MPMappingOptionsWidget::showInputMapper(BrushInputType inputType)
     mMappingWidget = new MPMappingWidget(getBrushInputName(inputType), info.soft_min, info.soft_max, inputType, mapping.controlPoints.points, 8, this);
     mHBoxLayout->addWidget(mMappingWidget);
 
-    connect(mMappingWidget.data(), &MPMappingWidget::mappingForInputUpdated, this, &MPMappingOptionsWidget::updateMappingForInput);
+    connect(mMappingWidget.data(), &MPMappingWidget::mappingForInputUpdated, this, &MPMappingOptionsWidget::mappingForInputUpdated);
+    connect(this, &MPMappingOptionsWidget::notifyMappingWidgetNeedsUpdate, this, &MPMappingOptionsWidget::updateMappingWidgetForInput);
 }
 
 void MPMappingOptionsWidget::addOptionField(int index, QString name, int value)
@@ -189,6 +190,15 @@ void MPMappingOptionsWidget::removeAction(BrushInputType input)
     mMappingOptionsComboBox->setItemEnabled(index, true);
 
     emit removedInputOption(input);
+}
+
+void MPMappingOptionsWidget::updateMappingWidgetForInput(BrushInputType inputType)
+{
+    auto mapping = mEditor->getBrushInputMapping(mSettingType,inputType);
+
+    if (mMappingWidget) {
+        mMappingWidget->updateMappingWidget(mapping.controlPoints.points, inputType);
+    }
 }
 
 void MPMappingOptionsWidget::updateMappingForInput(QVector<QPointF> points, BrushInputType inputType)

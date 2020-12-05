@@ -162,6 +162,13 @@ QVector<QPointF> MappingDistributionWidget::mapPointsFromWidget()
     return mapToOrigPoints;
 }
 
+void MappingDistributionWidget::setPoints(QVector<QPointF> points)
+{
+    mPoints = points;
+    mMappedPoints = mapPointsToWidget();
+    update();
+}
+
 void MappingDistributionWidget::resizeEvent(QResizeEvent *)
 {
     adjustedRect = this->rect().adjusted(mPointUniformSize,mPointUniformSize,-mPointUniformSize,-mPointUniformSize);

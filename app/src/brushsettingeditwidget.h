@@ -34,7 +34,6 @@ public:
     BrushSettingType settingType();
     QString settingName();
 
-    qreal initialValue() { return mInitialValue; }
     bool isChecked() const;
 
 public slots:
@@ -42,10 +41,12 @@ public slots:
     void visibilityChanged(bool state);
 
 Q_SIGNALS:
+    void notifyMappingWidgetNeedsUpdate(BrushInputType input);
+
     void brushMappingForInputChanged(QVector<QPointF> points, BrushSettingType setting, BrushInputType inputType);
     void brushMappingRemoved(BrushSettingType setting, BrushInputType);
     void toggleSettingFor(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
-    void brushSettingChanged(qreal initialValue, qreal value, BrushSettingType setting);
+    void brushSettingChanged(qreal value, BrushSettingType setting);
 
 private:
     void openMappingWindow();
@@ -61,10 +62,11 @@ private:
     const qreal mMin;
     const qreal mMax;
 
-    qreal mInitialValue;
+    BrushInputType mCurrentInputType;
+    BrushSettingType mSettingType;
 
     BrushSettingWidget* mSettingWidget = nullptr;
-    MPMappingOptionsWidget* mMappingWidget = nullptr;
+    MPMappingOptionsWidget* mMappingOptionsWidget = nullptr;
 };
 
 #endif // BRUSHSETTINGEDITWIDGET_H

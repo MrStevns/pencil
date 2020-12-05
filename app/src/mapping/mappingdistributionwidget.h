@@ -31,6 +31,9 @@ public:
     int maxMappingPoints() { return mMaxPoints; }
     void setMaxMappingPoints(int maxPoints) { mMaxPoints = maxPoints; }
 
+    void setPoints(QVector<QPointF> points);
+
+
 signals:
     void clicked();
     void pointsUpdatedFromMappingWidget(QVector<QPointF> points);

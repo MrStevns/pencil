@@ -38,8 +38,8 @@ public:
 
     void updateConfig();
 
-    void saveChanges(qreal startValue, qreal value, BrushSettingType settingType);
-    void updateBrushSetting(qreal value, BrushSettingType setting);
+    void updateBrushSettingWidget(qreal value, BrushSettingType setting);
+    void prepareBrushChanges(qreal value, BrushSettingType setting);
 
 signals:
     void updateBrushList(QString brushName, QString brushPreset);
@@ -54,10 +54,12 @@ signals:
     void toggleSettingForBrushSetting(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
 private:
 
+    void backupBrushSetting(BrushSettingType setting);
+    void backupBrushMapping(BrushSettingType setting, BrushInputType input);
     void updateMapValuesButton();
     void updateSettingsView(QTreeWidgetItem* item);
 
-    void updateBrushMapping(QVector<QPointF> points, BrushSettingType settingType, BrushInputType input);
+    void prepareBrushInputChanges(QVector<QPointF> points, BrushSettingType settingType, BrushInputType input);
     void removeBrushMappingForInput(BrushSettingType setting, BrushInputType input);
 
     void addBrushSettingsSpacer();

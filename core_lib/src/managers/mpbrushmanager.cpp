@@ -283,6 +283,7 @@ Status MPBrushManager::writeBrushToFile(const QString& brushPreset, const QStrin
         file.write(data);
         file.close();
 
+        mCurrentBrushData = data;
         status = Status::OK;
     } else {
         status.setTitle(QObject::tr("Write error:"));
