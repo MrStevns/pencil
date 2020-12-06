@@ -11,7 +11,7 @@ class MappingConfiguratorWidget : public QWidget
 public:
 
     MappingConfiguratorWidget(QWidget* parent = nullptr);
-    MappingConfiguratorWidget(QString description, qreal min, qreal max, QVector<QPointF> points, int maxPoints, QWidget* parent = nullptr);
+    MappingConfiguratorWidget(QString name, QString description, qreal min, qreal max, QVector<QPointF> points, int maxPoints, QWidget* parent = nullptr);
     ~MappingConfiguratorWidget();
 
 signals:
@@ -26,5 +26,6 @@ private:
 
     MappingDistributionWidget* mMappingDistributionWidget = nullptr;
     QString mDescription;
+    QString mName;
 };
 #endif // MAPPINGCONFIGURATOR_H

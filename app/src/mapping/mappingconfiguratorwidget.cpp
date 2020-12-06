@@ -8,10 +8,11 @@
 
 #include "mappingdistributionwidget.h"
 
-MappingConfiguratorWidget::MappingConfiguratorWidget(QString description, qreal min, qreal max, QVector<QPointF> points, int maxPoints, QWidget* parent)
+MappingConfiguratorWidget::MappingConfiguratorWidget(QString name, QString description, qreal min, qreal max, QVector<QPointF> points, int maxPoints, QWidget* parent)
     : QWidget(parent)
 {
     mMappingDistributionWidget = new MappingDistributionWidget(min, max, points, this);
+    mName = name;
     mDescription = description;
 
     mMappingDistributionWidget->setMaxMappingPoints(maxPoints);
@@ -59,7 +60,8 @@ void MappingConfiguratorWidget::setupUI()
     QLabel* minInputDescLabel = new QLabel("0%", this);
     minInputDescLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
     minInputDescLabel->setMargin(0);
-    QLabel* inputDescLabel = new QLabel(mDescription, this);
+    QLabel* inputDescLabel = new QLabel(mName, this);
+    inputDescLabel->setToolTip(mDescription);
     inputDescLabel->setAlignment(Qt::AlignHCenter);
     inputDescLabel->setMargin(0);
     QLabel* maxInputDescLabel = new QLabel("100%", this);

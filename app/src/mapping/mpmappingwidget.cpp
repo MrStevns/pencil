@@ -1,8 +1,8 @@
 #include "mpmappingwidget.h"
 #include <QDebug>
 
-MPMappingWidget::MPMappingWidget(QString description, qreal min, qreal max, BrushInputType inputType, QVector<QPointF> points, int maxPoints, QWidget* parent)
-    : MappingConfiguratorWidget(description, min, max, points, maxPoints, parent), mInputType(inputType)
+MPMappingWidget::MPMappingWidget(QString name, QString description, qreal min, qreal max, BrushInputType inputType, QVector<QPointF> points, int maxPoints, QWidget* parent)
+    : MappingConfiguratorWidget(name, description, min, max, points, maxPoints, parent), mInputType(inputType)
 {
     connect(this, &MappingConfiguratorWidget::mappingUpdated, this, &MPMappingWidget::updateMapping);
     connect(this, &MPMappingWidget::updateMappingWidget, this, &MappingConfiguratorWidget::updateInputsInMappingWidget);

@@ -112,6 +112,7 @@ MPMappingOptionsWidget::MPMappingOption MPMappingOptionsWidget::createMappingOpt
 {
     QLabel* settingDescLabel = new QLabel(getBrushInputName(input), nullptr);
 
+    auto inputInfo = mEditor->getBrushInputInfo(input);
     auto inputMapping = mEditor->getBrushInputMapping(mSettingType, input);
     MPInputButton* mappingButton = new MPInputButton(input, nullptr);
     mappingButton->setIcon(QIcon(":/app/icons/new/mapping-icon.png"));
@@ -120,6 +121,8 @@ MPMappingOptionsWidget::MPMappingOption MPMappingOptionsWidget::createMappingOpt
     removeActionButton->setIcon(QIcon(":/app/icons/new/trash-changes.png"));
 
     int row =  mGridLayout->rowCount();
+
+    settingDescLabel->setToolTip(inputInfo.tooltip);
 
     MPMappingOption option(mappingButton, removeActionButton, settingDescLabel);
     option.inputType = input;

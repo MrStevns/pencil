@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QLabel>
+#include <QApplication>
 
 #include <QDebug>
 
@@ -28,7 +29,8 @@ void GridPainter::paint(QPainter& painter, int gridSpacingHorizontal, int gridSp
     int top = rect.top();
     int bottom = rect.bottom();
 
-    QPen pen(Qt::lightGray);
+    const QPalette palette = QApplication::palette();
+    QPen pen(palette.color(QPalette::Highlight));
     pen.setCosmetic(true);
     painter.setPen(pen);
     painter.setWorldMatrixEnabled(true);
@@ -36,15 +38,18 @@ void GridPainter::paint(QPainter& painter, int gridSpacingHorizontal, int gridSp
 
     painter.drawRect(rect);
 
+    QColor penColor = pen.color();
 
-    QVector<QLineF> lines;
-
-    int count = 0;
+    // Slight adjustment in alpha to make the background less noticeable
+    pen.setColor(QColor(penColor.red(), penColor.green(), penColor.blue(), penColor.alpha()-150));
+    painter.setPen(pen);
 
     int numberOfLinesX = static_cast<int>(floor(right/gridSizeW));
     int numberOfLinesY = static_cast<int>(floor(bottom/gridSizeH));
 
     // draw vertical gridlines
+    int count = 0;
+    QVector<QLineF> lines;
     for (int x = left; x < right; x += gridSizeW) {
 
         // Prevents the last line from being shown when it's very close to the border
@@ -88,7 +93,7 @@ MappingDistributionWidget::MappingDistributionWidget(qreal min, qreal max, QVect
     setMouseTracking(true);
     setTabletTracking(true);
 
-    adjustedRect = this->rect().adjusted(mPointUniformSize,mPointUniformSize,-mPointUniformSize,-mPointUniformSize);
+    adjustedRect = this->rect().adjusted(mPointUniformSize,mPointUniformSize-2,-mPointUniformSize+2,-mPointUniformSize+2);
     mGridPainter = GridPainter();
 
     mMappedPoints = mapPointsToWidget();
@@ -126,7 +131,6 @@ QVector<QPointF> MappingDistributionWidget::mapPointsToWidget()
 
         mMappedPoints << QPointF(mappedX, mappedY);
     }
-
 
 //    qDebug() << "minX is : " << mMinX << " minY is: " << mMinY;
 //    qDebug() << "maxX is : " << mMaxX << " maxY is: " << mMaxY;
@@ -176,7 +180,7 @@ void MappingDistributionWidget::updateInputs(QVector<QPointF> points, qreal min,
 
 void MappingDistributionWidget::resizeEvent(QResizeEvent *)
 {
-    adjustedRect = this->rect().adjusted(mPointUniformSize,mPointUniformSize,-mPointUniformSize,-mPointUniformSize);
+    adjustedRect = this->rect().adjusted(mPointUniformSize,mPointUniformSize-2,-mPointUniformSize+2,-mPointUniformSize+2);
     mMappedPoints = mapPointsToWidget();
 }
 
@@ -190,38 +194,35 @@ void MappingDistributionWidget::paintEvent(QPaintEvent*)
     painter.setPen(Qt::NoPen);
     painter.setViewport(adjustedRect);
 
-    QPainterPath path;
-    path.moveTo(mMappedPoints.at(0));
-
-    for (int i=1; i<mMappedPoints.size(); ++i) {
-        path.lineTo(mMappedPoints.at(i));
-    }
-
     mGridPainter.paint(painter, adjustedRect.width()/4,adjustedRect.height()/4);
 
-    QPen pen(Qt::blue);
-    painter.strokePath(path, pen);
+    QVector<QPointF> mappedPoints = mMappedPoints;
 
-    // Draw the control points
-    painter.setPen(QColor(255, 255, 255, 255));
-    painter.setBrush(QColor(200, 200, 210, 255));
+    mappedPoints << QPoint(mMappedPoints.last().x(),adjustedRect.height());
+    mappedPoints << QPoint(adjustedRect.left(),adjustedRect.height());
+    mappedPoints << mappedPoints[0];
+
+    const QPalette palette = QApplication::palette();
+    painter.setBrush(palette.color(QPalette::Highlight));
+
+    painter.drawPolygon(mappedPoints);
 
     for (int i=0; i < mMappedPoints.size(); ++i) {
         QPointF pos = mMappedPoints.at(i);
 
         if (i == mActivePoint) {
-            painter.setPen(Qt::green);
+            painter.setPen(palette.color(QPalette::HighlightedText));
+            painter.setBrush(palette.color(QPalette::Highlight));
         } else {
-            painter.setPen(QColor(255, 255, 255, 255));
+            painter.setPen(palette.color(QPalette::AlternateBase));
+            painter.setBrush(palette.color(QPalette::Base));
         }
         painter.drawText(QPointF(pos.x()+20,pos.y()), QString::number(i));
+        painter.setBrush(palette.color(QPalette::Button));
         painter.drawRect(QRectF(pos.x() - mPointUniformSize,
                                 pos.y() - mPointUniformSize,
                                 mPointUniformSize*2, mPointUniformSize*2));
     }
-    painter.setPen(QPen(Qt::lightGray, 0, Qt::SolidLine));
-    painter.setBrush(Qt::NoBrush);
-    painter.drawPolyline(mMappedPoints);
 }
 
 
@@ -237,9 +238,9 @@ void MappingDistributionWidget::initializePoints()
 {
     mPoints.clear();
     QPointF center(adjustedRect.width() / 2, adjustedRect.height() / 2);
-    QVector<QPointF> initPoints = { QPointF(adjustedRect.top(),adjustedRect.height()),
+    QVector<QPointF> initPoints = { QPointF(adjustedRect.left(),adjustedRect.bottom()),
                                    center,
-                                    QPointF(adjustedRect.width(),adjustedRect.left())
+                                    QPointF(adjustedRect.right(),adjustedRect.top())
                                   };
 
     for (QPointF point : initPoints) {
@@ -311,16 +312,16 @@ void MappingDistributionWidget::mouseMoveEvent(QMouseEvent *e)
         if (m_mouseDrag && mActivePoint >= 0 && mActivePoint < mMappedPoints.size()) {
 
             // boundary check
-            if (pos.x() < adjustedRect.left()) {
+            if (pos.x() <= adjustedRect.left()) {
                 pos.setX(adjustedRect.left());
             }
-            if (pos.x() > adjustedRect.right()) {
+            if (pos.x() >= adjustedRect.right()) {
                 pos.setX(adjustedRect.right());
             }
-            if (pos.y() < adjustedRect.top()) {
+            if (pos.y() <= adjustedRect.top()) {
                 pos.setY(adjustedRect.top());
             }
-            if (pos.y() > adjustedRect.bottom()) {
+            if (pos.y() >= adjustedRect.bottom()) {
                 pos.setY(adjustedRect.bottom());
             }
 

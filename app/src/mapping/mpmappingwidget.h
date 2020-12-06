@@ -10,7 +10,7 @@ class MPMappingWidget : public MappingConfiguratorWidget
     Q_ENUM(BrushInputType)
 public:
     MPMappingWidget(QWidget* parent = nullptr);
-    MPMappingWidget(QString description, qreal min, qreal max, BrushInputType inputType, QVector<QPointF> points, int maxPoints, QWidget* parent = nullptr);
+    MPMappingWidget(QString name, QString description, qreal min, qreal max, BrushInputType inputType, QVector<QPointF> points, int maxPoints, QWidget* parent = nullptr);
 
     QSize sizeHint() const override { return QSize(150, 150); }
 
