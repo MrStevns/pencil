@@ -147,7 +147,7 @@ void MPMappingOptionsWidget::showInputMapper(BrushInputType inputType)
         mMappingWidget->deleteLater();
     }
 
-    mMappingWidget = new MPMappingWidget(getBrushInputName(inputType), info.soft_min, info.soft_max, inputType, mapping.controlPoints.points, 8, this);
+    mMappingWidget = new MPMappingWidget(getBrushInputName(inputType), info.tooltip, info.soft_min, info.soft_max, inputType, mapping.controlPoints.points, 8, this);
     mHBoxLayout->addWidget(mMappingWidget);
 
     connect(mMappingWidget.data(), &MPMappingWidget::mappingForInputUpdated, this, &MPMappingOptionsWidget::mappingForInputUpdated);
