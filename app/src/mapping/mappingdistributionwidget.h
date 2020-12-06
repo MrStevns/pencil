@@ -31,7 +31,7 @@ public:
     int maxMappingPoints() { return mMaxPoints; }
     void setMaxMappingPoints(int maxPoints) { mMaxPoints = maxPoints; }
 
-    void setPoints(QVector<QPointF> points);
+    void updateInputs(QVector<QPointF> points, qreal min, qreal max);
 
 
 signals:

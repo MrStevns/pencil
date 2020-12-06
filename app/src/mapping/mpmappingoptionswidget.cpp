@@ -195,9 +195,10 @@ void MPMappingOptionsWidget::removeAction(BrushInputType input)
 void MPMappingOptionsWidget::updateMappingWidgetForInput(BrushInputType inputType)
 {
     auto mapping = mEditor->getBrushInputMapping(mSettingType,inputType);
+    auto settings = mEditor->getBrushInputInfo(inputType);
 
     if (mMappingWidget) {
-        mMappingWidget->updateMappingWidget(mapping.controlPoints.points, inputType);
+        mMappingWidget->updateMappingWidget(mapping.controlPoints.points, settings.soft_min, settings.soft_max);
     }
 }
 

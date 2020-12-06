@@ -5,7 +5,7 @@ MPMappingWidget::MPMappingWidget(QString description, qreal min, qreal max, Brus
     : MappingConfiguratorWidget(description, min, max, points, maxPoints, parent), mInputType(inputType)
 {
     connect(this, &MappingConfiguratorWidget::mappingUpdated, this, &MPMappingWidget::updateMapping);
-    connect(this, &MPMappingWidget::updateMappingWidget, this, &MappingConfiguratorWidget::setPointsInMappingWidget);
+    connect(this, &MPMappingWidget::updateMappingWidget, this, &MappingConfiguratorWidget::updateInputsInMappingWidget);
 }
 
 MPMappingWidget::MPMappingWidget(QWidget* parent)

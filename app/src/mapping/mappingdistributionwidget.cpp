@@ -162,9 +162,14 @@ QVector<QPointF> MappingDistributionWidget::mapPointsFromWidget()
     return mapToOrigPoints;
 }
 
-void MappingDistributionWidget::setPoints(QVector<QPointF> points)
+void MappingDistributionWidget::updateInputs(QVector<QPointF> points, qreal min, qreal max)
 {
     mPoints = points;
+    mMinX = min;
+    mMinY = min;
+    mMaxX = max;
+    mMaxY = max;
+
     mMappedPoints = mapPointsToWidget();
     update();
 }

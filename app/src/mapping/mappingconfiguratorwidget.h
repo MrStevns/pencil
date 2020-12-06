@@ -16,7 +16,7 @@ public:
 
 signals:
     void mappingUpdated(QVector<QPointF> points);
-    void setPointsInMappingWidget(QVector<QPointF> points);
+    void updateInputsInMappingWidget(QVector<QPointF> points, qreal min, qreal max);
 public slots:
     void updateMapping(QVector<QPointF> points);
 
