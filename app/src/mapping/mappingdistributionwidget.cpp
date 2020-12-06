@@ -114,22 +114,22 @@ QVector<QPointF> MappingDistributionWidget::mapPointsToWidget()
         qreal pointY = point.y();
         qreal pointX = point.x();
 
-        qDebug() << "===========";
-        qDebug() << "orig " << "(x: " << pointX << ",y: " << pointY << ")";
+//        qDebug() << "===========";
+//        qDebug() << "orig " << "(x: " << pointX << ",y: " << pointY << ")";
         qreal normalizeX = MathUtils::normalize(pointX, mMinX, mMaxX);
         qreal normalizeY = MathUtils::normalize(pointY, mMinY, mMaxY);
 
-        qDebug() << "normalized " << "(x: " << normalizeX << ",y: " << normalizeY << ")";
+//        qDebug() << "normalized " << "(x: " << normalizeX << ",y: " << normalizeY << ")";
         qreal mappedX = MathUtils::linearMap(normalizeX, 0, 1, adjustedRect.left(), adjustedRect.right());
         qreal mappedY = MathUtils::linearMap(normalizeY, 0, 1, adjustedRect.bottom(), adjustedRect.top());
-        qDebug() << "mapped " << "(x: " << mappedX << ",y: " << mappedY << ")";
+//        qDebug() << "mapped " << "(x: " << mappedX << ",y: " << mappedY << ")";
 
         mMappedPoints << QPointF(mappedX, mappedY);
     }
 
 
-    qDebug() << "minX is : " << mMinX << " minY is: " << mMinY;
-    qDebug() << "maxX is : " << mMaxX << " maxY is: " << mMaxY;
+//    qDebug() << "minX is : " << mMinX << " minY is: " << mMinY;
+//    qDebug() << "maxX is : " << mMaxX << " maxY is: " << mMaxY;
 
     return mMappedPoints;
 }

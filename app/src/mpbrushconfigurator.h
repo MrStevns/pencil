@@ -21,6 +21,7 @@ class BrushSettingEditWidget;
 class QLabel;
 class MPBrushInfoDialog;
 class BrushSettingWidget;
+class MPBrushPreview;
 
 class MPBrushConfigurator : public QDialog
 {
@@ -56,6 +57,7 @@ private:
 
     void backupBrushSetting(BrushSettingType setting);
     void backupBrushMapping(BrushSettingType setting, BrushInputType input);
+    void prepareUpdateBrushPreview();
     void updateMapValuesButton();
     void updateSettingsView(QTreeWidgetItem* item);
 
@@ -103,7 +105,7 @@ private:
     QWidget* mBrushSettingsWidget = nullptr;
     QTreeWidget* mNavigatorWidget = nullptr;
     QLabel* mBrushImageWidget = nullptr;
-    QLabel* mBrushNameWidget = nullptr;
+    MPBrushPreview* mBrushPreviewWidget = nullptr;
 
     BrushSettingItem* mActiveTreeRoot = nullptr;
 
@@ -122,7 +124,7 @@ private:
     QString mPreset;
     ToolType mToolType;
 
-    QSize mImageSize = QSize(32,32);
+    QSize mImageSize = QSize(100,100);
 
     QList<QMetaObject::Connection> mListOfConnections;
 };

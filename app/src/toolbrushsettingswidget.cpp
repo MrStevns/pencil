@@ -131,7 +131,6 @@ void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
         settings.endGroup();
 
         if (show) {
-            qDebug() << key;
             BrushSettingWidget* settingWidget = new BrushSettingWidget(name, getBrushSetting(key), min, max, this);
             mMainVerticalLayout->addWidget(settingWidget);
             settingWidget->setCore(mEditor);

@@ -76,7 +76,7 @@ void BrushSettingWidget::onSliderChanged(qreal value)
 
 void BrushSettingWidget::setValue(qreal value)
 {
-    qDebug() << "value changing";
+//    qDebug() << "value changing";
     qreal normalize = MathUtils::normalize(value, mMin, mMax);
     qreal mappedValue = MathUtils::mapFromNormalized(normalize, mMappedMin, mMappedMax);
 

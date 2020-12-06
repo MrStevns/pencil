@@ -55,6 +55,7 @@ HEADERS += \
     src/mpbrushconfigurator.h \
     src/mpbrushinfodialog.h \
     src/mpbrushpresetswidget.h \
+    src/mpbrushpreview.h \
     src/mpbrushselector.h \
     src/importlayersdialog.h \
     src/importpositiondialog.h \
@@ -108,6 +109,7 @@ SOURCES += \
     src/mpbrushconfigurator.cpp \
     src/mpbrushinfodialog.cpp \
     src/mpbrushpresetswidget.cpp \
+    src/mpbrushpreview.cpp \
     src/mpbrushselector.cpp \
     src/onionskinwidget.cpp \
     src/predefinedsetmodel.cpp \

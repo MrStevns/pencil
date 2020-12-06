@@ -80,8 +80,6 @@ private:
 
   MPBrushConfigurator* mBrushConfiguratorWidget = nullptr;
 
-//  QString currentPresetName;
-//  QString currentBrushName;
   QString currentToolName;
   QString oldToolname;
   ToolType currentToolType;

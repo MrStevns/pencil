@@ -23,45 +23,49 @@
 #include "editor.h"
 #include "mpbrushutils.h"
 #include "mpbrushinfodialog.h"
+#include "mpbrushpreview.h"
 
 MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
   : QDialog(parent, Qt::Tool)
 {
     setBaseSize(QSize(450,400));
     setWindowTitle(tr("Brush Configurator", "Window title of mypaint brush configurator"));
+    setObjectName("MPBrushConfigurator");
 
-    mNavigatorWidget = new QTreeWidget(parent);
+    mNavigatorWidget = new QTreeWidget(this);
     mNavigatorWidget->setRootIsDecorated(false);
     mNavigatorWidget->setHeaderHidden(true);
 
-    mBrushImageWidget = new QLabel();
-    mBrushImageWidget->setFixedSize(mImageSize);
+    mBrushImageWidget = new QLabel(this);
+    mBrushImageWidget->setMaximumSize(mImageSize);
 
-    mBrushNameWidget = new QLabel();
+    mBrushPreviewWidget = new MPBrushPreview();
+    mBrushPreviewWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    mBrushPreviewWidget->setFixedHeight(mImageSize.height());
 
     QSplitter* viewSplitter = new QSplitter;
-    QHBoxLayout* hLayout = new QHBoxLayout(parent);
-    QVBoxLayout* vLayout = new QVBoxLayout(parent);
+    QHBoxLayout* hLayout = new QHBoxLayout();
+    QVBoxLayout* vLayout = new QVBoxLayout();
 
     vLayout->setMargin(0);
     QScrollArea* scrollArea = new QScrollArea(nullptr);
 
     QToolBar* toolbar = new QToolBar(this);
 
-    QPushButton* cloneBrushButton = new QPushButton(parent);
+    QPushButton* cloneBrushButton = new QPushButton(this);
     cloneBrushButton->setDefault(false);
     cloneBrushButton->setText("Clone");
 
-    QPushButton* editBrushButton = new QPushButton(parent);
+    QPushButton* editBrushButton = new QPushButton(this);
     editBrushButton->setText(tr("Edit Brush"));
     editBrushButton->setToolTip(tr("Here you can rename, change icon, change description and notes of the current brush"));
 
-    mDiscardChangesButton = new QPushButton(parent);
+    mDiscardChangesButton = new QPushButton(this);
     mDiscardChangesButton->setText(tr("Discard changes"));
     mDiscardChangesButton->setToolTip(tr("Discard current changes"));
     mDiscardChangesButton->setEnabled(false);
 
-    QPushButton* deleteBrushButton = new QPushButton(parent);
+    QPushButton* deleteBrushButton = new QPushButton(this);
     deleteBrushButton->setText(tr("Delete"));
     deleteBrushButton->setToolTip(tr("Delete current brush and close window"));
 
@@ -77,21 +81,21 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
     toolbar->addWidget(editBrushButton);
     toolbar->addSeparator();
 
-    QWidget* resetSpacer = new QWidget(parent);
+    QWidget* resetSpacer = new QWidget(this);
     resetSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     toolbar->addWidget(resetSpacer);
     toolbar->addWidget(mDiscardChangesButton);
     toolbar->addWidget(deleteBrushButton);
 
-    QHBoxLayout* topLayout = new QHBoxLayout(this);
+    QHBoxLayout* topLayout = new QHBoxLayout();
 
-    topLayout->setContentsMargins(5,5,0,0);
+    topLayout->setContentsMargins(5,5,5,0);
 
     vLayout->addLayout(topLayout);
     vLayout->setContentsMargins(5,0,0,0);
 
     topLayout->addWidget(mBrushImageWidget);
-    topLayout->addWidget(mBrushNameWidget);
+    topLayout->addWidget(mBrushPreviewWidget);
 
     vLayout->addWidget(settingsContainer);
 
@@ -106,7 +110,7 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
     viewSplitter->setStretchFactor(1,4);
     viewSplitter->setStretchFactor(0,0);
 
-    mBrushSettingsWidget = new QWidget(parent);
+    mBrushSettingsWidget = new QWidget(this);
 
     scrollArea->setWidget(mBrushSettingsWidget);
     scrollArea->setWidgetResizable(true);
@@ -149,6 +153,8 @@ void MPBrushConfigurator::initUI()
     addTreeChild(BrushSettingItem::Other, advanceRoot, tr("Other settings"));
 
     updateSettingsView(basicRoot);
+
+    prepareUpdateBrushPreview();
 }
 
 void MPBrushConfigurator::updateUI()
@@ -159,8 +165,10 @@ void MPBrushConfigurator::updateUI()
     mDiscardChangesButton->setEnabled(!mOldModifications.isEmpty());
 
     QPixmap pix(QPixmap(mEditor->brushes()->getBrushImagePath(mPreset, mBrushName)));
-    mBrushImageWidget->setPixmap(pix.scaled(mImageSize, Qt::KeepAspectRatio));
-    mBrushNameWidget->setText(mBrushName);
+    mBrushImageWidget->setPixmap(pix.scaled(mImageSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+    mBrushImageWidget->setToolTip(mBrushName);
+    prepareUpdateBrushPreview();
 }
 
 void MPBrushConfigurator::hideUI()
@@ -412,6 +420,11 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
     updateUI();
 }
 
+void MPBrushConfigurator::prepareUpdateBrushPreview()
+{
+    mBrushPreviewWidget->updatePreview(mEditor->brushes()->currentBrushData());
+}
+
 void MPBrushConfigurator::brushCategorySelectionChanged(const QItemSelection &, const QItemSelection &)
 {
     updateSettingsView(mNavigatorWidget->currentItem());
@@ -491,6 +504,8 @@ void MPBrushConfigurator::prepareBrushChanges(qreal value, BrushSettingType sett
     }
 
     emit brushSettingChanged(value, setting);
+
+    prepareUpdateBrushPreview();
 }
 
 void MPBrushConfigurator::backupBrushSetting(BrushSettingType setting)
@@ -604,6 +619,8 @@ void MPBrushConfigurator::prepareBrushInputChanges(QVector<QPointF> points, Brus
     mEditor->setBrushInputMapping(points, setting, input);
     mEditor->brushes()->applyChangesToBrushFile(mCurrentModifications);
 
+    prepareUpdateBrushPreview();
+
     mCurrentModifications.clear();
 }
 
@@ -619,8 +636,9 @@ void MPBrushConfigurator::removeBrushMappingForInput(BrushSettingType setting, B
 
     mCurrentModifications.insert(static_cast<int>(setting),changes);
 
-    mEditor->brushes()->applyChangesToBrushFile(mCurrentModifications);
     mEditor->setBrushInputMapping({}, setting, input);
+    mEditor->brushes()->applyChangesToBrushFile(mCurrentModifications);
+    prepareUpdateBrushPreview();
 }
 
 void MPBrushConfigurator::updateMapValuesButton()
@@ -709,6 +727,7 @@ void MPBrushConfigurator::pressedDiscardBrush()
     updateUI();
 
     reloadBrushSettings();
+    prepareUpdateBrushPreview();
 
     mCurrentModifications.clear();
     mOldModifications.clear();

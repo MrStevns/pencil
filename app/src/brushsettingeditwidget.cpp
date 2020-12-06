@@ -79,7 +79,7 @@ void BrushSettingEditWidget::updateUIInternal()
     QString toolGroup = QString(SETTING_MPBRUSHSETTING)
                         .arg(mEditor->tools()->currentTool()->typeName()).toLower();
 
-    qDebug() << "getting value for : " << toolGroup;
+//    qDebug() << "getting value for : " << toolGroup;
     QSettings settings(PENCIL2D, PENCIL2D);
 
     settings.beginGroup(toolGroup);

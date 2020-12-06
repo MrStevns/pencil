@@ -1320,6 +1320,7 @@ void ScribbleArea::startStroke()
 
 void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float ytilt)
 {
+//    qDebug() << "stroke to: " << point;
     mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, calculateDeltaTime());
 
     // update dirty region
