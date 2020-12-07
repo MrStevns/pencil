@@ -37,7 +37,7 @@ void MPInputButton::pressed()
 }
 
 MPMappingOptionsWidget::MPMappingOptionsWidget(QString optionName, BrushSettingType settingType, QWidget* parent)
-    : QDialog(parent, Qt::Tool), mSettingType(settingType), mParent(parent)
+    : QDialog(parent, Qt::Tool), mSettingType(settingType)
 {
     this->setWindowTitle(QString(optionName) + " " + tr("input mapping"));
 }
@@ -49,32 +49,49 @@ void MPMappingOptionsWidget::initUI()
 
 void MPMappingOptionsWidget::setupUI()
 {
-    mHBoxLayout = new QHBoxLayout(mParent);
+    mHBoxLayout = new QHBoxLayout();
+    setBaseSize(300,400);
 
-    mHBoxLayout->setContentsMargins(5,5,5,5);
-    mGridLayout = new QGridLayout(mParent);
-    mGridLayout->setContentsMargins(0,0,0,0);
-    QScrollArea* scrollArea = new QScrollArea(mParent);
-    scrollArea->setWidgetResizable(true);
-    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
-    scrollArea->setMinimumWidth(300);
+    mHBoxLayout->setContentsMargins(5, 5, 5, 5);
+    mGridLayout = new QGridLayout();
+    mGridLayout->setContentsMargins(0, 0, 0, 0);
+    QScrollArea* optionsScrollArea = new QScrollArea(this);
+    optionsScrollArea->setWidgetResizable(true);
+    optionsScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+    optionsScrollArea->setMinimumWidth(300);
+    optionsScrollArea->setMaximumHeight(500);
 
-    int rowY = 2;
-
-    QWidget* container = new QWidget(mParent);
+    QWidget* container = new QWidget(this);
     container->setLayout(mGridLayout);
     mGridLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
-    mMappingOptionsComboBox = new ComboBox(mParent);
-    QLabel* descriptionLabel = new QLabel("Select an input from the dropdown\nto add a new input to map");
-    descriptionLabel->setMaximumSize(descriptionLabel->minimumSizeHint());
+    mMappingOptionsComboBox = new ComboBox(this);
+    QLabel* descriptionLabel = new QLabel("Select an input from the dropdown\nto add a new input to map", this);
     descriptionLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    descriptionLabel->setContentsMargins(5,5,0,5);
+    descriptionLabel->setMaximumSize(descriptionLabel->minimumSizeHint());
 
     mGridLayout->addWidget(descriptionLabel, 0, 0, 1, 0);
     mGridLayout->addWidget(mMappingOptionsComboBox, 1, 0, 1, 3);
 
-    scrollArea->setWidget(container);
-    mHBoxLayout->addWidget(scrollArea);
+    optionsScrollArea->setWidget(container);
+    mHBoxLayout->addWidget(optionsScrollArea);
+
+    QScrollArea* mappingScrollArea = new QScrollArea(this);
+    mappingScrollArea->setWidgetResizable(true);
+    mappingScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+    mappingScrollArea->setMinimumWidth(300);
+    mappingScrollArea->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+    mappingScrollArea->setMaximumHeight(500);
+
+    mVBoxLayout = new QVBoxLayout();
+    mVBoxLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
+
+    QWidget* mappingContainer = new QWidget(this);
+
+    mappingContainer->setLayout(mVBoxLayout);
+    mappingScrollArea->setWidget(mappingContainer);
+    mHBoxLayout->addWidget(mappingScrollArea);
 
     for (int i = 0; i < static_cast<int>(BrushInputType::BRUSH_INPUTS_COUNT); i++) {
 
@@ -85,25 +102,15 @@ void MPMappingOptionsWidget::setupUI()
         mMappingOptionsComboBox->addItem(getBrushInputName(input), i);
         if (inputMapping.controlPoints.numberOfPoints > 0) {
 
-            if (mMappingWidget == nullptr) {
-                // if there's at least one input already, show mapper
-                showInputMapper(input);
-            }
-
             MPMappingOption option = createMappingOption(input);
             mMappingOptionsComboBox->setItemEnabled(i, false);
 
             mOptions << option;
         }
-        rowY++;
-    }
-
-    if (mOptions.isEmpty()) {
-        mMappingWidget = new MPMappingWidget(this);
-        mHBoxLayout->addWidget(mMappingWidget);
     }
 
     connect(mMappingOptionsComboBox, &ComboBox::activated, this, &MPMappingOptionsWidget::addOptionField);
+    connect(this, &MPMappingOptionsWidget::notifyMappingWidgetNeedsUpdate, this, &MPMappingOptionsWidget::updateMappingWidgetForInput);
 
     setLayout(mHBoxLayout);
 }
@@ -111,47 +118,35 @@ void MPMappingOptionsWidget::setupUI()
 MPMappingOptionsWidget::MPMappingOption MPMappingOptionsWidget::createMappingOption(BrushInputType input)
 {
     QLabel* settingDescLabel = new QLabel(getBrushInputName(input), nullptr);
+    settingDescLabel->setContentsMargins(5,0,5,0);
 
     auto inputInfo = mEditor->getBrushInputInfo(input);
     auto inputMapping = mEditor->getBrushInputMapping(mSettingType, input);
-    MPInputButton* mappingButton = new MPInputButton(input, nullptr);
-    mappingButton->setIcon(QIcon(":/app/icons/new/mapping-icon.png"));
 
     MPInputButton* removeActionButton = new MPInputButton(input, nullptr);
     removeActionButton->setIcon(QIcon(":/app/icons/new/trash-changes.png"));
+    removeActionButton->setContentsMargins(5,0,5,0);
 
     int row =  mGridLayout->rowCount();
 
     settingDescLabel->setToolTip(inputInfo.tooltip);
 
-    MPMappingOption option(mappingButton, removeActionButton, settingDescLabel);
+    MPMappingWidget* mappingWidget = new MPMappingWidget(getBrushInputName(input), inputInfo.tooltip, inputInfo.soft_min, inputInfo.soft_max, input, inputMapping.controlPoints.points, 8, this);
+    mappingWidget->setMinimumHeight(150);
+    mappingWidget->setMaximumHeight(200);
+    mVBoxLayout->addWidget(mappingWidget);
+
+    mMappingConnections << connect(mappingWidget, &MPMappingWidget::mappingForInputUpdated, this, &MPMappingOptionsWidget::mappingForInputUpdated);
+
+    MPMappingOption option(removeActionButton, settingDescLabel, mappingWidget);
     option.inputType = input;
 
-    mGridLayout->addWidget(option.removeActionButton, row, 0, 1,1);
-    mGridLayout->addWidget(option.settingDescLabel, row, 1, 1,1);
-    mGridLayout->addWidget(option.mappingButton, row, 2, 1,1);
+    mGridLayout->addWidget(option.settingDescLabel, row, 0, 1, 1);
+    mGridLayout->addWidget(option.removeActionButton, row, 1, 1, 2, Qt::AlignRight);
 
-    connect(option.mappingButton, &MPInputButton::didPress, this, &MPMappingOptionsWidget::showInputMapper);
-    connect(option.removeActionButton, &MPInputButton::didPress, this, &MPMappingOptionsWidget::removeAction);
+    mMappingConnections << connect(option.removeActionButton, &MPInputButton::didPress, this, &MPMappingOptionsWidget::removeAction);
 
     return option;
-}
-
-void MPMappingOptionsWidget::showInputMapper(BrushInputType inputType)
-{
-    auto mapping = mEditor->getBrushInputMapping(mSettingType,inputType);
-    auto info = mEditor->getBrushInputInfo(inputType);
-
-    if (mMappingWidget) {
-        mHBoxLayout->removeWidget(mMappingWidget);
-        mMappingWidget->deleteLater();
-    }
-
-    mMappingWidget = new MPMappingWidget(getBrushInputName(inputType), info.tooltip, info.soft_min, info.soft_max, inputType, mapping.controlPoints.points, 8, this);
-    mHBoxLayout->addWidget(mMappingWidget);
-
-    connect(mMappingWidget.data(), &MPMappingWidget::mappingForInputUpdated, this, &MPMappingOptionsWidget::mappingForInputUpdated);
-    connect(this, &MPMappingOptionsWidget::notifyMappingWidgetNeedsUpdate, this, &MPMappingOptionsWidget::updateMappingWidgetForInput);
 }
 
 void MPMappingOptionsWidget::addOptionField(int index, QString name, int value)
@@ -161,7 +156,6 @@ void MPMappingOptionsWidget::addOptionField(int index, QString name, int value)
     MPMappingOption option = createMappingOption(inputType);
 
     mMappingOptionsComboBox->setItemEnabled(index, false);
-    showInputMapper(inputType);
 
     mOptions << option;
 }
@@ -178,16 +172,11 @@ void MPMappingOptionsWidget::removeAction(BrushInputType input)
         MPMappingOption& option = mOptions[i];
         if (input == mOptions[i].inputType) {
 
-            mMappingWidget->deleteLater();
-
             option.deleteAll();
             mOptions.removeAt(i);
             break;
         }
     }
-
-    mMappingWidget = new MPMappingWidget(this);
-    mHBoxLayout->addWidget(mMappingWidget);
 
     int index = static_cast<int>(input);
     mMappingOptionsComboBox->setItemEnabled(index, true);
@@ -195,13 +184,38 @@ void MPMappingOptionsWidget::removeAction(BrushInputType input)
     emit removedInputOption(input);
 }
 
-void MPMappingOptionsWidget::updateMappingWidgetForInput(BrushInputType inputType)
+void MPMappingOptionsWidget::updateMappingWidgetForInput(BrushInputType)
 {
-    auto mapping = mEditor->getBrushInputMapping(mSettingType,inputType);
-    auto settings = mEditor->getBrushInputInfo(inputType);
+    for (int i = 0; i < mOptions.count(); i++) {
+        MPMappingOption& option = mOptions[i];
 
-    if (mMappingWidget) {
-        mMappingWidget->updateMappingWidget(mapping.controlPoints.points, settings.soft_min, settings.soft_max);
+        // Cleanup options before clearing list
+        option.deleteAll();
+
+        // Re-enable combo options again
+        mMappingOptionsComboBox->setItemEnabled(i, true);
+    }
+    if (!mOptions.isEmpty()) {
+        mOptions.clear();
+    }
+
+    for (auto connection : mMappingConnections) {
+        disconnect(mMappingConnections.takeFirst());
+    }
+
+    for (int i = 0; i < static_cast<int>(BrushInputType::BRUSH_INPUTS_COUNT); i++) {
+
+        BrushInputType input = static_cast<BrushInputType>(i);
+
+        auto inputMapping = mEditor->getBrushInputMapping(mSettingType, input);
+
+        if (inputMapping.controlPoints.numberOfPoints > 0) {
+
+            MPMappingOption option = createMappingOption(input);
+            mMappingOptionsComboBox->setItemEnabled(i, false);
+
+            mOptions << option;
+        }
     }
 }
 

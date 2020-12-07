@@ -13,6 +13,7 @@ class Editor;
 class QGridLayout;
 class ComboBox;
 class QHBoxLayout;
+class QVBoxLayout;
 class MPInputButton;
 
 
@@ -40,29 +41,28 @@ class MPMappingOptionsWidget : public QDialog
 public:
     struct MPMappingOption
     {
-        MPInputButton* mappingButton;
         MPInputButton* removeActionButton;
         QLabel* settingDescLabel;
         BrushInputType inputType;
+        MPMappingWidget* mappingWidget;
 
-        MPMappingOption(MPInputButton* newMappingButton, MPInputButton* newRemoveActionButton, QLabel* newSettingDescLabel) {
-            mappingButton = newMappingButton;
-            removeActionButton = newRemoveActionButton;
-            settingDescLabel = newSettingDescLabel;
+        MPMappingOption(MPInputButton* newRemoveActionButton, QLabel* newSettingDescLabel, MPMappingWidget* newMappingWidget) {
+            this->removeActionButton = newRemoveActionButton;
+            this->settingDescLabel = newSettingDescLabel;
+            this->mappingWidget = newMappingWidget;
         }
 
         void deleteAll()
         {
-            delete mappingButton;
-            delete removeActionButton;
-            delete settingDescLabel;
+            removeActionButton->deleteLater();
+            settingDescLabel->deleteLater();
+            mappingWidget->deleteLater();
         }
     };
 
     MPMappingOptionsWidget(QString optionName, BrushSettingType settingType, QWidget* parent = nullptr);
 
     void setCore(Editor* editor) { mEditor = editor; }
-    void showInputMapper(BrushInputType inputType);
     void initUI();
 
     void updateMappingForInput(QVector<QPointF> points, BrushInputType inputType);
@@ -82,18 +82,17 @@ private:
 
     QGridLayout* mGridLayout = nullptr;
     QHBoxLayout* mHBoxLayout = nullptr;
+    QVBoxLayout* mVBoxLayout = nullptr;
     ComboBox* mMappingOptionsComboBox = nullptr;
-
-    QPointer<MPMappingWidget> mMappingWidget;
 
     BrushSettingType mSettingType;
     Editor* mEditor = nullptr;
 
-    QWidget* mParent = nullptr;
-
     QList<MPMappingOption> mOptions;
 
     QList<bool> mRemovedInputs;
+
+    QList<QMetaObject::Connection> mMappingConnections;
 };
 
 #endif // MPMAPPINGSETTINGSWIDGET_H
