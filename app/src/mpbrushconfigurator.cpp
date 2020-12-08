@@ -410,7 +410,7 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
 
         mListOfConnections << connect(item, &BrushSettingEditWidget::brushMappingForInputChanged, this, &MPBrushConfigurator::prepareBrushInputChanges);
         mListOfConnections << connect(item, &BrushSettingEditWidget::brushMappingRemoved, this, &MPBrushConfigurator::removeBrushMappingForInput);
-        mListOfConnections << connect(item, &BrushSettingEditWidget::toggleSettingFor, this, &MPBrushConfigurator::toggleSettingForBrushSetting);
+        mListOfConnections << connect(item, &BrushSettingEditWidget::brushSettingToggled, this, &MPBrushConfigurator::notifyBrushSettingToggled);
 
         item->setCore(mEditor);
         item->initUI();
@@ -450,7 +450,7 @@ void MPBrushConfigurator::addBrushSettingsSpacer()
     vBoxLayout->addItem(spacer);
 }
 
-void MPBrushConfigurator::updateBrushSettingWidget(qreal value, BrushSettingType setting)
+void MPBrushConfigurator::setBrushSettingValue(qreal value, BrushSettingType setting)
 {
     for (BrushSettingEditWidget* widget : mBrushWidgets)
     {
@@ -660,7 +660,7 @@ void MPBrushConfigurator::pressedRemoveBrush()
         auto st = MPCONF::blackListBrushFile(mPreset, mBrushName);
 
         if (st.ok()) {
-            emit refreshBrushList();
+            emit brushRemoved();
             close();
         } else {
             QMessageBox::warning(this, st.title(),
@@ -675,7 +675,7 @@ void MPBrushConfigurator::openBrushInfoWidget(DialogContext dialogContext)
         mBrushInfoWidget = new MPBrushInfoDialog(dialogContext, this);
         mBrushInfoWidget->setAttribute(Qt::WA_DeleteOnClose);
 
-        connect(mBrushInfoWidget.data(), &MPBrushInfoDialog::updatedBrushInfo, this, &MPBrushConfigurator::updateBrushList);
+        connect(mBrushInfoWidget.data(), &MPBrushInfoDialog::updatedBrushInfo, this, &MPBrushConfigurator::notifyBrushInfoUpdated);
     }
     mBrushInfoWidget->setCore(mEditor);
     mBrushInfoWidget->initUI();

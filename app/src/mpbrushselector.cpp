@@ -357,11 +357,11 @@ void MPBrushSelector::showBrushConfigurator(bool show)
         mBrushConfiguratorWidget->initUI();
 
         connect(this, &MPBrushSelector::brushSelected, mBrushConfiguratorWidget, &MPBrushConfigurator::updateConfig);
-        connect(this, &MPBrushSelector::notifySettingChanged, mBrushConfiguratorWidget, &MPBrushConfigurator::updateBrushSettingWidget);
-        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::refreshBrushList, this, &MPBrushSelector::reloadBrushList);
-        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::updateBrushList, this, &MPBrushSelector::updateBrushList);
-        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::toggleSettingForBrushSetting, this, &MPBrushSelector::toggleSettingForBrushSetting);
-        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::brushSettingChanged, this, &MPBrushSelector::notifySettingChanged);
+        connect(this, &MPBrushSelector::notifyBrushSettingChanged, mBrushConfiguratorWidget, &MPBrushConfigurator::setBrushSettingValue);
+        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::brushRemoved, this, &MPBrushSelector::reloadBrushList);
+        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::notifyBrushInfoUpdated, this, &MPBrushSelector::updateBrushList);
+        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::notifyBrushSettingToggled, this, &MPBrushSelector::notifyBrushSettingToggled);
+        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::brushSettingChanged, this, &MPBrushSelector::notifyBrushSettingChanged);
     }
 
     if (show) {

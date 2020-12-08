@@ -27,15 +27,15 @@ public:
 
     void setCore(Editor* editor) { mEditor = editor; }
 
-    void toggleSetting(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
-    void updateSetting(qreal value, BrushSettingType setting);
+    void setVisibleState(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
+    void setValue(qreal value, BrushSettingType setting);
 
     void setupSettings(ToolType toolType);
 
     void updateFromUnmappedSetting(qreal value, BrushSettingType setting);
 
 Q_SIGNALS:
-    void notifyBrushSettingUpdated(qreal value, BrushSettingType setting);
+    void brushSettingChanged(qreal value, BrushSettingType setting);
 
 private:
     void setupSettingsForTool(ToolType toolType);

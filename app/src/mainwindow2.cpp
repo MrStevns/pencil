@@ -1576,9 +1576,9 @@ void MainWindow2::makeConnections(Editor* editor, MPBrushSelector* brushSelector
     connect(editor->layers(), &LayerManager::currentLayerChanged, this, &MainWindow2::hideBrushSelectorForLayer);
     connect(brushSelector, &MPBrushSelector::brushSelected, editor, &Editor::loadBrush);
     connect(brushSelector, &MPBrushSelector::brushSelected, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateUI);
-    connect(brushSelector, &MPBrushSelector::toggleSettingForBrushSetting, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::toggleSetting);
-    connect(brushSelector, &MPBrushSelector::notifySettingChanged, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::updateSetting);
-    connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::notifyBrushSettingUpdated, brushSelector, &MPBrushSelector::notifySettingChanged);
+    connect(brushSelector, &MPBrushSelector::notifyBrushSettingToggled, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::setVisibleState);
+    connect(brushSelector, &MPBrushSelector::notifyBrushSettingChanged, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::setValue);
+    connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::brushSettingChanged, brushSelector, &MPBrushSelector::notifyBrushSettingChanged);
 }
 
 void MainWindow2::bindActionWithSetting(QAction* action, SETTING setting)

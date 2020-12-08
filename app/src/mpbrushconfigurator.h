@@ -39,12 +39,11 @@ public:
 
     void updateConfig();
 
-    void updateBrushSettingWidget(qreal value, BrushSettingType setting);
+    void setBrushSettingValue(qreal value, BrushSettingType setting);
     void prepareBrushChanges(qreal value, BrushSettingType setting);
 
 signals:
-    void updateBrushList(QString brushName, QString brushPreset);
-    void refreshBrushList();
+    void brushRemoved();
     void brushSettingChanged(qreal value, BrushSettingType setting);
 
     /** reloadBrushSettings
@@ -52,7 +51,9 @@ signals:
      *  Use in case the brush needs to refresh after modifications.
      */
     void reloadBrushSettings();
-    void toggleSettingForBrushSetting(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
+
+    void notifyBrushInfoUpdated(QString brushName, QString brushPreset);
+    void notifyBrushSettingToggled(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
 private:
 
     void backupBrushSetting(BrushSettingType setting);

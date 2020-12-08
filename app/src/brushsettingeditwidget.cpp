@@ -145,7 +145,7 @@ void BrushSettingEditWidget::visibilityChanged(bool state)
     settings.endGroup();
     settings.endGroup();
 
-    emit toggleSettingFor(settingName(), settingType(), mMin, mMax, state);
+    emit brushSettingToggled(settingName(), settingType(), mMin, mMax, state);
 }
 
 void BrushSettingEditWidget::openMappingWindow()

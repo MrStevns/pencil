@@ -170,7 +170,7 @@ void ToolBrushSettingsWidget::updateFromUnmappedSetting(qreal value, BrushSettin
     }
 }
 
-void ToolBrushSettingsWidget::updateSetting(qreal value, BrushSettingType setting)
+void ToolBrushSettingsWidget::setValue(qreal value, BrushSettingType setting)
 {
     qDebug() << "notify setting was updated";
     auto settingWidget = mBrushSettingWidgets.find(static_cast<int>(setting)).value();
@@ -190,10 +190,10 @@ void ToolBrushSettingsWidget::didUpdateSetting(qreal value, BrushSettingType set
     changes.insert(static_cast<int>(setting), change);
     mEditor->brushes()->applyChangesToBrushFile(changes);
 
-    emit notifyBrushSettingUpdated(value, setting);
+    emit brushSettingChanged(value, setting);
 }
 
-void ToolBrushSettingsWidget::toggleSetting(QString name, BrushSettingType setting, qreal min, qreal max, bool visible)
+void ToolBrushSettingsWidget::setVisibleState(QString name, BrushSettingType setting, qreal min, qreal max, bool visible)
 {
     if (visible && !mBrushSettingWidgets.contains(static_cast<int>(setting))) {
         BrushSettingWidget* settingWidget = new BrushSettingWidget(name, setting, min, max, this);
