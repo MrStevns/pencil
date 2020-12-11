@@ -592,7 +592,7 @@ void Editor::paste()
             select()->setSelection(vectorImage->getSelectionRect(), false);
         }
     }
-    mScribbleArea->updateCurrentFrame();
+    mScribbleArea->updateFrame(mFrame);
 }
 
 void Editor::flipSelection(bool flipVertical)
