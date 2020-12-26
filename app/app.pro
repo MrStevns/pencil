@@ -15,15 +15,14 @@ QMAKE_APPLICATION_BUNDLE_NAME = Pencil2D
 CONFIG += qt precompile_header
 
 DESTDIR = ../bin
+MOC_DIR = .moc
+OBJECTS_DIR = .obj
+UI_DIR = .ui
 
 RESOURCES += \
     data/app.qrc \
     ../translations/translations.qrc \
     data/brushes.qrc
-
-MOC_DIR = .moc
-OBJECTS_DIR = .obj
-UI_DIR = .ui
 
 INCLUDEPATH += \
     src \
@@ -78,7 +77,7 @@ HEADERS += \
     src/colorwheel.h \
     src/filedialog.h \
     src/displayoptionwidget.h \
-    src/pencilapplication.h \
+    src/pencil2d.h \
     src/exportmoviedialog.h \
     src/app_util.h \
     src/errordialog.h \
@@ -93,7 +92,9 @@ HEADERS += \
     src/doubleprogressdialog.h \
     src/colorslider.h \
     src/checkupdatesdialog.h \
-    src/presetdialog.h
+    src/presetdialog.h \
+    src/commandlineparser.h \
+    src/commandlineexporter.h
 
 SOURCES += \
     src/brushsettingeditwidget.cpp \
@@ -132,7 +133,7 @@ SOURCES += \
     src/colorwheel.cpp \
     src/filedialog.cpp \
     src/displayoptionwidget.cpp \
-    src/pencilapplication.cpp \
+    src/pencil2d.cpp \
     src/exportmoviedialog.cpp \
     src/errordialog.cpp \
     src/aboutdialog.cpp \
@@ -147,7 +148,9 @@ SOURCES += \
     src/colorslider.cpp \
     src/checkupdatesdialog.cpp \
     src/presetdialog.cpp \
-    src/app_util.cpp
+    src/app_util.cpp \
+    src/commandlineparser.cpp \
+    src/commandlineexporter.cpp
 
 FORMS += \
     ui/mainwindow2.ui \
@@ -177,8 +180,6 @@ FORMS += \
     ui/toolspage.ui \
     ui/toolboxwidget.ui \
     ui/presetdialog.ui
-
-
 
 GIT {
     DEFINES += GIT_EXISTS \
@@ -235,26 +236,14 @@ INCLUDEPATH += $$PWD/../core_lib/src
 CONFIG(debug,debug|release) BUILDTYPE = debug
 CONFIG(release,debug|release) BUILDTYPE = release
 
-win32-msvc*{
-  LIBS += -L$$OUT_PWD/../core_lib/$$BUILDTYPE/ -lcore_lib
-  PRE_TARGETDEPS += $$OUT_PWD/../core_lib/$$BUILDTYPE/core_lib.lib
+win32-msvc* {
+    LIBS += -L$$OUT_PWD/../core_lib/$$BUILDTYPE/ -lcore_lib
+    PRE_TARGETDEPS += $$OUT_PWD/../core_lib/$$BUILDTYPE/core_lib.lib
 }
 
-
-# From 5.14, MinGW windows builds are not build with debug-release flag
-versionAtLeast(QT_VERSION, 5.14) {
-
-    win32-g++{
-      LIBS += -L$$OUT_PWD/../core_lib/ -lcore_lib
-      PRE_TARGETDEPS += $$OUT_PWD/../core_lib/libcore_lib.a
-    }
-
-} else {
-
-    win32-g++{
-      LIBS += -L$$OUT_PWD/../core_lib/$$BUILDTYPE/ -lcore_lib
-      PRE_TARGETDEPS += $$OUT_PWD/../core_lib/$$BUILDTYPE/libcore_lib.a
-    }
+win32-g++{
+    LIBS += -L$$OUT_PWD/../core_lib/$$BUILDTYPE/ -lcore_lib
+    PRE_TARGETDEPS += $$OUT_PWD/../core_lib/$$BUILDTYPE/libcore_lib.a
 }
 
 # --- mac os and linux

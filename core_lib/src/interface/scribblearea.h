@@ -108,9 +108,7 @@ public:
      */
     void updateAllFramesIfNeeded();
     void updateFrame(int frame);
-    void updateOnionSkinsAround(int frame);
 
-    void updateSelectedFrames();
     void updateAllFrames();
     void updateAllVectorLayersAtCurrentFrame();
     void updateAllVectorLayersAt(int frameNumber);
@@ -190,6 +188,7 @@ public slots:
 
 
 protected:
+    bool event(QEvent *event) override;
     void tabletEvent(QTabletEvent*) override;
     void wheelEvent(QWheelEvent*) override;
     void mousePressEvent(QMouseEvent*) override;
@@ -256,9 +255,15 @@ private:
     void forceUpdateMyPaintStates();
 
     /** updatePixmapCache
-     * Updates the qpixmap cache that is used for gettign the canvas images from cache, to render them faster
+     * Updates the qpixmap cache that is used for getting the canvas images from cache.
      */
     void updatePixmapCache(const int frame);
+    
+    /** remove cache for dirty keyframes */
+    void removeCacheForDirtyFrames();
+
+    /** remove onion skin cache around frame */
+    void removeOnionSkinsCacheAround(int frame);
 
     void prepCanvas(int frame, QRect rect);
     void settingUpdated(SETTING setting);

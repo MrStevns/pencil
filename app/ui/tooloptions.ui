@@ -106,7 +106,7 @@
            <item>
             <widget class="SpinSlider" name="sizeSlider" native="true">
              <property name="toolTip">
-              <string>Set Pen Width &lt;br&gt;&lt;b&gt;[SHIFT]+drag&lt;/b&gt;&lt;br&gt;for quick adjustment</string>
+              <string>Set Stroke Width &lt;br&gt;&lt;b&gt;[SHIFT]+drag&lt;/b&gt;&lt;br&gt;for quick adjustment</string>
              </property>
             </widget>
            </item>
@@ -218,6 +218,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="useBezierBox">
+         <property name="toolTip">
+          <string>Use Bézier curves to create curved lines</string>
+         </property>
          <property name="text">
           <string>Bezier</string>
          </property>
@@ -225,6 +228,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="usePressureBox">
+         <property name="toolTip">
+          <string>Vary strokes based on pressure when drawing on a tablet</string>
+         </property>
          <property name="text">
           <string comment="Brush">Pressure</string>
          </property>
@@ -272,6 +278,9 @@
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string>Use stabilizer to interpolate strokes</string>
            </property>
            <property name="text">
             <string>Stabilizer</string>

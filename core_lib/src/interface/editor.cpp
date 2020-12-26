@@ -23,6 +23,7 @@ GNU General Public License for more details.
 #include <QImageReader>
 #include <QDropEvent>
 #include <QMimeData>
+#include <QTemporaryDir>
 
 #include "object.h"
 #include "vectorimage.h"
@@ -46,7 +47,6 @@ GNU General Public License for more details.
 #include "scribblearea.h"
 #include "timeline.h"
 #include "util.h"
-#include "movieexporter.h"
 
 
 static BitmapImage g_clipboardBitmapImage;
@@ -693,11 +693,7 @@ Status Editor::setObject(Object* newObject)
     // Make sure that object is fully loaded before calling managers.
     for (BaseManager* m : mAllManagers)
     {
-        Status st = m->load(mObject.get());
-
-        if (st.fail()) {
-            return st;
-        }
+        m->load(mObject.get());
     }
 
     if (mViewManager)
@@ -729,91 +725,6 @@ void Editor::updateObject()
     }
 
     emit updateLayerCount();
-}
-
-/* TODO: Export absolutely does not belong here, but due to the messed up project structure
- * there isn't really any better place atm. Once we do have a proper structure in place, this
- * should go somewhere else */
-bool Editor::exportSeqCLI(QString filePath, LayerCamera *cameraLayer, QString format, int width, int height, int startFrame, int endFrame, bool transparency, bool antialias)
-{
-    if (width < 0)
-    {
-        width = cameraLayer->getViewRect().width();
-    }
-    if (height < 0)
-    {
-        height = cameraLayer->getViewRect().height();
-    }
-    if (startFrame < 1)
-    {
-        startFrame = 1;
-    }
-    if (endFrame < -1)
-    {
-        endFrame = mLayerManager->animationLength();
-    }
-    if (endFrame < 0)
-    {
-        endFrame = mLayerManager->animationLength(false);
-    }
-
-    QSize exportSize = QSize(width, height);
-    mObject->exportFrames(startFrame,
-                          endFrame,
-                          cameraLayer,
-                          exportSize,
-                          filePath,
-                          format,
-                          transparency,
-                          false,
-                          "",
-                          antialias,
-                          nullptr,
-                          0);
-    return true;
-}
-
-bool Editor::exportMovieCLI(QString filePath, LayerCamera *cameraLayer, int width, int height, int startFrame, int endFrame)
-{
-    if (width < 0)
-    {
-        width = cameraLayer->getViewRect().width();
-    }
-    if (height < 0)
-    {
-        height = cameraLayer->getViewRect().height();
-    }
-    if (startFrame < 1)
-    {
-        startFrame = 1;
-    }
-    if (endFrame < -1)
-    {
-        endFrame = mLayerManager->animationLength();
-    }
-    if (endFrame < 0)
-    {
-        endFrame = mLayerManager->animationLength(false);
-    }
-
-    QSize exportSize = QSize(width, height);
-
-    ExportMovieDesc desc;
-    desc.strFileName = filePath;
-    desc.startFrame = startFrame;
-    desc.endFrame = endFrame;
-    desc.fps = playback()->fps();
-    desc.exportSize = exportSize;
-    desc.strCameraName = cameraLayer->name();
-
-    MovieExporter ex;
-    ex.run(object(), desc, [](float,float){}, [](float){}, [](QString){});
-    return true;
-}
-
-QString Editor::workingDir() const
-{
-    return mObject->workingDir();
 }
 
 bool Editor::importBitmapImage(QString filePath, int space)
@@ -1057,13 +968,6 @@ void Editor::scrubBackward()
     }
 }
 
-void Editor::notifyFrameMoved()
-{
-    // The important part here is that the cache is updated, which happens as a result of the updateFrame method.
-    // and onionskin cache is updated too
-    mScribbleArea->updateFrame(mFrame);
-}
-
 KeyFrame* Editor::addNewKey()
 {
     return addKeyFrame(layers()->currentLayerIndex(), currentFrame());
@@ -1131,7 +1035,6 @@ void Editor::removeKey()
     scrubBackward();
     layers()->notifyAnimationLengthChanged();
     emit layers()->currentLayerChanged(layers()->currentLayerIndex()); // trigger timeline repaint.
-    emit currentFrameRemoved(mFrame);
 }
 
 void Editor::scrubNextKeyFrame()

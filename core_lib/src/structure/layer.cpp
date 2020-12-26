@@ -199,6 +199,8 @@ bool Layer::addKeyFrame(int position, KeyFrame* pKeyFrame)
     pKeyFrame->setPos(position);
     mKeyFrames.insert(std::make_pair(position, pKeyFrame));
 
+    markFrameAsDirty(position);
+
     return true;
 }
 
@@ -208,6 +210,7 @@ bool Layer::removeKeyFrame(int position)
     if (frame)
     {
         mKeyFrames.erase(frame->pos());
+        markFrameAsDirty(position);
         delete frame;
     }
     return true;
@@ -215,18 +218,28 @@ bool Layer::removeKeyFrame(int position)
 
 bool Layer::moveKeyFrame(int position, int offset)
 {
-    bool moved = false;
-    if (position == 1 && offset < 0) { return false; }
+    int newPos = position + offset;
+    if (newPos < 1) { return false; }
 
-    if (swapKeyFrames(position, position + offset)) {
-        moved = true;
-    } else {
-        setFrameSelected(position, true);
-        if (moveSelectedFrames(offset)) {
-            moved = true;
-        }
-        setFrameSelected(position + offset, false);
+    auto listOfFramesLast = mSelectedFrames_byLast;
+    auto listOfFramesPos = mSelectedFrames_byPosition;
+    mSelectedFrames_byLast.clear();
+    mSelectedFrames_byPosition.clear();
+
+    if (swapKeyFrames(position, newPos)) {
+        return true;
     }
+
+    setFrameSelected(position, true);
+    bool moved = false;
+    if (moveSelectedFrames(offset)) {
+        moved = true;
+    }
+    setFrameSelected(newPos, false);
+
+    mSelectedFrames_byLast = listOfFramesLast;
+    mSelectedFrames_byPosition = listOfFramesPos;
+
     return moved;
 }
 
@@ -253,6 +266,9 @@ bool Layer::swapKeyFrames(int position1, int position2)
 
     pFirstFrame->modification();
     pSecondFrame->modification();
+
+    markFrameAsDirty(position1);
+    markFrameAsDirty(position2);
 
     return true;
 }
@@ -448,6 +464,7 @@ bool Layer::moveSelectedFrames(int offset)
             if (selectedFrame != nullptr)
             {
                 mKeyFrames.erase(fromPos);
+                markFrameAsDirty(fromPos);
 
                 // Slide back every frame between fromPos to toPos
                 // to avoid having 2 frames in the same position
@@ -463,9 +480,11 @@ bool Layer::moveSelectedFrames(int offset)
                     if (frame != nullptr)
                     {
                         mKeyFrames.erase(framePosition);
+                        markFrameAsDirty(framePosition);
 
                         frame->setPos(targetPosition);
                         mKeyFrames.insert(std::make_pair(targetPosition, frame));
+                        markFrameAsDirty(targetPosition);
                     }
 
                     targetPosition = targetPosition - step;
@@ -478,6 +497,7 @@ bool Layer::moveSelectedFrames(int offset)
                 // Update the position of the selected frame
                 selectedFrame->setPos(toPos);
                 mKeyFrames.insert(std::make_pair(toPos, selectedFrame));
+                markFrameAsDirty(toPos);
             }
             indexInSelection = indexInSelection + step;
         }

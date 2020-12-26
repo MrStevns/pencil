@@ -977,7 +977,7 @@ void MainWindow2::importGIF()
     progress.show();
 
     QString strImgFileLower = gifDialog->getFilePath();
-    bool importOK = strImgFileLower.endsWith(".gif");
+    bool importOK = strImgFileLower.toLower().endsWith(".gif");
 
     if (importOK)
     {
@@ -1468,13 +1468,10 @@ void MainWindow2::hideBrushSelectorWidgetIfNeeded(const bool hide)
 
 void MainWindow2::makeConnections(Editor* editor)
 {
-    connect(this, &MainWindow2::appLostFocus, editor->tools(), &ToolManager::deactivateTemporaryTool);
     connect(editor, &Editor::updateBackup, this, &MainWindow2::updateSaveState);
     connect(editor, &Editor::needDisplayInfo, this, &MainWindow2::displayMessageBox);
     connect(editor, &Editor::needDisplayInfoNoTitle, this, &MainWindow2::displayMessageBoxNoTitle);
     connect(editor->layers(), &LayerManager::currentLayerChanged, this, &MainWindow2::currentLayerChanged);
-
-//    connect(editor->brushes(), &MPBrushManager::errorFromTitleMessage, this, &MainWindow2::displayErrorDialog);
 }
 
 void MainWindow2::makeConnections(Editor* editor, ColorBox* colorBox)
@@ -1501,11 +1498,8 @@ void MainWindow2::makeConnections(Editor* editor, ScribbleArea* scribbleArea)
     // TODO: figure out to one first or second of these signals...
     connect(editor, &Editor::currentFrameChanged, scribbleArea, &ScribbleArea::showCurrentFrame );
     connect(editor, &Editor::currentFrameChanged, scribbleArea, &ScribbleArea::updateCurrentFrame);
-    connect(editor, &Editor::currentFrameRemoved, scribbleArea, &ScribbleArea::updateFrame);
 
     connect(editor->view(), &ViewManager::viewChanged, scribbleArea, &ScribbleArea::updateAllFrames);
-
-    connect(mTimeLine, &TimeLine::notifyFramesMoved, scribbleArea, &ScribbleArea::updateSelectedFrames);
 }
 
 void MainWindow2::makeConnections(Editor* pEditor, TimeLine* pTimeline)

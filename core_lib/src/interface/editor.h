@@ -20,7 +20,6 @@ GNU General Public License for more details.
 
 #include <memory>
 #include <QObject>
-#include <QList>
 #include "pencilerror.h"
 #include "pencildef.h"
 #include "basetool.h"
@@ -102,24 +101,18 @@ public:
     void setCurrentLayerIndex(int i);
 
     void scrubTo(int frameNumber);
-    void notifyFrameMoved();
-
 
     /**
      * @brief The visiblity value should match any of the VISIBILITY enum values
      */
     void setLayerVisibility(LayerVisibility visibility);
     LayerVisibility layerVisibility();
-    bool exportSeqCLI(QString filePath, LayerCamera* cameraLayer, QString format = "PNG", int width = -1, int height = -1, int startFrame = 1, int endFrame = -1, bool transparency = false, bool antialias = true);
-    bool exportMovieCLI(QString filePath, LayerCamera* cameraLayer, int width = -1, int height = -1, int startFrame = 1, int endFrame = -1);
 
     BaseTool* getTool(ToolType toolType) const;
 
     qreal viewScaleInversed();
     void deselectAll();
     void selectAll();
-
-    QString workingDir() const;
 
     // backup
     int mBackupIndex;
@@ -135,7 +128,6 @@ signals:
 
     void changeThinLinesButton(bool);
     void currentFrameChanged(int n);
-    void currentFrameRemoved(int n);
     void fpsChanged(int fps);
 
     void needSave();

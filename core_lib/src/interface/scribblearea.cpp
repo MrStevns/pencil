@@ -271,8 +271,26 @@ void ScribbleArea::updateFrame(int frame)
    qDebug() << "update frame";
 
     updatePixmapCache(frame);
-    updateOnionSkinsAround(frame);
+    removeOnionSkinsCacheAround(frame);
     update();
+}
+
+void ScribbleArea::removeCacheForDirtyFrames()
+{
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+    for (int pos : mEditor->layers()->currentLayer()->dirtyFrames()) {
+
+        auto cacheKeyIter = mPixmapCacheKeys.find(static_cast<unsigned int>(pos));
+        if (cacheKeyIter != mPixmapCacheKeys.end())
+        {
+            QPixmapCache::remove(cacheKeyIter.value());
+            unsigned int key = cacheKeyIter.key();
+            mPixmapCacheKeys.remove(key);
+        }
+
+        removeOnionSkinsCacheAround(pos);
+    }
+    currentLayer->clearDirtyFrames();
 }
 
 void ScribbleArea::reloadMyPaint()
@@ -305,17 +323,7 @@ void ScribbleArea::updateAllFramesIfNeeded() {
     }
 }
 
-void ScribbleArea::updateSelectedFrames()
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-    auto selectedFrames = layer->getSelectedFrames();
-
-    for (const int framePos : selectedFrames) {
-        updateFrame(framePos);
-    }
-}
-
-void ScribbleArea::updateOnionSkinsAround(int frameNumber)
+void ScribbleArea::removeOnionSkinsCacheAround(int frameNumber)
 {
     if (frameNumber < 0) { return; }
 
@@ -342,7 +350,8 @@ void ScribbleArea::updateOnionSkinsAround(int frameNumber)
             if (cacheKeyIter != mPixmapCacheKeys.end())
             {
                 QPixmapCache::remove(cacheKeyIter.value());
-                mPixmapCacheKeys.remove(cacheKeyIter.key());
+                unsigned int key = cacheKeyIter.key();
+                mPixmapCacheKeys.remove(key);
             }
         }
     }
@@ -360,7 +369,8 @@ void ScribbleArea::updateOnionSkinsAround(int frameNumber)
             if (cacheKeyIter != mPixmapCacheKeys.end())
             {
                 QPixmapCache::remove(cacheKeyIter.value());
-                mPixmapCacheKeys.remove(cacheKeyIter.key());
+                unsigned int key = cacheKeyIter.key();
+                mPixmapCacheKeys.remove(key);
             }
         }
     }
@@ -416,6 +426,14 @@ void ScribbleArea::setAllDirty()
 {
     //mNeedUpdateAll = true;
     mCanvasPainter.resetLayerCache();
+}
+
+bool ScribbleArea::event(QEvent *event)
+{
+    if (event->type() == QEvent::WindowDeactivate) {
+        mEditor->tools()->deactivateTemporaryTool();
+    }
+    return QWidget::event(event);
 }
 
 /************************************************************************/
@@ -1511,6 +1529,7 @@ void ScribbleArea::applyTransformedSelection()
         {
             VectorImage* vectorImage = currentVectorImage(layer);
             vectorImage->applySelectionTransformation();
+            selectMan->setSelection(selectMan->myTempTransformedSelectionRect(), false);
         }
 
         setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
