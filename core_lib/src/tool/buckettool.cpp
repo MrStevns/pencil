@@ -112,6 +112,7 @@ void BucketTool::pointerPressEvent(PointerEvent* event)
     {
         mScribbleArea->setAllDirty();
     }
+    mCurrentInputType = event->inputType();
 }
 
 void BucketTool::pointerMoveEvent(PointerEvent* event)
