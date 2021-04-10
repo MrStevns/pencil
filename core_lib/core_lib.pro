@@ -99,6 +99,7 @@ HEADERS +=  \
     src/util/filetype.h \
     src/util/imagecompositor.h \
     src/util/mathutils.h \
+    src/util/mpfile.h \
     src/util/pencildef.h \
     src/util/pencilerror.h \
     src/util/pencilsettings.h \
@@ -178,6 +179,7 @@ SOURCES += \
     src/util/blitrect.cpp \
     src/util/fileformat.cpp \
     src/util/imagecompositor.cpp \
+    src/util/mpfile.cpp \
     src/util/pencilerror.cpp \
     src/util/pencilsettings.cpp \
     src/util/log.cpp \

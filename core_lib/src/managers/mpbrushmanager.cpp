@@ -5,7 +5,7 @@
 
 #include "editor.h"
 #include "mpbrushutils.h"
-#include <QMessageBox>
+#include "mpfile.h"
 
 MPBrushManager::MPBrushManager(Editor* editor) : BaseManager(editor)
 {
@@ -32,7 +32,7 @@ Status MPBrushManager::save(Object *o)
 
 Status MPBrushManager::loadPresets()
 {
-    QFile fileOrder(getBrushConfigPath(BrushConfigFile));
+    QFile fileOrder(getBrushConfigPath());
 
     Status st = Status::OK;
     if (fileOrder.open(QIODevice::ReadOnly))
@@ -387,161 +387,14 @@ Status MPBrushManager::copyResourcesToAppData()
 
 Status MPBrushManager::renameMoveBrushFileIfNeeded(QString originalPreset, QString originalName, QString newPreset, QString newName)
 {
-    Status status = Status::OK;
-    QString brushesPath = MPCONF::getBrushesPath();
-    const QString presetPath = brushesPath + "/" + newPreset;
-    const QString brushPath = brushesPath + "/" + newPreset + "/" + newName;
-    const QString oldBrushPath = brushesPath + "/" + originalPreset + "/" + originalName;
-
-    QDir presetDir(presetPath);
-
-    QString absoluteOldBrushPath = oldBrushPath + BRUSH_CONTENT_EXT;
-    QString absoluteOldBrushPreviewPath = oldBrushPath + BRUSH_PREVIEW_EXT;
-
-    QString absoluteBrushPath = brushPath + BRUSH_CONTENT_EXT;
-    QString absoluteBrushPreviewPath = brushPath+ BRUSH_PREVIEW_EXT;
-    if (!presetDir.exists()) {
-        bool pathCreated = presetDir.mkpath(presetPath);
-
-        if (!pathCreated) {
-            status = Status::FAIL;
-
-            status.setTitle(QObject::tr("Something went wrong"));
-            status.setDescription(QObject::tr("Couldn't create preset dir, verify that the folder is writable"));
-            return status;
-        }
-    }
-
-    QFile brushFile(brushPath);
-    if (!brushFile.exists()) {
-
-        QFile moveFile(oldBrushPath);
-        moveFile.rename(absoluteOldBrushPath, absoluteBrushPath);
-
-        if (moveFile.error() != QFile::NoError) {
-            status = Status::FAIL;
-
-            status.setTitle(QObject::tr("Something went wrong"));
-            status.setDescription(QObject::tr("Failed to rename or move: ") + moveFile.fileName() + QObject::tr(" verify that the folder is writable")
-                                  + QObject::tr("The following error was given: ") + moveFile.errorString());
-            return status;
-        }
-    }
-
-    QFile brushImageFile(absoluteBrushPreviewPath);
-    if (!brushImageFile.exists()) {
-        QFile moveImageFile(absoluteOldBrushPreviewPath);
-        moveImageFile.rename(absoluteOldBrushPreviewPath, absoluteBrushPreviewPath);
-
-        if (moveImageFile.error() != QFile::NoError) {
-            status = Status::FAIL;
-
-            status.setTitle(QObject::tr("Something went wrong"));
-            status.setDescription(QObject::tr("Failed to rename or move: ") + moveImageFile.fileName() + QObject::tr(" verify that the folder is writable")
-                                  + QObject::tr("The following error was given: ") + moveImageFile.errorString());
-            return status;
-        }
-
-    }
-
-    return status;
+    MPFile mpFile(getBrushPath(originalPreset,originalName,BRUSH_CONTENT_EXT));
+    return mpFile.renameBrush(getBrushPath(newPreset, newName, BRUSH_CONTENT_EXT));
 }
 
 Status MPBrushManager::copyRenameBrushFileIfNeeded(const QString& originalPreset, const QString& originalName, const QString& newPreset, QString& newName)
 {
-    QString brushesPath = MPCONF::getBrushesPath();
-    QString presetPath = brushesPath + "/" + newPreset;
-    QString brushPath = brushesPath + "/" + newPreset + "/" + newName;
-
-    QString oldPresetPath = brushesPath + "/" + originalPreset;
-    QString oldBrushPath = brushesPath + "/" + originalPreset + "/" + originalName;
-
-    Status status = Status::OK;
-    QFile file(brushPath + BRUSH_CONTENT_EXT);
-    QFile fileImage(brushPath + BRUSH_PREVIEW_EXT);
-
-    QDir dir(presetPath);
-    if (!dir.exists()) {
-        bool pathCreated = dir.mkpath(presetPath);
-
-        if (!pathCreated) {
-            status = Status::FAIL;
-
-            status.setTitle(QObject::tr("Something went wrong"));
-            status.setDescription(QObject::tr("Couldn't create dir: ") + dir.path() + QObject::tr("verify that the folder is writable"));
-            return status;
-        }
-    }
-
-    if (file.error() != QFile::NoError || fileImage.error() != QFile::NoError) {
-        status = Status::FAIL;
-        status.setTitle(QObject::tr("File error"));
-        status.setDescription(QObject::tr("Failed to read files: ") + file.errorString() + " " + fileImage.errorString());
-    } else {
-
-        if (!file.exists() && !fileImage.exists()) {
-            QFile fileToCopy(oldBrushPath+BRUSH_CONTENT_EXT);
-            fileToCopy.copy(oldBrushPath+BRUSH_CONTENT_EXT, brushPath+BRUSH_CONTENT_EXT);
-
-            if (fileToCopy.error() != QFile::NoError) {
-                status = Status::FAIL;
-                status.setTitle("Error: Copy file");
-                status.setDescription(QObject::tr("Failed to copy: ") + fileToCopy.fileName() + ", the folder error was given: "
-                                      + fileToCopy.errorString());
-
-                return status;
-            }
-
-            fileToCopy.setFileName(oldBrushPath+BRUSH_PREVIEW_EXT);
-            fileToCopy.copy(oldBrushPath+BRUSH_PREVIEW_EXT, brushPath+BRUSH_PREVIEW_EXT);
-
-            if (fileToCopy.error() != QFile::NoError) {
-                status = Status::FAIL;
-                status.setTitle(QObject::tr("Error: Copy file"));
-                status.setDescription(QObject::tr("Failed to copy: ") + fileToCopy.fileName() + QObject::tr(", the folder error was given: ")
-                                      + fileToCopy.errorString());
-                return status;
-            }
-
-        } else {
-
-            QString clonePostFix = BRUSH_COPY_POSTFIX;
-
-            int countClones = 0;
-            for (int i = 0; i < dir.entryList().count(); i++) {
-                QString x = dir.entryList()[i];
-
-                if (x.compare(newName+BRUSH_CONTENT_EXT) == 0) {
-                    countClones++;
-                }
-            }
-
-            QString clonedName = newName;
-
-            if (newName.compare(originalName) == 0) {
-                clonedName = clonedName.append(clonePostFix+QString::number(countClones));
-            }
-
-            QString clonedPath = oldPresetPath + "/" + clonedName;
-            QString newFileName = clonedPath+BRUSH_CONTENT_EXT;
-            QString newImageName = clonedPath+BRUSH_PREVIEW_EXT;
-            file.copy(newFileName);
-            fileImage.copy(newImageName);
-
-            if (file.error() != QFile::NoError || fileImage.error() != QFile::NoError) {
-                status = Status::FAIL;
-                status.setTitle(QObject::tr("Error: Copy file(s)"));
-                status.setDescription(QObject::tr("Failed to copy: ") +
-                                      file.fileName() + "\n " + fileImage.fileName() +
-                                      QObject::tr(", the folder error was given: ") + file.errorString() + "\n" + fileImage.errorString());
-                return status;
-            }
-
-            newName = clonedName;
-        }
-    }
-
-    return status;
+    MPFile mpFile(getBrushPath(originalPreset,originalName,BRUSH_CONTENT_EXT));
+    return mpFile.copyBrush(getBrushPath(newPreset, newName, BRUSH_CONTENT_EXT));
 }
 
 QString MPBrushManager::getBrushPreviewImagePath(const QString& brushPreset, const QString brushName)
@@ -560,9 +413,11 @@ QString MPBrushManager::getBrushPath(const QString& brushPreset, const QString& 
     QString brushPath = MPCONF::getBrushesPath() + "/" + brushPreset + "/" + brushName;
 
     QFile file(brushPath+extension);
-    if (!file.exists()) {
-        brushPath = QString(BRUSH_QRC) + "/" + brushPreset + "/" + brushName;
-    }
+    // TODO: fix this.. we can't do this when the logic of mpfile expects a filepath.
+    // maybe this shouldn't be done at all...
+//    if (!file.exists()) {
+//        brushPath = QString(BRUSH_QRC) + "/" + brushPreset + "/" + brushName;
+//    }
     return brushPath + extension;
 }
 
@@ -571,27 +426,18 @@ QString MPBrushManager::getBrushImagePath(const QString& brushPreset, const QStr
     return getBrushPath(brushPreset, brushName, BRUSH_PREVIEW_EXT);
 }
 
-QString MPBrushManager::getBrushConfigPath(const QString extension)
+QString MPBrushManager::getBrushConfigPath()
 {
-    QString brushPath = MPCONF::getBrushesPath() + "/" + extension;
+    QString brushPath = MPCONF::getBrushesPath() + "/" + BrushConfigFile;
 
     QFile file(brushPath);
     if (!file.exists()) {
-        brushPath = BRUSH_QRC + "/" + extension;
+        brushPath = BRUSH_QRC + "/" + BrushConfigFile;
     }
     return brushPath;
 }
 
-Status MPBrushManager::writeBrushIcon(const QPixmap& iconPix, const QString brushPreset, const QString brushName) {
-    Status status = Status::OK;
-
-    const QString brushPath = MPCONF::getBrushesPath() + "/" + brushPreset + "/" + brushName;
-
-    const QString brushFileName = brushPath+BRUSH_PREVIEW_EXT;
-    if (iconPix.save(brushPath+BRUSH_PREVIEW_EXT) == false) {
-        status = Status::FAIL;
-        status.setTitle(QObject::tr("Error saving brushImage"));
-        status.setDescription(QObject::tr("Failed to save: ") + brushFileName);
-    }
-    return status;
+Status MPBrushManager::writeBrushIcon(const QPixmap& iconPix, const QString brushPreset, const QString brushName) 
+{
+    return MPFile(getBrushPath(brushPreset,brushName,BRUSH_CONTENT_EXT)).updateBrushIcon(iconPix);
 }

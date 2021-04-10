@@ -131,9 +131,6 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
 
 void MPBrushConfigurator::initUI()
 {
-    mBrushName = mEditor->brushes()->currentBrushName();
-    mPreset = mEditor->brushes()->currentPresetName();
-
     mActiveTreeRoot = addTreeRoot(BrushSettingItem::Active, mNavigatorWidget, tr("Active settings"));
     auto basicRoot = addTreeRoot(BrushSettingItem::Basic, mNavigatorWidget, tr("Basic settings"));
 
@@ -164,10 +161,14 @@ void MPBrushConfigurator::updateUI()
     }
     mDiscardChangesButton->setEnabled(!mOldModifications.isEmpty());
 
-    QPixmap pix(QPixmap(mEditor->brushes()->getBrushImagePath(mPreset, mBrushName)));
+    auto brushMan = mEditor->brushes();
+    QString brushName = brushMan->currentBrushName();
+    QString preset = brushMan->currentPresetName();
+
+    QPixmap pix(QPixmap(brushMan->getBrushImagePath(preset, brushName)));
     mBrushImageWidget->setPixmap(pix.scaled(mImageSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
-    mBrushImageWidget->setToolTip(mBrushName);
+    mBrushImageWidget->setToolTip(brushName);
     prepareUpdateBrushPreview();
 }
 
@@ -186,16 +187,8 @@ void MPBrushConfigurator::hideUI()
 
 void MPBrushConfigurator::updateConfig()
 {
-    auto currentBrushName = mEditor->brushes()->currentBrushName();
-    auto currentPresetName = mEditor->brushes()->currentPresetName();
+    mOldModifications.clear();
 
-    if (mBrushName != currentBrushName && mPreset != currentPresetName) {
-        mOldModifications.clear();
-    }
-
-    mToolType = mEditor->tools()->currentTool()->type();
-    mBrushName = currentBrushName;
-    mPreset = currentPresetName;
     updateUI();
 }
 
@@ -656,16 +649,22 @@ void MPBrushConfigurator::pressedRemoveBrush()
     QMessageBox::StandardButton ret = QMessageBox::warning(this, tr("Delete brush"),
                                    tr("Are you sure you want to delete this brush?"),
                                    QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes);
-    if (ret == QMessageBox::Yes) {
-        auto st = MPCONF::blackListBrushFile(mPreset, mBrushName);
 
-        if (st.ok()) {
-            emit brushRemoved();
-            close();
-        } else {
+    auto brushMan = mEditor->brushes();
+    QString presetName = brushMan->currentPresetName();
+    QString brushName = brushMan->currentBrushName();
+
+    if (ret == QMessageBox::Yes) {
+        auto st = MPCONF::blackListBrushFile(presetName, brushName);
+
+        if (st.fail()) {
             QMessageBox::warning(this, st.title(),
                                        st.description());
+            return;
         }
+
+        emit brushRemoved();
+        close();
     }
 }
 
@@ -682,11 +681,15 @@ void MPBrushConfigurator::openBrushInfoWidget(DialogContext dialogContext)
 
     auto brushMan = mEditor->brushes();
 
-    auto status = brushMan->readBrushFromFile(mPreset, mBrushName);
+    QString presetName = brushMan->currentPresetName();
+    QString brushName = brushMan->currentBrushName();
+    ToolType currentToolType = mEditor->tools()->currentTool()->type();
+
+    auto status = brushMan->readBrushFromFile(presetName, brushName);
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(brushMan->currentBrushData(), &error);
 
-    mBrushInfoWidget->setBrushInfo(mBrushName, mPreset, mToolType, doc);
+    mBrushInfoWidget->setBrushInfo(brushName, presetName, currentToolType, doc);
     mBrushInfoWidget->show();
 }
 

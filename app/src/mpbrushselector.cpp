@@ -217,14 +217,20 @@ void MPBrushSelector::itemClicked(QListWidgetItem *itemWidget)
 void MPBrushSelector::loadBrushFromFile(const QString& brushName)
 {
     auto brushMan = mEditor->brushes();
+
+    // Same brush selected, don't update.
+    if (brushName == brushMan->currentBrushName()) { return; }
+
     Status status = brushMan->readBrushFromCurrentPreset(brushName);
-    if (status == Status::OK)
+
+    if (status != Status::OK)
     {
-        emit brushSelected(); // Read the whole file and broadcast is as a char* buffer
-    } else {
         ErrorDialog errorDialog(status.title(), status.description(), status.details().str());
         errorDialog.exec();
+        return;
     }
+
+    emit brushSelected(); // Read the whole file and broadcast is as a char* buffer
 }
 
 void MPBrushSelector::loadToolBrushes(QString toolName)

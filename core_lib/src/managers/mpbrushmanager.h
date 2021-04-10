@@ -42,15 +42,11 @@ public:
     Status writeBrushIcon(const QPixmap& iconPix, const QString brushPreset, const QString brushName);
 
     QString getBrushPath(const QString& brushPreset, const QString& brushName, const QString& extension);
-    QString getBrushConfigPath(const QString extension = "");
+    QString getBrushConfigPath();
     QString getBrushImagePath(const QString& brushPreset, const QString& brushName);
     QString getBrushPreviewImagePath(const QString& brushPreset, const QString brushName);
 
     QVector<MPBrushPreset> parseConfig(QFile& file, QString brushesPath);
-
-Q_SIGNALS:
-    void errorFromStatus(Status& status);
-    void errorFromTitleMessage(QString title, QString description);
 
 private:
 

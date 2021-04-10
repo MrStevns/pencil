@@ -121,9 +121,6 @@ private:
     QList<BrushSettingEditWidget*> mBrushWidgets;
     QHash<int, BrushChanges> mCurrentModifications;
     QHash<int, BrushChanges> mOldModifications;
-    QString mBrushName;
-    QString mPreset;
-    ToolType mToolType;
 
     QSize mImageSize = QSize(100,100);
 
