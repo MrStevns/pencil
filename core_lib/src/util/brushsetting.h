@@ -86,6 +86,10 @@ struct BrushSetting {
                                                                               this->name = name; }
 };
 
+// An arbitrary max value that matches the size of the preview widget height
+// The reason to cap is also to make sure the brush can be drawn fast enough without locking UI.
+static const int BRUSH_RADIUS_MAX = 3;
+
 static const BrushSetting Opacity = BrushSetting(QT_TR_NOOP("Opacity"), BrushSettingType::BRUSH_SETTING_OPAQUE, 0, 100);
 static const BrushSetting OpacityMultiply = BrushSetting(QT_TR_NOOP("Opacity multiply"), BrushSettingType::BRUSH_SETTING_OPAQUE_MULTIPLY, 0, 100);
 static const BrushSetting OpacityLinearize = BrushSetting(QT_TR_NOOP("Opacity linearize"), BrushSettingType::BRUSH_SETTING_OPAQUE_LINEARIZE, 0, 100);

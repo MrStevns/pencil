@@ -58,8 +58,14 @@ void BrushSettingWidget::initUI()
     BrushSettingInfo info = mEditor->getBrushSettingInfo(mSettingType);
 
     qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(mSettingType));
+
+    qreal maxValue = static_cast<qreal>(info.max);
+    if (mSettingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC && maxValue > BRUSH_RADIUS_MAX) {
+        maxValue = BRUSH_RADIUS_MAX;
+    }
+
+    setRange(static_cast<qreal>(info.min), maxValue);
     setValue(baseValue);
-    setRange(static_cast<qreal>(info.min), static_cast<qreal>(info.max));
     setToolTip(info.tooltip);
 }
 
@@ -76,7 +82,6 @@ void BrushSettingWidget::onSliderChanged(qreal value)
 
 void BrushSettingWidget::setValue(qreal value)
 {
-//    qDebug() << "value changing";
     qreal normalize = MathUtils::normalize(value, mMin, mMax);
     qreal mappedValue = MathUtils::mapFromNormalized(normalize, mMappedMin, mMappedMax);
 
@@ -129,12 +134,10 @@ void BrushSettingWidget::setValueInternal(qreal value)
 
 void BrushSettingWidget::setRange(qreal min, qreal max)
 {
-
     mMin = min;
     mMax = max;
 
     mValueSlider->setRange(mMin, mMax);
-    setValue(mCurrentValue);
 }
 
 void BrushSettingWidget::setToolTip(QString toolTip)
