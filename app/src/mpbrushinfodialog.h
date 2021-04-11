@@ -9,6 +9,7 @@
 
 class QLabel;
 class QPlainTextEdit;
+class QLineEdit;
 class ComboBox;
 class QPushButton;
 class Editor;
@@ -48,10 +49,10 @@ private:
     Status didPressSaveAs(MPFile* mpFile, const QString& newName);
 
     QLabel* mImageLabel = nullptr;
-    QPlainTextEdit* mNameTextEdit = nullptr;
+    QLineEdit* mNameTextEdit = nullptr;
+    QLineEdit* mVersionTextEdit = nullptr;
     ComboBox* mPresetComboBox = nullptr;
     QPlainTextEdit* mCommentTextEdit = nullptr;
-    QPlainTextEdit* mVersionTextEdit = nullptr;
     ComboBox* mToolComboBox = nullptr;
     QPushButton* mSetImageButton = nullptr;
     QPushButton* mSetImageFromClipBoard = nullptr;

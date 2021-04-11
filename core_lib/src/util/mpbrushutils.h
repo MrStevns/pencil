@@ -507,7 +507,7 @@ struct MPCONF {
 
 struct MPBrushInfo {
     QString comment = "";
-    qreal version = 0.0;
+    int version = 0;
 
     void write(QJsonObject& object) const
     {
@@ -543,7 +543,7 @@ struct MPBrushInfo {
         QString brushVersionKey = "brush-version";
         QJsonObject::iterator versionObjIt = object.find(brushVersionKey);
         if (!versionObjIt->isUndefined()) {
-            info.version = object.value(brushVersionKey).toDouble();
+            info.version = object.value(brushVersionKey).toInt();
         }
 
         return info;

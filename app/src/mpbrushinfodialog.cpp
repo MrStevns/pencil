@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QToolBar>
 #include <QMessageBox>
+#include <QLineEdit>
 
 #include <QClipboard>
 #include <QMimeData>
@@ -39,7 +40,7 @@ MPBrushInfoDialog::MPBrushInfoDialog(DialogContext dialogContext, QWidget* paren
     hMainLayout->setContentsMargins(0,0,0,0);
 
     mImageLabel = new QLabel();
-    mNameTextEdit = new QPlainTextEdit();
+    mNameTextEdit = new QLineEdit();
     mNameTextEdit->setMinimumSize(QSize(100,30));
     mNameTextEdit->setMaximumSize(QSize(200,30));
     mNameTextEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
@@ -51,10 +52,11 @@ MPBrushInfoDialog::MPBrushInfoDialog(DialogContext dialogContext, QWidget* paren
     mCommentTextEdit->setMaximumSize(QSize(100,100));
     mCommentTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-    mVersionTextEdit = new QPlainTextEdit();
+    mVersionTextEdit = new QLineEdit();
     mVersionTextEdit->setMinimumSize(QSize(100,30));
     mVersionTextEdit->setMaximumSize(QSize(200,30));
     mVersionTextEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
+    mVersionTextEdit->setValidator(new QIntValidator(0, 100, this));
 
     mToolComboBox = new ComboBox();
 
@@ -160,9 +162,9 @@ MPBrushInfoDialog::MPBrushInfoDialog(DialogContext dialogContext, QWidget* paren
     connect(cancelButton, &QPushButton::pressed, this, &MPBrushInfoDialog::close);
     connect(saveButton, &QPushButton::pressed, this, &MPBrushInfoDialog::didPressSave);
 
-    connect(mNameTextEdit, &QPlainTextEdit::textChanged, this, &MPBrushInfoDialog::didUpdateName);
+    connect(mNameTextEdit, &QLineEdit::textChanged, this, &MPBrushInfoDialog::didUpdateName);
+    connect(mVersionTextEdit, &QLineEdit::textChanged, this, &MPBrushInfoDialog::didUpdateVersion);
     connect(mCommentTextEdit, &QPlainTextEdit::textChanged, this, &MPBrushInfoDialog::didUpdateComment);
-    connect(mVersionTextEdit, &QPlainTextEdit::textChanged, this, &MPBrushInfoDialog::didUpdateVersion);
     connect(mPresetComboBox, &ComboBox::activated, this, &MPBrushInfoDialog::didUpdatePreset);
 
     setLayout(vMainLayout);
@@ -228,10 +230,10 @@ void MPBrushInfoDialog::setBrushInfo(QString brushName, QString brushPreset, Too
     QPixmap imagePix(imagePath);
     mImageLabel->setPixmap(imagePix);
 
-    mNameTextEdit->setPlainText(brushName.replace(QRegExp("[_]"), " "));
+    mNameTextEdit->setText(brushName.replace(QRegExp("[_]"), " "));
     mPresetComboBox->setCurrentItemFrom(brushPreset);
     mCommentTextEdit->setPlainText(mBrushInfo.comment);
-    mVersionTextEdit->setPlainText(QString::number(mBrushInfo.version));
+    mVersionTextEdit->setText(QString::number(mBrushInfo.version));
 }
 
 void MPBrushInfoDialog::didPressSetImage()
@@ -328,7 +330,7 @@ Status MPBrushInfoDialog::didPressSaveAs(MPFile* mpFile, const QString& newName)
 
 void MPBrushInfoDialog::didUpdateName()
 {
-    mBrushName = mNameTextEdit->toPlainText();
+    mBrushName = mNameTextEdit->text();
 }
 
 void MPBrushInfoDialog::didUpdateComment()
@@ -338,7 +340,7 @@ void MPBrushInfoDialog::didUpdateComment()
 
 void MPBrushInfoDialog::didUpdateVersion()
 {
-    mBrushInfo.version = mVersionTextEdit->toPlainText().toDouble();
+    mBrushInfo.version = mVersionTextEdit->text().toInt();
 }
 
 void MPBrushInfoDialog::didUpdatePreset(int index, QString name, int data)
