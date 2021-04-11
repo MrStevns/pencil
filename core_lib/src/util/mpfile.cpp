@@ -153,13 +153,7 @@ Status MPFile::renameBrushFile(const QString& renamePath, const QString& extensi
     QFile file(filePath);
 
     if (file.exists()) {
-
         Q_STATIC_ASSERT_X(true, "overwrite existing file is not implemented yet");
-        Status status = Status::FAIL;
-        status.setTitle(tr("Existing file"));
-        status.setDescription(tr("Failed to rename: ") + file.fileName() + tr(" a file with same name already exists.")
-                              + tr("\nOverwriting file has not been implemented yet!"));
-        return Status::FAIL;
     }
 
     info = QFileInfo(getBrushPath());
@@ -168,6 +162,11 @@ Status MPFile::renameBrushFile(const QString& renamePath, const QString& extensi
     folderPath = info.absolutePath();
     QString currentAbsoluteFilePath = folderPath + "/" + baseFileName + extension;
 
+    // Rename not neccesary, return safely
+    if (currentAbsoluteFilePath.compare(filePath, Qt::CaseInsensitive) == 0) {
+        return Status::SAFE;
+    }
+
     QFile moveFile(currentAbsoluteFilePath);
     moveFile.rename(filePath);
 
@@ -175,8 +174,8 @@ Status MPFile::renameBrushFile(const QString& renamePath, const QString& extensi
         Status status = Status::FAIL;
 
         status.setTitle(QObject::tr("Something went wrong"));
-        status.setDescription(QObject::tr("Failed to rename or move: ") + moveFile.fileName() + QObject::tr(" verify that the folder is writable")
-                              + QObject::tr("The following error was given: ") + moveFile.errorString());
+        status.setDescription(QObject::tr("Failed to rename or move: ") + moveFile.fileName() +
+                              QObject::tr(" The following error was given: ") + moveFile.errorString());
         return status;
     }
 

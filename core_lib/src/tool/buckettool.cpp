@@ -112,6 +112,8 @@ void BucketTool::pointerPressEvent(PointerEvent* event)
     {
         mScribbleArea->setAllDirty();
     }
+    // TODO: requires startStroke to set input type...
+    // won't do for now.. should be fixed when merging with master
 }
 
 void BucketTool::pointerMoveEvent(PointerEvent* event)
