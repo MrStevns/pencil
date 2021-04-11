@@ -84,8 +84,8 @@ MappingDistributionWidget::MappingDistributionWidget(qreal min, qreal max, QVect
     m_penWidth = 1;
     mMinX = min;
     mMaxX = max;
-    mMinY = min;
-    mMaxY = max;
+    mMinY = 0;
+    mMaxY = 1;
 
     setFocusPolicy(Qt::FocusPolicy::ClickFocus);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
