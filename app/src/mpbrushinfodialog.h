@@ -12,6 +12,7 @@ class QPlainTextEdit;
 class ComboBox;
 class QPushButton;
 class Editor;
+class MPFile;
 
 enum DialogContext {
     Edit,
@@ -38,12 +39,13 @@ private:
     void didPressSetImage();
     void didPressSetImageFromClipBoard();
     void didSelectToolOption(int index, QString itemName, int value);
-    void didPressCancel();
     void didPressSave();
     void didUpdateName();
     void didUpdatePreset(int index, QString name, int data);
     void didUpdateComment();
     void didUpdateVersion();
+
+    Status didPressSaveAs(MPFile* mpFile, const QString& newName);
 
     QLabel* mImageLabel = nullptr;
     QPlainTextEdit* mNameTextEdit = nullptr;
@@ -60,16 +62,14 @@ private:
 
     QJsonObject mBrushInfoObject;
 
-    QString mOriginalName;
-    QString mOriginalPreset;
+    QString mOriginalBrushName;
+    QString mOriginalPresetName;
+    QString mOriginalToolName;
     QString mBrushName;
-    QString mBrushPreset;
+    QString mPresetName;
+    QString mToolName;
     QString mBrushComment;
     QString mBrushVersion;
-    QString mToolName;
-
-    QString mOldToolName;
-    QString mOldPresetName;
 
     bool mIconModified = false;
 

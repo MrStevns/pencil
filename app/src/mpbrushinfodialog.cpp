@@ -23,6 +23,7 @@
 #include "combobox.h"
 #include "mpbrushutils.h"
 #include "filedialog.h"
+#include "mpfile.h"
 
 MPBrushInfoDialog::MPBrushInfoDialog(DialogContext dialogContext, QWidget* parent)
     : QDialog(parent), mDialogContext(dialogContext)
@@ -156,7 +157,7 @@ MPBrushInfoDialog::MPBrushInfoDialog(DialogContext dialogContext, QWidget* paren
     connect(mSetImageButton, &QPushButton::pressed, this, &MPBrushInfoDialog::didPressSetImage);
     connect(mSetImageFromClipBoard, &QPushButton::pressed, this, &MPBrushInfoDialog::didPressSetImageFromClipBoard);
     connect(mToolComboBox, &ComboBox::activated, this, &MPBrushInfoDialog::didSelectToolOption);
-    connect(cancelButton, &QPushButton::pressed, this, &MPBrushInfoDialog::didPressCancel);
+    connect(cancelButton, &QPushButton::pressed, this, &MPBrushInfoDialog::close);
     connect(saveButton, &QPushButton::pressed, this, &MPBrushInfoDialog::didPressSave);
 
     connect(mNameTextEdit, &QPlainTextEdit::textChanged, this, &MPBrushInfoDialog::didUpdateName);
@@ -210,30 +211,27 @@ void MPBrushInfoDialog::setBrushInfo(QString brushName, QString brushPreset, Too
         return;
     }
 
+    mToolComboBox->setCurrentItemFrom(static_cast<ToolType>(tool));
+    mToolName = mToolComboBox->currentText();
     mBrushName = brushName;
 
-    mBrushPreset = brushPreset;
-    mOriginalPreset = brushPreset;
-
-    mOriginalName = brushName;
+    mPresetName = brushPreset;
+    mOriginalPresetName = brushPreset;
+    mOriginalBrushName = brushName;
+    mOriginalToolName = mToolName;
 
     mBrushInfoObject = brushJsonDoc.object();
 
     mBrushInfo = mBrushInfo.read(mBrushInfoObject);
 
-    QString imagePath = mEditor->brushes()->getBrushPreviewImagePath(mOriginalPreset, mBrushName);
+    QString imagePath = mEditor->brushes()->getBrushPreviewImagePath(mOriginalPresetName, mBrushName);
     QPixmap imagePix(imagePath);
     mImageLabel->setPixmap(imagePix);
 
-    mNameTextEdit->setPlainText(brushName);
+    mNameTextEdit->setPlainText(brushName.replace(QRegExp("[_]"), " "));
     mPresetComboBox->setCurrentItemFrom(brushPreset);
     mCommentTextEdit->setPlainText(mBrushInfo.comment);
     mVersionTextEdit->setPlainText(QString::number(mBrushInfo.version));
-
-    mToolComboBox->setCurrentItemFrom(static_cast<ToolType>(tool));
-    mToolName = mToolComboBox->currentText();
-    mOldToolName = mToolName;
-    mOldPresetName = brushPreset;
 }
 
 void MPBrushInfoDialog::didPressSetImage()
@@ -272,71 +270,60 @@ void MPBrushInfoDialog::didSelectToolOption(int index, QString itemName, int val
     mToolType = toolType;
 }
 
-void MPBrushInfoDialog::didPressCancel()
-{
-    close();
-}
-
 void MPBrushInfoDialog::didPressSave()
 {
-
     QMessageBox::StandardButton ret = QMessageBox::warning(this, tr("Save changes"),
                                    tr("Are you sure you want to save changes?"),
                                    QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes);
 
-    if (ret == QMessageBox::Yes) {
-        mBrushInfo.write(mBrushInfoObject);
+    if (ret != QMessageBox::Yes) { return; }
 
-        QJsonDocument doc = QJsonDocument(mBrushInfoObject);
 
-        // Change spaces with underscores
-        QString noSpaceName = mBrushName.replace(QRegExp("[ ]"), "_");
+    // TODO: clone brushInfo?
+    mBrushInfo.write(mBrushInfoObject);
 
-        Status status = Status::OK;
-        if (mDialogContext == DialogContext::Clone) {
+    // Change spaces with underscores
+    QString noSpaceName = mBrushName.replace(QRegExp("[ ]"), "_");
 
-            status = mEditor->brushes()->copyRenameBrushFileIfNeeded(mOriginalPreset, mOriginalName, mBrushPreset, noSpaceName);
+    MPFile mpFile(mEditor->brushes()->getBrushPath(mOriginalPresetName, mOriginalBrushName, BRUSH_CONTENT_EXT));
 
-            if (!status.ok()) {
-               QMessageBox::warning(this, status.title(),
-                                                  status.description());
-               return;
-            }
+    Status status = didPressSaveAs(&mpFile, noSpaceName);
 
-            if (mIconModified) {
-                status = mEditor->brushes()->writeBrushIcon(*mImageLabel->pixmap(), mBrushPreset, noSpaceName);
-            }
+    status = MPCONF::removeBrushEntry(mOriginalToolName, mOriginalPresetName, mOriginalBrushName, &status);
+    status = MPCONF::addBrushEntry(mToolName, mPresetName, noSpaceName, &status);
 
-            if (!status.ok()) {
-               QMessageBox::warning(this, status.title(),
-                                                  status.description());
-               return;
-            }
-        } else { // Edit
-            status = mEditor->brushes()->renameMoveBrushFileIfNeeded(mOriginalPreset, mOriginalName, mBrushPreset, noSpaceName);
-
-            if (status.fail()) {
-                QMessageBox::warning(this, status.title(), status.description());
-                return;
-            }
-        }
-        status = mEditor->brushes()->writeBrushToFile(mBrushPreset, noSpaceName, doc.toJson());
-
-        if (status.fail()) {
-            QMessageBox::warning(this, status.title(), status.description());
-            return;
-        } else {
-            status = MPCONF::addBrushEntry(mToolName, mBrushPreset, noSpaceName);
-        }
-
-        if (status.fail()) {
-            QMessageBox::warning(this, status.title(), status.description());
-            return;
-        } else {
-            emit updatedBrushInfo(noSpaceName, mBrushPreset);
-            close();
-        }
+    if (status.fail()) {
+        QMessageBox::warning(this, status.title(), status.description());
+        return;
     }
+
+    QJsonDocument doc = QJsonDocument(mBrushInfoObject);
+    status = mEditor->brushes()->writeBrushToFile(mPresetName, noSpaceName, doc.toJson());
+
+    if (status.fail()) {
+        QMessageBox::warning(this, status.title(), status.description());
+        return;
+    }
+
+    emit updatedBrushInfo(noSpaceName, mPresetName);
+    close();
+}
+
+Status MPBrushInfoDialog::didPressSaveAs(MPFile* mpFile, const QString& newName)
+{
+    Status status = Status::OK;
+    const QString& brushPath = mEditor->brushes()->getBrushPath(mPresetName, newName, BRUSH_CONTENT_EXT);
+    if (mDialogContext == DialogContext::Clone) {
+        status = mpFile->copyBrush(brushPath);
+    } else { // Edit
+        status = mpFile->renameBrush(brushPath);
+    }
+
+    if (mIconModified) {
+        status = mpFile->updateBrushIcon(*mImageLabel->pixmap(), &status);
+    }
+
+    return status;
 }
 
 void MPBrushInfoDialog::didUpdateName()
@@ -358,5 +345,5 @@ void MPBrushInfoDialog::didUpdatePreset(int index, QString name, int data)
 {
     Q_UNUSED(index)
     Q_UNUSED(data)
-    mBrushPreset = name;
+    mPresetName = name;
 }

@@ -384,19 +384,6 @@ Status MPBrushManager::copyResourcesToAppData()
     return st;
 }
 
-
-Status MPBrushManager::renameMoveBrushFileIfNeeded(QString originalPreset, QString originalName, QString newPreset, QString newName)
-{
-    MPFile mpFile(getBrushPath(originalPreset,originalName,BRUSH_CONTENT_EXT));
-    return mpFile.renameBrush(getBrushPath(newPreset, newName, BRUSH_CONTENT_EXT));
-}
-
-Status MPBrushManager::copyRenameBrushFileIfNeeded(const QString& originalPreset, const QString& originalName, const QString& newPreset, QString& newName)
-{
-    MPFile mpFile(getBrushPath(originalPreset,originalName,BRUSH_CONTENT_EXT));
-    return mpFile.copyBrush(getBrushPath(newPreset, newName, BRUSH_CONTENT_EXT));
-}
-
 QString MPBrushManager::getBrushPreviewImagePath(const QString& brushPreset, const QString brushName)
 {
     const QString& brushPath = MPCONF::getBrushesPath() + "/" + brushPreset + "/" + brushName;

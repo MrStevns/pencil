@@ -232,16 +232,17 @@ struct MPCONF {
     }
 
     // TODO: handle case where no conf file exists ...
-    static Status addBrushEntry(const QString toolName, const QString& brushPreset, const QString& brushName)
+    static Status addBrushEntry(const QString toolName, const QString& brushPreset, const QString& brushName, const Status* preStatus = nullptr)
     {
-        Status st = Status::OK;
+        if (preStatus && preStatus->fail()) { return *preStatus; }
+
         QString brushConfigPath = getBrushesPath() + "/" + BrushConfigFile;
 
         QFile file(brushConfigPath);
         file.open(QIODevice::ReadOnly | QIODevice::Text);
 
         if (file.error() != QFile::NoError) {
-            st = Status::FAIL;
+            Status st = Status::FAIL;
 
             st.setTitle(QObject::tr("Failed to open file"));
             st.setDescription(QObject::tr("The following error was given: \n") + file.errorString());
@@ -301,7 +302,7 @@ struct MPCONF {
         editConfigFile.open(QFile::ReadWrite);
 
         if (editConfigFile.error() != QFile::NoError) {
-            st = Status::FAIL;
+            Status st = Status::FAIL;
 
             st.setTitle(QObject::tr("Failed to open file"));
             st.setDescription(QObject::tr("The following error was given: \n") + file.errorString());
@@ -316,12 +317,13 @@ struct MPCONF {
 
         editConfigFile.close();
 
-        return st;
+        return Status::OK;
     }
 
-    static Status removeBrush(const QString& brushPreset, const QString& toolName, const QString& brushName)
+    static Status removeBrushEntry(const QString& toolName, const QString& brushPreset, const QString& brushName, const Status* preStatus = nullptr)
     {
-        Status st = Status::OK;
+        if (preStatus && preStatus->fail()) { return *preStatus; }
+
         QString brushConfigPath = getBrushesPath() + "/" + BrushConfigFile;
 
         QFile file(brushConfigPath);
@@ -329,7 +331,7 @@ struct MPCONF {
         file.open(QIODevice::ReadOnly | QIODevice::Text);
 
         if (file.error() != QFile::NoError) {
-            st = Status::FAIL;
+            Status st = Status::FAIL;
 
             st.setTitle(QObject::tr("Failed to open file"));
             st.setDescription(QObject::tr("The following error was given: \n") + file.errorString());
@@ -378,7 +380,7 @@ struct MPCONF {
         editConfigFile.resize(0);
         editConfigFile.open(QFile::ReadWrite);
         if (editConfigFile.error() != QFile::NoError) {
-            st = Status::FAIL;
+            Status st = Status::FAIL;
 
             st.setTitle(QObject::tr("Failed to open file"));
             st.setDescription(QObject::tr("The following error was given: \n") + file.errorString());

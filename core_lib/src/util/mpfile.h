@@ -11,11 +11,11 @@ class MPFile : public QObject
 public:
     explicit MPFile(const QString& brushPath);
 
-    Status createFolder(const QString& path);
-    Status updateBrushIcon(const QPixmap& iconPixmap);
+    Status createFolder(const QString& path, const Status* preStatus = nullptr);
+    Status updateBrushIcon(const QPixmap& iconPixmap, const Status* preStatus = nullptr);
 
-    Status copyBrush(const QString& copyToPath);
-    Status renameBrush(const QString& renamePath);
+    Status copyBrush(const QString& copyToPath, const Status* preStatus = nullptr);
+    Status renameBrush(const QString& renamePath, const Status* preStatus = nullptr);
 
     QString getBrushPath() const;
     QString getBrushName() const;
@@ -24,8 +24,8 @@ public:
 
 private:
 
-    Status copyBrushFile(const QString &copyToPath, const QString& extension);
-    Status renameBrushFile(const QString &renamedPath, const QString& extension);
+    Status copyBrushFile(const QString &copyToPath, const QString& extension, const Status* preStatus = nullptr);
+    Status renameBrushFile(const QString &renamedPath, const QString& extension, const Status* preStatus = nullptr);
 
     QString mBrushPath;
 };

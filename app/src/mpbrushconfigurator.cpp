@@ -675,6 +675,7 @@ void MPBrushConfigurator::openBrushInfoWidget(DialogContext dialogContext)
         mBrushInfoWidget->setAttribute(Qt::WA_DeleteOnClose);
 
         connect(mBrushInfoWidget.data(), &MPBrushInfoDialog::updatedBrushInfo, this, &MPBrushConfigurator::notifyBrushInfoUpdated);
+        connect(mBrushInfoWidget.data(), &MPBrushInfoDialog::updatedBrushInfo, this, &MPBrushConfigurator::updateUI);
     }
     mBrushInfoWidget->setCore(mEditor);
     mBrushInfoWidget->initUI();

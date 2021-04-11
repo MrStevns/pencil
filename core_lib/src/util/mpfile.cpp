@@ -30,8 +30,10 @@ QString MPFile::getBrushPath() const
     return mBrushPath;
 }
 
-Status MPFile::updateBrushIcon(const QPixmap& iconPixmap)
+Status MPFile::updateBrushIcon(const QPixmap& iconPixmap, const Status* preStatus)
 {
+    if (preStatus && preStatus->fail()) { return *preStatus; }
+
     QString iconPath = getPresetPath() + "/" + getBrushName() + BRUSH_PREVIEW_EXT;
     if (iconPixmap.save(iconPath) == false) {
         Status status = Status::FAIL;
@@ -42,53 +44,43 @@ Status MPFile::updateBrushIcon(const QPixmap& iconPixmap)
     return Status::OK;
 }
 
-Status MPFile::renameBrush(const QString &renamePath)
+Status MPFile::renameBrush(const QString &renamePath, const Status* preStatus)
 {
+    if (preStatus && preStatus->fail()) { return *preStatus; }
+
     QString absolutePresetPath = QFileInfo(renamePath).absolutePath();
 
-    Status status = createFolder(absolutePresetPath);
+    Status status = createFolder(absolutePresetPath, preStatus);
+
+    status = renameBrushFile(renamePath, BRUSH_CONTENT_EXT, &status);
+    status = renameBrushFile(renamePath, BRUSH_PREVIEW_EXT, &status);
+
+    // Return explicitly to avoid setting member variable.
     if (status.fail()) {
         return status;
     }
-
-    Status st = renameBrushFile(renamePath, BRUSH_CONTENT_EXT);
-
-    if (st.fail()) {
-        return st;
-    }
-
-    st = renameBrushFile(renamePath, BRUSH_PREVIEW_EXT);
-
-    if (st.fail()) {
-        return st;
-    }
-
     mBrushPath = renamePath;
 
     return status;
 }
 
-Status MPFile::copyBrush(const QString &copyToPath)
+Status MPFile::copyBrush(const QString &copyToPath, const Status* preStatus)
 {
+    if (preStatus && preStatus->fail()) { return *preStatus; }
+
     QDir dir(copyToPath);
-    Status status = createFolder(copyToPath);
-    if (status.fail()) {
-        return status;
-    }
+    Status status = createFolder(copyToPath, preStatus);
 
-    Status st = copyBrushFile(copyToPath, BRUSH_CONTENT_EXT);
+    status = copyBrushFile(copyToPath, BRUSH_CONTENT_EXT, &status);
+    status = copyBrushFile(copyToPath, BRUSH_PREVIEW_EXT, &status);
 
-    if (st.fail()) { return st; }
-
-    st = copyBrushFile(copyToPath, BRUSH_PREVIEW_EXT);
-
-    if (st.fail()) { return st; }
-
-    return Status::OK;
+    return status;
 }
 
-Status MPFile::copyBrushFile(const QString &copyToPath, const QString& extension)
+Status MPFile::copyBrushFile(const QString &copyToPath, const QString& extension, const Status* preStatus)
 {
+    if (preStatus && preStatus->fail()) { return *preStatus; }
+
     QFileInfo info(copyToPath);
 
     QString baseFileName = info.baseName();
@@ -142,8 +134,10 @@ Status MPFile::copyBrushFile(const QString &copyToPath, const QString& extension
     return Status::OK;
 }
 
-Status MPFile::renameBrushFile(const QString& renamePath, const QString& extension)
+Status MPFile::renameBrushFile(const QString& renamePath, const QString& extension, const Status* preStatus)
 {
+    if (preStatus && preStatus->fail()) { return *preStatus; }
+
     QFileInfo info(renamePath);
 
     QString baseFileName = info.baseName();
@@ -182,8 +176,10 @@ Status MPFile::renameBrushFile(const QString& renamePath, const QString& extensi
     return Status::OK;
 }
 
-Status MPFile::createFolder(const QString& path)
+Status MPFile::createFolder(const QString& path, const Status* preStatus)
 {
+    if (preStatus && preStatus->fail()) { return *preStatus; }
+
     QFileInfo info(path);
     QString folderPath = info.absolutePath();
     auto dirRef = QDir(folderPath);
