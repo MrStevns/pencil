@@ -27,11 +27,9 @@ GNU General Public License for more details.
 #include "object.h"
 #include "editor.h"
 #include "layerbitmap.h"
-#include "layerbitmapsurface.h"
 #include "layervector.h"
 #include "layercamera.h"
 #include "bitmapimage.h"
-#include "bitmapsurface.h"
 #include "vectorimage.h"
 
 #include "colormanager.h"

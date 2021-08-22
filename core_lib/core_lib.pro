@@ -32,7 +32,6 @@ PRECOMPILED_HEADER = src/corelib-pch.h
 
 HEADERS +=  \
     src/corelib-pch.h \
-    src/graphics/bitmap/bitmapsurface.h \
     src/graphics/bitmap/bitmapimage.h \
     src/graphics/bitmap/bitmaputils.h \
     src/graphics/surface.h \
@@ -77,7 +76,6 @@ HEADERS +=  \
     src/structure/object.h \
     src/structure/objectdata.h \
     src/structure/filemanager.h \
-    src/structure/layerbitmapsurface.h \
     src/tool/basetool.h \
     src/tool/brushtool.h \
     src/tool/buckettool.h \
@@ -119,7 +117,6 @@ HEADERS +=  \
 
 
 SOURCES += \
-    src/graphics/bitmap/bitmapsurface.cpp \
     src/graphics/bitmap/bitmapimage.cpp \
     src/graphics/vector/bezierarea.cpp \
     src/graphics/vector/beziercurve.cpp \
@@ -160,7 +157,6 @@ SOURCES += \
     src/structure/soundclip.cpp \
     src/structure/objectdata.cpp \
     src/structure/filemanager.cpp \
-    src/structure/layerbitmapsurface.cpp \
     src/tool/basetool.cpp \
     src/tool/brushtool.cpp \
     src/tool/buckettool.cpp \

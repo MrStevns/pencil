@@ -2,8 +2,8 @@
 #define BITMAPUTILS_H
 
 #include "bitmapimage.h"
-#include "bitmapsurface.h"
 #include "qmath.h"
+#include <QHash>
 
 struct BitmapUtils {
 

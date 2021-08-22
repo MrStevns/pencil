@@ -24,7 +24,6 @@ GNU General Public License for more details.
 #include "layerbitmap.h"
 #include "layervector.h"
 #include "layercamera.h"
-#include "layerbitmapsurface.h"
 
 
 LayerManager::LayerManager(Editor* editor) : BaseManager(editor)

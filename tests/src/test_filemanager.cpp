@@ -25,8 +25,6 @@ GNU General Public License for more details.
 #include "object.h"
 #include "bitmapimage.h"
 #include "layerbitmap.h"
-#include "bitmapsurface.h"
-#include "layerbitmapsurface.h"
 
 
 TEST_CASE("FileManager Initial Test")

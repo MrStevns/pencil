@@ -52,7 +52,6 @@ class Editor;
 class BaseTool;
 class PointerEvent;
 class BitmapImage;
-class BitmapSurface;
 class VectorImage;
 
 class MPHandler;

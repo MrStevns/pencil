@@ -24,8 +24,6 @@ GNU General Public License for more details.
 #include "layer.h"
 #include "layervector.h"
 #include "layerbitmap.h"
-#include "bitmapsurface.h"
-#include "layerbitmapsurface.h"
 #include "layermanager.h"
 #include "colormanager.h"
 #include "strokemanager.h"

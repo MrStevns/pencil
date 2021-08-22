@@ -32,7 +32,6 @@ GNU General Public License for more details.
 #include "layervector.h"
 #include "layersound.h"
 #include "layercamera.h"
-#include "layerbitmapsurface.h"
 
 #include "util.h"
 #include "editor.h"
