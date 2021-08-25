@@ -147,8 +147,6 @@ QCursor PencilTool::cursor()
 
 void PencilTool::pointerPressEvent(PointerEvent *event)
 {
-    mScribbleArea->setAllDirty();
-
     mMouseDownPoint = getCurrentPoint();
     mLastBrushPoint = getCurrentPoint();
 
@@ -258,5 +256,4 @@ void PencilTool::paintVectorStroke()
     // TODO: selection doesn't apply on enter
 
     mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-    mScribbleArea->setAllDirty();
 }

@@ -31,7 +31,7 @@ GNU General Public License for more details.
 #include "editor.h"
 
 
-ToolManager::ToolManager(Editor* editor) : BaseManager(editor)
+ToolManager::ToolManager(Editor* editor) : BaseManager(editor, __FUNCTION__)
 {
 }
 
@@ -203,6 +203,12 @@ void ToolManager::setPressure(bool isPressureOn)
     emit toolPropertyChanged(currentTool()->type(), PRESSURE);
 }
 
+void ToolManager::setFillMode(int mode)
+{
+    currentTool()->setFillMode(mode);
+    emit toolPropertyChanged(currentTool()->type(), FILL_MODE);
+}
+
 void ToolManager::setStabilizerLevel(int level)
 {
     currentTool()->setStabilizerLevel(level);
@@ -216,6 +222,36 @@ void ToolManager::setTolerance(int newTolerance)
     currentTool()->setTolerance(newTolerance);
     emit toleranceValueChanged(newTolerance);
     emit toolPropertyChanged(currentTool()->type(), TOLERANCE);
+}
+
+void ToolManager::setBucketColorToleranceEnabled(bool enabled)
+{
+    currentTool()->setToleranceEnabled(enabled);
+    emit toolPropertyChanged(currentTool()->type(), USETOLERANCE);
+}
+
+void ToolManager::setBucketFillExpandEnabled(bool expandValue)
+{
+    currentTool()->setFillExpandEnabled(expandValue);
+    emit toolPropertyChanged(currentTool()->type(), USEBUCKETFILLEXPAND);
+}
+
+void ToolManager::setBucketFillExpand(int expandValue)
+{
+    currentTool()->setFillExpand(expandValue);
+    emit toolPropertyChanged(currentTool()->type(), BUCKETFILLEXPAND);
+}
+
+void ToolManager::setBucketFillToLayer(int layerIndex)
+{
+    currentTool()->setFillToLayer(layerIndex);
+    emit toolPropertyChanged(currentTool()->type(), BUCKETFILLLAYERMODE);
+}
+
+void ToolManager::setBucketFillReferenceMode(int referenceMode)
+{
+    currentTool()->setFillReferenceMode(referenceMode);
+    emit toolPropertyChanged(currentTool()->type(), BUCKETFILLLAYERREFERENCEMODE);
 }
 
 void ToolManager::setUseFillContour(bool useFillContour)

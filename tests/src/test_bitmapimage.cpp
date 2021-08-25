@@ -74,7 +74,7 @@ TEST_CASE("BitmapImage constructors")
         {
             for (int y = 0; y < b->height(); ++y)
             {
-                QRgb color = BitmapUtils::pixel(*b->image(), b->topLeft(), x, y);
+                QRgb color = BitmapUtils::pixel(*b, x, y);
                 REQUIRE(qAlpha(color) == 0);
             }
         }

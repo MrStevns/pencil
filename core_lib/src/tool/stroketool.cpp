@@ -114,6 +114,7 @@ void StrokeTool::endStroke()
     enableCoalescing();
 
     mScribbleArea->endStroke();
+    mScribbleArea->setModified(mEditor->currentLayerIndex(), mEditor->currentFrame());
 }
 
 void StrokeTool::drawStroke(const QPointF pos)
@@ -145,7 +146,7 @@ void StrokeTool::drawStroke()
 void StrokeTool::paintBitmapStroke()
 {
     mScribbleArea->paintBitmapBuffer(QPainter::CompositionMode_Source);
-    mScribbleArea->setAllDirty();
+    mScribbleArea->invalidateLayerPixmapCache();
     mScribbleArea->clearBitmapBuffer();
 }
 
@@ -183,6 +184,6 @@ void StrokeTool::paintVectorStroke()
         vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
 
         mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-        mScribbleArea->setAllDirty();
+        mScribbleArea->invalidateLayerPixmapCache();
     }
 }

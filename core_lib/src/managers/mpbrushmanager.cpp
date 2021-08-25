@@ -7,7 +7,7 @@
 #include "mpbrushutils.h"
 #include <QMessageBox>
 
-MPBrushManager::MPBrushManager(Editor* editor) : BaseManager(editor)
+MPBrushManager::MPBrushManager(Editor* editor) : BaseManager(editor, __FUNCTION__)
 {
     mEditor = editor;
 }

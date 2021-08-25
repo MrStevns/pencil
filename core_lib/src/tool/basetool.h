@@ -48,8 +48,14 @@ public:
     bool  vectorMergeEnabled = false;
     bool  bezier_state = false;
     bool  useFeather = true;
+    int   fillMode = 0;
     int   stabilizerLevel = 0;
     qreal tolerance = 0;
+    bool toleranceEnabled = false;
+    int bucketFillExpand = 0;
+    bool bucketFillExpandEnabled = 0;
+    int bucketFillToLayerMode = 0;
+    int bucketFillReferenceMode = 0;
     bool  useFillContour = false;
 };
 
@@ -69,7 +75,7 @@ public:
     QString typeName() { return TypeName(type()); }
 
     void initialize(Editor* editor);
-    
+
     virtual ToolType type() = 0;
     virtual void loadSettings() = 0;
     virtual QCursor cursor();
@@ -113,8 +119,14 @@ public:
     virtual void setUseFeather(const bool usingFeather);
     virtual void setPreserveAlpha(const bool preserveAlpha);
     virtual void setVectorMergeEnabled(const bool vectorMergeEnabled);
+    virtual void setFillMode(const int mode);
     virtual void setStabilizerLevel(const int level);
     virtual void setTolerance(const int tolerance);
+    virtual void setToleranceEnabled(const bool enabled);
+    virtual void setFillExpand(const int fillExpandValue);
+    virtual void setFillExpandEnabled(const bool enabled);
+    virtual void setFillToLayer(int layerMode);
+    virtual void setFillReferenceMode(int referenceMode);
     virtual void setUseFillContour(const bool useFillContour);
 
     virtual bool leavingThisTool() { return true; }
@@ -135,6 +147,9 @@ public:
 
     bool isPropertyEnabled(ToolPropertyType t) { return mPropertyEnabled[t]; }
     bool isDrawingTool();
+
+signals:
+    bool isActiveChanged(ToolType, bool);
 
 protected:
     StrokeManager* strokeManager() { return mStrokeManager; }

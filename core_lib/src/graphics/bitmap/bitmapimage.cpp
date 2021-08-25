@@ -35,6 +35,7 @@ BitmapImage::BitmapImage(const BitmapImage& a) : KeyFrame(a)
     mBounds = a.mBounds;
     mMinBound = a.mMinBound;
     mEnableAutoCrop = a.mEnableAutoCrop;
+    mOpacity = a.mOpacity;
     mImage.reset(new QImage(*a.mImage));
 }
 
@@ -78,8 +79,15 @@ void BitmapImage::setImage(QImage* img)
 
 BitmapImage& BitmapImage::operator=(const BitmapImage& a)
 {
+    if (this == &a)
+    {
+        return *this; // a self-assignment
+    }
+
+    KeyFrame::operator=(a);
     mBounds = a.mBounds;
     mMinBound = a.mMinBound;
+    mOpacity = a.mOpacity;
     mImage.reset(new QImage(*a.mImage));
     modification();
     return *this;
@@ -150,7 +158,16 @@ BitmapImage BitmapImage::copy(QRect rectangle)
     if (rectangle.isEmpty() || mBounds.isEmpty()) return BitmapImage();
 
     QRect intersection2 = rectangle.translated(-mBounds.topLeft());
-    BitmapImage result = BitmapImage(rectangle.topLeft(), image()->copy(intersection2));
+
+    // If the region goes out of bounds, make sure the image is formatted in ARGB
+    // so that the area beyond the image bounds is transparent.
+    if (!mBounds.contains(rectangle) && !image()->hasAlphaChannel())
+    {
+        QImage* img = image();
+        *mImage = img->convertToFormat(QImage::Format_ARGB32);
+    }
+
+    BitmapImage result(rectangle.topLeft(), image()->copy(intersection2));
     return result;
 }
 
@@ -693,54 +710,6 @@ void BitmapImage::drawPath(QPainterPath path, QPen pen, QBrush brush,
     modification();
 }
 
-PegbarResult BitmapImage::findLeft(QRectF rect, int grayValue)
-{
-    PegbarResult result;
-    result.value = -1;
-    result.errorcode = Status::FAIL;
-    int left = static_cast<int>(rect.left());
-    int right = static_cast<int>(rect.right());
-    int top = static_cast<int>(rect.top());
-    int bottom = static_cast<int>(rect.bottom());
-    for (int x = left; x <= right; x++)
-    {
-        for (int y = top; y <= bottom; y++)
-        {
-            if (qAlpha(BitmapUtils::constScanLine(*this->image(), this->bounds(), this->topLeft(), x,y)) == 255 && qGray(BitmapUtils::constScanLine(*this->image(), this->bounds(), this->topLeft(), x,y)) < grayValue)
-            {
-                result.value = x;
-                result.errorcode = Status::OK;
-                return result;
-            }
-        }
-    }
-    return result;
-}
-
-PegbarResult BitmapImage::findTop(QRectF rect, int grayValue)
-{
-    PegbarResult result;
-    result.value = -1;
-    result.errorcode = Status::FAIL;
-    int left = static_cast<int>(rect.left());
-    int right = static_cast<int>(rect.right());
-    int top = static_cast<int>(rect.top());
-    int bottom = static_cast<int>(rect.bottom());
-    for (int y = top; y <= bottom; y++)
-    {
-        for (int x = left; x <= right; x++)
-        {
-            if (qAlpha(BitmapUtils::constScanLine(*this->image(), this->bounds(), this->topLeft(), x,y)) == 255 && qGray(BitmapUtils::constScanLine(*this->image(), this->bounds(), this->topLeft(), x,y)) < grayValue)
-            {
-                result.value = y;
-                result.errorcode = Status::OK;
-                return result;
-            }
-        }
-    }
-    return result;
-}
-
 Status BitmapImage::writeFile(const QString& filename)
 {
     if (mImage && !mImage->isNull())
@@ -777,16 +746,10 @@ void BitmapImage::clear(QRect rectangle)
 
     setCompositionModeBounds(clearRectangle, true, QPainter::CompositionMode_Clear);
 
-    QImage* newImage = new QImage(image()->size(), QImage::Format_ARGB32_Premultiplied);
-    newImage->fill(Qt::transparent);
-    QPainter painter(newImage);
-    painter.translate(-topLeft());
-    painter.drawImage(topLeft(), *image());
+    QPainter painter(image());
     painter.setCompositionMode(QPainter::CompositionMode_Clear);
     painter.fillRect(QRect(rectangle.topLeft(), rectangle.size()), Qt::transparent);
     painter.end();
-
-    mImage.reset(newImage);
-
+    
     modification();
 }

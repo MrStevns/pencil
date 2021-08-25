@@ -150,9 +150,7 @@ QColor EyedropperTool::getBitmapColor(LayerBitmap* layer)
     if (targetImage == nullptr || !targetImage->contains(getCurrentPoint())) return QColor();
 
     QColor pickedColour;
-    const QRgb pixelColor = BitmapUtils::constScanLine(*targetImage->image(),
-                                                       targetImage->bounds(),
-                                                       targetImage->topLeft(),
+    const QRgb pixelColor = BitmapUtils::constScanLine(*targetImage,
                                                        qFloor(getCurrentPoint().x()),
                                                        qFloor(getCurrentPoint().y()));
     pickedColour.setRgba(pixelColor);

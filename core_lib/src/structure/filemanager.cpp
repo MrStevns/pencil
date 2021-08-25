@@ -19,7 +19,7 @@ GNU General Public License for more details.
 
 #include <ctime>
 #include <QDir>
-#include "pencildef.h"
+#include <QVersionNumber>
 #include "qminiz.h"
 #include "fileformat.h"
 #include "object.h"
@@ -45,7 +45,7 @@ FileManager::FileManager(QObject* parent) : QObject(parent)
     srand(static_cast<uint>(time(nullptr)));
 }
 
-Object* FileManager::load(QString sFileName)
+Object* FileManager::load(const QString& sFileName)
 {
     DebugDetails dd;
     dd << QString("File name: ").append(sFileName);
@@ -185,6 +185,19 @@ bool FileManager::loadObject(Object* object, const QDomElement& root)
             ObjectData* projectData = loadProjectData(element);
             object->setData(projectData);
         }
+        else if (element.tagName() == "version")
+        {
+            QVersionNumber fileVersion = QVersionNumber::fromString(element.text());
+            QVersionNumber appVersion = QVersionNumber::fromString(APP_VERSION);
+
+            if (!fileVersion.isNull())
+            {
+                if (appVersion < fileVersion)
+                {
+                    qWarning() << "You are opening a newer project file in an older version of Pencil2D!";
+                }
+            }
+        }
         else
         {
             Q_ASSERT(false);
@@ -203,7 +216,7 @@ bool FileManager::isOldForamt(const QString& fileName) const
     return !(MiniZ::isZip(fileName));
 }
 
-Status FileManager::save(const Object* object, QString sFileName)
+Status FileManager::save(const Object* object, const QString& sFileName)
 {
     DebugDetails dd;
     dd << __FUNCTION__;
@@ -211,8 +224,14 @@ Status FileManager::save(const Object* object, QString sFileName)
 
     if (object == nullptr)
     {
-        dd << "object parameter is null";
+        dd << "Object parameter is null";
         return Status(Status::INVALID_ARGUMENT, dd);
+    }
+    if (sFileName.isEmpty()) {
+        dd << "File name is empty";
+        return Status(Status::INVALID_ARGUMENT, dd,
+                      tr("Invalid Save Path"),
+                      tr("The path is empty."));
     }
 
     const int totalCount = object->totalKeyFrameCount();
@@ -386,7 +405,7 @@ ObjectData* FileManager::loadProjectData(const QDomElement& docElem)
     return data;
 }
 
-QDomElement FileManager::saveProjectData(ObjectData* data, QDomDocument& xmlDoc)
+QDomElement FileManager::saveProjectData(const ObjectData* data, QDomDocument& xmlDoc)
 {
     QDomElement rootTag = xmlDoc.createElement("projectdata");
 
@@ -569,7 +588,7 @@ Status FileManager::writeKeyFrameFiles(const Object* object, const QString& data
     {
         Layer* layer = object->getLayer(i);
 
-        dd << QString("Layer[%1] = [id=%2, name=%3, type=%4]").arg(i).arg(layer->id()).arg(layer->name()).arg(layer->type());
+        dd << QString("Layer[%1] = [id=%2, type=%3, name=%4]").arg(i).arg(layer->id()).arg(layer->type()).arg(layer->name());
 
         Status st = layer->save(dataFolder, filesFlushed, [this] { progressForward(); });
         if (!st.ok())
@@ -587,14 +606,14 @@ Status FileManager::writeKeyFrameFiles(const Object* object, const QString& data
     return Status(errorCode, dd);
 }
 
-Status FileManager::writeMainXml(const Object* object, const QString& mainXml, QStringList& filesWritten)
+Status FileManager::writeMainXml(const Object* object, const QString& mainXmlPath, QStringList& filesWritten)
 {
     DebugDetails dd;
 
-    QFile file(mainXml);
+    QFile file(mainXmlPath);
     if (!file.open(QFile::WriteOnly | QFile::Text))
     {
-        dd << "Failed to open Main XML" << mainXml;
+        dd << "Failed to open Main XML" << mainXmlPath;
         return Status(Status::ERROR_FILE_CANNOT_OPEN, dd);
     }
 
@@ -614,6 +633,11 @@ Status FileManager::writeMainXml(const Object* object, const QString& mainXml, Q
     QDomElement objectElement = object->saveXML(xmlDoc);
     root.appendChild(objectElement);
 
+    // save Pencil2D version
+    QDomElement versionElem = xmlDoc.createElement("version");
+    versionElem.appendChild(xmlDoc.createTextNode(QString(APP_VERSION)));
+    root.appendChild(versionElem);
+
     dd << "Writing main xml file...";
 
     const int indentSize = 2;
@@ -623,9 +647,9 @@ Status FileManager::writeMainXml(const Object* object, const QString& mainXml, Q
     out.flush();
     file.close();
 
-    dd << "Done writing main xml file: " << mainXml;
+    dd << "Done writing main xml file: " << mainXmlPath;
 
-    filesWritten.append(mainXml);
+    filesWritten.append(mainXmlPath);
     return Status(Status::OK, dd);
 }
 
@@ -898,11 +922,11 @@ QString FileManager::recoverLayerName(Layer::LAYER_TYPE type, int index)
     switch (type)
     {
     case Layer::BITMAP:
-        return QString("%1 %2").arg(tr("Bitmap Layer")).arg(index);
+        return tr("Bitmap Layer %1").arg(index);
     case Layer::VECTOR:
-        return QString("%1 %2").arg(tr("Vector Layer")).arg(index);
+        return tr("Vector Layer %1").arg(index);
     case Layer::SOUND:
-        return QString("%1 %2").arg(tr("Sound Layer")).arg(index);
+        return tr("Sound Layer %1").arg(index);
     default:
         Q_ASSERT(false);
     }

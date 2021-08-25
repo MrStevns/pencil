@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include "viewmanager.h"
 #include "strokemanager.h"
 #include "selectionmanager.h"
+#include "overlaymanager.h"
 #include "scribblearea.h"
 #include "layervector.h"
 #include "layermanager.h"
@@ -55,7 +56,18 @@ void MoveTool::loadSettings()
 
 QCursor MoveTool::cursor()
 {
-    MoveMode mode = mEditor->select()->getMoveModeForSelectionAnchor(getCurrentPoint());
+    MoveMode mode = MoveMode::NONE;
+    if (mEditor->select()->somethingSelected())
+    {
+        mode = mEditor->select()->getMoveModeForSelectionAnchor(getCurrentPoint());
+        return mScribbleArea->currentTool()->selectMoveCursor(mode, type());
+    }
+    if (mEditor->overlays()->isPerspOverlaysActive())
+    {
+        mode = mEditor->overlays()->getMoveModeForOverlayAnchor(getCurrentPoint());
+        mPerspMode = mode;
+        return mScribbleArea->currentTool()->selectMoveCursor(mode, type());
+    }
     return mScribbleArea->currentTool()->selectMoveCursor(mode, type());
 }
 
@@ -79,10 +91,19 @@ void MoveTool::pointerPressEvent(PointerEvent* event)
     mCurrentLayer = currentPaintableLayer();
     if (mCurrentLayer == nullptr) return;
 
-    mEditor->select()->updatePolygons();
+    if (mEditor->select()->somethingSelected())
+    {
+        mEditor->select()->updatePolygons();
 
-    setAnchorToLastPoint();
-    beginInteraction(event->modifiers(), mCurrentLayer);
+        setAnchorToLastPoint();
+        beginInteraction(event->modifiers(), mCurrentLayer);
+    }
+    if (mEditor->overlays()->isPerspOverlaysActive())
+    {
+        QPointF point = mEditor->view()->mapScreenToCanvas(event->posF());
+        mEditor->overlays()->setMoveMode(mPerspMode);
+        mEditor->overlays()->updatePerspOverlay(point);
+    }
 }
 
 void MoveTool::pointerMoveEvent(PointerEvent* event)
@@ -95,6 +116,11 @@ void MoveTool::pointerMoveEvent(PointerEvent* event)
     if (mScribbleArea->isPointerInUse())   // the user is also pressing the mouse (dragging)
     {
         transformSelection(event->modifiers(), mCurrentLayer);
+        if (mEditor->overlays()->isPerspOverlaysActive())
+        {
+            QPointF mapped = mEditor->view()->mapScreenToCanvas(event->pos());
+            mEditor->overlays()->updatePerspOverlay(mapped);
+        }
     }
     else
     {
@@ -106,12 +132,24 @@ void MoveTool::pointerMoveEvent(PointerEvent* event)
         {
             storeClosestVectorCurve(mCurrentLayer);
         }
+        if (mEditor->overlays()->isPerspOverlaysActive())
+        {
+//            QPointF mapped = mEditor->view()->mapScreenToCanvas(event->pos());
+//            mEditor->overlays()->updatePerspOverlay(mapped);
+        }
+        mEditor->getScribbleArea()->prepOverlays();
     }
     mScribbleArea->updateCurrentFrame();
 }
 
 void MoveTool::pointerReleaseEvent(PointerEvent*)
 {
+    if (mEditor->overlays()->isPerspOverlaysActive())
+    {
+        mEditor->overlays()->setMoveMode(MoveMode::NONE);
+        mPerspMode = MoveMode::NONE;
+    }
+
     auto selectMan = mEditor->select();
     if (!selectMan->somethingSelected())
         return;
@@ -288,9 +326,7 @@ void MoveTool::setAnchorToLastPoint()
 
 void MoveTool::cancelChanges()
 {
-    auto selectMan = mEditor->select();
     mScribbleArea->cancelTransformedSelection();
-    selectMan->resetSelectionProperties();
     mEditor->deselectAll();
 }
 

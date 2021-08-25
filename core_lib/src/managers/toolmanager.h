@@ -73,20 +73,24 @@ public slots:
     void setVectorMergeEnabled(bool);
     void setBezier(bool);
     void setPressure(bool);
+    void setFillMode(int);
     void setStabilizerLevel(int);
     void setTolerance(int);
+    void setBucketColorToleranceEnabled(bool enabled);
+    void setBucketFillExpandEnabled(bool enabled);
+    void setBucketFillToLayer(int layerIndex);
+    void setBucketFillReferenceMode(int referenceMode);
+    void setBucketFillExpand(int);
     void setUseFillContour(bool);
 
 private:
+    bool mTemporaryTool = false;
     BaseTool* mCurrentTool = nullptr;
     ToolType  meTabletBackupTool = PENCIL;
+    ToolType  mOldToolType = INVALID_TOOL;
     QHash<ToolType, BaseTool*> mToolSetHash;
 
-    ToolType mCurrentToolType = PENCIL;
-    ToolType mOldToolType = INVALID_TOOL;
-
     bool mIsSwitchedToEraser = false;
-    bool mTemporaryTool = false;
 
     int mOldValue = 0;
 

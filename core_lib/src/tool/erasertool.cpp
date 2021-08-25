@@ -119,8 +119,6 @@ QCursor EraserTool::cursor()
 
 void EraserTool::pointerPressEvent(PointerEvent *event)
 {
-    mScribbleArea->setAllDirty();
-
     startStroke(event->inputType());
     mLastBrushPoint = getCurrentPoint();
     mMouseDownPoint = getCurrentPoint();
@@ -194,7 +192,6 @@ void EraserTool::removeVectorPaint()
     if (layer->type() == Layer::BITMAP)
     {
         mScribbleArea->paintBitmapBuffer();
-        mScribbleArea->setAllDirty();
         mScribbleArea->clearBitmapBuffer();
     }
     else if (layer->type() == Layer::VECTOR)
@@ -207,7 +204,6 @@ void EraserTool::removeVectorPaint()
         vectorImage->deleteSelectedPoints();
 
         mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-        mScribbleArea->setAllDirty();
     }
 }
 
@@ -229,6 +225,5 @@ void EraserTool::updateStrokes()
         {
             currKey->setSelected(nearbyVertice, true);
         }
-        mScribbleArea->setAllDirty();
     }
 }

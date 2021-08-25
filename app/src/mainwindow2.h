@@ -43,6 +43,9 @@ class Timeline2;
 class ActionCommands;
 class ImportImageSeqDialog;
 class BackupElement;
+class LayerOpacityDialog;
+class PegBarAlignmentDialog;
+class StatusBar;
 class ToolBrushSettingsWidget;
 class MPBrushConfigurator;
 class MPBrushSelector;
@@ -73,6 +76,7 @@ public slots:
     void updateSaveState();
     void clearRecentFilesList();
     void openPegAlignDialog();
+    void openLayerOpacityDialog();
     void currentLayerChanged();
     void selectionChanged();
     void viewFlipped();
@@ -118,22 +122,19 @@ protected:
     void showEvent(QShowEvent*) override;
 
 private:
-
     void hideBrushSelectorWidgetIfNeeded(const bool hide);
     bool shouldHideBrushSelectorWidget(const Layer* layer, ToolType toolType);
 
-    void bindActionWithSetting(QAction* action, SETTING setting);
-    
-    void newObject() const;
+    void newObject();
     bool newObjectFromPresets(int presetIndex);
     bool openObject(const QString& strFilename);
     bool saveObject(QString strFileName);
+    void closeDialogs();
 
     void createDockWidgets();
     void createMenus();
     void setupKeyboardShortcuts();
     void clearKeyboardShortcuts();
-    void updateZoomLabel();
     bool loadMostRecent();
     bool tryLoadPreset();
 
@@ -156,6 +157,7 @@ private:
     void makeConnections(Editor*, DisplayOptionWidget*);
     void makeConnections(Editor*, ToolOptionWidget*);
     void makeConnections(Editor*, OnionSkinWidget*);
+    void makeConnections(Editor*, StatusBar*);
     void makeConnections(Editor*, MPBrushSelector*);
 
     bool tryRecoverUnsavedProject();
@@ -175,12 +177,12 @@ private:
     ColorInspector*       mColorInspector = nullptr;
     OnionSkinWidget*      mOnionSkinWidget = nullptr;
     MPBrushSelector* mBrushSelectorWidget = nullptr;
-//    ToolBrushSettingsWidget* mToolBrushSettingsWidget = nullptr;
 
     // backup
     BackupElement* mBackupAtSave = nullptr;
 
     PegBarAlignmentDialog* mPegAlign = nullptr;
+    LayerOpacityDialog* mLayerOpacityDialog = nullptr;
 
     ActionCommands* mCommands = nullptr;
     QList<BaseDockWidget*> mDockWidgets;
@@ -190,9 +192,6 @@ private:
 
     // a hack for MacOS because closeEvent fires twice
     bool m2ndCloseEvent = false;
-
-    // statusbar widgets
-    QLabel* mZoomLabel = nullptr;
 
     // Whether to suppress the auto save dialog due to internal work
     bool mSuppressAutoSaveDialog = false;

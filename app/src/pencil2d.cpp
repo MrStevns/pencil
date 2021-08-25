@@ -47,10 +47,17 @@ Pencil2D::Pencil2D(int& argc, char** argv) :
     // Set application icon
     setWindowIcon(QIcon(":/icons/icon.png"));
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
     // Associate the application with our desktop entry
     setDesktopFileName("org.pencil2d.Pencil2D.desktop");
-
+#endif
     installTranslators();
+}
+
+Pencil2D::~Pencil2D()
+{
+    // with a std::unique_ptr member variable,
+    // you need a non-default destructor to avoid compilation error.
 }
 
 Status Pencil2D::handleCommandLineOptions()
@@ -67,8 +74,9 @@ Status Pencil2D::handleCommandLineOptions()
         return Status::OK;
     }
 
-    auto mainWindow = new MainWindow2;
-    CommandLineExporter exporter(mainWindow);
+    // Can't construct the editor directly, need to make a main window instead because... reasons
+    mainWindow.reset(new MainWindow2);
+    CommandLineExporter exporter(mainWindow->mEditor);
     if (exporter.process(inputPath,
                          outputPaths,
                          parser.camera(),
@@ -109,7 +117,7 @@ void Pencil2D::installTranslators()
     }
 
     std::unique_ptr<QTranslator> pencil2DTranslator(new QTranslator(this));
-    if (pencil2DTranslator->load(locale, "pencil", "_", ":/qm/"))
+    if (pencil2DTranslator->load(locale, "pencil", "_", ":/i18n/"))
     {
         installTranslator(pencil2DTranslator.release());
     }
@@ -119,8 +127,8 @@ void Pencil2D::prepareGuiStartup(const QString& inputPath)
 {
     PlatformHandler::configurePlatformSpecificSettings();
 
-    auto mainWindow = new MainWindow2;
-    connect(this, &Pencil2D::openFileRequested, mainWindow, &MainWindow2::openFile);
+    mainWindow.reset(new MainWindow2);
+    connect(this, &Pencil2D::openFileRequested, mainWindow.get(), &MainWindow2::openFile);
     mainWindow->show();
 
     if (!inputPath.isEmpty())

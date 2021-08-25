@@ -107,8 +107,6 @@ QCursor PenTool::cursor()
 
 void PenTool::pointerPressEvent(PointerEvent *event)
 {
-    mScribbleArea->setAllDirty();
-
     mMouseDownPoint = getCurrentPoint();
     mLastBrushPoint = getCurrentPoint();
 

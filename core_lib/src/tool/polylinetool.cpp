@@ -98,6 +98,7 @@ QCursor PolylineTool::cursor()
 void PolylineTool::clearToolData()
 {
     mPoints.clear();
+    emit isActiveChanged(POLYLINE, false);
 }
 
 void PolylineTool::pointerPressEvent(PointerEvent* event)
@@ -120,7 +121,8 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
     } else {
         mPoints << previousPoint;
     }
-    mScribbleArea->setAllDirty();
+//    mScribbleArea->setAllDirty();
+    emit isActiveChanged(POLYLINE, true);
 }
 
 void PolylineTool::pointerPressOnVector(PointerEvent*)
@@ -360,7 +362,6 @@ void PolylineTool::endPolyline(QList<QPointF> points)
         mScribbleArea->prepareForDrawing();
     }
 
-    mScribbleArea->setAllDirty();
     mScribbleArea->clearBitmapBuffer();
     mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
 
