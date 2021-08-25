@@ -55,7 +55,7 @@
         <x>0</x>
         <y>0</y>
         <width>221</width>
-        <height>384</height>
+        <height>340</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -190,27 +190,6 @@
            </property>
            <property name="text">
             <string>Fill Contour</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
-         <item>
-          <widget class="SpinSlider" name="toleranceSlider" native="true">
-           <property name="toolTip">
-            <string>The extent to which the color variation will be treated as being equal</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="toleranceSpinBox">
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="value">
-            <number>50</number>
            </property>
           </widget>
          </item>
