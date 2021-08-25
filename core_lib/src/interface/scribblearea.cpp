@@ -408,6 +408,7 @@ void ScribbleArea::onOnionSkinTypeChanged()
 
 void ScribbleArea::onObjectLoaded()
 {
+    reloadMyPaint();
     invalidateAllCache();
 }
 
