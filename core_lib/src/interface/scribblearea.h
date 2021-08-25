@@ -142,6 +142,10 @@ public:
     /** Object updated, invalidate all cache */
     void onObjectLoaded();
 
+    /** After applying a stroke,
+     * note: optimization to avoid clearing mypaint when we draw on the canvas */
+    void onDidDraw(int frameNumber);
+
     /** Set frame on layer to modified and invalidate current frame cache */
     void setModified(int layerNumber, int frameNumber);
     void setModified(const Layer* layer, int frameNumber);

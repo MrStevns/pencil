@@ -114,7 +114,6 @@ void StrokeTool::endStroke()
     enableCoalescing();
 
     mScribbleArea->endStroke();
-    mScribbleArea->setModified(mEditor->currentLayerIndex(), mEditor->currentFrame());
 }
 
 void StrokeTool::drawStroke(const QPointF pos)

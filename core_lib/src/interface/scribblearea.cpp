@@ -364,6 +364,16 @@ void ScribbleArea::onFrameModified(int frameNumber)
     updateFrame(frameNumber);
 }
 
+void ScribbleArea::onDidDraw(int frameNumber)
+{
+    if (mPrefs->isOn(SETTING::PREV_ONION) || mPrefs->isOn(SETTING::NEXT_ONION)) {
+        invalidateOnionSkinsCacheAround(frameNumber);
+        invalidateLayerPixmapCache();
+    }
+    invalidateCacheForFrame(frameNumber);
+    updateFrame(frameNumber);
+}
+
 void ScribbleArea::onViewChanged()
 {
     invalidateAllCache();
@@ -1400,9 +1410,9 @@ void ScribbleArea::endStroke()
 
     mIsPainting = false;
     mMyPaint->endStroke();
-    qDebug() << "end stroke";
 
-//    update();
+    onDidDraw(mEditor->currentFrame());
+    qDebug() << "end stroke";
 }
 
 void ScribbleArea::clearTilesBuffer()
