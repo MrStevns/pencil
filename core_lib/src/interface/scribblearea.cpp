@@ -428,6 +428,7 @@ void ScribbleArea::setAllDirty()
     mCanvasPainter.resetLayerCache();
 }
 
+
 bool ScribbleArea::event(QEvent *event)
 {
     if (event->type() == QEvent::WindowDeactivate) {
