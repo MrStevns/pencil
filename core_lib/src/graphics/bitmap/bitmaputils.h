@@ -42,23 +42,17 @@ static void scanLine(BitmapImage* bitmapImage, const int x, const int y, const Q
     }
 }
 
-
-static QRgb pixel(BitmapImage& bitmapImage, int x, int y)
+static QRgb pixel(const BitmapImage& bitmapImage, int x, int y)
 {
-    return pixel(*bitmapImage.image(), bitmapImage.topLeft(), QPoint(x, y));
+    return constScanLine(bitmapImage, x, y);
 }
 
-static QRgb pixel(BitmapImage& bitmapImage, QPoint point)
+static QRgb pixel(const BitmapImage& bitmapImage, QPoint point)
 {
-    return pixel(*bitmapImage.image(), bitmapImage.topLeft(), point);
+    return constScanLine(bitmapImage, point.x(), point.y());
 }
 
-static QRgb pixel(const QImage& sourceImage, QPoint topLeft,  const QPoint& pos)
-{
-    return sourceImage.pixel(pos-topLeft);
-}
-
-static void setPixel(BitmapImage& bitmapImage, const int& x, const int& y, const QRgb& colour)
+static void setPixel(BitmapImage& bitmapImage, const int x, const int y, const QRgb& colour)
 {
     bitmapImage.image()->setPixel(QPoint(x, y)-bitmapImage.topLeft(), colour);
 }
@@ -109,17 +103,10 @@ static bool compareColor(QRgb newColor, QRgb oldColor, int tolerance, QHash<QRgb
 // ----- http://lodev.org/cgtutor/floodfill.html
 static bool floodFill(BitmapImage* replaceImage,
                             BitmapImage* targetImage,
-                            QRect cameraRect,
                             QPoint point,
                             QRgb fillColor,
                             int tolerance)
 {
-    // If the point we are supposed to fill is outside the image and camera bounds, do nothing
-    if(!cameraRect.united(targetImage->bounds()).contains(point))
-    {
-        return false;
-    }
-
     // Square tolerance for use with compareColor
     tolerance = static_cast<int>(qPow(tolerance, 2));
 
@@ -136,9 +123,6 @@ static bool floodFill(BitmapImage* replaceImage,
     int xTemp = 0;
     bool spanLeft = false;
     bool spanRight = false;
-
-    // Extend to size of Camera
-    targetImage->extendBoundaries(cameraRect);
 
     queue.append(point);
     // Preparations END

@@ -150,11 +150,18 @@ void BitmapBucket::paint(const QPointF updatedPoint, std::function<void(BucketSt
         fillColor = tempColor.rgba();
     }
 
-    BitmapImage replaceImage = BitmapImage(targetImage->bounds(), Qt::transparent);
+    // If the point we are supposed to fill is outside the image and camera bounds, do nothing
+    if(!cameraRect.united(targetImage->bounds()).contains(point))
+    {
+        return;
+    }
+    // Extend to size of Camera
+    referenceImage.extendBoundaries(cameraRect);
+
+    BitmapImage replaceImage = BitmapImage(referenceImage.bounds(), Qt::transparent);
 
     bool didFloodFill = BitmapUtils::floodFill(&replaceImage,
                            &referenceImage,
-                           cameraRect,
                            point,
                            fillColor,
                            tolerance);
