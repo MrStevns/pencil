@@ -326,6 +326,21 @@ void MPBrushInfoDialog::didPressSave()
             QMessageBox::warning(this, status.title(), status.description());
             return;
         } else {
+            status = MPCONF::addToolEntry(mToolName, mBrushPreset);
+
+            if (status.fail()) {
+                QMessageBox::warning(this, status.title(), status.description());
+                return;
+            }
+
+            if (mOldToolName.compare(mToolName, Qt::CaseInsensitive) || mOldPresetName.compare(mBrushPreset, Qt::CaseInsensitive)) {
+                status = MPCONF::removeBrush(mOldToolName, mOldPresetName, noSpaceName);
+
+                if (status.fail())
+                {
+                    QMessageBox::warning(this, status.title(), status.description() + "\n" + status.details().str());
+                }
+            }
             status = MPCONF::addBrushEntry(mToolName, mBrushPreset, noSpaceName);
         }
 

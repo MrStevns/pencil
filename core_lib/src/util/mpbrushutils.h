@@ -232,6 +232,78 @@ struct MPCONF {
     }
 
     // TODO: handle case where no conf file exists ...
+    static Status addToolEntry(const QString toolName, const QString& brushPreset)
+    {
+        Status st = Status::OK;
+        QString brushConfigPath = getBrushesPath() + "/" + BrushConfigFile;
+
+        QFile file(brushConfigPath);
+        file.open(QIODevice::ReadOnly | QIODevice::Text);
+
+        if (file.error() != QFile::NoError) {
+            st = Status::FAIL;
+
+            st.setTitle(QObject::tr("Failed to open file"));
+            st.setDescription(QObject::tr("The following error was given: \n") + file.errorString());
+            return st;
+        }
+
+        QTextStream stream(&file);
+
+        bool foundTool = false;
+        bool searchingPreset = false;
+        QStringList newFilesList;
+        while (!stream.atEnd()) {
+            QString line = stream.readLine();
+
+            if (isPresetToken(line)) {
+
+                // find preset of interest otherwise skip
+                if (MPCONF::getValue(line).compare(brushPreset, Qt::CaseInsensitive) == 0) {
+                    searchingPreset = true;
+                } else {
+                    searchingPreset = false;
+                }
+            }
+
+            if (searchingPreset) {
+                if (toolName.compare(MPCONF::getValue(line), Qt::CaseInsensitive) == 0) {
+                    foundTool = true;
+                    break;
+                }
+            }
+            newFilesList << line;
+        }
+        file.close();
+
+        if (foundTool) { return Status::OK; }
+
+        // TODO: move tokens somewhere else...
+        newFilesList << "\tTool: " + toolName.toLower();
+
+        QFile editConfigFile(brushConfigPath);
+        editConfigFile.open(QFile::ReadWrite);
+
+        if (editConfigFile.error() != QFile::NoError) {
+            st = Status::FAIL;
+
+            st.setTitle(QObject::tr("Failed to open file"));
+            st.setDescription(QObject::tr("The following error was given: \n") + file.errorString());
+            return st;
+        }
+
+        QTextStream editStream(&editConfigFile);
+
+        for (QString line : newFilesList) {
+            editStream << line + "\n";
+        }
+
+        editConfigFile.close();
+
+        return st;
+    }
+
+    // TODO: handle case where no conf file exists ...
     static Status addBrushEntry(const QString toolName, const QString& brushPreset, const QString& brushName)
     {
         Status st = Status::OK;
@@ -255,7 +327,6 @@ struct MPCONF {
         bool brushAdded = false;
         QStringList newFilesList;
         while (!stream.atEnd()) {
-
             QString line = stream.readLine();
             // Find preset first
             if (!brushAdded) {
@@ -319,7 +390,7 @@ struct MPCONF {
         return st;
     }
 
-    static Status removeBrush(const QString& brushPreset, const QString& toolName, const QString& brushName)
+    static Status removeBrush(const QString& toolName, const QString& brushPreset, const QString& brushName)
     {
         Status st = Status::OK;
         QString brushConfigPath = getBrushesPath() + "/" + BrushConfigFile;
@@ -342,6 +413,7 @@ struct MPCONF {
 
         bool searchingPreset = false;
         bool searchingTool = false;
+        bool brushRemoved = false;
         while(!stream.atEnd()) {
             QString line = stream.readLine();
 
@@ -363,15 +435,32 @@ struct MPCONF {
                 }
             }
 
-            if ((searchingPreset && searchingTool)) {
+            if (searchingPreset && searchingTool) {
                 if (MPCONF::getValue(line).compare(brushName, Qt::CaseInsensitive) == 0)
                 {
+                    brushRemoved = true;
                     continue;
                 }
             }
             newList << line;
         }
+
         file.close();
+
+        if (!brushRemoved) {
+            st = Status::FAIL;
+
+            st.setTitle(QObject::tr("Brush not deleted!"));
+            st.setDescription(QObject::tr("Could not delete brush named: ") + brushName);
+            DebugDetails details;
+            details << QObject::tr("\nReason: brush not found in the list!");
+            details << QObject::tr("Brush name: ") + brushName;
+            details << QObject::tr("Brush preset: ") + brushPreset;
+            details << QObject::tr("Tool: ") + toolName;
+
+            st.setDetails(details);
+            return st;
+        }
 
         QFile editConfigFile(brushConfigPath);
 

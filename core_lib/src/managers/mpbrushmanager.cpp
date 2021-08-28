@@ -412,7 +412,7 @@ Status MPBrushManager::renameMoveBrushFileIfNeeded(QString originalPreset, QStri
         }
     }
 
-    QFile brushFile(brushPath);
+    QFile brushFile(absoluteBrushPath);
     if (!brushFile.exists()) {
 
         QFile moveFile(oldBrushPath);

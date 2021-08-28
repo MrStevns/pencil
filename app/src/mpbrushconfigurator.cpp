@@ -133,6 +133,7 @@ void MPBrushConfigurator::initUI()
 {
     mBrushName = mEditor->brushes()->currentBrushName();
     mPreset = mEditor->brushes()->currentPresetName();
+    mToolType = mEditor->tools()->currentTool()->type();
 
     mActiveTreeRoot = addTreeRoot(BrushSettingItem::Active, mNavigatorWidget, tr("Active settings"));
     auto basicRoot = addTreeRoot(BrushSettingItem::Basic, mNavigatorWidget, tr("Basic settings"));
