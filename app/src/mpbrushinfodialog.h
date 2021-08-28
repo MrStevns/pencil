@@ -35,6 +35,7 @@ signals:
 
 private:
 
+    bool processStatus(Status status);
     void didPressSetImage();
     void didPressSetImageFromClipBoard();
     void didSelectToolOption(int index, QString itemName, int value);

@@ -295,62 +295,50 @@ void MPBrushInfoDialog::didPressSave()
         Status status = Status::OK;
         if (mDialogContext == DialogContext::Clone) {
 
-            status = mEditor->brushes()->copyRenameBrushFileIfNeeded(mOriginalPreset, mOriginalName, mBrushPreset, noSpaceName);
-
-            if (!status.ok()) {
-               QMessageBox::warning(this, status.title(),
-                                                  status.description());
-               return;
+            if (!processStatus(mEditor->brushes()->copyRenameBrushFileIfNeeded(mOriginalPreset, mOriginalName, mBrushPreset, noSpaceName))) {
+                return;
             }
 
             if (mIconModified) {
-                status = mEditor->brushes()->writeBrushIcon(*mImageLabel->pixmap(), mBrushPreset, noSpaceName);
-            }
-
-            if (!status.ok()) {
-               QMessageBox::warning(this, status.title(),
-                                                  status.description());
-               return;
-            }
-        } else { // Edit
-            status = mEditor->brushes()->renameMoveBrushFileIfNeeded(mOriginalPreset, mOriginalName, mBrushPreset, noSpaceName);
-
-            if (status.fail()) {
-                QMessageBox::warning(this, status.title(), status.description());
-                return;
-            }
-        }
-        status = mEditor->brushes()->writeBrushToFile(mBrushPreset, noSpaceName, doc.toJson());
-
-        if (status.fail()) {
-            QMessageBox::warning(this, status.title(), status.description());
-            return;
-        } else {
-            status = MPCONF::addToolEntry(mToolName, mBrushPreset);
-
-            if (status.fail()) {
-                QMessageBox::warning(this, status.title(), status.description());
-                return;
-            }
-
-            if (mOldToolName.compare(mToolName, Qt::CaseInsensitive) || mOldPresetName.compare(mBrushPreset, Qt::CaseInsensitive)) {
-                status = MPCONF::removeBrush(mOldToolName, mOldPresetName, noSpaceName);
-
-                if (status.fail())
-                {
-                    QMessageBox::warning(this, status.title(), status.description() + "\n" + status.details().str());
+                if (!processStatus(mEditor->brushes()->writeBrushIcon(*mImageLabel->pixmap(), mBrushPreset, noSpaceName))) {
+                    return;
                 }
             }
-            status = MPCONF::addBrushEntry(mToolName, mBrushPreset, noSpaceName);
+        } else { // Edit
+            if (!processStatus(mEditor->brushes()->renameMoveBrushFileIfNeeded(mOriginalPreset, mOriginalName, mBrushPreset, noSpaceName))) {
+                return;
+            };
+        }
+        if (!processStatus(mEditor->brushes()->writeBrushToFile(mBrushPreset, noSpaceName, doc.toJson()))) {
+            return;
         }
 
-        if (status.fail()) {
-            QMessageBox::warning(this, status.title(), status.description());
+        if (!processStatus(MPCONF::addToolEntry(mToolName, mBrushPreset))) {
             return;
-        } else {
-            emit updatedBrushInfo(noSpaceName, mBrushPreset);
-            close();
         }
+
+        if (mOldToolName.compare(mToolName, Qt::CaseInsensitive) || mOldPresetName.compare(mBrushPreset, Qt::CaseInsensitive)) {
+            if (!processStatus(MPCONF::removeBrush(mOldToolName, mOldPresetName, noSpaceName))) {
+                return;
+            }
+        }
+
+        if (!processStatus(MPCONF::addBrushEntry(mToolName, mBrushPreset, noSpaceName))) {
+            return;
+        }
+
+        emit updatedBrushInfo(noSpaceName, mBrushPreset);
+        close();
+    }
+}
+
+bool MPBrushInfoDialog::processStatus(Status status)
+{
+    if (status.fail()) {
+        QMessageBox::warning(this, status.title(), status.description() + "\n" + status.details().str());
+        return false;
+    } else {
+        return true;
     }
 }
 
