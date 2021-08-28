@@ -35,11 +35,11 @@ public:
     void pointerPressEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
 
-    void drawStroke();
+    void drawStroke(PointerEvent* event);
     void endStroke();
 
     void removeVectorPaint();
-    void updateStrokes();
+    void updateStrokes(PointerEvent* event);
 
     void setWidth(const qreal width) override;
     void setFeather(const qreal feather) override;

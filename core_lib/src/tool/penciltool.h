@@ -37,7 +37,7 @@ public:
     void pointerMoveEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
 
-    void drawStroke();
+    void drawStroke(PointerEvent* event);
     void endStroke();
 
     void paintVectorStroke();

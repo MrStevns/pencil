@@ -34,7 +34,7 @@ public:
     QCursor cursor() override;
 
     void endStroke();
-    void drawStroke();
+    void drawStroke(PointerEvent* event);
 
     void pointerMoveEvent(PointerEvent*) override;
     void pointerPressEvent(PointerEvent*) override;

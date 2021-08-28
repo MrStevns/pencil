@@ -14,6 +14,20 @@ PointerEvent::~PointerEvent()
 {
 }
 
+quint64 PointerEvent::timeStamp() const
+{
+    if (mMouseEvent)
+    {
+        return mMouseEvent->timestamp();
+    }
+    else if (mTabletEvent)
+    {
+        return mTabletEvent->timestamp();
+    }
+    Q_ASSERT(false);
+    return 0;
+}
+
 QPoint PointerEvent::pos() const
 {
     if (mMouseEvent)

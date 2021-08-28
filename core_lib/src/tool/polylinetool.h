@@ -55,13 +55,16 @@ public:
 
     virtual bool isActive() override;
 
+protected:
+    double calculateDeltaTime(quint64 time) override;
+
 private:
     QList<QPointF> mPoints;
     QPointF previousPoint;
 
-    void drawPolyline(QList<QPointF> points, QPointF endPoint);
+    void drawPolyline(QList<QPointF> points, QPointF endPoint, quint64 timeStamp);
     void cancelPolyline();
-    void endPolyline(QList<QPointF> points);
+    void endPolyline(QList<QPointF> points, quint64 timeStamp);
 };
 
 #endif // POLYLINETOOL_H

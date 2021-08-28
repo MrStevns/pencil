@@ -54,7 +54,7 @@ public:
 
     void paintBitmap();
     void paintVector(Layer* layer);
-    void drawStroke();
+    void drawStroke(PointerEvent* event);
 
     void applyChanges();
 

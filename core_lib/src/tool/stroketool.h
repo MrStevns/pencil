@@ -33,8 +33,9 @@ public:
     explicit StrokeTool(QObject* parent);
 
     void startStroke(PointerEvent::InputType inputType);
-    void drawStroke(const QPointF pos);
-    void drawStroke();
+    void drawStroke(const QPointF pos, PointerEvent* event);
+    void drawStroke(const QPointF pos, double dt);
+    void drawStroke(PointerEvent* event);
     void endStroke();
 
     void paintBitmapStroke();
@@ -65,8 +66,15 @@ protected:
     /// Returns true by default.
     virtual bool emptyFrameActionEnabled();
 
+    /**
+     * calculates the number of seconds that has passed between the previous and current frame
+     * should be called from paintEvent
+     */
+    virtual double calculateDeltaTime(quint64 timeStamp);
+
 private:
 	QPointF mLastPixel { 0, 0 };
+    quint64 mPrevTimeStamp = 0;
 };
 
 #endif // STROKETOOL_H

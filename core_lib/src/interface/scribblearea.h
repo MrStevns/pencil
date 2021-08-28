@@ -226,7 +226,7 @@ protected:
 
 public:
     void startStroke();
-    void strokeTo(QPointF point, float pressure, float xtilt, float ytilt);
+    void strokeTo(QPointF point, float pressure, float xtilt, float ytilt, double dt);
     void endStroke();
     QColor pickColorFromSurface(QPointF point, int radius);
 
@@ -299,13 +299,6 @@ private:
     void settingUpdated(SETTING setting);
     void paintSelectionVisuals(QPainter &painter);
 
-    /**
-     * @brief ScribbleArea::calculateDeltaTime
-     * calculates the number of seconds that has passed between the previous and current frame
-     * should be called from paintEvent
-     */
-    qreal calculateDeltaTime();
-
     BitmapImage* currentBitmapImage(Layer* layer) const;
     VectorImage* currentVectorImage(Layer* layer) const;
 
@@ -367,11 +360,6 @@ private:
 
     // Pixmap Cache keys
     QMap<unsigned int, QPixmapCache::Key> mPixmapCacheKeys;
-
-    QElapsedTimer deltaTimer;
-    int lastFrameTime;
-    int currentFrameTime;
-    double deltaTime = 0;
 
     // debug
     QLoggingCategory mLog{ "ScribbleArea" };

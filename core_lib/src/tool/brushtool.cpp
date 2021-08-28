@@ -153,7 +153,7 @@ void BrushTool::pointerMoveEvent(PointerEvent* event)
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         mCurrentPressure = strokeManager()->getPressure();
-        drawStroke();
+        drawStroke(event);
         if (properties.stabilizerLevel != strokeManager()->getStabilizerLevel())
             strokeManager()->setStabilizerLevel(properties.stabilizerLevel);
     }
@@ -166,9 +166,9 @@ void BrushTool::pointerReleaseEvent(PointerEvent *event)
     endStroke();
 }
 
-void BrushTool::drawStroke()
+void BrushTool::drawStroke(PointerEvent* event)
 {
-    StrokeTool::drawStroke();
+    StrokeTool::drawStroke(event);
 
     Layer* layer = mEditor->layers()->currentLayer();
 

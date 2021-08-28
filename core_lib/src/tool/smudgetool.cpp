@@ -204,7 +204,7 @@ void SmudgeTool::pointerMoveEvent(PointerEvent* event)
     {
         if (layer->type() == Layer::BITMAP)
         {
-            drawStroke();
+            drawStroke(event);
         }
         else //if (layer->type() == Layer::VECTOR)
         {

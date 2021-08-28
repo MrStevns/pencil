@@ -61,7 +61,6 @@ ScribbleArea::ScribbleArea(QWidget* parent) : QWidget(parent)
 ScribbleArea::~ScribbleArea()
 {
     delete mBufferImg;
-    deltaTimer.invalidate();
 }
 
 bool ScribbleArea::init()
@@ -108,7 +107,6 @@ bool ScribbleArea::init()
 
     QPixmapCache::setCacheLimit(100 * 1024); // unit is kb, so it's 100MB cache
     mPixmapCacheKeys.clear();
-    deltaTimer.start();
 
     return true;
 }
@@ -1353,10 +1351,10 @@ void ScribbleArea::startStroke()
     mIsPainting = true;
 }
 
-void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float ytilt)
+void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float ytilt, double dt)
 {
 //    qDebug() << "stroke to: " << point;
-    mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, calculateDeltaTime());
+    mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, dt);
 
     // update dirty region
     updateDirtyTiles();
@@ -1369,7 +1367,8 @@ void ScribbleArea::forceUpdateMyPaintStates()
     mMyPaint->strokeTo(mMyPaint->getBrushState(MYPAINT_BRUSH_STATE_X),
                        mMyPaint->getBrushState(MYPAINT_BRUSH_STATE_Y),
                        mMyPaint->getBrushState(MyPaintBrushState::MYPAINT_BRUSH_STATE_PRESSURE),
-                       0,0, calculateDeltaTime());
+                       0,0, 1.0);
+    // TODO: deltatime should maybe not be fixed here?
 }
 
 QColor ScribbleArea::pickColorFromSurface(QPointF point, int radius)
@@ -1836,14 +1835,6 @@ const BrushInputInfo ScribbleArea::getBrushInputInfo(BrushInputType input)
 
     return brushInfo;
 }
-
-qreal ScribbleArea::calculateDeltaTime()
-{
-    deltaTime = deltaTimer.nsecsElapsed() * 1e-9;
-    deltaTimer.restart();
-    return deltaTime;
-}
-
 
 void ScribbleArea::floodFillError(int errorType)
 {

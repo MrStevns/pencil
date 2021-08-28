@@ -76,6 +76,8 @@ public:
     QTabletEvent::TabletDevice device() const;
     QTabletEvent::PointerType pointerType() const;
 
+    quint64 timeStamp() const;
+
 private:
     QTabletEvent* mTabletEvent = nullptr;
     QMouseEvent* mMouseEvent = nullptr;

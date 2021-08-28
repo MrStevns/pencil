@@ -121,7 +121,7 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
     } else {
         mPoints << previousPoint;
     }
-//    mScribbleArea->setAllDirty();
+
     emit isActiveChanged(POLYLINE, true);
 }
 
@@ -140,7 +140,7 @@ void PolylineTool::pointerPressOnVector(PointerEvent*)
     }
 }
 
-void PolylineTool::pointerPressOnBitmap(PointerEvent*)
+void PolylineTool::pointerPressOnBitmap(PointerEvent* event)
 {
     mScribbleArea->mMyPaint->clearSurface();
 
@@ -150,7 +150,7 @@ void PolylineTool::pointerPressOnBitmap(PointerEvent*)
     if (!mPoints.isEmpty()) {
 
         for(int i=0; i < mPoints.size(); i++) {
-            drawStroke(mPoints[i]);
+            drawStroke(mPoints[i], calculateDeltaTime(event->timeStamp()));
         }
 
         mPoints.takeAt(0);
@@ -160,11 +160,13 @@ void PolylineTool::pointerPressOnBitmap(PointerEvent*)
 
     mScribbleArea->paintBitmapBuffer(QPainter::CompositionMode_SourceOver);
     mScribbleArea->clearTilesBuffer();
+
 }
 
 void PolylineTool::pointerMoveEvent(PointerEvent* event)
 {
     Layer* layer = mEditor->layers()->currentLayer();
+
 
     if (mPoints.size() > 0)
     {
@@ -211,28 +213,36 @@ void PolylineTool::pointerMoveOnVector(PointerEvent *)
     mScribbleArea->drawPolyline(tempPath, pen, true);
 }
 
-void PolylineTool::pointerMoveOnBitmap(PointerEvent *)
+void PolylineTool::pointerMoveOnBitmap(PointerEvent * event)
 {
     mScribbleArea->mMyPaint->clearSurface();
+
+    mScribbleArea->mMyPaint->startStroke();
     for(int i=0; i<mPoints.size(); i++) {
-        mScribbleArea->mMyPaint->startStroke();
-        drawStroke(mPoints[i]);
+
+        drawStroke(mPoints[i], calculateDeltaTime(event->timeStamp()));
     }
-    drawStroke(getCurrentPoint());
+    drawStroke(getCurrentPoint(), calculateDeltaTime(event->timeStamp()));
 
     mScribbleArea->updateCurrentFrame();
+}
+
+double PolylineTool::calculateDeltaTime(quint64)
+{
+    // FIXME: Variable dt won't work, will probably have to rework how the polyline is drawn
+    return 1;
 }
 
 void PolylineTool::pointerReleaseEvent(PointerEvent *)
 {
 }
 
-void PolylineTool::pointerDoubleClickEvent(PointerEvent*)
+void PolylineTool::pointerDoubleClickEvent(PointerEvent* event)
 {
     // include the current point before ending the line.
     mPoints << getCurrentPoint();
 
-    endPolyline(mPoints);
+    endPolyline(mPoints, event->timeStamp());
     clearToolData();
 }
 
@@ -244,7 +254,7 @@ bool PolylineTool::keyPressEvent(QKeyEvent* event)
     case Qt::Key_Return:
         if (mPoints.size() > 0)
         {
-            endPolyline(mPoints);
+            endPolyline(mPoints, calculateDeltaTime(event->timestamp()));
             clearToolData();
             return true;
         }
@@ -266,7 +276,7 @@ bool PolylineTool::keyPressEvent(QKeyEvent* event)
     return false;
 }
 
-void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint)
+void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint, quint64 timeStamp)
 {
     Layer* layer = mEditor->layers()->currentLayer();
     if (points.size() > 0)
@@ -275,10 +285,11 @@ void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint)
         if (layer->type() == Layer::BITMAP) {
             mScribbleArea->mMyPaint->clearSurface();
             mScribbleArea->mMyPaint->startStroke();
+
             for(int i=0; i<points.size(); i++) {
-                drawStroke(points[i]);
+                drawStroke(points[i], calculateDeltaTime(timeStamp));
             }
-            drawStroke(endPoint);
+            drawStroke(endPoint, calculateDeltaTime(timeStamp));
             mScribbleArea->updateCurrentFrame();
             mScribbleArea->mMyPaint->endStroke();
         }
@@ -334,7 +345,7 @@ void PolylineTool::cancelPolyline()
     mScribbleArea->updateCurrentFrame();
 }
 
-void PolylineTool::endPolyline(QList<QPointF> points)
+void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
 {
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -358,7 +369,7 @@ void PolylineTool::endPolyline(QList<QPointF> points)
     }
     if (layer->type() == Layer::BITMAP)
     {
-        drawPolyline(points, points.last());
+        drawPolyline(points, points.last(), timeStamp);
         mScribbleArea->prepareForDrawing();
     }
 

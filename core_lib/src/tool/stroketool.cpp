@@ -116,12 +116,23 @@ void StrokeTool::endStroke()
     mScribbleArea->endStroke();
 }
 
-void StrokeTool::drawStroke(const QPointF pos)
+void StrokeTool::drawStroke(PointerEvent* event)
+{
+    QPointF pixel = getCurrentPoint();
+    drawStroke(pixel, calculateDeltaTime(event->timeStamp()));
+}
+
+void StrokeTool::drawStroke(const QPointF pos, PointerEvent* event)
+{
+    drawStroke(pos, calculateDeltaTime(event->timeStamp()));
+}
+
+void StrokeTool::drawStroke(const QPointF pos, double dt)
 {
     const QPointF pixel = pos;
 
     const float pressure = static_cast<float>(mCurrentPressure);
-    mScribbleArea->strokeTo(pixel, pressure, mCurrentXTilt,  mCurrentYTilt);
+    mScribbleArea->strokeTo(pixel, pressure, mCurrentXTilt,  mCurrentYTilt, dt);
 
     if ( pixel != mLastPixel || !mFirstDraw )
     {
@@ -135,12 +146,12 @@ void StrokeTool::drawStroke(const QPointF pos)
     }
 }
 
-void StrokeTool::drawStroke()
+double StrokeTool::calculateDeltaTime(quint64 timeStamp)
 {
-    QPointF pixel = getCurrentPoint();
-    drawStroke(pixel);
+    double frameTime = (timeStamp - mPrevTimeStamp) / 1000.f;
+    mPrevTimeStamp = timeStamp;
+    return frameTime;
 }
-
 
 void StrokeTool::paintBitmapStroke()
 {

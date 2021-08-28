@@ -129,7 +129,7 @@ void EraserTool::pointerMoveEvent(PointerEvent* event)
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         mCurrentPressure = strokeManager()->getPressure();
-        updateStrokes();
+        updateStrokes(event);
         if (properties.stabilizerLevel != strokeManager()->getStabilizerLevel())
             strokeManager()->setStabilizerLevel(properties.stabilizerLevel);
     }
@@ -142,9 +142,9 @@ void EraserTool::pointerReleaseEvent(PointerEvent *event)
     endStroke();
 }
 
-void EraserTool::drawStroke()
+void EraserTool::drawStroke(PointerEvent* event)
 {
-    StrokeTool::drawStroke();
+    StrokeTool::drawStroke(event);
     QList<QPointF> p = strokeManager()->interpolateStroke();
 
     Layer* layer = mEditor->layers()->currentLayer();
@@ -174,14 +174,12 @@ void EraserTool::drawStroke()
 
 void EraserTool::endStroke()
 {
-//    Layer* layer = mEditor->layers()->currentLayer();
-//    qreal distance = QLineF(getCurrentPixel(), mMouseDownPoint).length();
-//    if (distance < 1) { isBrushDab = true; } else { isBrushDab = false; }
+    Layer* layer = mEditor->layers()->currentLayer();
 
-//    if (layer->type() == Layer::BITMAP)
-//        paintBitmapStroke();
-//    else if (layer->type() == Layer::VECTOR)
-//        paintVectorStroke();
+    if (layer->type() == Layer::BITMAP)
+        paintBitmapStroke();
+    else if (layer->type() == Layer::VECTOR)
+        paintVectorStroke();
 
     StrokeTool::endStroke();
 }
@@ -207,12 +205,12 @@ void EraserTool::removeVectorPaint()
     }
 }
 
-void EraserTool::updateStrokes()
+void EraserTool::updateStrokes(PointerEvent* event)
 {
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR)
     {
-        drawStroke();
+        drawStroke(event);
     }
 
     if (layer->type() == Layer::VECTOR)

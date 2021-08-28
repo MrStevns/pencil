@@ -208,7 +208,7 @@ void BucketTool::pointerMoveEvent(PointerEvent* event)
         Layer* layer = mEditor->layers()->currentLayer();
         if (layer->type() == Layer::VECTOR)
         {
-            drawStroke();
+            drawStroke(event);
         }
         else if (layer->type() == Layer::BITMAP)
         {
@@ -290,9 +290,9 @@ void BucketTool::applyChanges()
     mScribbleArea->applyTransformedSelection();
 }
 
-void BucketTool::drawStroke()
+void BucketTool::drawStroke(PointerEvent* event)
 {
-    StrokeTool::drawStroke();
+    StrokeTool::drawStroke(event);
 
     if (properties.stabilizerLevel != strokeManager()->getStabilizerLevel())
     {
