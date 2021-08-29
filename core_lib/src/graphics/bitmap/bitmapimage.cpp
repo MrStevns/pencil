@@ -748,7 +748,7 @@ void BitmapImage::clear(QRect rectangle)
 
     QPainter painter(image());
     painter.setCompositionMode(QPainter::CompositionMode_Clear);
-    painter.fillRect(QRect(rectangle.topLeft(), rectangle.size()), Qt::transparent);
+    painter.fillRect(clearRectangle, Qt::transparent);
     painter.end();
     
     modification();

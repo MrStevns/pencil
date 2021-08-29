@@ -93,3 +93,30 @@ TEST_CASE("BitmapImage functions")
         REQUIRE(b->height() == 50);
     }
 }
+
+SCENARIO("We select an image and move a portion of it") {
+
+    GIVEN("We have an image of some size and color")
+    {
+        // The bound having negative start coordiate is important because it proves
+        // whether the portion will be moved and erased properly.
+        auto b = std::make_shared<BitmapImage>(QRect(-500, -500, 50, 50), Qt::red);
+        QTransform moveT;
+        moveT.translate(-100, -100);
+
+        REQUIRE(qAlpha(BitmapUtils::pixel(*b, -500, -500)) == 255);
+        REQUIRE(qRed(BitmapUtils::pixel(*b, -500, -500)) == 255);
+
+        WHEN("A portion of the image is moved") {
+            b->moveSelectionTransform(QRect(-500, -500, 50, 50), moveT);
+
+            THEN("The old area should be transparent") {
+                REQUIRE(qAlpha(BitmapUtils::pixel(*b, -500, -500)) == 0);
+            }
+
+            THEN("The moved portion should be located at") {
+                REQUIRE(qRed(BitmapUtils::pixel(*b, -600, -600)) == 255);
+            }
+        }
+    }
+}
