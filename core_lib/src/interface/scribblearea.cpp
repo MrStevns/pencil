@@ -333,6 +333,9 @@ void ScribbleArea::onPlayStateChanged()
 
 void ScribbleArea::onScrubbed(int frameNumber)
 {
+    // Maybe consider checking whether a stroke was made on the previous frame
+    // instead of blindly clearing the mypaint surface
+    reloadMyPaint();
     invalidateLayerPixmapCache();
     updateFrame(frameNumber);
 }
