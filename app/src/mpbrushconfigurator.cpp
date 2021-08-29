@@ -454,6 +454,7 @@ void MPBrushConfigurator::addBrushSettingsSpacer()
 
 void MPBrushConfigurator::setBrushSettingValue(qreal value, BrushSettingType setting)
 {
+    prepareUpdateBrushPreview();
     for (BrushSettingEditWidget* widget : mBrushWidgets)
     {
         if (widget->settingType() == setting) {
