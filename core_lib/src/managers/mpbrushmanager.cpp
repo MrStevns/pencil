@@ -303,7 +303,7 @@ Status MPBrushManager::copyResourcesToAppData()
 
     // Brush folder exists, no need to copy resources again
     Status st = Status::OK;
-    if (dir.exists()) {
+    if (dir.exists() && !dir.isEmpty()) {
         return Status::OK;
     } else {
         bool success = dir.mkpath(appDataBrushesPath);
