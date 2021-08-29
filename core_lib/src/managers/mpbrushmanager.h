@@ -54,6 +54,7 @@ Q_SIGNALS:
 
 private:
 
+    Status replaceBrushIfNeeded(QString brushName);
     Status copyResourcesToAppData();
     QJsonDocument writeModifications(const QJsonDocument& doc, QJsonParseError& error, QHash<int, BrushChanges> modifications);
 

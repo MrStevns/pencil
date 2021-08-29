@@ -151,10 +151,10 @@ Status MPBrushManager::readBrushFromFile(const QString& brushPreset, const QStri
         file.setFileName(BRUSH_QRC + "/" + brushPreset + "/" + brushName + BRUSH_CONTENT_EXT);
     }
 
-    // TODO: mypaint v2 uses a new format... either we should update to that or simply mention that the brush is not supported
-
     Status status = Status::OK;
-    if (file.open( QIODevice::ReadOnly ))
+
+    bool brushReplaced = false;
+    if (file.open(QIODevice::ReadOnly))
     {
         QTextStream stream(&file);
 
@@ -164,27 +164,37 @@ Status MPBrushManager::readBrushFromFile(const QString& brushPreset, const QStri
             // Only libmypaint v1 brushes supported currently.
             if (line.at(0) != "{") {
 
-                DebugDetails details;
-                status = Status::FAIL;
-                status.setTitle("Mypaint v2 brush format detected");
-                status.setDescription("This brush is not compatible with the current brush engine");
-                status.setDetails(details);
-                return status;
+                Status status = replaceBrushIfNeeded(file.fileName());
+                if (status.fail()) {
+                    DebugDetails details;
+                    details << "Mypaint v2 brush format detected";
+                    details << "Brush is not compatible with the current brush engine";
+                    status.setDetails(details);
+                    return status;
+                } else {
+                    brushReplaced = true;
+                }
             }
             break;
         }
         // reset position
         stream.seek(0);
-
-        mCurrentBrushData = stream.readAll().toUtf8();
-    } else {
-        status = Status::FAIL;
-
-        DebugDetails details;
-
-        details << "\n\ntried to get brushes from: " + brushPath;
-        status.setDetails(details);
+        if (!brushReplaced) {
+            mCurrentBrushData = stream.readAll().toUtf8();
+        }
+        file.close();
     }
+
+    if (brushReplaced) {
+        // Brush has been replaced, make sure to read the stream again
+        if (file.open(QIODevice::ReadOnly))
+        {
+            QTextStream stream(&file);
+            mCurrentBrushData = stream.readAll().toUtf8();
+            file.close();
+        }
+    }
+
     return status;
 }
 
@@ -286,10 +296,9 @@ Status MPBrushManager::writeBrushToFile(const QString& brushPreset, const QStrin
         mCurrentBrushData = data;
         status = Status::OK;
     } else {
+        status = Status::FAIL;
         status.setTitle(QObject::tr("Write error:"));
         status.setDescription(file.errorString());
-        status = Status::FAIL;
-
     }
     return status;
 }
@@ -382,6 +391,41 @@ Status MPBrushManager::copyResourcesToAppData()
     }
 
     return st;
+}
+
+/// Convenient method to avoid having users to reload their brush library because
+/// x brush might be of wrong version
+Status MPBrushManager::replaceBrushIfNeeded(QString brushPath)
+{
+    QString appDataBrushesPath = MPCONF::getBrushesPath();
+
+    QDir presetDir(brushPath);
+    presetDir.cdUp();
+    QFileInfo brushFileInfo(brushPath);
+    QString presetName = presetDir.dirName();
+    QString brushFileName = brushFileInfo.fileName();
+
+    QDir internalBrushDir(BRUSH_QRC + "/" + presetName);
+    QDir externalBrushDir(appDataBrushesPath + "/" + presetName);
+    QFile internalBrushFile(internalBrushDir.path() + "/" + brushFileInfo.fileName());
+
+    QFile externalBrushFile(brushPath);
+    bool success = externalBrushFile.remove();
+    success = internalBrushFile.copy(brushPath);
+
+    if (!success) {
+        Status st = Status::FAIL;
+        st.setTitle(QObject::tr("Replace failure"));
+        st.setDescription(QObject::tr("Tried to replace: ") + brushPath +
+                          QObject::tr(" with:" ) + internalBrushFile.fileName() +
+                          QObject::tr("\nbecause the previous brush was incompatible. The following error was given:") + internalBrushFile.errorString());
+        return st;
+    }
+    // Reset file since we've replaced it, otherwise permissions won't be set
+    externalBrushFile.reset();
+    externalBrushFile.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+
+    return Status::OK;
 }
 
 

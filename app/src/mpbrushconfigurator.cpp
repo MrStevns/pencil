@@ -15,6 +15,7 @@
 #include <QJsonDocument>
 #include <QSettings>
 
+#include "errordialog.h"
 #include "toolmanager.h"
 
 #include "spinslider.h"
@@ -500,7 +501,8 @@ void MPBrushConfigurator::prepareBrushChanges(qreal value, BrushSettingType sett
     auto st = mEditor->brushes()->applyChangesToBrushFile(mCurrentModifications);
 
     if (st.fail()) {
-        QMessageBox::warning(this, st.title(), st.description());
+        ErrorDialog dialog(st, this);
+        dialog.exec();
         return;
     }
 
