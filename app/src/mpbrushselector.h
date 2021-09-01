@@ -42,18 +42,19 @@ public:
   MPBrushConfigurator* brushConfigurator() { return mBrushConfiguratorWidget; }
 
 public slots:
-//  void reloadCurrentBrush();
   void selectBrush(QString brushName);
   void typeChanged(ToolType);
   void reloadBrushList();
   void updateBrushList(QString brushName, QString brushPreset);
   void showPresetManager(bool show);
   void showBrushConfigurator(bool show);
+  void onDidReloadBrushSettings();
 
 signals:
   void brushSelected();
   void notifyBrushSettingToggled(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
   void notifyBrushSettingChanged(qreal value, BrushSettingType setting);
+  void didReloadBrush();
 
 protected slots:
   void itemClicked ( QListWidgetItem *);

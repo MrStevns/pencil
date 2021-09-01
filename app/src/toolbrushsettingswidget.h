@@ -31,6 +31,7 @@ public:
     void setValue(qreal value, BrushSettingType setting);
 
     void setupSettings(ToolType toolType);
+    void resetSettings();
 
     void updateFromUnmappedSetting(qreal value, BrushSettingType setting);
 

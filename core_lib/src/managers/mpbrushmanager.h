@@ -31,6 +31,7 @@ public:
     QString currentPresetName() { return mCurrentPresetName; }
     QString currentBrushName() { return mCurrentBrushName; }
     QByteArray currentBrushData() { return mCurrentBrushData; }
+    Status resetCurrentBrush();
 
     void setCurrentPresetName(const QString& name) { mCurrentPresetName = name; }
 
@@ -54,7 +55,7 @@ Q_SIGNALS:
 
 private:
 
-    Status replaceBrushIfNeeded(QString brushName);
+    Status replaceBrushIfNeeded(QString brushPath);
     Status copyResourcesToAppData();
     QJsonDocument writeModifications(const QJsonDocument& doc, QJsonParseError& error, QHash<int, BrushChanges> modifications);
 

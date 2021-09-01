@@ -227,6 +227,12 @@ void MPBrushSelector::loadBrushFromFile(const QString& brushName)
     }
 }
 
+void MPBrushSelector::onDidReloadBrushSettings()
+{
+    mEditor->loadBrush();
+    emit didReloadBrush();
+}
+
 void MPBrushSelector::loadToolBrushes(QString toolName)
 {
     QMap<QString, QListWidget*>::iterator widgetIt;
@@ -362,6 +368,7 @@ void MPBrushSelector::showBrushConfigurator(bool show)
         connect(mBrushConfiguratorWidget, &MPBrushConfigurator::notifyBrushInfoUpdated, this, &MPBrushSelector::updateBrushList);
         connect(mBrushConfiguratorWidget, &MPBrushConfigurator::notifyBrushSettingToggled, this, &MPBrushSelector::notifyBrushSettingToggled);
         connect(mBrushConfiguratorWidget, &MPBrushConfigurator::brushSettingChanged, this, &MPBrushSelector::notifyBrushSettingChanged);
+        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::reloadBrushSettings, this, &MPBrushSelector::onDidReloadBrushSettings);
     }
 
     if (show) {

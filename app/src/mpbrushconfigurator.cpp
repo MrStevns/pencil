@@ -66,6 +66,11 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
     mDiscardChangesButton->setToolTip(tr("Discard current changes"));
     mDiscardChangesButton->setEnabled(false);
 
+    QPushButton* resetButton = new QPushButton(this);
+    resetButton->setText(tr("Reset"));
+    mDiscardChangesButton->setToolTip(tr("Factory reset settings"));
+    resetButton->setEnabled(true);
+
     QPushButton* deleteBrushButton = new QPushButton(this);
     deleteBrushButton->setText(tr("Delete"));
     deleteBrushButton->setToolTip(tr("Delete current brush and close window"));
@@ -87,6 +92,7 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
     toolbar->addWidget(resetSpacer);
     toolbar->addWidget(mDiscardChangesButton);
     toolbar->addWidget(deleteBrushButton);
+    toolbar->addWidget(resetButton);
 
     QHBoxLayout* topLayout = new QHBoxLayout();
 
@@ -128,6 +134,7 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
     connect(mDiscardChangesButton, &QPushButton::pressed, this, &MPBrushConfigurator::pressedDiscardBrush);
     connect(editBrushButton, &QPushButton::pressed, this, &MPBrushConfigurator::pressedEditBrush);
     connect(cloneBrushButton, &QPushButton::pressed, this, &MPBrushConfigurator::pressedEditBrush);
+    connect(resetButton, &QPushButton::pressed, this, &MPBrushConfigurator::onResetButtonPressed);
 }
 
 void MPBrushConfigurator::initUI()
@@ -670,6 +677,30 @@ void MPBrushConfigurator::pressedRemoveBrush()
             QMessageBox::warning(this, st.title(),
                                        st.description());
         }
+    }
+}
+
+void MPBrushConfigurator::onResetButtonPressed()
+{
+    QMessageBox::StandardButton ret = QMessageBox::warning(this, tr("Factory reset brush"),
+                                   tr("This will reset brush settings for the chosen brush, are you sure you want to factory reset?"),
+                                   QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes);
+
+    if (ret == QMessageBox::Yes) {
+        Status st = mEditor->brushes()->resetCurrentBrush();
+
+        if (st.fail()) {
+            ErrorDialog dialog(st, this);
+            dialog.exec();
+
+            return;
+        }
+
+        reloadBrushSettings();
+        updateUI();
+
+        mCurrentModifications.clear();
+        mOldModifications.clear();
     }
 }
 

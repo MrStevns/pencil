@@ -63,6 +63,20 @@ void ToolBrushSettingsWidget::updateUI()
     setupSettingsForTool(mEditor->tools()->currentTool()->type());
 }
 
+void ToolBrushSettingsWidget::resetSettings()
+{
+    QSettings settings(PENCIL2D, PENCIL2D);
+
+    QString toolSetting = QString(SETTING_MPBRUSHSETTING)
+                          .arg(mEditor->tools()->currentTool()->typeName()).toLower();
+
+    settings.beginGroup(toolSetting);
+    settings.remove("");
+    settings.endGroup();
+
+    setupDefaultSettings();
+}
+
 void ToolBrushSettingsWidget::setupDefaultSettings()
 {
     mMainVerticalLayout->removeItem(mSpacer);

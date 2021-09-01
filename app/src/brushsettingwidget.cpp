@@ -58,8 +58,8 @@ void BrushSettingWidget::initUI()
     BrushSettingInfo info = mEditor->getBrushSettingInfo(mSettingType);
 
     qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(mSettingType));
-    setValue(baseValue);
     setRange(static_cast<qreal>(info.min), static_cast<qreal>(info.max));
+    setValue(baseValue);
     setToolTip(info.tooltip);
 }
 
@@ -129,12 +129,9 @@ void BrushSettingWidget::setValueInternal(qreal value)
 
 void BrushSettingWidget::setRange(qreal min, qreal max)
 {
-
     mMin = min;
     mMax = max;
-
     mValueSlider->setRange(mMin, mMax);
-    setValue(mCurrentValue);
 }
 
 void BrushSettingWidget::setToolTip(QString toolTip)

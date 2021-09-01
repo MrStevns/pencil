@@ -38,7 +38,7 @@ Status MPBrushManager::loadPresets()
     if (fileOrder.open(QIODevice::ReadOnly))
     {
         // TODO: will probably have to create a brush importer
-        mBrushPresets = mEditor->brushes()->parseConfig(fileOrder, mBrushesPath);
+        mBrushPresets = parseConfig(fileOrder, mBrushesPath);
 
         if (mBrushPresets.isEmpty() || mBrushPresets.first().allBrushes().isEmpty()) {
             st = Status::FAIL;
@@ -62,6 +62,18 @@ Status MPBrushManager::loadPresets()
     }
 
     return st;
+}
+
+/// Resets all settings for the currently selected brush.
+/// Does not replace brush icon
+Status MPBrushManager::resetCurrentBrush()
+{
+    const QString& brushPath = MPCONF::getBrushesPath() + "/" + mCurrentPresetName + "/" + mCurrentBrushName + BRUSH_CONTENT_EXT;
+    auto status = replaceBrushIfNeeded(brushPath);
+
+    if (status.fail()) { return status; }
+
+    return readBrushFromCurrentPreset(mCurrentBrushName);
 }
 
 Status MPBrushManager::readBrushFromCurrentPreset(const QString& brushName)

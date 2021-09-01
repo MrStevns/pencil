@@ -93,6 +93,7 @@ private:
     void pressedEditBrush();
     void pressedCloneBrush();
     void pressedDiscardBrush();
+    void onResetButtonPressed();
 
     void openBrushInfoWidget(DialogContext dialogContext);
 
