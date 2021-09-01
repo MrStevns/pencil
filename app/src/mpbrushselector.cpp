@@ -361,6 +361,13 @@ void MPBrushSelector::showBrushConfigurator(bool show)
         mBrushConfiguratorWidget = new MPBrushConfigurator(this);
         mBrushConfiguratorWidget->setCore(mEditor);
         mBrushConfiguratorWidget->initUI();
+        mBrushConfiguratorWidget->setAttribute(Qt::WA_DeleteOnClose);
+
+        connect(mBrushConfiguratorWidget, &MPBrushConfigurator::finished, [=]
+        {
+            mBrushConfiguratorWidget->hideUI();
+            mBrushConfiguratorWidget = nullptr;
+        });
 
         connect(this, &MPBrushSelector::brushSelected, mBrushConfiguratorWidget, &MPBrushConfigurator::updateConfig);
         connect(this, &MPBrushSelector::notifyBrushSettingChanged, mBrushConfiguratorWidget, &MPBrushConfigurator::setBrushSettingValue);
