@@ -1151,3 +1151,8 @@ BaseTool* Editor::getTool(ToolType toolType) const
 {
     return mToolManager->getTool(toolType);
 }
+
+BaseTool* Editor::currentTool() const
+{
+    return mToolManager->currentTool();
+}

@@ -38,13 +38,6 @@ void ToolBrushSettingsWidget::initUI()
     auto toolMan = mEditor->tools();
 
     ToolType currentToolType = toolMan->currentTool()->type();
-    QString toolGroupKey = QString(SETTING_MPBRUSHSETTING)
-                           .arg(mEditor->tools()->currentTool()->typeName()).toLower();
-
-    QSettings settings(PENCIL2D, PENCIL2D);
-    auto groups = settings.childGroups();
-
-    settings.beginGroup(toolGroupKey);
 
     setupSettings(currentToolType);
 
@@ -60,15 +53,14 @@ void ToolBrushSettingsWidget::initUI()
 
 void ToolBrushSettingsWidget::updateUI()
 {
-    setupSettingsForTool(mEditor->tools()->currentTool()->type());
+    setupSettings(mEditor->currentTool()->type());
 }
 
 void ToolBrushSettingsWidget::resetSettings()
 {
     QSettings settings(PENCIL2D, PENCIL2D);
 
-    QString toolSetting = QString(SETTING_MPBRUSHSETTING)
-                          .arg(mEditor->tools()->currentTool()->typeName()).toLower();
+    QString toolSetting = mEditor->brushes()->currentToolBrushIdentifier();
 
     settings.beginGroup(toolSetting);
     settings.remove("");
@@ -90,7 +82,30 @@ void ToolBrushSettingsWidget::setupDefaultSettings()
     qDebug() << "setup settings for :" << tool->typeName();
     QSettings settings(PENCIL2D, PENCIL2D);
 
+    QString configGroupForBrush = mEditor->brushes()->currentToolBrushIdentifier();
+
+    for (int toolSettingNum = 0; toolSettingNum < static_cast<int>(BrushSettingType::BRUSH_SETTINGS_COUNT); toolSettingNum++)
+    {
+        BrushSettingType settingType = static_cast<BrushSettingType>(toolSettingNum);
+
+        settings.beginGroup(configGroupForBrush);
+            settings.beginGroup(getBrushSettingIdentifier(settingType));
+            settings.setValue("visible", false);
+            settings.endGroup();
+        settings.endGroup();
+    }
+
     for (BrushSetting setting : tool->enabledBrushSettings()) {
+
+        settings.beginGroup(configGroupForBrush);
+            settings.beginGroup(getBrushSettingIdentifier(setting.type));
+            settings.setValue("visible", true);
+            settings.setValue("name", setting.name);
+            settings.setValue("min", setting.min);
+            settings.setValue("max", setting.max);
+            settings.endGroup();
+        settings.endGroup();
+
         BrushSettingWidget* settingWidget = new BrushSettingWidget(setting.name, setting.type, setting.min, setting.max, this);
         mMainVerticalLayout->addWidget(settingWidget);
         settingWidget->setCore(mEditor);
@@ -99,20 +114,6 @@ void ToolBrushSettingsWidget::setupDefaultSettings()
         connect(settingWidget, &BrushSettingWidget::brushSettingChanged, toolMan, &ToolManager::setMPBrushSetting);
         connect(settingWidget, &BrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
         mBrushSettingWidgets.insert(static_cast<int>(settingWidget->setting()), settingWidget);
-
-        QString toolSetting = QString(SETTING_MPBRUSHSETTING)
-                              .arg(mEditor->tools()->currentTool()->typeName()).toLower();
-
-        QSettings settings(PENCIL2D, PENCIL2D);
-
-        settings.beginGroup(toolSetting);
-            settings.beginGroup(getBrushSettingIdentifier(setting.type));
-            settings.setValue("visible", true);
-            settings.setValue("name", setting.name);
-            settings.setValue("min", setting.min);
-            settings.setValue("max", setting.max);
-            settings.endGroup();
-        settings.endGroup();
     }
 
     mMainVerticalLayout->addItem(mSpacer);
@@ -129,13 +130,15 @@ void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
     QSettings settings(PENCIL2D, PENCIL2D);
     auto groups = settings.childGroups();
 
-    QString toolGroup = QString(SETTING_MPBRUSHSETTING)
-                        .arg(mEditor->tools()->currentTool()->typeName()).toLower();
+    QString toolGroup = mEditor->brushes()->currentToolBrushIdentifier();
 
     settings.beginGroup(toolGroup);
 
-    for (QString key : settings.childGroups())
+    QListIterator<QString> settingsIt(settings.childGroups());
+    settingsIt.toBack();
+    while(settingsIt.hasPrevious())
     {
+        QString key = settingsIt.previous();
         settings.beginGroup(key);
 
         bool show = settings.value("visible").toBool();
@@ -161,8 +164,9 @@ void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
 
 void ToolBrushSettingsWidget::setupSettings(ToolType toolType)
 {
-    QString toolGroupKey = QString(SETTING_MPBRUSHSETTING)
-                           .arg(mEditor->tools()->currentTool()->typeName()).toLower();
+    if (!mEditor->brushes()->brushLoaded()) { return; }
+
+    QString toolGroupKey = mEditor->brushes()->currentToolBrushIdentifier();
 
     QSettings settings(PENCIL2D, PENCIL2D);
     auto groups = settings.childGroups();
@@ -200,9 +204,10 @@ void ToolBrushSettingsWidget::didUpdateSetting(qreal value, BrushSettingType set
     change.baseValue = value;
     change.settingsType = setting;
 
-    QHash<int, BrushChanges> changes;
-    changes.insert(static_cast<int>(setting), change);
-    mEditor->brushes()->applyChangesToBrushFile(changes);
+    QHash<BrushSettingType, BrushChanges> changes;
+    changes.insert(setting, change);
+    mEditor->brushes()->backupBrushSettingChanges(setting, value);
+    mEditor->brushes()->applyChangesToBrushFile(false);
 
     emit brushSettingChanged(value, setting);
 }

@@ -171,7 +171,8 @@ void MPBrushConfigurator::updateUI()
     for (BrushSettingEditWidget* item : mBrushWidgets) {
         item->updateUI();
     }
-    mDiscardChangesButton->setEnabled(!mOldModifications.isEmpty());
+
+    mDiscardChangesButton->setEnabled(mEditor->brushes()->brushModificationsForTool());
 
     QPixmap pix(QPixmap(mEditor->brushes()->getBrushImagePath(mPreset, mBrushName)));
     mBrushImageWidget->setPixmap(pix.scaled(mImageSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
@@ -198,10 +199,6 @@ void MPBrushConfigurator::updateConfig()
     auto currentBrushName = mEditor->brushes()->currentBrushName();
     auto currentPresetName = mEditor->brushes()->currentPresetName();
 
-    if (mBrushName != currentBrushName && mPreset != currentPresetName) {
-        mOldModifications.clear();
-    }
-
     mToolType = mEditor->tools()->currentTool()->type();
     mBrushName = currentBrushName;
     mPreset = currentPresetName;
@@ -222,8 +219,7 @@ void MPBrushConfigurator::prepareActiveSettings()
     QSettings settings(PENCIL2D, PENCIL2D);
     auto groups = settings.childGroups();
 
-    QString toolGroup = QString(SETTING_MPBRUSHSETTING)
-                        .arg(mEditor->tools()->currentTool()->typeName()).toLower();
+    QString toolGroup = mEditor->brushes()->currentToolBrushIdentifier();
 
     settings.beginGroup(toolGroup);
 
@@ -473,40 +469,15 @@ void MPBrushConfigurator::setBrushSettingValue(qreal value, BrushSettingType set
 
 void MPBrushConfigurator::prepareBrushChanges(qreal value, BrushSettingType setting)
 {
-    int settingTypeInt = static_cast<int>(setting);
+    mEditor->brushes()->backupBrushSettingChanges(setting, value);
 
-    backupBrushSetting(setting);
-
-    if (!mCurrentModifications.contains(settingTypeInt)) {
-        BrushChanges changes;
-        changes.baseValue = value;
-        changes.settingsType = setting;
-
-        mCurrentModifications.insert(settingTypeInt, changes);
-    } else {
-        BrushChanges outerChanges;
-        QHashIterator<int, BrushChanges> changesHash(mCurrentModifications);
-        while (changesHash.hasNext()) {
-            changesHash.next();
-
-            BrushChanges innerChanges = changesHash.value();
-            if (setting == innerChanges.settingsType) {
-                innerChanges.baseValue = value;
-                innerChanges.settingsType = setting;
-                outerChanges = innerChanges;
-                mCurrentModifications.insert(settingTypeInt, outerChanges);
-                break;
-            }
-        }
-    }
-
-    if (!mCurrentModifications.isEmpty()) {
+    if (mEditor->brushes()->brushModificationsForTool()) {
         mDiscardChangesButton->setEnabled(true);
     }
 
     mEditor->setMPBrushSettingBaseValue(setting, static_cast<float>(value));
 
-    auto st = mEditor->brushes()->applyChangesToBrushFile(mCurrentModifications);
+    auto st = mEditor->brushes()->applyChangesToBrushFile(false);
 
     if (st.fail()) {
         ErrorDialog dialog(st, this);
@@ -519,136 +490,26 @@ void MPBrushConfigurator::prepareBrushChanges(qreal value, BrushSettingType sett
     prepareUpdateBrushPreview();
 }
 
-void MPBrushConfigurator::backupBrushSetting(BrushSettingType setting)
-{
-    int settingTypeInt = static_cast<int>(setting);
-    // Adds old brush value and only save once, so we can discard it later if needed
-    if (!mOldModifications.contains(settingTypeInt)) {
-        float baseValue = mEditor->getMPBrushSettingBaseValue(setting);
-
-        BrushChanges changes;
-        changes.baseValue = static_cast<qreal>(baseValue);
-        changes.settingsType = setting;
-        mOldModifications.insert(settingTypeInt, changes);
-    }
-}
-
-void MPBrushConfigurator::backupBrushMapping(BrushSettingType setting, BrushInputType input) {
-    int settingInt = static_cast<int>(setting);
-    int inputInt = static_cast<int>(input);
-    auto mappingInput = mEditor->getBrushInputMapping(setting, input);
-
-
-    // Setting and input has not been saved yet, save it...
-    if (!mOldModifications.contains(settingInt) || !mOldModifications.find(settingInt).value().listOfinputChanges.contains(inputInt)) {
-        BrushChanges changes;
-        changes.settingsType = setting;
-
-        auto points = mEditor->getBrushInputMapping(setting, input).controlPoints.points;
-
-        changes.listOfinputChanges.insert(static_cast<int>(input), InputChanges { points, input });
-
-        mOldModifications.insert(settingInt, changes);
-    } else {
-
-        // Setting already exists, make sure we're adding a new input
-        QHashIterator<int, BrushChanges> oldIt(mOldModifications);
-
-        while (oldIt.hasNext()) {
-            oldIt.next();
-
-            auto brushChanges = oldIt.value();
-            auto listOfInputChanges = brushChanges.listOfinputChanges;
-            QHashIterator<int, InputChanges> inputIt(listOfInputChanges);
-            while (inputIt.hasNext()) {
-                inputIt.next();
-                auto inputChanges = inputIt.value();
-
-                if (inputChanges.inputType != input) {
-                    auto points = mappingInput.controlPoints.points;
-                    brushChanges.listOfinputChanges.insert(static_cast<int>(input), InputChanges { points, input });
-                    mOldModifications.insert(settingInt, brushChanges);
-                }
-            }
-        }
-    }
-
-}
-
 void MPBrushConfigurator::prepareBrushInputChanges(QVector<QPointF> points, BrushSettingType setting, BrushInputType input)
 {
-    backupBrushMapping(setting, input);
+    mEditor->brushes()->backupBrushInputChanges(setting, input, points);
 
-    // if no base value has been provided, use the default value from brush settings
-    qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(setting));
-
-    // TODO: this will only work for one instance... we need to keep current modifications
-    // per brush and store it somewhere that has a longer lifetime...
-//    if (mCurrentModifications.isEmpty()) {
-        BrushChanges changes;
-        changes.baseValue = baseValue;
-        changes.settingsType = setting;
-        auto mappedInputs = points;
-
-        changes.listOfinputChanges.insert(static_cast<int>(input), InputChanges { mappedInputs, input });
-
-        mCurrentModifications.insert(static_cast<int>(setting),changes);
-//    } else {
-//        QHashIterator<int, BrushChanges> it(mCurrentModifications);
-//        while (it.hasNext()) {
-//            it.next();
-//            BrushChanges changes = it.value();
-//            changes.settingsType = setting;
-//            if (setting == changes.settingsType) {
-//                auto mappedInputs = points;
-//                changes.listOfinputChanges.insert(static_cast<int>(input), InputChanges { mappedInputs, input });
-
-//                mCurrentModifications.insert(static_cast<int>(setting), changes);
-//            }
-//        }
-
-//        QHashIterator<int, BrushChanges> itBrush(mCurrentModifications);
-//        while (itBrush.hasNext()) {
-//            itBrush.next();
-
-//            QHashIterator<int, InputChanges> i(itBrush.value().listOfinputChanges);
-//            while (i.hasNext()) {
-
-//                InputChanges changes = i.value();
-//                if (input == changes.inputType) {
-//                  changes.mappedPoints = points;
-//                }
-
-//            }
-//        }
-//    }
-
-    if (!mCurrentModifications.isEmpty()) {
+    if (mEditor->brushes()->brushModificationsForTool()) {
         mDiscardChangesButton->setEnabled(true);
     }
 
     mEditor->setBrushInputMapping(points, setting, input);
-    mEditor->brushes()->applyChangesToBrushFile(mCurrentModifications);
+    mEditor->brushes()->applyChangesToBrushFile(false);
 
     prepareUpdateBrushPreview();
-
-    mCurrentModifications.clear();
 }
 
 void MPBrushConfigurator::removeBrushMappingForInput(BrushSettingType setting, BrushInputType input)
 {
-    backupBrushMapping(setting, input);
-
-    BrushChanges changes;
-    changes.baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(setting));
-    changes.settingsType = setting;
-
-    changes.listOfinputChanges.insert(static_cast<int>(input), InputChanges { {}, input, false });
-
-    mCurrentModifications.insert(static_cast<int>(setting),changes);
+    mEditor->brushes()->removeBrushInputMapping(setting, input);
 
     mEditor->setBrushInputMapping({}, setting, input);
-    mEditor->brushes()->applyChangesToBrushFile(mCurrentModifications);
+    mEditor->brushes()->applyChangesToBrushFile(false);
     prepareUpdateBrushPreview();
 }
 
@@ -699,8 +560,7 @@ void MPBrushConfigurator::onResetButtonPressed()
         reloadBrushSettings();
         updateUI();
 
-        mCurrentModifications.clear();
-        mOldModifications.clear();
+        mEditor->brushes()->clearCurrentBrushModifications();
     }
 }
 
@@ -737,35 +597,14 @@ void MPBrushConfigurator::pressedCloneBrush()
 
 void MPBrushConfigurator::pressedDiscardBrush()
 {
-    // FIXME: discard button doesn't get enabled when modifying the brush from outside the configurator
-    // this makes it impossible to discard changes.
-    // FIXME: removing an input doesn't save immediately
-    QHashIterator<int, BrushChanges> changesIt(mOldModifications);
-
-    while (changesIt.hasNext()) {
-        changesIt.next();
-
-        mEditor->setMPBrushSettingBaseValue(static_cast<BrushSettingType>(changesIt.key()),
-                                   static_cast<float>(changesIt.value().baseValue));
-
-        const auto brushChanges = changesIt.value();
-        QHashIterator<int, InputChanges> inputIt(brushChanges.listOfinputChanges);
-        while (inputIt.hasNext()) {
-            inputIt.next();
-
-            const auto inputChanges = inputIt.value();
-            mEditor->setBrushInputMapping(inputChanges.mappedPoints, brushChanges.settingsType, inputChanges.inputType);
-        }
-    }
-
-    mEditor->brushes()->applyChangesToBrushFile(mOldModifications);
+    mEditor->brushes()->discardBrushChanges();
+    mEditor->brushes()->applyChangesToBrushFile(true);
     updateUI();
 
     reloadBrushSettings();
     prepareUpdateBrushPreview();
 
-    mCurrentModifications.clear();
-    mOldModifications.clear();
+    mEditor->brushes()->clearCurrentBrushModifications();
     mDiscardChangesButton->setEnabled(false);
 }
 

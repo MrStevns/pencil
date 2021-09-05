@@ -2,6 +2,7 @@
 #define MPBRUSHMANAGER_H
 
 #include "basemanager.h"
+#include "pencildef.h"
 
 #include "QJsonDocument"
 #include <QJsonParseError>
@@ -21,7 +22,7 @@ public:
     Status load(Object *o) override;
     Status save(Object *o) override;
 
-    Status applyChangesToBrushFile(QHash<int, BrushChanges> changes);
+    Status applyChangesToBrushFile(bool flush);
     Status loadPresets();
 
     QVector<MPBrushPreset> presets() { return mBrushPresets; }
@@ -49,24 +50,40 @@ public:
 
     QVector<MPBrushPreset> parseConfig(QFile& file, QString brushesPath);
 
+    void removeBrushInputMapping(BrushSettingType settingType, BrushInputType inputType);
+    void backupBrushInputChanges(BrushSettingType settingType, BrushInputType inputType, QVector<QPointF> mappingPoints);
+    void backupInitialBrushSettingChanges(BrushSettingType settingType);
+    void backupInitialBrushInputMappingChanges(BrushSettingType settingType, BrushInputType inputType);
+    void backupBrushSettingChanges(BrushSettingType settingType, qreal baseValue);
+    void discardBrushChanges();
+    bool brushModificationsForTool();
+
+    void clearCurrentBrushModifications();
+
+    QString currentToolBrushIdentifier();
+
+    bool brushLoaded() const { return !mCurrentBrushName.isEmpty() && !mCurrentBrushData.isEmpty(); }
+
 Q_SIGNALS:
     void errorFromStatus(Status& status);
     void errorFromTitleMessage(QString title, QString description);
 
 private:
-
     Status replaceBrushIfNeeded(QString brushPath);
     Status copyResourcesToAppData();
-    QJsonDocument writeModifications(const QJsonDocument& doc, QJsonParseError& error, QHash<int, BrushChanges> modifications);
+    QJsonDocument writeModifications(const QJsonDocument& doc, QJsonParseError& error, QHash<BrushSettingType, BrushChanges> modifications);
 
     QVector<MPBrushPreset> mBrushPresets;
     QString mBrushesPath;
 
-    QString mCurrentPresetName;
-    QString mCurrentBrushName;
-    QString mCurrentToolName;
+    QString mCurrentPresetName = "";
+    QString mCurrentBrushName = "";
+    QString mCurrentToolName = "";
 
     QByteArray mCurrentBrushData;
+
+    QHash<QString, QHash<BrushSettingType, BrushChanges>> mBrushModsForTools;
+    QHash<QString, QHash<BrushSettingType, BrushChanges>> mOldBrushModsForTools;
 
     Editor* mEditor = nullptr;
 };

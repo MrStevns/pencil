@@ -161,6 +161,11 @@ enum class BrushInputType {
         BRUSH_INPUTS_COUNT
 };
 
+inline uint qHash(BrushInputType key, uint seed)
+{
+    return ::qHash(static_cast<uint>(key), seed);
+}
+
 struct MappingControlPoints {
   // a set of control points (stepwise linear)
   QVector<QPointF> points;

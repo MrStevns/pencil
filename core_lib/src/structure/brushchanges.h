@@ -39,7 +39,7 @@ struct InputChanges {
 };
 
 struct BrushChanges {
-    QHash<int, InputChanges> listOfinputChanges;
+    QHash<BrushInputType, InputChanges> listOfinputChanges;
     qreal baseValue;
     BrushSettingType settingsType;
 
@@ -61,7 +61,7 @@ struct BrushChanges {
 
         QJsonValueRef inputsContainerRef = object.find("inputs").value();
         QJsonObject inputsContainerObj = inputsContainerRef.toObject();
-        QHashIterator<int, InputChanges> inputIt(listOfinputChanges);
+        QHashIterator<BrushInputType, InputChanges> inputIt(listOfinputChanges);
         while (inputIt.hasNext()) {
             inputIt.next();
 

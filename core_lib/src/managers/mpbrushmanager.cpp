@@ -2,6 +2,7 @@
 
 #include <QSettings>
 #include "pencildef.h"
+#include "basetool.h"
 
 #include "editor.h"
 #include "mpbrushutils.h"
@@ -80,10 +81,19 @@ Status MPBrushManager::readBrushFromCurrentPreset(const QString& brushName)
 {
     auto status = readBrushFromFile(mCurrentPresetName, brushName);
     mCurrentBrushName = brushName;
+    mCurrentToolName = mEditor->currentTool()->typeName();
     return status;
 }
 
-Status MPBrushManager::applyChangesToBrushFile(QHash<int, BrushChanges> changes)
+QString MPBrushManager::currentToolBrushIdentifier()
+{
+    return QString(SETTING_MPBRUSHSETTING)
+            .arg(mCurrentToolName)
+            .arg(mCurrentPresetName)
+            .arg(mCurrentBrushName).toLower();
+}
+
+Status MPBrushManager::applyChangesToBrushFile(bool flush)
 {
     Status status = readBrushFromFile(mCurrentPresetName, mCurrentBrushName);
 
@@ -94,14 +104,190 @@ Status MPBrushManager::applyChangesToBrushFile(QHash<int, BrushChanges> changes)
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(mCurrentBrushData, &error);
 
-    doc = writeModifications(doc, error, changes);
+    QString toolBrushIdentifier = currentToolBrushIdentifier();
+    auto modificationHash = mBrushModsForTools.find(toolBrushIdentifier);
+    if (flush) {
+        modificationHash = mOldBrushModsForTools.find(toolBrushIdentifier);
+        Q_ASSERT(!modificationHash->isEmpty());
+    }
+
+    doc = writeModifications(doc, error, modificationHash.value());
 
     Status statusWrite = writeBrushToFile(mCurrentPresetName, mCurrentBrushName, doc.toJson());
 
     return statusWrite;
 }
 
-QJsonDocument MPBrushManager::writeModifications(const QJsonDocument& doc, QJsonParseError& error, QHash<int, BrushChanges> modifications)
+void MPBrushManager::discardBrushChanges()
+{
+    QHashIterator<BrushSettingType, BrushChanges> changesIt(mOldBrushModsForTools.find(currentToolBrushIdentifier()).value());
+    while (changesIt.hasNext()) {
+        changesIt.next();
+
+        mEditor->setMPBrushSettingBaseValue(static_cast<BrushSettingType>(changesIt.key()),
+                                   static_cast<float>(changesIt.value().baseValue));
+
+        const auto brushChanges = changesIt.value();
+        QHashIterator<BrushInputType, InputChanges> inputIt(brushChanges.listOfinputChanges);
+        while (inputIt.hasNext()) {
+            inputIt.next();
+
+            const auto inputChanges = inputIt.value();
+            mEditor->setBrushInputMapping(inputChanges.mappedPoints, brushChanges.settingsType, inputChanges.inputType);
+        }
+    }
+}
+
+void MPBrushManager::backupBrushInputChanges(BrushSettingType settingType, BrushInputType inputType, QVector<QPointF> mappingPoints)
+{
+    auto toolHashIt = mOldBrushModsForTools.constFind(currentToolBrushIdentifier());
+    auto toolHash = mOldBrushModsForTools;
+
+    if (toolHashIt != toolHash.constEnd()) {
+
+        auto settingHash = toolHashIt.value();
+        auto settingHashIt = settingHash.constFind(settingType);
+
+        if (settingHashIt != settingHash.constEnd()) {
+            auto inputHash = settingHashIt.value().listOfinputChanges;
+            auto inputHashIt = inputHash.constFind(inputType);
+
+            if (inputHashIt != inputHash.constEnd() && !inputHash.contains(inputType)) {
+                BrushChanges changes;
+                changes.settingsType = settingType;
+
+                auto points = mEditor->getBrushInputMapping(settingType, inputType).controlPoints.points;
+
+                changes.listOfinputChanges.insert(inputType, InputChanges { points, inputType });
+
+                mBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType, changes) } );
+            }
+        }
+    } else {
+
+        // Setting already exists, make sure we're adding a new input
+        QHashIterator<BrushSettingType, BrushChanges> oldIt(toolHashIt.value());
+
+        while (oldIt.hasNext()) {
+            oldIt.next();
+
+            auto brushChanges = oldIt.value();
+            auto listOfInputChanges = brushChanges.listOfinputChanges;
+            QHashIterator<BrushInputType, InputChanges> inputIt(listOfInputChanges);
+            while (inputIt.hasNext()) {
+                inputIt.next();
+                auto inputChanges = inputIt.value();
+
+                if (inputChanges.inputType != inputType) {
+                    auto points = mappingPoints;
+                    brushChanges.listOfinputChanges.insert(inputType, InputChanges { points, inputType });
+                    mBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType, brushChanges) } );
+                }
+            }
+        }
+    }
+}
+
+void MPBrushManager::backupInitialBrushInputMappingChanges(BrushSettingType settingType, BrushInputType inputType)
+{
+    auto toolHashIt = mOldBrushModsForTools.constFind(currentToolBrushIdentifier());
+    auto toolHash = mOldBrushModsForTools;
+
+    if (toolHashIt != toolHash.constEnd()) {
+
+        auto settingHash = toolHashIt.value();
+        auto settingHashIt = settingHash.constFind(settingType);
+
+        if (settingHashIt != settingHash.constEnd()) {
+            auto inputHash = settingHashIt.value().listOfinputChanges;
+            auto inputHashIt = inputHash.constFind(inputType);
+
+            if (inputHashIt != inputHash.constEnd() && inputHash.contains(inputType)) { return; }
+        }
+    }
+
+    auto mappingInput = mEditor->getBrushInputMapping(settingType, inputType);
+
+    // if no base value has been provided, use the default value from brush settings
+    qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(settingType));
+
+    BrushChanges changes;
+    changes.baseValue = baseValue;
+    changes.settingsType = settingType;
+    auto mappedInputs = mappingInput.controlPoints.points;
+
+    changes.listOfinputChanges.insert(inputType, InputChanges { mappedInputs, inputType });
+
+    mBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType,changes) } );
+}
+
+void MPBrushManager::backupInitialBrushSettingChanges(BrushSettingType settingType)
+{
+    // Adds old brush value and only save once, so we can discard it later if needed
+    auto toolHashIt = mOldBrushModsForTools.constFind(currentToolBrushIdentifier());
+    auto toolHash = mOldBrushModsForTools;
+    if (toolHashIt != toolHash.constEnd() && toolHashIt->contains(settingType)) { return; }
+
+    qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(settingType));
+
+    BrushChanges changes;
+    changes.baseValue = baseValue;
+    changes.settingsType = settingType;
+    mOldBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType, changes) } );
+}
+
+void MPBrushManager::backupBrushSettingChanges(BrushSettingType settingType, qreal baseValue)
+{
+    backupInitialBrushSettingChanges(settingType);
+
+    auto toolHashIt = mBrushModsForTools.constFind(currentToolBrushIdentifier());
+    auto toolHash = mBrushModsForTools;
+    if (toolHashIt == toolHash.constEnd() || (toolHashIt != toolHash.constEnd() && !toolHashIt->contains(settingType))) {
+        BrushChanges changes;
+        changes.baseValue = baseValue;
+        changes.settingsType = settingType;
+
+        mBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType, changes) } );
+    } else {
+        QHashIterator<BrushSettingType, BrushChanges> changesHash(toolHashIt.value());
+        while (changesHash.hasNext()) {
+            changesHash.next();
+
+            BrushChanges innerChanges = changesHash.value();
+            if (settingType == innerChanges.settingsType) {
+                innerChanges.baseValue = baseValue;
+                innerChanges.settingsType = settingType;
+                mBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType, innerChanges) } );
+                break;
+            }
+        }
+    }
+}
+
+void MPBrushManager::removeBrushInputMapping(BrushSettingType settingType, BrushInputType inputType)
+{
+    auto toolHashIt = mBrushModsForTools.constFind(currentToolBrushIdentifier());
+    auto toolHash = mBrushModsForTools;
+    Q_ASSERT(toolHashIt != toolHash.constEnd());
+    Q_ASSERT(toolHashIt->contains(settingType));
+
+    auto settingHashIt = toolHashIt->find(settingType).value();
+
+    settingHashIt.listOfinputChanges.insert(inputType, InputChanges { {}, inputType, false });
+}
+
+void MPBrushManager::clearCurrentBrushModifications()
+{
+    mBrushModsForTools.remove(currentToolBrushIdentifier());
+    mOldBrushModsForTools.remove(currentToolBrushIdentifier());
+}
+
+bool MPBrushManager::brushModificationsForTool()
+{
+    return mBrushModsForTools.contains(currentToolBrushIdentifier());
+}
+
+QJsonDocument MPBrushManager::writeModifications(const QJsonDocument& doc, QJsonParseError& error, QHash<BrushSettingType, BrushChanges> modifications)
 {
     QJsonDocument document = doc;
     QJsonObject rootObject = document.object();
@@ -122,7 +308,7 @@ QJsonDocument MPBrushManager::writeModifications(const QJsonDocument& doc, QJson
     QJsonValueRef settingsContainerRef = settingsContainerObjIt.value();
 
     QJsonObject settingsContainerObj = settingsContainerRef.toObject();
-    QHashIterator<int, BrushChanges> settingIt(modifications);
+    QHashIterator<BrushSettingType, BrushChanges> settingIt(modifications);
     while (settingIt.hasNext()) {
         settingIt.next();
 

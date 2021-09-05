@@ -295,7 +295,7 @@ const static int MaxFramesBound = 9999;
 
 #define SETTING_MPBRUSHPRESET "MpBrushPreset"
 #define SETTING_MPBRUSHFORTOOL "LastBrushFor_"
-#define SETTING_MPBRUSHSETTING "ToolSetting_%1"
+#define SETTING_MPBRUSHSETTING "ToolSetting_%1_Preset_%2_Brush_%3"
 
 
 #define SETTING_DRAW_ON_EMPTY_FRAME_ACTION  "DrawOnEmptyFrameAction"

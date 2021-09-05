@@ -55,9 +55,6 @@ signals:
     void notifyBrushInfoUpdated(QString brushName, QString brushPreset);
     void notifyBrushSettingToggled(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
 private:
-
-    void backupBrushSetting(BrushSettingType setting);
-    void backupBrushMapping(BrushSettingType setting, BrushInputType input);
     void prepareUpdateBrushPreview();
     void updateMapValuesButton();
     void updateSettingsView(QTreeWidgetItem* item);
@@ -120,8 +117,6 @@ private:
     Editor* mEditor = nullptr;
 
     QList<BrushSettingEditWidget*> mBrushWidgets;
-    QHash<int, BrushChanges> mCurrentModifications;
-    QHash<int, BrushChanges> mOldModifications;
     QString mBrushName;
     QString mPreset;
     ToolType mToolType;

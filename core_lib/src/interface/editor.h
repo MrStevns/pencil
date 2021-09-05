@@ -110,6 +110,7 @@ public:
     LayerVisibility layerVisibility();
 
     BaseTool* getTool(ToolType toolType) const;
+    BaseTool* currentTool() const;
 
     qreal viewScaleInversed();
     void deselectAll() const;

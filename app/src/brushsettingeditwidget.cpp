@@ -17,6 +17,7 @@
 #include "editor.h"
 #include "preferencemanager.h"
 #include "toolmanager.h"
+#include "mpbrushmanager.h"
 
 #include "mathutils.h"
 
@@ -76,8 +77,7 @@ void BrushSettingEditWidget::updateSetting(qreal value, BrushSettingType setting
 
 void BrushSettingEditWidget::updateUIInternal()
 {
-    QString toolGroup = QString(SETTING_MPBRUSHSETTING)
-                        .arg(mEditor->tools()->currentTool()->typeName()).toLower();
+    QString toolGroup = mEditor->brushes()->currentToolBrushIdentifier();
 
 //    qDebug() << "getting value for : " << toolGroup;
     QSettings settings(PENCIL2D, PENCIL2D);
@@ -131,8 +131,7 @@ void BrushSettingEditWidget::notifyInputMappingRemoved(BrushInputType input)
 
 void BrushSettingEditWidget::visibilityChanged(bool state)
 {
-    QString toolSetting = QString(SETTING_MPBRUSHSETTING)
-                          .arg(mEditor->tools()->currentTool()->typeName()).toLower();
+    QString toolSetting = mEditor->brushes()->currentToolBrushIdentifier();
 
     QSettings settings(PENCIL2D, PENCIL2D);
 
