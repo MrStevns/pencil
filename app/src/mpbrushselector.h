@@ -15,6 +15,7 @@
 #include "mpbrushutils.h"
 #include "basedockwidget.h"
 #include "pencildef.h"
+#include "mpbrushsettingcategories.h"
 
 class QListWidgetItem;
 class QTabWidget;
@@ -52,7 +53,7 @@ public slots:
 
 signals:
   void brushSelected();
-  void notifyBrushSettingToggled(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
+  void notifyBrushSettingToggled(BrushSettingCategoryType settingCategoryType, QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
   void notifyBrushSettingChanged(qreal value, BrushSettingType setting);
   void didReloadBrush();
 

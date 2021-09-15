@@ -156,7 +156,6 @@ protected:
     Editor* editor() { return mEditor; }
 
     QHash<ToolPropertyType, bool> mPropertyEnabled;
-    QList<BrushSetting> mDefaultBrushSettings;
 
     Editor* mEditor = nullptr;
     ScribbleArea* mScribbleArea = nullptr;

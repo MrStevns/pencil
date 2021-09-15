@@ -46,8 +46,6 @@ void PencilTool::loadSettings()
     mPropertyEnabled[STABILIZATION] = true;
     mPropertyEnabled[FILLCONTOUR] = true;
 
-    mDefaultBrushSettings = { RadiusLog, PressureGain };
-
     QSettings settings(PENCIL2D, PENCIL2D);
     properties.width = settings.value("pencilWidth", 4).toDouble();
     properties.feather = 50;

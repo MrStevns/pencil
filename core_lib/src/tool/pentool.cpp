@@ -44,8 +44,6 @@ void PenTool::loadSettings()
     mPropertyEnabled[ANTI_ALIASING] = true;
     mPropertyEnabled[STABILIZATION] = true;
 
-    mDefaultBrushSettings = { RadiusLog, PressureGain, AntiAliasing };
-
     QSettings settings(PENCIL2D, PENCIL2D);
 
     properties.width = settings.value("penWidth", 12.0).toDouble();

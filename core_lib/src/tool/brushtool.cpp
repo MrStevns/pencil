@@ -54,8 +54,6 @@ void BrushTool::loadSettings()
     mPropertyEnabled[INVISIBILITY] = true;
     mPropertyEnabled[STABILIZATION] = true;
 
-    mDefaultBrushSettings = { RadiusLog, PressureGain, Hardness };
-
     QSettings settings(PENCIL2D, PENCIL2D);
 
     properties.width = settings.value("brushWidth", 24.0).toDouble();

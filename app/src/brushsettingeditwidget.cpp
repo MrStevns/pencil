@@ -21,17 +21,18 @@
 
 #include "mathutils.h"
 
-BrushSettingEditWidget::BrushSettingEditWidget(BrushSetting setting, QWidget* parent)
-    : BrushSettingEditWidget(setting.name, setting.type, setting.min, setting.max, parent)
+BrushSettingEditWidget::BrushSettingEditWidget(BrushSettingCategoryType settingCategoryType, BrushSetting setting, QWidget* parent)
+    : BrushSettingEditWidget(settingCategoryType, setting.name, setting.type, setting.min, setting.max, parent)
 {
 }
 
-BrushSettingEditWidget::BrushSettingEditWidget(const QString name, BrushSettingType settingType, qreal min, qreal max, QWidget* parent) :
+BrushSettingEditWidget::BrushSettingEditWidget(BrushSettingCategoryType settingCategoryType, const QString name, BrushSettingType settingType, qreal min, qreal max, QWidget* parent) :
     QWidget(parent), mMin(min), mMax(max)
 {
     QGridLayout* gridLayout = new QGridLayout(this);
     setLayout(gridLayout);
 
+    mSettingCategoryType = settingCategoryType;
     mSettingWidget = new BrushSettingWidget(name, settingType, min, max, this);
     mSettingType = settingType;
     mVisibleCheck = new QCheckBox(this);
@@ -90,6 +91,7 @@ void BrushSettingEditWidget::updateUIInternal()
     settings.endGroup();
     settings.endGroup();
 
+    QSignalBlocker b(mVisibleCheck);
     mVisibleCheck->setChecked(isChecked);
 }
 
@@ -144,7 +146,7 @@ void BrushSettingEditWidget::visibilityChanged(bool state)
     settings.endGroup();
     settings.endGroup();
 
-    emit brushSettingToggled(settingName(), settingType(), mMin, mMax, state);
+    emit brushSettingToggled(mSettingCategoryType, settingName(), settingType(), mMin, mMax, state);
 }
 
 void BrushSettingEditWidget::openMappingWindow()

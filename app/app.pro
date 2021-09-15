@@ -86,6 +86,7 @@ HEADERS += \
     src/importlayersdialog.h \
     src/importpositiondialog.h \
     src/layeropacitydialog.h \
+    src/mpbrushsettingcategories.h \
     src/onionskinwidget.h \
     src/predefinedsetmodel.h \
     src/pegbaralignmentdialog.h \
@@ -144,6 +145,7 @@ SOURCES += \
     src/mpbrushpresetswidget.cpp \
     src/mpbrushpreview.cpp \
     src/mpbrushselector.cpp \
+    src/mpbrushsettingcategories.cpp \
     src/onionskinwidget.cpp \
     src/predefinedsetmodel.cpp \
     src/pegbaralignmentdialog.cpp \

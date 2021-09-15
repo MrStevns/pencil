@@ -14,6 +14,7 @@
 #include "toolmanager.h"
 #include "brushsettingwidget.h"
 #include "brushsetting.h"
+#include "mpbrushsettingcategories.h"
 
 ToolBrushSettingsWidget::ToolBrushSettingsWidget(QWidget* parent) : QWidget(parent)
 {
@@ -32,6 +33,7 @@ void ToolBrushSettingsWidget::initUI()
 
     mMainVerticalLayout = new QVBoxLayout();
     mMainHorizontalLayout = new QHBoxLayout();
+    mBrushSettingsLayout = new QVBoxLayout();
 
     mSpacer = new QSpacerItem(0,0, QSizePolicy::Expanding, QSizePolicy::Preferred);
 
@@ -42,11 +44,14 @@ void ToolBrushSettingsWidget::initUI()
     setupSettings(currentToolType);
 
     containerWidget->setLayout(mMainVerticalLayout);
+    mMainVerticalLayout->addLayout(mBrushSettingsLayout);
 
     mMainHorizontalLayout->addWidget(containerWidget);
 
+    mBrushSettingsLayout->setContentsMargins(0,0,0,0);
     mMainVerticalLayout->setContentsMargins(0,0,0,0);
     mMainHorizontalLayout->setContentsMargins(0,0,0,0);
+    mMainVerticalLayout->addItem(mSpacer);
 
     setLayout(mMainHorizontalLayout);
 }
@@ -71,7 +76,6 @@ void ToolBrushSettingsWidget::resetSettings()
 
 void ToolBrushSettingsWidget::setupDefaultSettings()
 {
-    mMainVerticalLayout->removeItem(mSpacer);
     if (!mBrushSettingWidgets.isEmpty()) {
         clearSettings();
     }
@@ -84,18 +88,8 @@ void ToolBrushSettingsWidget::setupDefaultSettings()
 
     QString configGroupForBrush = mEditor->brushes()->currentToolBrushIdentifier();
 
-    for (int toolSettingNum = 0; toolSettingNum < static_cast<int>(BrushSettingType::BRUSH_SETTINGS_COUNT); toolSettingNum++)
-    {
-        BrushSettingType settingType = static_cast<BrushSettingType>(toolSettingNum);
-
-        settings.beginGroup(configGroupForBrush);
-            settings.beginGroup(getBrushSettingIdentifier(settingType));
-            settings.setValue("visible", false);
-            settings.endGroup();
-        settings.endGroup();
-    }
-
-    for (BrushSetting setting : tool->enabledBrushSettings()) {
+    MPBrushSettingCategories config;
+    for (BrushSetting& setting : config.defaultBrushListForTool(tool->type())) {
 
         settings.beginGroup(configGroupForBrush);
             settings.beginGroup(getBrushSettingIdentifier(setting.type));
@@ -107,7 +101,7 @@ void ToolBrushSettingsWidget::setupDefaultSettings()
         settings.endGroup();
 
         BrushSettingWidget* settingWidget = new BrushSettingWidget(setting.name, setting.type, setting.min, setting.max, this);
-        mMainVerticalLayout->addWidget(settingWidget);
+        mBrushSettingsLayout->addWidget(settingWidget);
         settingWidget->setCore(mEditor);
         settingWidget->initUI();
 
@@ -115,51 +109,53 @@ void ToolBrushSettingsWidget::setupDefaultSettings()
         connect(settingWidget, &BrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
         mBrushSettingWidgets.insert(static_cast<int>(settingWidget->setting()), settingWidget);
     }
-
-    mMainVerticalLayout->addItem(mSpacer);
 }
 
 void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
 {
-    mMainVerticalLayout->removeItem(mSpacer);
     if (!mBrushSettingWidgets.isEmpty()) {
         clearSettings();
     }
 
     ToolManager* toolMan = mEditor->tools();
-    QSettings settings(PENCIL2D, PENCIL2D);
-    auto groups = settings.childGroups();
+    QSettings pencilSettings(PENCIL2D, PENCIL2D);
+    auto groups = pencilSettings.childGroups();
 
     QString toolGroup = mEditor->brushes()->currentToolBrushIdentifier();
 
-    settings.beginGroup(toolGroup);
+    pencilSettings.beginGroup(toolGroup);
 
-    QListIterator<QString> settingsIt(settings.childGroups());
-    settingsIt.toBack();
-    while(settingsIt.hasPrevious())
-    {
-        QString key = settingsIt.previous();
-        settings.beginGroup(key);
+    MPBrushSettingCategories settingListConfig;
 
-        bool show = settings.value("visible").toBool();
-        QString name = settings.value("name").toString();
-        qreal min = settings.value("min").toReal();
-        qreal max = settings.value("max").toReal();
-        settings.endGroup();
+    for (auto brushCategory : settingListConfig.allBrushSettings() ) {
+        for (auto brushSetting : brushCategory.settings) {
 
-        if (show) {
-            BrushSettingWidget* settingWidget = new BrushSettingWidget(name, getBrushSetting(key), min, max, this);
-            mMainVerticalLayout->addWidget(settingWidget);
-            settingWidget->setCore(mEditor);
-            settingWidget->initUI();
+            QListIterator<QString> settingsIt(pencilSettings.childGroups());
+            while(settingsIt.hasNext()) {
+                QString key = settingsIt.next();
+                pencilSettings.beginGroup(key);
 
-            connect(settingWidget, &BrushSettingWidget::brushSettingChanged, toolMan, &ToolManager::setMPBrushSetting);
-            connect(settingWidget, &BrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
-            mBrushSettingWidgets.insert(static_cast<int>(settingWidget->setting()), settingWidget);
+                bool show = pencilSettings.value("visible").toBool();
+                QString name = pencilSettings.value("name").toString();
+                qreal min = pencilSettings.value("min").toReal();
+                qreal max = pencilSettings.value("max").toReal();
+                pencilSettings.endGroup();
+                if (brushSetting.type == getBrushSetting(key)) {
+                    if (show) {
+                        BrushSettingWidget* settingWidget = new BrushSettingWidget(name, brushSetting.type, min, max, this);
+                        mBrushSettingsLayout->addWidget(settingWidget);
+                        settingWidget->setCore(mEditor);
+                        settingWidget->initUI();
+
+                        connect(settingWidget, &BrushSettingWidget::brushSettingChanged, toolMan, &ToolManager::setMPBrushSetting);
+                        connect(settingWidget, &BrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
+                        mBrushSettingWidgets.insert(static_cast<int>(settingWidget->setting()), settingWidget);
+                    }
+                    break;
+                }
+            }
         }
     }
-
-    mMainVerticalLayout->addItem(mSpacer);
 }
 
 void ToolBrushSettingsWidget::setupSettings(ToolType toolType)
@@ -212,12 +208,31 @@ void ToolBrushSettingsWidget::didUpdateSetting(qreal value, BrushSettingType set
     emit brushSettingChanged(value, setting);
 }
 
-void ToolBrushSettingsWidget::setVisibleState(QString name, BrushSettingType setting, qreal min, qreal max, bool visible)
+void ToolBrushSettingsWidget::setVisibleState(BrushSettingCategoryType settingCategoryType, QString name, BrushSettingType settingType, qreal min, qreal max, bool visible)
 {
-    if (visible && !mBrushSettingWidgets.contains(static_cast<int>(setting))) {
-        BrushSettingWidget* settingWidget = new BrushSettingWidget(name, setting, min, max, this);
-        mBrushSettingWidgets.insert(static_cast<int>(setting), settingWidget);
-        mMainVerticalLayout->addWidget(settingWidget);
+    Q_ASSERT(!mBrushSettingWidgets.isEmpty());
+    if (visible && !mBrushSettingWidgets.contains(static_cast<int>(settingType))) {
+
+        MPBrushSettingCategories mpSettingCategories;
+        auto listOfCategories = mpSettingCategories.allBrushSettings();
+
+        BrushSettingWidget* settingWidget = new BrushSettingWidget(name, settingType, min, max, this);
+
+        bool hasCategory = false;
+        for (auto setting : mpSettingCategories.categoryForSetting(settingType).settings) {
+            if (!mBrushSettingWidgets.contains(static_cast<int>(setting.type))) { continue; }
+
+            hasCategory = true;
+            break;
+        }
+
+        if (hasCategory) {
+            addSettingToCategory(settingCategoryType, settingWidget);
+        } else {
+            insertSettingAfter(settingCategoryType, settingWidget);
+        }
+
+        mBrushSettingWidgets.insert(static_cast<int>(settingType), settingWidget);
 
         settingWidget->setCore(mEditor);
         settingWidget->initUI();
@@ -225,27 +240,69 @@ void ToolBrushSettingsWidget::setVisibleState(QString name, BrushSettingType set
         connect(settingWidget, &BrushSettingWidget::brushSettingChanged, mEditor->tools(), &ToolManager::setMPBrushSetting);
         connect(settingWidget, &BrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
 
-    } else if (!visible && mBrushSettingWidgets.contains(static_cast<int>(setting))) {
-        auto settingWidget = mBrushSettingWidgets.take(static_cast<int>(setting));
-        mMainVerticalLayout->removeWidget(settingWidget);
+    } else {
+        auto settingWidget = mBrushSettingWidgets.take(static_cast<int>(settingType));
+        mBrushSettingsLayout->removeWidget(settingWidget);
         settingWidget->deleteLater();
     }
+}
 
-    mMainVerticalLayout->removeItem(mSpacer);
-    mMainVerticalLayout->addItem(mSpacer);
+void ToolBrushSettingsWidget::insertSettingAfter(BrushSettingCategoryType categoryType, BrushSettingWidget* settingWidget)
+{
+    MPBrushSettingCategories mpSettingCategories;
+
+    int newCategoryTypeIndex = static_cast<int>(categoryType);
+    int newIndexAfter = 0;
+    for (BrushSettingWidget* widgetInList : findChildren<BrushSettingWidget*>()) {
+        auto categoryForWidget = mpSettingCategories.categoryForSetting(widgetInList->setting());
+
+        int categoryIndexOfWidget = static_cast<int>(categoryForWidget.categoryType);
+
+        if (categoryIndexOfWidget < newCategoryTypeIndex && widgetInList != settingWidget) {
+            newIndexAfter++;
+        }
+    }
+    mBrushSettingsLayout->insertWidget(newIndexAfter, settingWidget);
+}
+
+void ToolBrushSettingsWidget::addSettingToCategory(BrushSettingCategoryType settingCategoryType, BrushSettingWidget* settingWidget)
+{
+    int categoryTypeIndex = static_cast<int>(settingCategoryType);
+    int newIndex = -1;
+    MPBrushSettingCategories mpSettingCategories;
+    for (BrushSettingWidget* widgetInList : findChildren<BrushSettingWidget*>()) {
+
+        auto categoryForWidget = mpSettingCategories.categoryForSetting(widgetInList->setting());
+
+        int categoryIndexOfWidget = static_cast<int>(categoryForWidget.categoryType);
+
+        if (categoryIndexOfWidget == categoryTypeIndex && widgetInList != settingWidget) {
+            if (newIndex == -1) {
+                // Locate first index in category
+                newIndex = mBrushSettingsLayout->indexOf(widgetInList);
+            }
+
+            int indexOfNewSetting = mpSettingCategories.indexOfSetting(settingWidget->setting(), categoryForWidget);
+
+            // Add indexes until we find the position of the new setting
+            if (mpSettingCategories.indexOfSetting(widgetInList->setting(), categoryForWidget) < indexOfNewSetting) {
+                newIndex++;
+            }
+        }
+    }
+
+    mBrushSettingsLayout->insertWidget(newIndex, settingWidget);
 }
 
 void ToolBrushSettingsWidget::clearSettings()
 {
-    QHashIterator<int, BrushSettingWidget*> it(mBrushSettingWidgets);
+    QMapIterator<int, BrushSettingWidget*> it(mBrushSettingWidgets);
 
     while (it.hasNext()) {
         it.next();
 
         auto widget = mBrushSettingWidgets.take(it.key());
-        mMainVerticalLayout->removeWidget(widget);
+        mBrushSettingsLayout->removeWidget(widget);
         widget->deleteLater();
     }
-
-    mMainVerticalLayout->removeItem(mSpacer);
 }

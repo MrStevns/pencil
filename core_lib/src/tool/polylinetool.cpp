@@ -48,8 +48,6 @@ void PolylineTool::loadSettings()
     mPropertyEnabled[BEZIER] = true;
     mPropertyEnabled[ANTI_ALIASING] = true;
 
-    mDefaultBrushSettings = { RadiusLog, Hardness, Opacity };
-
     QSettings settings(PENCIL2D, PENCIL2D);
 
     properties.width = settings.value("polyLineWidth", 8.0).toDouble();

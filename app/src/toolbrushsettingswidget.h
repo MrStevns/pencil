@@ -5,6 +5,7 @@
 
 #include "brushsetting.h"
 #include "pencildef.h"
+#include "mpbrushsettingcategories.h"
 
 #include <QHash>
 
@@ -27,7 +28,7 @@ public:
 
     void setCore(Editor* editor) { mEditor = editor; }
 
-    void setVisibleState(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
+    void setVisibleState(BrushSettingCategoryType settingCategoryType, QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
     void setValue(qreal value, BrushSettingType setting);
 
     void setupSettings(ToolType toolType);
@@ -44,12 +45,16 @@ private:
     void clearSettings();
     void didUpdateSetting(qreal value, BrushSettingType setting);
 
+    void addSettingToCategory(BrushSettingCategoryType settingCategoryType, BrushSettingWidget* settingWidget);
+    void insertSettingAfter(BrushSettingCategoryType categoryType, BrushSettingWidget* settingWidget);
+
     QVBoxLayout* mMainVerticalLayout = nullptr;
     QHBoxLayout* mMainHorizontalLayout = nullptr;
+    QVBoxLayout* mBrushSettingsLayout = nullptr;
     QScrollArea* mScrollArea = nullptr;
     Editor* mEditor = nullptr;
 
-    QHash<int, BrushSettingWidget*> mBrushSettingWidgets;
+    QMap<int, BrushSettingWidget*> mBrushSettingWidgets;
 
     QSpacerItem* mSpacer = nullptr;
 };

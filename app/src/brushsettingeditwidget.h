@@ -3,6 +3,7 @@
 
 #include "brushsetting.h"
 #include "brushsettingwidget.h"
+#include "mpbrushsettingcategories.h"
 
 class QToolButton;
 class SpinSlider;
@@ -16,8 +17,8 @@ class BrushSettingEditWidget : public QWidget
 {
     Q_OBJECT
 public:
-    BrushSettingEditWidget(const QString name, BrushSettingType settingType, qreal min, qreal max, QWidget* parent = nullptr);
-    BrushSettingEditWidget(BrushSetting setting, QWidget* parent = nullptr);
+    BrushSettingEditWidget(BrushSettingCategoryType settingCategoryType, const QString name, BrushSettingType settingType, qreal min, qreal max, QWidget* parent = nullptr);
+    BrushSettingEditWidget(BrushSettingCategoryType settingCategoryType, BrushSetting setting, QWidget* parent = nullptr);
 
     void setCore(Editor* editor);
     void updateUI();
@@ -44,7 +45,7 @@ Q_SIGNALS:
 
     void brushMappingForInputChanged(QVector<QPointF> points, BrushSettingType setting, BrushInputType inputType);
     void brushMappingRemoved(BrushSettingType setting, BrushInputType);
-    void brushSettingToggled(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
+    void brushSettingToggled(BrushSettingCategoryType settingCategoryType, QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
     void brushSettingChanged(qreal value, BrushSettingType setting);
 
 private:
@@ -63,6 +64,7 @@ private:
 
     BrushInputType mCurrentInputType;
     BrushSettingType mSettingType;
+    BrushSettingCategoryType mSettingCategoryType;
 
     BrushSettingWidget* mSettingWidget = nullptr;
     MPMappingOptionsWidget* mMappingOptionsWidget = nullptr;

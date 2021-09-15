@@ -1,11 +1,11 @@
 #include "brushsettingitem.h"
 
-BrushSettingItem::BrushSettingItem(Category category, QTreeWidget* parent) : QTreeWidgetItem(parent),
-    mCategory(category)
+BrushSettingTreeItem::BrushSettingTreeItem(BrushSettingCategoryType categoryType, QTreeWidget* parent) : QTreeWidgetItem(parent),
+    mCategory(categoryType)
 {
 }
 
-BrushSettingItem::BrushSettingItem(Category category, QTreeWidgetItem* parent) : QTreeWidgetItem(parent),
-    mCategory(category)
+BrushSettingTreeItem::BrushSettingTreeItem(BrushSettingCategoryType categoryType, QTreeWidgetItem* parent) : QTreeWidgetItem(parent),
+    mCategory(categoryType)
 {
 }

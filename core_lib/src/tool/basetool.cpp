@@ -352,11 +352,6 @@ QPointF BaseTool::getLastPressPoint()
     return mEditor->view()->mapScreenToCanvas(getLastPressPixel());
 }
 
-QList<BrushSetting> BaseTool::enabledBrushSettings()
-{
-    return mDefaultBrushSettings;
-}
-
 void BaseTool::setWidth(const qreal width)
 {
     properties.width = width;

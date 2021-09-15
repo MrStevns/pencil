@@ -143,23 +143,23 @@ void MPBrushConfigurator::initUI()
     mPreset = mEditor->brushes()->currentPresetName();
     mToolType = mEditor->tools()->currentTool()->type();
 
-    mActiveTreeRoot = addTreeRoot(BrushSettingItem::Active, mNavigatorWidget, tr("Active settings"));
-    auto basicRoot = addTreeRoot(BrushSettingItem::Basic, mNavigatorWidget, tr("Basic settings"));
+    mActiveTreeRoot = addTreeRoot(BrushSettingCategoryType::Active, mNavigatorWidget, tr("Active settings"));
+    auto basicRoot = addTreeRoot(BrushSettingCategoryType::Basic, mNavigatorWidget, tr("Basic settings"));
 
-    auto advanceRoot = addTreeRoot(BrushSettingItem::Advanced, mNavigatorWidget, tr("Advanced settings"));
-    addTreeChild(BrushSettingItem::Opacity, advanceRoot, tr("Opacity settings"));
-    addTreeChild(BrushSettingItem::Dab, advanceRoot, tr("Dab settings"));
-    addTreeChild(BrushSettingItem::Random, advanceRoot, tr("Random settings"));
-    addTreeChild(BrushSettingItem::Speed, advanceRoot, tr("Speed settings"));
-    addTreeChild(BrushSettingItem::Offset, advanceRoot, tr("Offset settings"));
-    addTreeChild(BrushSettingItem::Tracking, advanceRoot, tr("Tracking settings"));
-    addTreeChild(BrushSettingItem::Color, advanceRoot, tr("Color settings"));
-    addTreeChild(BrushSettingItem::Smudge, advanceRoot, tr("Smudge settings"));
-    addTreeChild(BrushSettingItem::Eraser, advanceRoot, tr("Eraser setting"));
-    addTreeChild(BrushSettingItem::Stroke, advanceRoot, tr("Stroke settings"));
-    addTreeChild(BrushSettingItem::Custom_Input, advanceRoot, tr("Custom Input settings"));
-    addTreeChild(BrushSettingItem::Elliptical_Dab, advanceRoot, tr("Elliptical settings"));
-    addTreeChild(BrushSettingItem::Other, advanceRoot, tr("Other settings"));
+    auto advanceRoot = addTreeRoot(BrushSettingCategoryType::Advanced, mNavigatorWidget, tr("Advanced settings"));
+    addTreeChild(BrushSettingCategoryType::Opacity, advanceRoot, tr("Opacity settings"));
+    addTreeChild(BrushSettingCategoryType::Dab, advanceRoot, tr("Dab settings"));
+    addTreeChild(BrushSettingCategoryType::Random, advanceRoot, tr("Random settings"));
+    addTreeChild(BrushSettingCategoryType::Speed, advanceRoot, tr("Speed settings"));
+    addTreeChild(BrushSettingCategoryType::Offset, advanceRoot, tr("Offset settings"));
+    addTreeChild(BrushSettingCategoryType::Tracking, advanceRoot, tr("Tracking settings"));
+    addTreeChild(BrushSettingCategoryType::Color, advanceRoot, tr("Color settings"));
+    addTreeChild(BrushSettingCategoryType::Smudge, advanceRoot, tr("Smudge settings"));
+    addTreeChild(BrushSettingCategoryType::Eraser, advanceRoot, tr("Eraser setting"));
+    addTreeChild(BrushSettingCategoryType::Stroke, advanceRoot, tr("Stroke settings"));
+    addTreeChild(BrushSettingCategoryType::Custom, advanceRoot, tr("Custom Input settings"));
+    addTreeChild(BrushSettingCategoryType::Elliptical, advanceRoot, tr("Elliptical settings"));
+    addTreeChild(BrushSettingCategoryType::Other, advanceRoot, tr("Other settings"));
 
     updateSettingsView(basicRoot);
 
@@ -205,16 +205,7 @@ void MPBrushConfigurator::updateConfig()
     updateUI();
 }
 
-void MPBrushConfigurator::prepareBasicBrushSettings()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(Opacity));
-    mBrushWidgets.append(new BrushSettingEditWidget(RadiusLog));
-    mBrushWidgets.append(new BrushSettingEditWidget(Hardness));
-    mBrushWidgets.append(new BrushSettingEditWidget(AntiAliasing));
-    mBrushWidgets.append(new BrushSettingEditWidget(PressureGain));
-}
-
-void MPBrushConfigurator::prepareActiveSettings()
+void MPBrushConfigurator::setupActiveSettings()
 {
     QSettings settings(PENCIL2D, PENCIL2D);
     auto groups = settings.childGroups();
@@ -234,143 +225,58 @@ void MPBrushConfigurator::prepareActiveSettings()
         settings.endGroup();
 
         if (show) {
-            BrushSettingEditWidget* settingWidget = new BrushSettingEditWidget(name, getBrushSetting(key), min, max, this);
+            BrushSettingEditWidget* settingWidget = new BrushSettingEditWidget(BrushSettingCategoryType::Other, name, getBrushSetting(key), min, max, this);
             mBrushWidgets.append(settingWidget);
         }
     }
 }
 
-void MPBrushConfigurator::prepareAdvancedBrushSettings()
+void MPBrushConfigurator::setupBasicBrushSettings()
 {
-    prepareOpacitySettings();
-    prepareDabSettings();
-    prepareRandomSettings();
-    prepareSpeedSettings();
-    prepareOffsetSettings();
-    prepareTrackingSettings();
-    prepareColorSettings();
-    prepareSmudgeSettings();
-    prepareEraserSetting();
-    prepareStrokeSettings();
-    prepareCustomInputSettings();
-    prepareEllipticalDabSettings();
-    prepareOtherSettings();
+    for (auto category : settingCategories.basicBrushSettings()) {
+
+        for (auto setting : category.settings) {
+            mBrushWidgets << new BrushSettingEditWidget(category.categoryType, setting, this);
+        }
+    }
 }
 
-void MPBrushConfigurator::prepareOpacitySettings()
+
+void MPBrushConfigurator::setupAdvancedBrushSettings()
 {
-    mBrushWidgets.append(new BrushSettingEditWidget(Opacity));
-    mBrushWidgets.append(new BrushSettingEditWidget(OpacityMultiply));
-    mBrushWidgets.append(new BrushSettingEditWidget(OpacityLinearize));
+    setupSettingsFor(BrushSettingCategoryType::Opacity);
+    setupSettingsFor(BrushSettingCategoryType::Dab);
+    setupSettingsFor(BrushSettingCategoryType::Random);
+    setupSettingsFor(BrushSettingCategoryType::Speed);
+    setupSettingsFor(BrushSettingCategoryType::Offset);
+    setupSettingsFor(BrushSettingCategoryType::Tracking);
+    setupSettingsFor(BrushSettingCategoryType::Color);
+    setupSettingsFor(BrushSettingCategoryType::Smudge);
+    setupSettingsFor(BrushSettingCategoryType::Eraser);
+    setupSettingsFor(BrushSettingCategoryType::Stroke);
+    setupSettingsFor(BrushSettingCategoryType::Custom);
+    setupSettingsFor(BrushSettingCategoryType::Elliptical);
+    setupSettingsFor(BrushSettingCategoryType::Other);
 }
 
-void MPBrushConfigurator::prepareDabSettings()
+void MPBrushConfigurator::setupSettingsFor(BrushSettingCategoryType type)
 {
-    mBrushWidgets.append(new BrushSettingEditWidget(RadiusLog));
-    mBrushWidgets.append(new BrushSettingEditWidget(Hardness));
-    mBrushWidgets.append(new BrushSettingEditWidget(DabsPerBasicRadius));
-    mBrushWidgets.append(new BrushSettingEditWidget(DabsPerActualRadius));
-    mBrushWidgets.append(new BrushSettingEditWidget(DabsPerSecond));
-    mBrushWidgets.append(new BrushSettingEditWidget(DabScale));
-    mBrushWidgets.append(new BrushSettingEditWidget(DabScaleX));
-    mBrushWidgets.append(new BrushSettingEditWidget(DabScaleY));
+    auto category = settingCategories.categoryForType(type);
+    for (auto setting : category.settings) {
+        mBrushWidgets << new BrushSettingEditWidget(category.categoryType, setting, this);
+    }
 }
 
-void MPBrushConfigurator::prepareRandomSettings()
+BrushSettingTreeItem* MPBrushConfigurator::addTreeRoot(BrushSettingCategoryType category, QTreeWidget* treeWidget, const QString name)
 {
-    mBrushWidgets.append(new BrushSettingEditWidget(RadiusRandom));
-}
-
-void MPBrushConfigurator::prepareSpeedSettings()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(SpeedStart));
-    mBrushWidgets.append(new BrushSettingEditWidget(SpeedEnd));
-    mBrushWidgets.append(new BrushSettingEditWidget(SpeedGammaStart));
-    mBrushWidgets.append(new BrushSettingEditWidget(SpeedGammaEnd));
-}
-
-void MPBrushConfigurator::prepareOffsetSettings()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetRandom));
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetX));
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetY));
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetAngleLeft));
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetAngleLeftAscend));
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetAngleRight));
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetAngleRightAscend));
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetAngleAdjecent));
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetMultiplier));
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetBySpeed));
-    mBrushWidgets.append(new BrushSettingEditWidget(OffsetSpeedSlowness));
-}
-
-void MPBrushConfigurator::prepareTrackingSettings()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(SlowTracking));
-    mBrushWidgets.append(new BrushSettingEditWidget(SlowTrackingPerDab));
-    mBrushWidgets.append(new BrushSettingEditWidget(TrackingNoise));
-}
-
-void MPBrushConfigurator::prepareColorSettings()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(ChangeColorHue));
-    mBrushWidgets.append(new BrushSettingEditWidget(ChangeColorLightness));
-    mBrushWidgets.append(new BrushSettingEditWidget(ChangeColorHLSSaturation));
-    mBrushWidgets.append(new BrushSettingEditWidget(ChangeColorValue));
-    mBrushWidgets.append(new BrushSettingEditWidget(ChangeColorHSVSaturation));
-    mBrushWidgets.append(new BrushSettingEditWidget(RestoreColor));
-}
-
-void MPBrushConfigurator::prepareSmudgeSettings()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(Smudge));
-    mBrushWidgets.append(new BrushSettingEditWidget(SmudgeLength));
-    mBrushWidgets.append(new BrushSettingEditWidget(SmudgeRadius));
-}
-
-void MPBrushConfigurator::prepareEraserSetting()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(Eraser));
-}
-
-void MPBrushConfigurator::prepareStrokeSettings()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(StrokeThreshold));
-    mBrushWidgets.append(new BrushSettingEditWidget(StrokeDuration));
-    mBrushWidgets.append(new BrushSettingEditWidget(StrokeHoldTime));
-}
-
-void MPBrushConfigurator::prepareCustomInputSettings()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(CustomInput));
-    mBrushWidgets.append(new BrushSettingEditWidget(CustomInputSlowness));
-}
-
-void MPBrushConfigurator::prepareEllipticalDabSettings()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(EllepticalDabRatio));
-    mBrushWidgets.append(new BrushSettingEditWidget(EllepticalDabAngle));
-}
-
-void MPBrushConfigurator::prepareOtherSettings()
-{
-    mBrushWidgets.append(new BrushSettingEditWidget(AntiAliasing));
-    mBrushWidgets.append(new BrushSettingEditWidget(LockAlpha));
-    mBrushWidgets.append(new BrushSettingEditWidget(Colorize));
-    mBrushWidgets.append(new BrushSettingEditWidget(SnapToPixel));
-    mBrushWidgets.append(new BrushSettingEditWidget(PressureGain));
-}
-
-BrushSettingItem* MPBrushConfigurator::addTreeRoot(BrushSettingItem::Category category, QTreeWidget* treeWidget, const QString name)
-{
-    BrushSettingItem* treeItem = new BrushSettingItem(category, treeWidget);
+    BrushSettingTreeItem* treeItem = new BrushSettingTreeItem(category, treeWidget);
     treeItem->setText(0, name);
     return treeItem;
 }
 
-BrushSettingItem* MPBrushConfigurator::addTreeChild(BrushSettingItem::Category category, QTreeWidgetItem* parent, const QString name)
+BrushSettingTreeItem* MPBrushConfigurator::addTreeChild(BrushSettingCategoryType category, QTreeWidgetItem* parent, const QString name)
 {
-    BrushSettingItem *treeItem = new BrushSettingItem(category, parent);
+    BrushSettingTreeItem *treeItem = new BrushSettingTreeItem(category, parent);
     treeItem->setText(0, name);
     parent->addChild(treeItem);
     return treeItem;
@@ -388,24 +294,17 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
 
     removeBrushSettingSpacers();
 
-    switch(static_cast<BrushSettingItem*>(item)->ItemCategory()) {
-        case BrushSettingItem::Active: prepareActiveSettings(); break;
-        case BrushSettingItem::Basic: prepareBasicBrushSettings(); break;
-        case BrushSettingItem::Advanced: prepareAdvancedBrushSettings(); break;
-        case BrushSettingItem::Opacity: prepareOpacitySettings(); break;
-        case BrushSettingItem::Speed: prepareSpeedSettings(); break;
-        case BrushSettingItem::Dab: prepareDabSettings(); break;
-        case BrushSettingItem::Random: prepareRandomSettings(); break;
-        case BrushSettingItem::Offset: prepareOffsetSettings(); break;
-        case BrushSettingItem::Tracking: prepareTrackingSettings(); break;
-        case BrushSettingItem::Color: prepareColorSettings(); break;
-        case BrushSettingItem::Smudge: prepareSmudgeSettings(); break;
-        case BrushSettingItem::Eraser: prepareEraserSetting(); break;
-        case BrushSettingItem::Stroke: prepareStrokeSettings(); break;
-        case BrushSettingItem::Custom_Input: prepareCustomInputSettings(); break;
-        case BrushSettingItem::Elliptical_Dab: prepareEllipticalDabSettings(); break;
-        case BrushSettingItem::Other: prepareOtherSettings(); break;
-        case BrushSettingItem::Unknown: return;
+    auto treeItem = static_cast<BrushSettingTreeItem*>(item);
+
+    switch (treeItem->categoryType()) {
+    case BrushSettingCategoryType::Active:
+        setupActiveSettings(); break;
+    case BrushSettingCategoryType::Basic:
+        setupBasicBrushSettings(); break;
+    case BrushSettingCategoryType::Advanced:
+        setupAdvancedBrushSettings(); break;
+    default:
+        setupSettingsFor(static_cast<BrushSettingTreeItem*>(item)->categoryType());
     }
 
     for (BrushSettingEditWidget* item : mBrushWidgets) {
@@ -457,7 +356,10 @@ void MPBrushConfigurator::addBrushSettingsSpacer()
 
 void MPBrushConfigurator::setBrushSettingValue(qreal value, BrushSettingType setting)
 {
+    this->blockSignals(true);
+    prepareBrushChanges(value, setting);
     prepareUpdateBrushPreview();
+    this->blockSignals(false);
     for (BrushSettingEditWidget* widget : mBrushWidgets)
     {
         if (widget->settingType() == setting) {

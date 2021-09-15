@@ -29,9 +29,9 @@ public:
 
     void changeText();
 
-    BrushSettingType setting() { return mSettingType; }
-    QString name() { return mSettingName; }
-    qreal currentValue() { return mCurrentValue; }
+    BrushSettingType setting() const { return mSettingType; }
+    QString name() const { return mSettingName; }
+    qreal currentValue() const { return mCurrentValue; }
 
     void setValueFromUnmapped(qreal value);
 

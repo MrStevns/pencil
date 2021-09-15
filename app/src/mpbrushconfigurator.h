@@ -6,7 +6,7 @@
 #include <QDialog>
 #include <QTreeWidgetItem>
 
-#include "brushsetting.h"
+#include "mpbrushsettingcategories.h"
 #include "brushsettingitem.h"
 
 #include <QPointer>
@@ -53,8 +53,9 @@ signals:
     void reloadBrushSettings();
 
     void notifyBrushInfoUpdated(QString brushName, QString brushPreset);
-    void notifyBrushSettingToggled(QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
+    void notifyBrushSettingToggled(BrushSettingCategoryType settingCategoryType, QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
 private:
+
     void prepareUpdateBrushPreview();
     void updateMapValuesButton();
     void updateSettingsView(QTreeWidgetItem* item);
@@ -65,24 +66,11 @@ private:
     void addBrushSettingsSpacer();
     void removeBrushSettingSpacers();
 
-    void prepareActiveSettings();
+    void setupActiveSettings();
+    void setupBasicBrushSettings();
+    void setupAdvancedBrushSettings();
 
-    void prepareBasicBrushSettings();
-    void prepareAdvancedBrushSettings();
-
-    void prepareOpacitySettings();
-    void prepareDabSettings();
-    void prepareRandomSettings();
-    void prepareSpeedSettings();
-    void prepareOffsetSettings();
-    void prepareTrackingSettings();
-    void prepareColorSettings();
-    void prepareSmudgeSettings();
-    void prepareEraserSetting();
-    void prepareStrokeSettings();
-    void prepareCustomInputSettings();
-    void prepareEllipticalDabSettings();
-    void prepareOtherSettings();
+    void setupSettingsFor(BrushSettingCategoryType type);
 
     void showNotImplementedPopup();
 
@@ -94,8 +82,8 @@ private:
 
     void openBrushInfoWidget(DialogContext dialogContext);
 
-    BrushSettingItem* addTreeRoot(BrushSettingItem::Category category, QTreeWidget* treeWidget, const QString name);
-    BrushSettingItem* addTreeChild(BrushSettingItem::Category category, QTreeWidgetItem* parent, const QString name);
+    BrushSettingTreeItem* addTreeRoot(BrushSettingCategoryType category, QTreeWidget* treeWidget, const QString name);
+    BrushSettingTreeItem* addTreeChild(BrushSettingCategoryType category, QTreeWidgetItem* parent, const QString name);
 
     void brushCategorySelected(QTreeWidgetItem* item, int);
     void brushCategorySelectionChanged(const QItemSelection &selected, const QItemSelection &);
@@ -106,7 +94,7 @@ private:
     QLabel* mBrushImageWidget = nullptr;
     MPBrushPreview* mBrushPreviewWidget = nullptr;
 
-    BrushSettingItem* mActiveTreeRoot = nullptr;
+    BrushSettingTreeItem* mActiveTreeRoot = nullptr;
 
     QPointer<MPBrushInfoDialog> mBrushInfoWidget = nullptr;
 
@@ -124,6 +112,7 @@ private:
     QSize mImageSize = QSize(100,100);
 
     QList<QMetaObject::Connection> mListOfConnections;
+    MPBrushSettingCategories settingCategories;
 };
 
 #endif // MPBRUSHCONFIGURATOR_H

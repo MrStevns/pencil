@@ -434,6 +434,9 @@ void MainWindow2::createMenus()
 
     connect(ui->menuEdit, &QMenu::aboutToShow, this, &MainWindow2::undoActSetText);
     connect(ui->menuEdit, &QMenu::aboutToHide, this, &MainWindow2::undoActSetEnabled);
+
+    QSettings settings(PENCIL2D, PENCIL2D);
+    settings.clear();
 }
 
 void MainWindow2::setOpacity(int opacity)

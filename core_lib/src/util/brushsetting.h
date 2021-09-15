@@ -80,10 +80,17 @@ struct BrushSetting {
     qreal max;
     QString name;
 
+    BrushSetting() { };
     BrushSetting(QString name, BrushSettingType type, qreal min, qreal max) { this->type = type;
                                                                               this->min = min;
                                                                               this->max = max;
                                                                               this->name = name; }
+
+    BrushSetting(BrushSetting const &setting) { this->type = setting.type;
+                                         this->min = setting.min;
+                                         this->max = setting.max;
+                                         this->name = setting.name;
+                                              }
 };
 
 static const BrushSetting Opacity = BrushSetting(QT_TR_NOOP("Opacity"), BrushSettingType::BRUSH_SETTING_OPAQUE, 0, 100);
