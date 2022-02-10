@@ -1630,6 +1630,7 @@ void MainWindow2::startProjectRecovery(int result)
         return;
     }
 
+
     Q_ASSERT(o);
     mEditor->setObject(o);
     updateSaveState();
