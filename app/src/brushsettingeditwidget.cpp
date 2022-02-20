@@ -38,11 +38,23 @@ BrushSettingEditWidget::BrushSettingEditWidget(BrushSettingCategoryType settingC
     mVisibleCheck = new QCheckBox(this);
     mMappingButton = new QToolButton(this);
 
+    // TODO: platform specific styling should be put in one place...
+#ifdef __APPLE__
+    // Only Mac needs this. ToolButton is naturally borderless on Win/Linux.
+    QString sStyle =
+        "QToolButton { border: 0px; }"
+        "QToolButton:pressed { border: 1px solid #ADADAD; border-radius: 2px; background-color: #D5D5D5; }"
+        "QToolButton:checked { border: 1px solid #ADADAD; border-radius: 2px; background-color: #D5D5D5; }";
+    mMappingButton->setStyleSheet(sStyle);
+#endif
+    mMappingButton->setIcon(QIcon("://icons/new/mapping-icon.png"));
+    mMappingButton->setIconSize(QSize(20,20));
+
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     gridLayout->setMargin(0);
 
     gridLayout->addWidget(mVisibleCheck, 0, 0);
-    gridLayout->addWidget(mSettingWidget, 0,1);
+    gridLayout->addWidget(mSettingWidget, 0, 1);
     gridLayout->addWidget(mMappingButton, 0, 2);
     connect(mMappingButton, &QToolButton::pressed, this, &BrushSettingEditWidget::openMappingWindow);
     connect(mVisibleCheck, &QCheckBox::toggled, this, &BrushSettingEditWidget::visibilityChanged);

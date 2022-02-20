@@ -65,6 +65,7 @@
         <file>icons/overlayAngle.png</file>
         <file>icons/controls/soundscrub.png</file>
         <file>icons/controls/soundscrub-disabled.png</file>
+        <file>icons/new/mapping-icon.png</file>
     </qresource>
     <qresource prefix="/app">
         <file>icons/onion-blue.png</file>
