@@ -408,6 +408,13 @@ void MPBrushConfigurator::prepareBrushInputChanges(QVector<QPointF> points, Brus
 
 void MPBrushConfigurator::removeBrushMappingForInput(BrushSettingType setting, BrushInputType input)
 {
+    auto currentMapping = mEditor->getBrushInputMapping(setting, input).controlPoints.points;
+    mEditor->brushes()->backupBrushInputChanges(setting, input, currentMapping);
+
+    if (mEditor->brushes()->brushModificationsForTool()) {
+        mDiscardChangesButton->setEnabled(true);
+    }
+
     mEditor->brushes()->removeBrushInputMapping(setting, input);
 
     mEditor->setBrushInputMapping({}, setting, input);

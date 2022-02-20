@@ -56,11 +56,11 @@ public:
     void backupInitialBrushInputMappingChanges(BrushSettingType settingType, BrushInputType inputType);
     void backupBrushSettingChanges(BrushSettingType settingType, qreal baseValue);
     void discardBrushChanges();
-    bool brushModificationsForTool();
+    bool brushModificationsForTool() const;
 
     void clearCurrentBrushModifications();
 
-    QString currentToolBrushIdentifier();
+    QString currentToolBrushIdentifier() const;
 
     bool brushLoaded() const { return !mCurrentBrushName.isEmpty() && !mCurrentBrushData.isEmpty(); }
 

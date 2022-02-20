@@ -85,7 +85,7 @@ Status MPBrushManager::readBrushFromCurrentPreset(const QString& brushName)
     return status;
 }
 
-QString MPBrushManager::currentToolBrushIdentifier()
+QString MPBrushManager::currentToolBrushIdentifier() const
 {
     return QString(SETTING_MPBRUSHSETTING)
             .arg(mCurrentToolName)
@@ -140,8 +140,12 @@ void MPBrushManager::discardBrushChanges()
 
 void MPBrushManager::backupBrushInputChanges(BrushSettingType settingType, BrushInputType inputType, QVector<QPointF> mappingPoints)
 {
-    auto toolHashIt = mOldBrushModsForTools.constFind(currentToolBrushIdentifier());
-    auto toolHash = mOldBrushModsForTools;
+
+    backupInitialBrushInputMappingChanges(settingType, inputType);
+    mBrushModsForTools = mOldBrushModsForTools;
+
+    auto toolHashIt = mBrushModsForTools.constFind(currentToolBrushIdentifier());
+    auto toolHash = mBrushModsForTools;
 
     if (toolHashIt != toolHash.constEnd()) {
 
@@ -156,9 +160,7 @@ void MPBrushManager::backupBrushInputChanges(BrushSettingType settingType, Brush
                 BrushChanges changes;
                 changes.settingsType = settingType;
 
-                auto points = mEditor->getBrushInputMapping(settingType, inputType).controlPoints.points;
-
-                changes.listOfinputChanges.insert(inputType, InputChanges { points, inputType });
+                changes.listOfinputChanges.insert(inputType, InputChanges { mappingPoints, inputType });
 
                 mBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType, changes) } );
             }
@@ -218,7 +220,7 @@ void MPBrushManager::backupInitialBrushInputMappingChanges(BrushSettingType sett
 
     changes.listOfinputChanges.insert(inputType, InputChanges { mappedInputs, inputType });
 
-    mBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType,changes) } );
+    mOldBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType,changes) } );
 }
 
 void MPBrushManager::backupInitialBrushSettingChanges(BrushSettingType settingType)
@@ -272,8 +274,9 @@ void MPBrushManager::removeBrushInputMapping(BrushSettingType settingType, Brush
     Q_ASSERT(toolHashIt->contains(settingType));
 
     auto settingHashIt = toolHashIt->find(settingType).value();
-
     settingHashIt.listOfinputChanges.insert(inputType, InputChanges { {}, inputType, false });
+
+    mBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType, settingHashIt) });
 }
 
 void MPBrushManager::clearCurrentBrushModifications()
@@ -282,7 +285,7 @@ void MPBrushManager::clearCurrentBrushModifications()
     mOldBrushModsForTools.remove(currentToolBrushIdentifier());
 }
 
-bool MPBrushManager::brushModificationsForTool()
+bool MPBrushManager::brushModificationsForTool() const
 {
     return mBrushModsForTools.contains(currentToolBrushIdentifier());
 }
