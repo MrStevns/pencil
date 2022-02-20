@@ -228,7 +228,6 @@ public:
     void startStroke();
     void strokeTo(QPointF point, float pressure, float xtilt, float ytilt, double dt);
     void endStroke();
-    QColor pickColorFromSurface(QPointF point, int radius);
 
     void drawPolyline(QPainterPath path, QPen pen, bool useAA);
     void drawLine(QPointF P1, QPointF P2, QPen pen, QPainter::CompositionMode cm);

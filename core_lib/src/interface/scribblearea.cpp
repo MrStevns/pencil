@@ -1374,11 +1374,6 @@ void ScribbleArea::forceUpdateMyPaintStates()
     // TODO: deltatime should maybe not be fixed here?
 }
 
-QColor ScribbleArea::pickColorFromSurface(QPointF point, int radius)
-{
-    return mMyPaint->getSurfaceColor(static_cast<float>(point.x()), static_cast<float>(point.y()), radius);
-}
-
 void ScribbleArea::updateDirtyTiles()
 {
     QTransform v = mEditor->view()->getView();
