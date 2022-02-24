@@ -888,8 +888,8 @@ void ScribbleArea::paintBitmapBuffer(QPainter::CompositionMode composition)
 
     // adds content from canvas and saves to bitmapimage
     for (MPTile* item : mBufferTiles.values()) {
-        QPixmap tilePixmap = item->pixmap();
-        targetImage->paste(tilePixmap, item->pos(), cm);
+        QImage tileImage = item->image();
+        targetImage->paste(tileImage, item->pos(), cm);
     }
 
     layer->setModified(frameNumber, true);

@@ -93,7 +93,7 @@ public:
 
     void drawImageAt(const QImage& image, const QPoint topLeft);
     void loadImage(const QImage &image, const QPoint pos);
-    void loadTile(const QPixmap& pixmap, const QPoint pos);
+    void loadTile(const QImage& image, const QPoint pos);
     void clearAreaFromSurface(const QRect& bounds);
 
 signals:

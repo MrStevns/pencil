@@ -8,17 +8,15 @@
 
 #include "mptile.h"
 
-MPTile::MPTile(const MPTile* tile):
-    m_cache_img(k_tile_dim,k_tile_dim,QImage::Format_ARGB32_Premultiplied),
-    m_cache_pix(k_tile_dim, k_tile_dim)
+MPTile::MPTile():
+    m_cache_img(k_tile_dim,k_tile_dim,QImage::Format_ARGB32_Premultiplied)
 {
-    Q_UNUSED(tile)
     clear(); //Default tiles are transparent
 }
 
-MPTile::MPTile(QPixmap& pixmap)
+MPTile::MPTile(QImage& image)
 {
-    m_cache_pix = pixmap;
+    m_cache_img = image;
 }
 
 MPTile::~MPTile()
@@ -27,7 +25,7 @@ MPTile::~MPTile()
 
 QRect MPTile::boundingRect() const
 {
-    return m_cache_pix.rect();
+    return m_cache_img.rect();
 }
 
 uint16_t* MPTile::bits(bool readOnly)
@@ -53,7 +51,6 @@ void MPTile::drawPoint(uint x, uint y, uint16_t r, uint16_t g, uint16_t b, uint1
 //
 void MPTile::updateCache()
 {
-    m_cache_img = m_cache_pix.toImage();
     QRgb* dst = (reinterpret_cast<QRgb*>(m_cache_img.bits()));
     for (int y = 0 ; y < k_tile_dim ; y++) {
          for (int x = 0 ; x < k_tile_dim ; x++) {
@@ -67,26 +64,24 @@ void MPTile::updateCache()
          }
     }
 
-    m_cache_pix.convertFromImage(m_cache_img, Qt::ImageConversionFlag::NoFormatConversion);
     m_cache_valid = true;
 }
 
-void MPTile::setPixmap(const QPixmap& pixmap)
+void MPTile::setImage(const QImage& image)
 {
-    if (pixmap.isNull()) { return; }
+    if (image.isNull()) { return; }
 
-    m_cache_pix = pixmap;
+    m_cache_img = image;
     m_cache_valid = true;
 
 }
 
-void MPTile::updateMyPaintBuffer(const QSize& tileSize, const QPixmap& pixmap)
+void MPTile::updateMyPaintBuffer(const QSize& tileSize)
 {
-    QImage image (pixmap.toImage());
     for (int y = 0 ; y < tileSize.height(); y++) {
          for (int x = 0 ; x < tileSize.width() ; x++) {
 
-            const QRgb& pixelColor = *(reinterpret_cast<const QRgb*>(image.constScanLine(y))+x);
+            const QRgb& pixelColor = *(reinterpret_cast<const QRgb*>(m_cache_img.constScanLine(y))+x);
 
             t_pixels[y][x][k_alpha]    = static_cast<uint16_t>CONV_8_16(qAlpha(pixelColor));
             t_pixels[y][x][k_red]      = static_cast<uint16_t>CONV_8_16(qRed(pixelColor));
@@ -100,7 +95,6 @@ void MPTile::clear()
 {
     memset(t_pixels, 0, sizeof(t_pixels)); // Tile is transparent
     m_cache_img.fill(Qt::transparent); // image cache is transparent too, and aligned to the pixel table:
-    m_cache_pix.fill(Qt::transparent);
     m_cache_valid = true;
     m_dirty = false;
 }

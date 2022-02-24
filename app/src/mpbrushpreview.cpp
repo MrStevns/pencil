@@ -122,12 +122,12 @@ void MPBrushPreview::paintEvent(QPaintEvent*)
     QHash<QString, MPTile*> tiles = mMypaintSurface->getTiles();
 
     for (MPTile* item : tiles) {
-        const QPixmap& pix = item->pixmap();
+        const QImage& img = item->image();
 
-        QRect tileRect = QRect(item->pos(), item->pixmap().size());
+        QRect tileRect = QRect(item->pos(), img.size());
 
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.drawPixmap(tileRect, pix, pix.rect());
+        painter.drawImage(tileRect, img, img.rect());
     }
     painter.end();
 }

@@ -51,6 +51,7 @@ public:
     BitmapImage copy(QRect rectangle);
     void paste(BitmapImage*, QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver);
     void paste(QPixmap& pixmap, QPoint point, QPainter::CompositionMode cm);
+    void paste(QImage& tileImage, QPoint point, QPainter::CompositionMode cm);
 
     void moveTopLeft(QPoint point);
     void moveTopLeft(QPointF point) { moveTopLeft(point.toPoint()); }

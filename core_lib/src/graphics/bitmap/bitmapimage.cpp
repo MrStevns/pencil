@@ -187,6 +187,22 @@ void BitmapImage::paste(QPixmap& pixmap, QPoint point, QPainter::CompositionMode
     modification();
 }
 
+void BitmapImage::paste(QImage& tileImage, QPoint point, QPainter::CompositionMode cm)
+{
+    if(tileImage.width() <= 0 || tileImage.height() <= 0)
+    {
+        return;
+    }
+    extend(QRect(point, tileImage.size()));
+
+    QPainter painter(image());
+    painter.setCompositionMode(cm);
+    painter.drawImage(point-mBounds.topLeft(), tileImage);
+    painter.end();
+
+    modification();
+}
+
 void BitmapImage::paste(BitmapImage* bitmapImage, QPainter::CompositionMode cm)
 {
     if(bitmapImage->width() <= 0 || bitmapImage->height() <= 0)

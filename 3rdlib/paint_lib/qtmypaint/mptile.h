@@ -10,7 +10,6 @@
 #define TILE_H
 
 #include <QImage>
-#include <QPixmap>
 #include <stdint.h>
 
 //-------------------------------------------------------------------------
@@ -28,14 +27,14 @@ class MPTile
 {
 public:
 
-    explicit MPTile (const MPTile* parent = nullptr);
-    explicit MPTile (QPixmap& pixmap);
+    explicit MPTile ();
+    explicit MPTile (QImage& image);
     ~MPTile();
 
     enum { k_tile_dim = 64 };
     enum { k_red = 0, k_green = 1, k_blue = 2, k_alpha = 3 }; // Index to access RGBA values in myPaint
 
-    QPixmap pixmap() const { return m_cache_pix; }
+    QImage image() const { return m_cache_img; }
 
     QRect boundingRect() const;
 
@@ -43,7 +42,7 @@ public:
     void drawPoint ( uint x, uint y, uint16_t r, uint16_t g, uint16_t b, uint16_t a );
     void updateCache();
     void clear();
-    void setPixmap(const QPixmap& image);
+    void setImage(const QImage& image);
 
     /**
      * @brief updateMyPaintBuffer
@@ -51,7 +50,7 @@ public:
      * @param tileSize
      * @param pixmap
      */
-    void updateMyPaintBuffer(const QSize& tileSize, const QPixmap& pixmap);
+    void updateMyPaintBuffer(const QSize& tileSize);
 
     bool isDirty() { return m_dirty; }
     void setDirty(bool dirty) { m_dirty = dirty; }
@@ -62,7 +61,6 @@ private:
 
     uint16_t  t_pixels [k_tile_dim][k_tile_dim][4];
     QImage    m_cache_img;
-    QPixmap m_cache_pix;
     bool      m_cache_valid;
     bool m_dirty = false;
     QPoint m_pos;

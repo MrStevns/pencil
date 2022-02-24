@@ -124,28 +124,28 @@ void MPSurface::onClearTile(MPSurface *surface, MPTile *tile)
     mParentHandler->tileCleared(surface, tile);
 }
 
-void MPSurface::loadTile(const QPixmap& pixmap, const QPoint& pos)
+void MPSurface::loadTile(const QImage& image, const QPoint& pos)
 {
     MPTile* tile = getTileFromPos(pos);
-    tile->setPixmap(pixmap);
+    tile->setImage(image);
     this->onUpdateTile(this, tile);
 }
 
-void MPSurface::loadTiles(const QList<std::shared_ptr<QPixmap>>& pixmaps, const QList<QPoint>& positions)
+void MPSurface::loadTiles(const QList<std::shared_ptr<QImage> >& images, const QList<QPoint>& positions)
 {
-    if (pixmaps.isEmpty()) { return; }
+    if (images.isEmpty()) { return; }
 
-    for (int i = 0; i < pixmaps.count(); i++) {
+    for (int i = 0; i < images.count(); i++) {
 
-        const QPixmap& pixmap = *pixmaps.at(i).get();
+        const QImage& image = *images.at(i).get();
         const QPoint pos = positions.at(i);
 
         // Optimization : Fully transparent (empty) tiles
         // don't need to be created.
-        if (!isFullyTransparent(pixmap.toImage())) {
+        if (!isFullyTransparent(image)) {
 
             MPTile *tile = getTileFromPos(pos);
-            tile->setPixmap(pixmap);
+            tile->setImage(image);
             this->onUpdateTile(this, tile);
         }
     }
@@ -153,7 +153,7 @@ void MPSurface::loadTiles(const QList<std::shared_ptr<QPixmap>>& pixmaps, const 
 
 void MPSurface::loadImage(const QImage &image, const QPoint topLeft)
 {
-    QPixmap paintTo(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE);
+    QImage paintTo(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE, QImage::Format_ARGB32_Premultiplied);
     QList<QPoint> touchedPoints = findCorrespondingTiles(QRect(topLeft, image.size()));
 
     setSize(image.size());
@@ -172,8 +172,8 @@ void MPSurface::loadImage(const QImage &image, const QPoint topLeft)
         painter.end();
 
         MPTile *tile = getTileFromPos(touchedPoint);
-        tile->setPixmap(paintTo);
-        tile->updateMyPaintBuffer(tile->boundingRect().size(),paintTo);
+        tile->setImage(paintTo);
+        tile->updateMyPaintBuffer(tile->boundingRect().size());
     }
 }
 
@@ -184,7 +184,7 @@ void MPSurface::loadImage(const QImage &image, const QPoint topLeft)
  */
 void MPSurface::clearArea(const QRect& bounds)
 {
-    QPixmap paintTo(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE);
+    QImage paintTo(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE, QImage::Format_ARGB32_Premultiplied);
 
     QList<QPoint> touchedPoints = findCorrespondingTiles(bounds);
 
@@ -201,19 +201,19 @@ void MPSurface::clearArea(const QRect& bounds)
         painter.translate(-touchedPoint);
 
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.drawPixmap(tile->pos(), tile->pixmap());
+        painter.drawImage(tile->pos(), tile->image());
 
         painter.setCompositionMode(QPainter::CompositionMode_Clear);
         painter.fillRect(bounds, Qt::transparent);
         painter.restore();
         painter.end();
 
-        if (isFullyTransparent(paintTo.toImage())) {
+        if (isFullyTransparent(paintTo)) {
             clearTile(tile);
         } else {
             // tile is updated here and the mypaint buffer is updated
-            tile->setPixmap(paintTo);
-            tile->updateMyPaintBuffer(tile->boundingRect().size(),paintTo);
+            tile->setImage(paintTo);
+            tile->updateMyPaintBuffer(tile->boundingRect().size());
         }
     }
 }
@@ -226,8 +226,8 @@ void MPSurface::clearArea(const QRect& bounds)
  */
 void MPSurface::drawImageAt(const QImage& image, const QPoint topLeft)
 {
-    QPixmap paintTo(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE);
-    QPixmap transparenPix(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE);
+    QImage paintTo(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE, QImage::Format_ARGB32_Premultiplied);
+    QImage transparenPix(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE, QImage::Format_ARGB32_Premultiplied);
     transparenPix.fill(Qt::transparent);
 
     QList<QPoint> touchedPoints = findCorrespondingTiles(QRect(topLeft, image.size()));
@@ -244,17 +244,17 @@ void MPSurface::drawImageAt(const QImage& image, const QPoint topLeft)
         painter.save();
         painter.translate(-touchedPoint);
 
-        painter.drawPixmap(tile->pos(),tile->pixmap());
+        painter.drawImage(tile->pos(), tile->image());
         painter.drawImage(topLeft, image);
         painter.restore();
         painter.end();
 
-        if (isFullyTransparent(paintTo.toImage())) {
+        if (isFullyTransparent(paintTo)) {
             clearTile(tile);
         } else {
             // tile is updated here and the mypaint buffer is updated
-            tile->setPixmap(paintTo);
-            tile->updateMyPaintBuffer(tile->boundingRect().size(),paintTo);
+            tile->setImage(paintTo);
+            tile->updateMyPaintBuffer(tile->boundingRect().size());
         }
     }
 }
@@ -275,9 +275,9 @@ void MPSurface::saveSurface(const QString path)
     QHashIterator<QString, MPTile*> cuTiles(m_Tiles);
     while (cuTiles.hasNext()) {
         cuTiles.next();
-        const QPixmap& pix = cuTiles.value()->pixmap();
+        const QImage& pix = cuTiles.value()->image();
         const QPoint& pos = cuTiles.value()->pos();
-        painter.drawPixmap(pos, pix);
+        painter.drawImage(pos, pix);
     }
     painter.end();
 

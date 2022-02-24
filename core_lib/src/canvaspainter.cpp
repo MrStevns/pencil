@@ -400,16 +400,16 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
     imagePaintDevice.translate(-painter.viewport().width()/2, -painter.viewport().height()/2);
     imagePaintDevice.setTransform(mViewTransform);
     for (MPTile* item : tilesToRender) {
-        const QPixmap& pix = item->pixmap();
+        const QImage& img = item->image();
 
-        QRect tileRect = QRect(item->pos(), item->pixmap().size());
+        QRect tileRect = QRect(item->pos(), img.size());
 
         if (mOptions.useCanvasBuffer) {
             imagePaintDevice.setCompositionMode(QPainter::CompositionMode_SourceOver);
         } else {
             imagePaintDevice.setCompositionMode(QPainter::CompositionMode_Source);
         }
-        imagePaintDevice.drawPixmap(tileRect, pix, pix.rect());
+        imagePaintDevice.drawImage(tileRect, img, img.rect());
     }
 
     painter.drawImage(QPoint(), output);
