@@ -111,3 +111,34 @@ BENCHMARK_F(BitmapImageEmptyFixture, FloodFillTo1080p, 10, 5)
 
     bucket.paint(fillPoint, [] (BucketState, int, int ) {});
 }
+
+BENCHMARK_F(BitmapImage1080pFixture, ExpandFill, 10, 5)
+{
+    Properties properties;
+    properties.bucketFillReferenceMode = 0;
+    properties.bucketFillToLayerMode = 0;
+    properties.bucketFillExpandEnabled = true;
+    properties.fillMode = 0;
+
+    QPoint fillPoint = img->bounds().center();
+
+    BitmapBucket bucket = BitmapBucket(editor, Qt::green, img->bounds(), fillPoint, properties);
+
+    bucket.paint(fillPoint, [] (BucketState, int, int ) {});
+}
+
+BENCHMARK_F(BitmapImageEmptyFixture, ExpandFillTo1080p, 10, 5)
+{
+    Properties properties;
+    properties.bucketFillReferenceMode = 0;
+    properties.bucketFillToLayerMode = 0;
+    properties.bucketFillExpandEnabled = true;
+    properties.fillMode = 0;
+
+    QRect cameraRect(0, 0, 1920, 1080);
+    QPoint fillPoint = cameraRect.center();
+
+    BitmapBucket bucket = BitmapBucket(editor, Qt::green, cameraRect, fillPoint, properties);
+
+    bucket.paint(fillPoint, [] (BucketState, int, int ) {});
+}
