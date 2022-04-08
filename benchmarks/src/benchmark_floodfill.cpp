@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 */
-#include <hayai/hayai.hpp>
+#include <hayai.hpp>
 
 #include "object.h"
 #include "editor.h"
@@ -21,6 +21,7 @@ GNU General Public License for more details.
 #include "bitmapimage.h"
 #include "scribblearea.h"
 #include "layermanager.h"
+#include "filemanager.h"
 #include "layerbitmap.h"
 
 class BitmapImage1080pFixture : public hayai::Fixture {
@@ -77,6 +78,35 @@ public:
         delete editor;
     }
 
+    Editor* editor;
+    FileManager* fileManager;
+    BitmapImage* img;
+};
+
+class BitmapImageContourFixture : public hayai::Fixture {
+public:
+    virtual void SetUp()
+    {
+        fileManager = new FileManager();
+        Object* loadedObject = fileManager->load("/Users/candyface/Github-Projects/pencil-mychanges/benchmarks/data/contour-fill.pclx");
+
+        editor = new Editor;
+        ScribbleArea* scribbleArea = new ScribbleArea(nullptr);
+        editor->setScribbleArea(scribbleArea);
+        editor->setObject(loadedObject);
+        editor->init();
+
+        img = static_cast<BitmapImage*>(editor->layers()->currentLayer()->getKeyFrameAt(1));
+    }
+
+    virtual void TearDown()
+    {
+        delete editor->getScribbleArea();
+        delete editor;
+        delete fileManager;
+    }
+
+    FileManager* fileManager;
     Editor* editor;
     BitmapImage* img;
 };
@@ -141,4 +171,28 @@ BENCHMARK_F(BitmapImageEmptyFixture, ExpandFillTo1080p, 10, 5)
     BitmapBucket bucket = BitmapBucket(editor, Qt::green, cameraRect, fillPoint, properties);
 
     bucket.paint(fillPoint, [] (BucketState, int, int ) {});
+}
+
+BENCHMARK_F(BitmapImageContourFixture, ExpandFillTo1080p, 10, 5)
+{
+    Properties properties;
+    properties.bucketFillReferenceMode = 0;
+    properties.bucketFillToLayerMode = 0;
+    properties.bucketFillExpandEnabled = true;
+    properties.bucketFillExpand = 5;
+    properties.fillMode = 0;
+
+    QRect cameraRect(0, 0, 1920, 1080);
+    QPoint fillPoint1 = QPoint(84,365);
+    QPoint fillPoint2 = QPoint(91,89);
+    QPoint fillPoint3 = QPoint(590,98);
+    QPoint fillPoint4 = QPoint(595,378);
+
+    BitmapBucket bucket = BitmapBucket(editor, Qt::green, cameraRect, fillPoint1, properties);
+    bucket.paint(fillPoint1, [] (BucketState, int, int ) {});
+
+
+    bucket.paint(fillPoint2, [] (BucketState, int, int ) {});
+    bucket.paint(fillPoint3, [] (BucketState, int, int ) {});
+    bucket.paint(fillPoint4, [] (BucketState, int, int ) {});
 }

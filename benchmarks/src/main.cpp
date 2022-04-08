@@ -14,7 +14,7 @@ GNU General Public License for more details.
 
 */
 
-#include <hayai/hayai.hpp>
+#include <hayai.hpp>
 
 #include <QApplication>
 #include <QDebug>

@@ -28,7 +28,9 @@ INCLUDEPATH += \
     ../core_lib/src/tool \
     ../core_lib/src/util \
     ../core_lib/ui \
-    ../core_lib/src/managers
+    ../core_lib/src/managers \
+    /usr/local/include/hayai
+
 
 HEADERS += \
     src/catch.hpp
