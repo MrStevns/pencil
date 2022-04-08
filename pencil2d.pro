@@ -18,6 +18,10 @@ SUBDIRS += tests
 tests.subdir = tests
 tests.depends = core_lib
 
+SUBDIRS += benchmarks
+benchmarks.subdir = benchmarks
+benchmarks.depends = core_lib
+
 NO_TESTS {
   SUBDIRS -= tests
 }
