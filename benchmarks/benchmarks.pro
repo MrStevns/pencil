@@ -12,6 +12,8 @@ TEMPLATE = app
 
 TARGET = benchmarks
 
+RESOURCES = data/benchmarks.qrc
+
 CONFIG += console
 CONFIG -= app_bundle
 
@@ -29,7 +31,7 @@ INCLUDEPATH += \
     ../core_lib/src/util \
     ../core_lib/ui \
     ../core_lib/src/managers \
-    /usr/local/include/hayai
+    hayai
 
 
 HEADERS += \

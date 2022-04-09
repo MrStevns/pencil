@@ -24,6 +24,8 @@ GNU General Public License for more details.
 #include "filemanager.h"
 #include "layerbitmap.h"
 
+#include <QTemporaryDir>
+
 class BitmapImage1080pFixture : public hayai::Fixture {
 public:
     virtual void SetUp()
@@ -88,7 +90,11 @@ public:
     virtual void SetUp()
     {
         fileManager = new FileManager();
-        Object* loadedObject = fileManager->load("/Users/candyface/Github-Projects/pencil-mychanges/benchmarks/data/contour-fill.pclx");
+        QTemporaryDir tempDir;
+
+        const QString path = tempDir.path() + "/contour-fill.pclx";
+        QFile::copy(":/contour-fill.pclx", path);
+        Object* loadedObject = fileManager->load(path);
 
         editor = new Editor;
         ScribbleArea* scribbleArea = new ScribbleArea(nullptr);
