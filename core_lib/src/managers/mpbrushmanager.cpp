@@ -156,12 +156,9 @@ void MPBrushManager::backupBrushInputChanges(BrushSettingType settingType, Brush
             auto inputHash = settingHashIt.value().listOfinputChanges;
             auto inputHashIt = inputHash.constFind(inputType);
 
-            if (inputHashIt != inputHash.constEnd() && !inputHash.contains(inputType)) {
-                BrushChanges changes;
-                changes.settingsType = settingType;
-
+            if (inputHashIt != inputHash.constEnd()) {
+                BrushChanges changes = settingHashIt.value();
                 changes.listOfinputChanges.insert(inputType, InputChanges { mappingPoints, inputType });
-
                 mBrushModsForTools.insert(currentToolBrushIdentifier(), { std::make_pair(settingType, changes) } );
             }
         }
