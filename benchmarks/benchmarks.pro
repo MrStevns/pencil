@@ -6,7 +6,7 @@
 
 ! include( ../util/common.pri ) { error( Could not find the common.pri file! ) }
 
-QT += core widgets gui xml xmlpatterns multimedia svg
+QT += core
 
 TEMPLATE = app
 
@@ -22,27 +22,13 @@ OBJECTS_DIR = .obj
 DESTDIR = bin
 
 INCLUDEPATH += \
-    ../core_lib/src/graphics \
-    ../core_lib/src/graphics/bitmap \
-    ../core_lib/src/graphics/vector \
-    ../core_lib/src/interface \
-    ../core_lib/src/structure \
-    ../core_lib/src/tool \
-    ../core_lib/src/util \
-    ../core_lib/ui \
-    ../core_lib/src/managers \
-    hayai
-
-
-HEADERS += \
-    src/catch.hpp
+    src/hayai
 
 SOURCES += \
     src/main.cpp \
     src/benchmark_floodfill.cpp
 
 DEFINES_DEBUG += DEBUG
-
 
 # --- core_lib ---
 
