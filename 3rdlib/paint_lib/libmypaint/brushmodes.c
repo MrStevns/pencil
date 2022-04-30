@@ -113,24 +113,32 @@ set_rgb16_lum_from_rgb16(const uint16_t topr,
     const uint16_t botlum = LUMA(*botr, *botg, *botb) / (1<<15);
     const uint16_t toplum = LUMA(topr, topg, topb) / (1<<15);
     const int16_t diff = botlum - toplum;
+
     int32_t r = topr + diff;
     int32_t g = topg + diff;
     int32_t b = topb + diff;
 
     // Spec: ClipColor()
     // Clip out of band values
-    int32_t lum = LUMA(r, g, b) / (1<<15);
-    int32_t cmin = MIN3(r, g, b);
-    int32_t cmax = MAX3(r, g, b);
-    if (cmin < 0) {
-        r = lum + (((r - lum) * lum) / (lum - cmin));
-        g = lum + (((g - lum) * lum) / (lum - cmin));
-        b = lum + (((b - lum) * lum) / (lum - cmin));
+    const int32_t lum = LUMA(r, g, b) / (1<<15);
+    const int32_t cmin = MIN3(r, g, b);
+    const int32_t cmax = MAX3(r, g, b);
+
+    const int32_t rlum = r - lum;
+    const int32_t glum = g - lum;
+    const int32_t blum = b - lum;
+    const int32_t cminlum = lum - cmin;
+    const int32_t cmaxlum = cmax - lum;
+    // cminlum has to be above zero, avoids div by zero
+    if (cmin < 0 && cminlum) {
+        r = lum + ((rlum * lum) / cminlum);
+        g = lum + ((glum * lum) / cminlum);
+        b = lum + ((blum * lum) / cminlum);
     }
-    if (cmax > (1<<15)) {
-        r = lum + (((r - lum) * ((1<<15)-lum)) / (cmax - lum));
-        g = lum + (((g - lum) * ((1<<15)-lum)) / (cmax - lum));
-        b = lum + (((b - lum) * ((1<<15)-lum)) / (cmax - lum));
+    if (cmax > (1<<15) && cmaxlum) {
+        r = lum + ((rlum * ((1<<15)-lum)) / cmaxlum);
+        g = lum + ((glum * ((1<<15)-lum)) / cmaxlum);
+        b = lum + ((blum * ((1<<15)-lum)) / cmaxlum);
     }
 #ifdef HEAVY_DEBUG
     assert((0 <= r) && (r <= (1<<15)));
