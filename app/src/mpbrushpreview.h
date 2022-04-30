@@ -14,7 +14,7 @@ public:
     MPBrushPreview(QWidget* parent = nullptr);
     ~MPBrushPreview() override;
 
-    void updatePreview(const QByteArray& content);
+    void updatePreview(const QByteArray& content, const QColor& brushColor);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

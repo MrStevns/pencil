@@ -37,9 +37,10 @@ void MPBrushPreview::applyBackground()
     mMypaintHandler->loadImage(*mSurfaceBackground, QPoint(0,0));
 }
 
-void MPBrushPreview::updatePreview(const QByteArray &content)
+void MPBrushPreview::updatePreview(const QByteArray &content, const QColor& brushColor)
 {
     mMypaintHandler->loadBrush(content);
+    mMypaintHandler->setBrushColor(brushColor);
     mMypaintHandler->clearSurface();
 
     applyBackground();

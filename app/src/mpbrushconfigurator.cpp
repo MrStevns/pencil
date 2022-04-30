@@ -17,6 +17,7 @@
 
 #include "errordialog.h"
 #include "toolmanager.h"
+#include "colormanager.h"
 
 #include "spinslider.h"
 #include "brushsettingitem.h"
@@ -160,6 +161,8 @@ void MPBrushConfigurator::initUI()
     addTreeChild(BrushSettingCategoryType::Custom, advanceRoot, tr("Custom Input settings"));
     addTreeChild(BrushSettingCategoryType::Elliptical, advanceRoot, tr("Elliptical settings"));
     addTreeChild(BrushSettingCategoryType::Other, advanceRoot, tr("Other settings"));
+
+    connect(mEditor->color(), &ColorManager::colorChanged, this, &MPBrushConfigurator::prepareUpdateBrushPreview);
 
     updateSettingsView(basicRoot);
 
@@ -326,7 +329,7 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
 
 void MPBrushConfigurator::prepareUpdateBrushPreview()
 {
-    mBrushPreviewWidget->updatePreview(mEditor->brushes()->currentBrushData());
+    mBrushPreviewWidget->updatePreview(mEditor->brushes()->currentBrushData(), mEditor->color()->frontColor());
 }
 
 void MPBrushConfigurator::brushCategorySelectionChanged(const QItemSelection &, const QItemSelection &)
