@@ -112,6 +112,13 @@ void BrushSettingEditWidget::initUI()
     mSettingWidget->setCore(mEditor);
     mSettingWidget->initUI();
 
+    BrushSettingInfo info = mEditor->getBrushSettingInfo(mSettingType);
+
+    if (info.isConstant) {
+        mMappingButton->setEnabled(false);
+        mMappingButton->setToolTip(tr("This setting does not have any dynamics"));
+    }
+
     updateUIInternal();
     closeMappingWindow();
 }
