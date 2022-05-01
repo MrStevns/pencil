@@ -32,7 +32,6 @@ GNU General Public License for more details.
 #include "layermanager.h"
 #include "scribblearea.h"
 #include "util.h"
-#include "bitmaputils.h"
 
 EyedropperTool::EyedropperTool(QObject* parent) : BaseTool(parent)
 {
@@ -150,8 +149,7 @@ QColor EyedropperTool::getBitmapColor(LayerBitmap* layer)
     if (targetImage == nullptr || !targetImage->contains(getCurrentPoint())) return QColor();
 
     QColor pickedColour;
-    const QRgb pixelColor = BitmapUtils::constScanLine(*targetImage,
-                                                       qFloor(getCurrentPoint().x()),
+    const QRgb pixelColor = targetImage->constScanLine(qFloor(getCurrentPoint().x()),
                                                        qFloor(getCurrentPoint().y()));
     pickedColour.setRgba(pixelColor);
 

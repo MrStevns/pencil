@@ -33,7 +33,6 @@ GNU General Public License for more details.
 #include "vectorimage.h"
 #include "editor.h"
 #include "scribblearea.h"
-#include "bitmaputils.h"
 
 BucketTool::BucketTool(QObject* parent) : StrokeTool(parent)
 {

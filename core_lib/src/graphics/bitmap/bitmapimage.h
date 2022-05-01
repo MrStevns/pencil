@@ -17,7 +17,6 @@ GNU General Public License for more details.
 #ifndef BITMAP_IMAGE_H
 #define BITMAP_IMAGE_H
 
-#include <memory>
 #include <QPainter>
 #include "keyframe.h"
 
@@ -31,20 +30,19 @@ public:
     BitmapImage(const QPoint& topLeft, const QImage& image);
     BitmapImage(const QPoint& topLeft, const QString& path);
 
-    ~BitmapImage();
+    ~BitmapImage() override;
     BitmapImage& operator=(const BitmapImage& a);
 
     BitmapImage* clone() const override;
     void loadFile() override;
     void unloadFile() override;
-    bool isLoaded() override;
+    bool isLoaded() const override;
     quint64 memoryUsage() override;
 
     void paintImage(QPainter& painter);
     void paintImage(QPainter &painter, QImage &image, QRect sourceRect, QRect destRect);
 
     QImage* image();
-    QImage* constImage() const { return mImage.get(); }
     void    setImage(QImage* pImg);
 
     BitmapImage copy();
@@ -63,6 +61,10 @@ public:
     BitmapImage transformed(QRectF rectangle, bool smoothTransform) { return transformed(rectangle.toRect(), smoothTransform); }
     void moveSelectionTransform(const QRect& selection, const QTransform& transform);
 
+    QRgb pixel(int x, int y);
+    QRgb pixel(QPoint p);
+    void setPixel(int x, int y, QRgb color);
+    void setPixel(QPoint p, QRgb color);
 
     bool contains(QPoint P) { return mBounds.contains(P); }
     bool contains(QPointF P) { return contains(P.toPoint()); }
@@ -70,9 +72,22 @@ public:
 
     void fillNonAlphaPixels(const QRgb color);
 
+    QRgb constScanLine(int x, int y) const;
+    void scanLine(int x, int y, QRgb color);
+
     void clear();
     void clear(QRect rectangle);
     void clear(QRectF rectangle) { clear(rectangle.toRect()); }
+
+    static inline bool compareColor(QRgb newColor, QRgb oldColor, int tolerance, QHash<QRgb, bool> *cache);
+    static bool floodFill(BitmapImage** replaceImage, const BitmapImage* targetImage, const QRect& cameraRect, const QPoint& point, const QRgb& fillColor, int tolerance, const int expandValue);
+    static bool* floodFillPoints(const BitmapImage* targetImage,
+                                QRect searchBounds, const QRect& maxBounds,
+                                QPoint point,
+                                const int tolerance,
+                                QRect& newBounds,
+                                 bool &fillBorder);
+    static void expandFill(bool* fillPixels, const QRect& searchBounds, const QRect& maxBounds, int expand);
 
     void drawLine(QPointF P1, QPointF P2, QPen pen, QPainter::CompositionMode cm, bool antialiasing);
     void drawRect(QRectF rectangle, QPen pen, QBrush brush, QPainter::CompositionMode cm, bool antialiasing);
@@ -123,8 +138,8 @@ protected:
     void setCompositionModeBounds(QRect sourceBounds, bool isSourceMinBounds, QPainter::CompositionMode cm);
 
 private:
-    std::unique_ptr<QImage> mImage;
-    QRect mBounds;
+    QImage mImage;
+    QRect mBounds{0, 0, 0, 0};
 
     /** @see isMinimallyBounded() */
     bool mMinBound = true;

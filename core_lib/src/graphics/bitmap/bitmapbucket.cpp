@@ -23,7 +23,6 @@ GNU General Public License for more details.
 #include "layermanager.h"
 
 #include "layerbitmap.h"
-#include "bitmaputils.h"
 
 BitmapBucket::BitmapBucket()
 {
@@ -31,7 +30,7 @@ BitmapBucket::BitmapBucket()
 
 BitmapBucket::BitmapBucket(Editor* editor,
                            QColor color,
-                           QRectF maxFillRegion,
+                           QRect maxFillRegion,
                            QPointF fillPoint,
                            Properties properties):
     mEditor(editor),
@@ -66,7 +65,7 @@ BitmapBucket::BitmapBucket(Editor* editor,
     const QPoint point = QPoint(qFloor(fillPoint.x()), qFloor(fillPoint.y()));
 
     BitmapImage* image = static_cast<LayerBitmap*>(mTargetFillToLayer)->getLastBitmapImageAtFrame(frameIndex, 0);
-    mReferenceColor = BitmapUtils::constScanLine(*image, point.x(), point.y());
+    mReferenceColor = image->constScanLine(point.x(), point.y());
 }
 
 bool BitmapBucket::shouldFill(QPointF checkPoint) const
@@ -87,8 +86,8 @@ bool BitmapBucket::shouldFill(QPointF checkPoint) const
 
     BitmapImage referenceImage = mReferenceImage;
 
-    QRgb pixelColor = BitmapUtils::constScanLine(referenceImage, point.x(), point.y());
-    QRgb targetPixelColor = BitmapUtils::constScanLine(targetImage, point.x(), point.y());
+    QRgb pixelColor = referenceImage.constScanLine(point.x(), point.y());
+    QRgb targetPixelColor = targetImage.constScanLine(point.x(), point.y());
 
     if (mProperties.fillMode == 2 && pixelColor != 0)
     {
@@ -126,7 +125,7 @@ void BitmapBucket::paint(const QPointF updatedPoint, std::function<void(BucketSt
     QRgb fillColor = mBucketColor;
 
     const QPoint point = QPoint(qFloor(updatedPoint.x()), qFloor(updatedPoint.y()));
-    const QRect cameraRect = mMaxFillRegion.toRect();
+    const QRect cameraRect = mMaxFillRegion;
     const int tolerance = mProperties.toleranceEnabled ? static_cast<int>(mProperties.tolerance) : 0;
     const int currentFrameIndex = mEditor->currentFrame();
     const QRgb origColor = fillColor;
@@ -150,58 +149,49 @@ void BitmapBucket::paint(const QPointF updatedPoint, std::function<void(BucketSt
         fillColor = tempColor.rgba();
     }
 
-    // If the point we are supposed to fill is outside the image and camera bounds, do nothing
-    if(!cameraRect.united(targetImage->bounds()).contains(point))
-    {
-        return;
-    }
-    // Extend to size of Camera
-    referenceImage.extendBoundaries(cameraRect);
+    BitmapImage* replaceImage = nullptr;
 
-    BitmapImage replaceImage = BitmapImage(referenceImage.bounds(), Qt::transparent);
-
-    bool didFloodFill = BitmapUtils::floodFill(&replaceImage,
+    int expandValue = mProperties.bucketFillExpandEnabled ? mProperties.bucketFillExpand : 0;
+    bool didFloodFill = BitmapImage::floodFill(&replaceImage,
                            &referenceImage,
+                           cameraRect,
                            point,
                            fillColor,
-                           tolerance);
+                           tolerance,
+                           expandValue);
 
     if (!didFloodFill) {
+        delete replaceImage;
         return;
     }
+    Q_ASSERT(replaceImage != nullptr);
 
     state(BucketState::WillFillTarget, targetLayerIndex, currentFrameIndex);
 
-    if (mProperties.bucketFillExpandEnabled)
-    {
-        BitmapUtils::expandFill(&replaceImage,
-                                fillColor,
-                                mProperties.bucketFillExpand);
-    }
-
     if (mProperties.fillMode == 0)
     {
-        targetImage->paste(&replaceImage);
+        targetImage->paste(replaceImage);
     }
     else if (mProperties.fillMode == 2)
     {
-        targetImage->paste(&replaceImage, QPainter::CompositionMode_DestinationOver);
+        targetImage->paste(replaceImage, QPainter::CompositionMode_DestinationOver);
     }
     else
     {
         // fill mode replace
-        targetImage->paste(&replaceImage, QPainter::CompositionMode_DestinationOut);
+        targetImage->paste(replaceImage, QPainter::CompositionMode_DestinationOut);
         // Reduce the opacity of the fill to match the new color
-        BitmapImage properColor(replaceImage.bounds(), QColor::fromRgba(origColor));
-        properColor.paste(&replaceImage, QPainter::CompositionMode_DestinationIn);
+        BitmapImage properColor(replaceImage->bounds(), QColor::fromRgba(origColor));
+        properColor.paste(replaceImage, QPainter::CompositionMode_DestinationIn);
         // Write reduced-opacity fill image on top of target image
         targetImage->paste(&properColor);
     }
 
-    mAppliedColor = BitmapUtils::constScanLine(*targetImage, point.x(), point.y());
+    mAppliedColor = targetImage->constScanLine(point.x(), point.y());
     mFirstPaint = false;
 
     targetImage->modification();
+    delete replaceImage;
 
     state(BucketState::DidFillTarget, targetLayerIndex, currentFrameIndex);
 }

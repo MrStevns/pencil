@@ -34,7 +34,6 @@ HEADERS +=  \
     src/corelib-pch.h \
     src/graphics/bitmap/bitmapbucket.h \
     src/graphics/bitmap/bitmapimage.h \
-    src/graphics/bitmap/bitmaputils.h \
     src/graphics/surface.h \
     src/graphics/vector/bezierarea.h \
     src/graphics/vector/beziercurve.h \
@@ -56,6 +55,7 @@ HEADERS +=  \
     src/interface/backgroundwidget.h \
     src/managers/basemanager.h \
     src/managers/overlaymanager.h \
+    src/managers/clipboardmanager.h \
     src/managers/mpbrushmanager.h \
     src/managers/selectionmanager.h \
     src/managers/colormanager.h \
@@ -143,6 +143,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/interface/backgroundwidget.cpp \
     src/managers/basemanager.cpp \
     src/managers/overlaymanager.cpp \
+    src/managers/clipboardmanager.cpp \
     src/managers/mpbrushmanager.cpp \
     src/managers/selectionmanager.cpp \
     src/managers/colormanager.cpp \

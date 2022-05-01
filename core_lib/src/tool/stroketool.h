@@ -42,7 +42,6 @@ public:
     void paintVectorStroke();
 
     bool keyPressEvent(QKeyEvent* event) override;
-    bool keyReleaseEvent(QKeyEvent* event) override;
 
 protected:
     bool mFirstDraw = false;

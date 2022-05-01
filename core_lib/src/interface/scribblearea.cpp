@@ -432,8 +432,9 @@ void ScribbleArea::setModified(int layerNumber, int frameNumber)
 
 bool ScribbleArea::event(QEvent *event)
 {
-    if (event->type() == QEvent::WindowDeactivate) {
-        mEditor->tools()->deactivateTemporaryTool();
+    if (event->type() == QEvent::WindowDeactivate)
+    {
+        editor()->tools()->clearTemporaryTool();
     }
     return QWidget::event(event);
 }
@@ -450,7 +451,6 @@ void ScribbleArea::keyPressEvent(QKeyEvent *event)
     mKeyboardInUse = true;
 
     if (isPointerInUse()) { return; } // prevents shortcuts calls while drawing
-    if (mEditor->tools()->temporaryToolActive()) { return; } // prevents shortcuts calls while using instant tool
 
     if (currentTool()->keyPressEvent(event))
     {
@@ -458,9 +458,9 @@ void ScribbleArea::keyPressEvent(QKeyEvent *event)
     }
 
     // --- fixed control key shortcuts ---
-    if (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))
+    if (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier) &&
+        editor()->tools()->setTemporaryTool(ERASER, {}, event->modifiers()))
     {
-        mEditor->tools()->setTemporaryTool(ERASER);
         return;
     }
 
@@ -468,9 +468,12 @@ void ScribbleArea::keyPressEvent(QKeyEvent *event)
 
     auto selectMan = mEditor->select();
     bool isSomethingSelected = selectMan->somethingSelected();
-    if (isSomethingSelected) {
+    if (isSomethingSelected)
+    {
         keyEventForSelection(event);
-    } else {
+    }
+    else
+    {
         keyEvent(event);
     }
 }
@@ -483,37 +486,41 @@ void ScribbleArea::keyEventForSelection(QKeyEvent* event)
     case Qt::Key_Right:
         selectMan->translate(QPointF(1, 0));
         paintTransformedSelection();
-        break;
+        return;
     case Qt::Key_Left:
         selectMan->translate(QPointF(-1, 0));
         paintTransformedSelection();
-        break;
+        return;
     case Qt::Key_Up:
         selectMan->translate(QPointF(0, -1));
         paintTransformedSelection();
-        break;
+        return;
     case Qt::Key_Down:
         selectMan->translate(QPointF(0, 1));
         paintTransformedSelection();
-        break;
+        return;
     case Qt::Key_Return:
         applyTransformedSelection();
         mEditor->deselectAll();
-        break;
+        return;
     case Qt::Key_Escape:
         cancelTransformedSelection();
         mEditor->deselectAll();
-        break;
+        return;
     case Qt::Key_Backspace:
         deleteSelection();
         mEditor->deselectAll();
-        break;
+        return;
     case Qt::Key_Space:
-        mEditor->tools()->setTemporaryTool(HAND); // just call "setTemporaryTool()" to activate temporarily any tool
+        if (editor()->tools()->setTemporaryTool(HAND, Qt::Key_Space, Qt::NoModifier))
+        {
+            return;
+        }
         break;
     default:
-        event->ignore();
+        break;
     }
+    event->ignore();
 }
 
 void ScribbleArea::keyEvent(QKeyEvent* event)
@@ -522,29 +529,26 @@ void ScribbleArea::keyEvent(QKeyEvent* event)
     {
     case Qt::Key_Right:
         mEditor->scrubForward();
-        event->ignore();
         break;
     case Qt::Key_Left:
         mEditor->scrubBackward();
-        event->ignore();
         break;
     case Qt::Key_Up:
         mEditor->layers()->gotoNextLayer();
-        event->ignore();
         break;
     case Qt::Key_Down:
         mEditor->layers()->gotoPreviouslayer();
-        event->ignore();
-        break;
-    case Qt::Key_Return:
-        event->ignore();
         break;
     case Qt::Key_Space:
-        mEditor->tools()->setTemporaryTool(HAND); // just call "setTemporaryTool()" to activate temporarily any tool
+        if(editor()->tools()->setTemporaryTool(HAND, Qt::Key_Space, Qt::NoModifier))
+        {
+            return;
+        }
         break;
     default:
-        event->ignore();
+        break;
     }
+    event->ignore();
 }
 
 void ScribbleArea::keyReleaseEvent(QKeyEvent *event)
@@ -557,14 +561,17 @@ void ScribbleArea::keyReleaseEvent(QKeyEvent *event)
 
     mKeyboardInUse = false;
 
+    if (event->key() == 0)
+    {
+        editor()->tools()->tryClearTemporaryTool(Qt::Key_unknown);
+    }
+    else
+    {
+        editor()->tools()->tryClearTemporaryTool(static_cast<Qt::Key>(event->key()));
+    }
+
     if (isPointerInUse()) { return; }
 
-    if (mEditor->tools()->temporaryToolActive()) // temporary tool
-    {
-        currentTool()->keyReleaseEvent(event);
-        mEditor->tools()->deactivateTemporaryTool();
-        return;
-    }
     if (currentTool()->keyReleaseEvent(event))
     {
         // has been handled by tool
@@ -690,10 +697,10 @@ void ScribbleArea::pointerPressEvent(PointerEvent* event)
         }
     }
 
-    if (event->buttons() & (Qt::MidButton | Qt::RightButton))
+    if (event->buttons() & (Qt::MidButton | Qt::RightButton) &&
+        editor()->tools()->setTemporaryTool(HAND, event->buttons()))
     {
-        mEditor->tools()->setTemporaryTool(HAND);
-        getTool(HAND)->pointerPressEvent(event);
+        currentTool()->pointerPressEvent(event);
     }
 
     const bool isPressed = event->buttons() & Qt::LeftButton;
@@ -728,13 +735,6 @@ void ScribbleArea::pointerMoveEvent(PointerEvent* event)
         }
     }
 
-    if (event->buttons() == Qt::RightButton)
-    {
-        setCursor(getTool(HAND)->cursor());
-        getTool(HAND)->pointerMoveEvent(event);
-        event->accept();
-        return;
-    }
     currentTool()->pointerMoveEvent(event);
 }
 
@@ -756,12 +756,7 @@ void ScribbleArea::pointerReleaseEvent(PointerEvent* event)
     //qDebug() << "release event";
     currentTool()->pointerReleaseEvent(event);
 
-    // ---- last check (at the very bottom of mouseRelease) ----
-    if (mEditor->tools()->temporaryToolActive() && !mKeyboardInUse) // temp tool and released all keys ?
-    {
-        mEditor->tools()->deactivateTemporaryTool();
-    }
-    updateCanvasCursor();
+    editor()->tools()->tryClearTemporaryTool(event->button());
 }
 
 void ScribbleArea::handleDoubleClick()
@@ -831,7 +826,8 @@ void ScribbleArea::mouseDoubleClickEvent(QMouseEvent* e)
 void ScribbleArea::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
-    mCanvas = QPixmap(size());
+    mDevicePixelRatio = devicePixelRatioF();
+    mCanvas = QPixmap(QSizeF(size() * mDevicePixelRatio).toSize());
     mCanvas.fill(Qt::transparent);
 
     mMyPaint->setSurfaceSize(size());
@@ -985,6 +981,10 @@ void ScribbleArea::handleDrawingOnEmptyFrame()
 
     if (!layer || !layer->isPaintable())
     {
+        return;
+    }
+
+    if (currentTool()->type() == ERASER) {
         return;
     }
 
@@ -1251,6 +1251,7 @@ void ScribbleArea::prepCanvas(int frame, QRect rect)
 void ScribbleArea::drawCanvas(int frame, QRect rect)
 {
     mCanvas.fill(Qt::transparent);
+    mCanvas.setDevicePixelRatio(mDevicePixelRatio);
     prepCanvas(frame, rect);
     mCanvasPainter.paint();
     prepOverlays();
@@ -1299,7 +1300,7 @@ void ScribbleArea::prepOverlays()
     o.bTitleSafe = mPrefs->isOn(SETTING::TITLE_SAFE_ON);
     o.nTitleSafe = mPrefs->getInt(SETTING::TITLE_SAFE);
 
-    o.mRect = getCameraRect().toRect();   // camera rect!
+    o.mRect = getCameraRect();   // camera rect!
     o.mSinglePerspPoint = mEditor->overlays()->getSinglePerspPoint();
     o.mLeftPerspPoint = mEditor->overlays()->getLeftPerspPoint();
     o.mRightPerspPoint = mEditor->overlays()->getRightPerspPoint();
@@ -1442,7 +1443,7 @@ void ScribbleArea::drawPolyline(QPainterPath path, QPen pen, bool useAA)
 /************************************************************************************/
 // view handling
 
-QRectF ScribbleArea::getCameraRect()
+QRect ScribbleArea::getCameraRect()
 {
     return mCanvasPainter.getCameraRect();
 }
@@ -1657,31 +1658,11 @@ BaseTool* ScribbleArea::getTool(ToolType eToolType)
 
 void ScribbleArea::setCurrentTool(ToolType eToolMode)
 {
-    if (currentTool() != nullptr && eToolMode != currentTool()->type())
-    {
-        qDebug() << "Set Current Tool" << BaseTool::TypeName(eToolMode);
-        if (BaseTool::TypeName(eToolMode) == "")
-        {
-            // tool does not exist
-            //Q_ASSERT_X( false, "", "" );
-            return;
-        }
-
-        if (currentTool()->type() == MOVE)
-        {
-            paintTransformedSelection();
-            mEditor->deselectAll();
-        }
-        else if (currentTool()->type() == POLYLINE)
-        {
-            mEditor->deselectAll();
-        }
-    }
+    Q_UNUSED(eToolMode)
 
     // change cursor
     setCursor(currentTool()->cursor());
     updateCanvasCursor();
-    //qDebug() << "fn: setCurrentTool " << "call: setCursor()" << "current tool" << currentTool()->typeName();
 }
 
 void ScribbleArea::deleteSelection()

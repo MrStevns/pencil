@@ -31,7 +31,7 @@ GNU General Public License for more details.
 
 
 #include "editor.h"
-#include "qmath.h"
+#include "toolmanager.h"
 
 #ifdef Q_OS_MAC
 extern "C" {
@@ -84,19 +84,19 @@ bool StrokeTool::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key()) {
     case Qt::Key_Alt:
-        mEditor->tools()->setTemporaryTool(EYEDROPPER);
-        return true;
+        if (mEditor->tools()->setTemporaryTool(EYEDROPPER, {}, Qt::AltModifier))
+        {
+            return true;
+        }
+        break;
     case Qt::Key_Space:
-        mEditor->tools()->setTemporaryTool(HAND); // just call "setTemporaryTool()" to activate temporarily any tool
-        return true;
+        if (mEditor->tools()->setTemporaryTool(HAND, Qt::Key_Space, Qt::NoModifier))
+        {
+            return true;
+        }
+        break;
     }
-    return false;
-}
-
-bool StrokeTool::keyReleaseEvent(QKeyEvent *event)
-{
-    Q_UNUSED(event)
-    return true;
+    return BaseTool::keyPressEvent(event);
 }
 
 bool StrokeTool::emptyFrameActionEnabled()

@@ -27,9 +27,12 @@ GNU General Public License for more details.
 #include "brushsetting.h"
 
 
+class QClipboard;
 class QTemporaryDir;
 class Object;
 class KeyFrame;
+class BitmapImage;
+class VectorImage;
 class LayerCamera;
 class MainWindow2;
 class BaseManager;
@@ -43,10 +46,12 @@ class SelectionManager;
 class MPBrushManager;
 class SoundManager;
 class OverlayManager;
+class ClipboardManager;
 class ScribbleArea;
 class TimeLine;
 class BackupElement;
 class ActiveFramePool;
+class Layer;
 
 enum class SETTING;
 
@@ -63,6 +68,7 @@ class Editor : public QObject
         Q_PROPERTY(SoundManager*    sound    READ sound)
         Q_PROPERTY(SelectionManager* select READ select)
         Q_PROPERTY(OverlayManager*  overlays READ overlays)
+        Q_PROPERTY(ClipboardManager* clipboards READ clipboards)
         Q_PROPERTY(MPBrushManager* brushes READ brushes)
 
 public:
@@ -83,6 +89,7 @@ public:
     SoundManager*      sound() const { return mSoundManager; }
     SelectionManager*  select() const { return mSelectionManager; }
     OverlayManager*    overlays() const { return mOverlayManager; }
+    ClipboardManager*  clipboards() const { return mClipboardManager; }
     MPBrushManager*    brushes() const { return mMPBrushManager; }
 
     Object* object() const { return mObject.get(); }
@@ -116,6 +123,8 @@ public:
     void deselectAll() const;
     void selectAll() const;
 
+    void clipboardChanged();
+
     // backup
     int mBackupIndex;
     BackupElement* currentBackup();
@@ -133,7 +142,7 @@ signals:
     void framesModified();
     void selectedFramesChanged();
 
-    void updateTimeLine();
+    void updateTimeLine() const;
     void updateLayerCount();
     void updateBackup();
 
@@ -144,6 +153,9 @@ signals:
     void needSave();
     void needDisplayInfo(const QString& title, const QString& body);
     void needDisplayInfoNoTitle(const QString& body);
+
+    void canCopyChanged(bool enabled);
+    void canPasteChanged(bool enabled);
 
 public: //slots
 
@@ -159,8 +171,6 @@ public: //slots
     void updateFrame(int frameNumber);
 
     void clearCurrentFrame();
-
-    void cut();
 
     bool importImage(const QString& filePath);
     bool importGIF(const QString& filePath, int numOfImages = 0);
@@ -192,10 +202,14 @@ public: //slots
     void sanitizeBackupElementsAfterLayerDeletion(int layerIndex);
     void undo();
     void redo();
-    void copy();
 
+    void copy();
+    void copyAndCut();
     void paste();
-    void clipboardChanged();
+
+    bool canCopy() const;
+    bool canPaste() const;
+
     void increaseLayerVisibilityIndex();
     void decreaseLayerVisibilityIndex();
     void flipSelection(bool flipVertical);
@@ -225,6 +239,14 @@ private:
     bool importBitmapImage(const QString&, int space = 0);
     bool importVectorImage(const QString&);
 
+    void pasteToCanvas(BitmapImage* bitmapImage, int frameNumber);
+    void pasteToCanvas(VectorImage* vectorImage, int frameNumber);
+    void pasteToFrames();
+
+    bool canCopyBitmapImage(BitmapImage* bitmapImage) const;
+    bool canCopyFrames(const Layer* layer) const;
+    bool canCopyVectorImage(const VectorImage* vectorImage) const;
+
     // the object to be edited by the editor
     std::unique_ptr<Object> mObject;
 
@@ -242,6 +264,7 @@ private:
     SoundManager*      mSoundManager = nullptr;
     SelectionManager*  mSelectionManager = nullptr;
     OverlayManager*    mOverlayManager = nullptr;
+    ClipboardManager*  mClipboardManager = nullptr;
     MPBrushManager* mMPBrushManager = nullptr;
 
     std::vector< BaseManager* > mAllManagers;
@@ -261,10 +284,6 @@ private:
     void updateAutoSaveCounter();
     int mLastModifiedFrame = -1;
     int mLastModifiedLayer = -1;
-
-    // clipboard
-    bool clipboardBitmapOk = true;
-    bool clipboardVectorOk = true;
 };
 
 #endif

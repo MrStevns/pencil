@@ -21,7 +21,6 @@ GNU General Public License for more details.
 #include <pencilerror.h>
 
 #include <bitmapimage.h>
-#include <bitmaputils.h>
 #include <layerbitmap.h>
 #include <layermanager.h>
 
@@ -44,7 +43,7 @@ Status PegBarAligner::align(const QStringList& layers)
 
     if (!result.ok())
     {
-        return Status(Status::FAIL, "", tr("Peg hole not found!\nCheck selection, and please try again.", "PegBar error message"));
+        return Status(Status::FAIL, tr("Peg hole not found!\nCheck selection, and please try again.", "PegBar error message"));
     }
 
     const int pegX = result.point.x();
@@ -64,7 +63,7 @@ Status PegBarAligner::align(const QStringList& layers)
             if (!result.ok())
             {
                 const QString errorDescription = tr("Peg bar not found at %2, %1").arg(k).arg(layerBitmap->name());
-                return Status(result.code(), "", errorDescription);
+                return Status(result.code(), errorDescription);
             }
             img->moveTopLeft(QPoint(img->left() + (pegX - result.point.x()), img->top() + (pegY - result.point.y())));
 
@@ -93,7 +92,7 @@ PegStatus PegBarAligner::findPoint(const BitmapImage& image) const
     {
         for (int y = top; y <= bottom; y++)
         {
-            const QRgb& scan = BitmapUtils::constScanLine(image, x,y);
+            const QRgb& scan = image.constScanLine(x,y);
             if (qAlpha(scan) == 255 && qGray(scan) < grayValue)
             {
                 foundX = true;
@@ -109,7 +108,7 @@ PegStatus PegBarAligner::findPoint(const BitmapImage& image) const
     {
         for (int x = left; x <= right; x++)
         {
-            const QRgb& scan = BitmapUtils::constScanLine(image, x,y);
+            const QRgb& scan = image.constScanLine(x,y);
             if (qAlpha(scan) == 255 && qGray(scan) < grayValue)
             {
                 foundY = true;

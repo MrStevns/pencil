@@ -104,8 +104,11 @@ jobs:
         arch: ${{matrix.arch}}
 
     - name: Upload package
+      env: { GOOGLE_PRIVATE_KEY: "${{secrets.google_private_key}}" }
+      if: env.GOOGLE_PRIVATE_KEY != null
       uses: ./.github/actions/upload-package
       with:
         google-private-key: ${{secrets.google_private_key}}
         parent: ${{secrets[matrix.upload-parent]}}
-        path: build/${{steps.package.outputs.package-name}}
+        path: build
+        files: ${{steps.package.outputs.package-name}}

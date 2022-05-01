@@ -12,11 +12,10 @@
 #include "editor.h"
 #include "bitmapbucket.h"
 #include "bitmapimage.h"
-#include "bitmaputils.h"
 
 #include "basetool.h"
 
-void dragAndFill(QPointF movePoint, Editor* editor, QColor color, QRectF bounds, Properties properties) {
+void dragAndFill(QPointF movePoint, Editor* editor, QColor color, QRect bounds, Properties properties) {
     int moveX = 0;
 
     BitmapBucket bucket = BitmapBucket(editor, color, bounds, movePoint, properties);
@@ -42,12 +41,12 @@ void dragAndFill(QPointF movePoint, Editor* editor, QColor color, QRectF bounds,
 
 void verifyPixels(QPoint referencePoint, const BitmapImage* image, QRgb fillColor)
 {
-    REQUIRE(BitmapUtils::constScanLine(*image, referencePoint.x(), referencePoint.y()) == fillColor);
+    REQUIRE(image->constScanLine(referencePoint.x(), referencePoint.y()) == fillColor);
 
     // pixels that are not transparent nor the given fill color, should be left untouched
-    REQUIRE(BitmapUtils::constScanLine(*image, referencePoint.x()+4, referencePoint.y()) != fillColor);
-    REQUIRE(BitmapUtils::constScanLine(*image, referencePoint.x()+5, referencePoint.y()) != fillColor);
-    REQUIRE(BitmapUtils::constScanLine(*image, referencePoint.x()+6, referencePoint.y()) != fillColor);
+    REQUIRE(image->constScanLine(referencePoint.x()+4, referencePoint.y()) != fillColor);
+    REQUIRE(image->constScanLine(referencePoint.x()+5, referencePoint.y()) != fillColor);
+    REQUIRE(image->constScanLine(referencePoint.x()+6, referencePoint.y()) != fillColor);
 }
 
 TEST_CASE("BitmapBucket - Fill drag logic")
@@ -81,7 +80,7 @@ TEST_CASE("BitmapBucket - Fill drag logic")
     pressPoint.setX(pressPoint.x()+3);
     pressPoint.setY(pressPoint.y()+7);
 
-    REQUIRE(BitmapUtils::constScanLine(beforeFill, pressPoint.x(), pressPoint.y()) == 0);
+    REQUIRE(beforeFill.constScanLine(pressPoint.x(), pressPoint.y()) == 0);
 
     SECTION("FillTo: CurrentLayer - Reference: Current Layer")
     {

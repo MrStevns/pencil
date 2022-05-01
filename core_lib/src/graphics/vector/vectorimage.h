@@ -80,6 +80,8 @@ public:
     void deleteSelectedPoints();
     void removeVertex(int curve, int vertex);
 
+    bool isEmpty() const { return mCurves.isEmpty(); }
+
     void paste(VectorImage&);
 
     QColor getColor(int i);

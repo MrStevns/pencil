@@ -441,7 +441,7 @@ Status ActionCommands::exportImage()
 {
     // Options
     auto dialog = new ExportImageDialog(mParent, FileType::IMAGE);
-    OnScopeExit(dialog->deleteLater());
+    OnScopeExit(dialog->deleteLater())
 
     dialog->init();
 
@@ -600,6 +600,88 @@ Status ActionCommands::addNewKey()
     return Status::OK;
 }
 
+void ActionCommands::exposeSelectedFrames(int offset)
+{
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+
+    bool hasSelectedFrames = currentLayer->hasAnySelectedFrames();
+
+    // Functionality to be able to expose the current frame without selecting
+    // A:
+    KeyFrame* key = currentLayer->getLastKeyFrameAtPosition(mEditor->currentFrame());
+    if (!hasSelectedFrames) {
+
+        if (key == nullptr) { return; }
+        currentLayer->setFrameSelected(key->pos(), true);
+    }
+
+    currentLayer->setExposureForSelectedFrames(offset);
+    emit mEditor->updateTimeLine();
+    emit mEditor->framesModified();
+
+    // Remember to deselect frame again so we don't show it being visually selected.
+    // B:
+    if (!hasSelectedFrames) {
+        currentLayer->setFrameSelected(key->pos(), false);
+    }
+}
+
+void ActionCommands::addExposureToSelectedFrames()
+{
+    exposeSelectedFrames(1);
+}
+
+void ActionCommands::subtractExposureFromSelectedFrames()
+{
+    exposeSelectedFrames(-1);
+}
+
+Status ActionCommands::insertKeyFrameAtCurrentPosition()
+{
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+    int currentPosition = mEditor->currentFrame();
+
+    currentLayer->insertExposureAt(currentPosition);
+    return addNewKey();
+}
+
+void ActionCommands::removeSelectedFrames()
+{
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+
+    if (!currentLayer->hasAnySelectedFrames()) { return; }
+
+    int ret = QMessageBox::warning(mParent,
+                                   tr("Remove selected frames", "Windows title of remove selected frames pop-up."),
+                                   tr("Are you sure you want to remove the selected frames? This action is irreversible currently!"),
+                                   QMessageBox::Ok | QMessageBox::Cancel,
+                                   QMessageBox::Ok);
+
+    if (ret != QMessageBox::Ok)
+    {
+        return;
+    }
+
+    for (int pos : currentLayer->selectedKeyFramesPositions()) {
+        currentLayer->removeKeyFrame(pos);
+    }
+    mEditor->layers()->notifyLayerChanged(currentLayer);
+}
+
+void ActionCommands::reverseSelectedFrames()
+{
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+
+    if (!currentLayer->reverseOrderOfSelection()) {
+        return;
+    }
+
+    if (currentLayer->type() == Layer::CAMERA) {
+        mEditor->view()->forceUpdateViewTransform();
+    }
+    emit mEditor->framesModified();
+};
+
 void ActionCommands::removeKey()
 {
     mEditor->removeKey();
@@ -610,6 +692,30 @@ void ActionCommands::removeKey()
     {
         layer->addNewKeyFrameAt(1);
     }
+}
+
+void ActionCommands::duplicateLayer()
+{
+    LayerManager* layerMgr = mEditor->layers();
+    Layer* fromLayer = layerMgr->currentLayer();
+    int currFrame = mEditor->currentFrame();
+
+    Layer* toLayer = layerMgr->createLayer(fromLayer->type(), tr("%1 (copy)", "Default duplicate layer name").arg(fromLayer->name()));
+    toLayer->removeKeyFrame(1);
+    fromLayer->foreachKeyFrame([&] (KeyFrame* key) {
+        key = key->clone();
+        toLayer->addKeyFrame(key->pos(), key);
+        if (toLayer->type() == Layer::SOUND)
+        {
+            mEditor->sound()->processSound(static_cast<SoundClip*>(key));
+        }
+        else
+        {
+            key->setFileName("");
+            key->modification();
+        }
+    });
+    mEditor->scrubTo(currFrame);
 }
 
 void ActionCommands::duplicateKey()

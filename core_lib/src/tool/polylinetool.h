@@ -53,6 +53,8 @@ public:
     void setWidth(const qreal width) override;
     void setFeather(const qreal feather) override;
 
+    bool leavingThisTool() override;
+
     virtual bool isActive() override;
 
 protected:

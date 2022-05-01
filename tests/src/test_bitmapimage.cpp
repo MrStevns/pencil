@@ -16,7 +16,6 @@ GNU General Public License for more details.
 #include "catch.hpp"
 
 #include "bitmapimage.h"
-#include "bitmaputils.h"
 
 TEST_CASE("BitmapImage constructors")
 {
@@ -74,7 +73,7 @@ TEST_CASE("BitmapImage constructors")
         {
             for (int y = 0; y < b->height(); ++y)
             {
-                QRgb color = BitmapUtils::pixel(*b, x, y);
+                QRgb color = b->pixel(x, y);
                 REQUIRE(qAlpha(color) == 0);
             }
         }
@@ -104,18 +103,18 @@ SCENARIO("We select an image and move a portion of it") {
         QTransform moveT;
         moveT.translate(-100, -100);
 
-        REQUIRE(qAlpha(BitmapUtils::pixel(*b, -500, -500)) == 255);
-        REQUIRE(qRed(BitmapUtils::pixel(*b, -500, -500)) == 255);
+        REQUIRE(qAlpha(b->pixel(-500, -500)) == 255);
+        REQUIRE(qRed(b->pixel(-500, -500)) == 255);
 
         WHEN("A portion of the image is moved") {
             b->moveSelectionTransform(QRect(-500, -500, 50, 50), moveT);
 
             THEN("The old area should be transparent") {
-                REQUIRE(qAlpha(BitmapUtils::pixel(*b, -500, -500)) == 0);
+                REQUIRE(qAlpha(b->pixel(-500, -500)) == 0);
             }
 
             THEN("The moved portion should be located at") {
-                REQUIRE(qRed(BitmapUtils::pixel(*b, -600, -600)) == 255);
+                REQUIRE(qRed(b->pixel(-600, -600)) == 255);
             }
         }
     }
