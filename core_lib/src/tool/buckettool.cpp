@@ -182,7 +182,7 @@ void BucketTool::setFillReferenceMode(int referenceMode)
 
 void BucketTool::pointerPressEvent(PointerEvent* event)
 {
-    startStroke(event->inputType());
+    mCurrentInputType = event->inputType();
 
     Layer* targetLayer = mEditor->layers()->currentLayer();
 
@@ -238,16 +238,16 @@ void BucketTool::pointerReleaseEvent(PointerEvent* event)
     }
 
     mFilledOnMove = false;
-
-    endStroke();
 }
 
 void BucketTool::paintBitmap()
 {
+
     mBitmapBucket.paint(getCurrentPoint(), [this](BucketState progress, int layerIndex, int frameIndex)
     {
         if (progress == BucketState::WillFillTarget)
         {
+            mScribbleArea->startStroke();
             mEditor->backup(layerIndex, frameIndex, typeName());
         }
         else if (progress == BucketState::DidFillTarget)
@@ -260,6 +260,7 @@ void BucketTool::paintBitmap()
             {
                 mScribbleArea->invalidateLayerPixmapCache();
             }
+            mScribbleArea->endStroke();
         }
     });
 }
