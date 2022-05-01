@@ -336,6 +336,7 @@ void ToolOptionWidget::disableAllOptions()
     ui->inpolLevelsCombo->hide();
     ui->fillContourBox->hide();
     ui->stabilizerLabel->hide();
+    ui->brushSettingsWidget->hide();
 }
 
 ToolBrushSettingsWidget* ToolOptionWidget::brushSettingsWidget()
