@@ -48,7 +48,7 @@ ViewManager::~ViewManager()
 
 bool ViewManager::init()
 {
-    connect(editor(), &Editor::scrubbed, this, &ViewManager::onCurrentFrameChanged);
+    connect(editor(), &Editor::didScrub, this, &ViewManager::onCurrentFrameChanged);
     return true;
 }
 

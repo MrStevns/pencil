@@ -1022,10 +1022,11 @@ void Editor::setCurrentLayerIndex(int i)
 
 void Editor::scrubTo(int frame)
 {
+    emit willScrub(mFrame);
     if (frame < 1) { frame = 1; }
     mFrame = frame;
 
-    emit scrubbed(frame);
+    emit didScrub(frame);
 
     // FIXME: should not emit Timeline update here.
     // Editor must be an individual class.

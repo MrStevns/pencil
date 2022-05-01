@@ -111,7 +111,9 @@ public:
     void updateFrame(int frame);
 
     /** Frame scrubbed, invalidate relevant cache */
-    void onScrubbed(int frameNumber);
+    void onDidScrub(int frameNumber);
+
+    void onWillScrub(int frameNumber);
 
     /** Multiple frames modified, invalidate cache for affected frames */
     void onFramesModified();

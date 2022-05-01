@@ -132,8 +132,11 @@ public:
 
 signals:
 
-    /** This should be emitted after scrubbing */
-    void scrubbed(int frameNumber);
+    /** This will be emitted after scrubbing */
+    void didScrub(int frameNumber);
+
+    /** This will be emitted before scrubbing */
+    void willScrub(int frameNumber);
 
     /** This should be emitted after modifying the frame content */
     void frameModified(int frameNumber);

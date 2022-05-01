@@ -45,7 +45,7 @@ void LayerOpacityDialog::initUI()
     connect(this, &QDialog::finished, this, &LayerOpacityDialog::close);
 
     connect(mEditor, &Editor::objectLoaded, this, &LayerOpacityDialog::onObjectLoaded);
-    connect(mEditor, &Editor::scrubbed, this, &LayerOpacityDialog::onCurrentFrameChanged);
+    connect(mEditor, &Editor::didScrub, this, &LayerOpacityDialog::onCurrentFrameChanged);
     connect(mPlayBack, &PlaybackManager::playStateChanged, this, &LayerOpacityDialog::onPlayStateChanged);
     connect(mLayerManager, &LayerManager::currentLayerChanged, this, &LayerOpacityDialog::onCurrentLayerChanged);
     connect(mEditor, &Editor::selectedFramesChanged, this, &LayerOpacityDialog::onSelectedFramesChanged);

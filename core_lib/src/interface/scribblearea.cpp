@@ -331,10 +331,21 @@ void ScribbleArea::onPlayStateChanged()
     updateFrame(currentFrame);
 }
 
-void ScribbleArea::onScrubbed(int frameNumber)
+void ScribbleArea::onWillScrub(int frameNumber)
 {
-    // Maybe consider checking whether a stroke was made on the previous frame
-    // instead of blindly clearing the mypaint surface
+    Q_UNUSED(frameNumber)
+
+    // If we're in the middle of a painting session, stop it and save what was painted
+    if (mIsPainting) {
+        paintBitmapBuffer(QPainter::CompositionMode_Source);
+        invalidateLayerPixmapCache();
+        clearBitmapBuffer();
+        endStroke();
+    }
+}
+
+void ScribbleArea::onDidScrub(int frameNumber)
+{
     reloadMyPaint();
     invalidateLayerPixmapCache();
     updateFrame(frameNumber);
@@ -1357,6 +1368,7 @@ void ScribbleArea::startStroke()
 
 void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float ytilt, double dt)
 {
+    if (!mIsPainting) { return; }
 //    qDebug() << "stroke to: " << point;
     mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, dt);
 

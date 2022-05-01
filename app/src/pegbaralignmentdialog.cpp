@@ -40,7 +40,7 @@ PegBarAlignmentDialog::PegBarAlignmentDialog(Editor *editor, QWidget *parent) :
 
     connect(mEditor->layers(), &LayerManager::layerCountChanged, this, &PegBarAlignmentDialog::updatePegRegLayers);
     connect(mEditor->select(), &SelectionManager::selectionChanged, this, &PegBarAlignmentDialog::updatePegRegDialog);
-    connect(mEditor, &Editor::scrubbed, this, &PegBarAlignmentDialog::updatePegRegDialog);
+    connect(mEditor, &Editor::didScrub, this, &PegBarAlignmentDialog::updatePegRegDialog);
     connect(mEditor, &Editor::framesModified, this, &PegBarAlignmentDialog::updatePegRegDialog);
     connect(mEditor->layers(), &LayerManager::currentLayerChanged, this, &PegBarAlignmentDialog::updatePegRegDialog);
 
