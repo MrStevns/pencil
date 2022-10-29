@@ -82,6 +82,7 @@ HEADERS +=  \
     src/tool/basetool.h \
     src/tool/brushtool.h \
     src/tool/buckettool.h \
+    src/tool/camera/camerahandle.h \
     src/tool/cameratool.h \
     src/tool/erasertool.h \
     src/tool/eyedroppertool.h \
@@ -168,6 +169,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/basetool.cpp \
     src/tool/brushtool.cpp \
     src/tool/buckettool.cpp \
+    src/tool/camera/camerahandle.cpp \
     src/tool/cameratool.cpp \
     src/tool/erasertool.cpp \
     src/tool/eyedroppertool.cpp \
