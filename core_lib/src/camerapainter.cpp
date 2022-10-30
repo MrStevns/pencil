@@ -24,6 +24,7 @@ GNU General Public License for more details.
 #include "layercamera.h"
 #include "camera.h"
 #include "keyframe.h"
+#include "uiassists.h"
 
 
 #include "painterutils.h"
@@ -207,7 +208,7 @@ void CameraPainter::paintHandles(QPainter& painter, const QTransform& camTransfo
         painter.setPen(QColor(0, 0, 0, 255));
     }
 
-    QPolygonF camPolygon = mViewTransform.map(camTransform.inverted().map(QPolygon(cameraRect)));
+    QPolygonF camPolygon = UIAssist::mapToWorldPolygon(camTransform, mViewTransform, cameraRect);
     painter.drawPolygon(camPolygon);
 
     QTransform scaleT;
@@ -215,7 +216,7 @@ void CameraPainter::paintHandles(QPainter& painter, const QTransform& camTransfo
     scaleT.rotate(rotation);
     scaleT.translate(translation.x(), translation.y());
 
-    QPolygon nonScaledCamPoly = mViewTransform.map(scaleT.inverted().map(QPolygon(cameraRect)));
+    QPolygonF nonScaledCamPoly = UIAssist::mapToWorldPolygon(scaleT, mViewTransform, cameraRect);
     painter.drawPolygon(nonScaledCamPoly);
     painter.drawText(nonScaledCamPoly[0]-QPoint(0, 2), "100%");
 
@@ -249,12 +250,10 @@ void CameraPainter::paintHandles(QPainter& painter, const QTransform& camTransfo
     painter.drawRect(bottomLeftCorner);
 
     // Paint rotation handle
-    QPointF topCenter = QLineF(camPolygon.at(0), camPolygon.at(1)).center();
+    QPointF topCenter = QLineF(camPolygon.at(0), camPolygon.at(1)).pointAt(.5);
+    QPointF rotationHandle = RotationUIAssist::mapToWorldPoint(cameraRect.topLeft(), camTransform, scale, mViewTransform, mViewScale);
 
-    qreal offsetLimiter = (0.8 * mViewScale);
-    QPointF rotationHandle = mViewTransform.map(camTransform.inverted().map(QPoint(0, (-cameraRect.height()*0.5 - (offsetLimiter) * RotationHandleOffset))));
-
-    painter.drawLine(topCenter, QPoint(rotationHandle.x(),
+    painter.drawLine(topCenter, QPointF(rotationHandle.x(),
                                        (rotationHandle.y())));
 
     painter.drawEllipse(QRectF((rotationHandle.x() - handleW*0.5),
@@ -281,7 +280,9 @@ void CameraPainter::paintInterpolations(QPainter& painter, const LayerCamera* ca
         QPen pen(Qt::black);
         pen.setWidth(2);
         painter.setPen(pen);
-        cameraPathPoint = mViewTransform.map(cameraLayer->getViewAtFrame(mFrameIndex).inverted().map(QRectF(cameraLayer->getViewRect()).center()));
+        const QRect& cameraRect = cameraLayer->getViewRect();
+        const QTransform& cameraTransform = cameraLayer->getViewAtFrame(mFrameIndex);
+        cameraPathPoint = UIAssist::mapToWorldRect(cameraTransform, mViewTransform, cameraRect).center();
         painter.drawEllipse(cameraPathPoint, DOT_WIDTH/2., DOT_WIDTH/2.);
 
         cameraPathPoint = mViewTransform.map(cameraLayer->getPathControlPointAtFrame(frame + 1));
@@ -297,8 +298,8 @@ void CameraPainter::paintInterpolations(QPainter& painter, const LayerCamera* ca
 
         for (int frameInBetween = frame; frameInBetween <= nextFrame ; frameInBetween++)
         {
-            QTransform transform = cameraLayer->getViewAtFrame(frameInBetween);
-            QPointF center = mViewTransform.map(transform.inverted().map(QRectF(cameraLayer->getViewRect()).center()));
+            const QTransform& transform = cameraLayer->getViewAtFrame(frameInBetween);
+            QPointF center = UIAssist::mapToWorldRect(transform, mViewTransform, cameraRect).center();
             painter.drawEllipse(center, DOT_WIDTH/2., DOT_WIDTH/2.);
         }
         painter.restore();
@@ -324,7 +325,8 @@ void CameraPainter::paintOnionSkinning(QPainter& painter, const LayerCamera* cam
     onionSkinPen.setStyle(Qt::PenStyle::DashLine);
     mOnionSkinPainter.paint(painter, cameraLayer, mOnionSkinOptions, mFrameIndex, [&] (OnionSkinPaintState state, int onionSkinNumber) {
 
-        QPolygon cameraPoly = mViewTransform.map(cameraLayer->getViewAtFrame(onionSkinNumber).inverted().map(cameraViewPoly));
+        const QTransform& cameraTransform = cameraLayer->getViewAtFrame(onionSkinNumber);
+        const QPolygonF& cameraPolygon = UIAssist::mapToWorldPolygon(cameraTransform, mViewTransform, cameraLayer->getViewRect());
         if (state == OnionSkinPaintState::PREV) {
 
             if (mOnionSkinOptions.colorizePrevFrames) {
@@ -332,18 +334,18 @@ void CameraPainter::paintOnionSkinning(QPainter& painter, const LayerCamera* cam
             }
 
             painter.setPen(onionSkinPen);
-            painter.drawPolygon(cameraPoly);
+            painter.drawPolygon(cameraPolygon);
         } else if (state == OnionSkinPaintState::NEXT) {
             if (mOnionSkinOptions.colorizeNextFrames) {
                 onionSkinPen.setColor(Qt::blue);
             }
 
             painter.setPen(onionSkinPen);
-            painter.drawPolygon(cameraPoly);
+            painter.drawPolygon(cameraPolygon);
         } else if (state == OnionSkinPaintState::CURRENT) {
             painter.save();
             painter.setPen(Qt::black);
-            painter.drawPolygon(cameraPoly);
+            painter.drawPolygon(cameraPolygon);
             painter.restore();
         }
     });

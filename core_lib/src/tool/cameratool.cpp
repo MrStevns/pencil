@@ -54,6 +54,27 @@ void CameraTool::loadSettings()
     connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &CameraTool::updateSettings);
 }
 
+void CameraTool::updateUIAssists(const Layer* layer)
+{
+    const LayerCamera* camLayer = static_cast<const LayerCamera*>(layer);
+
+    Q_ASSERT(layer->type() == Layer::CAMERA);
+
+    int currentFrame = mEditor->currentFrame();
+    if (!layer->keyExists(currentFrame)) { return; }
+
+    const QTransform& localCamT = camLayer->getViewAtFrame(currentFrame);
+    const QRect& cameraRect = camLayer->getViewRect();
+
+    mCameraRect = UIAssist::mapFromLocalRect(localCamT, cameraRect);
+    mCameraPolygon = UIAssist::mapFromLocalPolygon(localCamT, cameraRect);
+
+    Camera* cam = camLayer->getLastCameraAtFrame(mEditor->currentFrame(), 0);
+    if (cam) {
+        mRotationHandlePoint = RotationUIAssist::mapFromLocalPoint(cameraRect.topLeft(), localCamT, cam->scaling(), mEditor->view()->getViewScaleInverse());
+    }
+}
+
 void CameraTool::updateProperties()
 {
     Layer* layer = mEditor->layers()->getLayer(mEditor->currentLayerIndex());
@@ -222,7 +243,7 @@ void CameraTool::transformCamera(Qt::KeyboardModifiers keyMod)
 
     qreal angleDeg = 0;
     if (mCamMoveMode == CameraMoveType::ROTATION) {
-        angleDeg = getAngleBetween(getCurrentPoint(), mHandle.cameraProjectedRect().center()) - mStartAngle;
+        angleDeg = getAngleBetween(getCurrentPoint(), mCameraRect.center()) - mStartAngle;
         if (keyMod == Qt::ShiftModifier) {
             angleDeg = constrainedRotation(angleDeg, mRotationIncrement);
         }
@@ -240,6 +261,7 @@ void CameraTool::transformCameraPath()
     Q_ASSERT(editor()->layers()->currentLayer()->type() == Layer::CAMERA);
     LayerCamera* layer = static_cast<LayerCamera*>(editor()->layers()->currentLayer());
     layer->updatePathControlPointAtFrame(getCurrentPoint(), mDragPathFrame);
+    layer->setPathMovedAtFrame(mDragPathFrame, true);
     mEditor->updateCurrentFrame();
 }
 
@@ -250,34 +272,21 @@ int CameraTool::constrainedRotation(const qreal rotatedAngle, const int rotation
 
 void CameraTool::pointerPressEvent(PointerEvent*)
 {
-    LayerCamera* layer = static_cast<LayerCamera*>(editor()->layers()->currentLayer());
+    updateUIAssists(mEditor->layers()->currentLayer());
 
-    Q_ASSERT(layer->type() == Layer::CAMERA);
-
-    if (!layer->keyExists(mEditor->currentFrame())) { return; }
-
-    QTransform localCamT = layer->getViewAtFrame(mEditor->currentFrame());
-    QRect cameraRect = layer->getViewRect();
-    mHandle.update(localCamT, mEditor->view()->getView(), cameraRect, rotationHandlePoint(cameraRect));
-
-    mStartAngle = getAngleBetween(getCurrentPoint(), mHandle.cameraProjectedRect().center()) - mCurrentAngle;
-
+    mStartAngle = getAngleBetween(getCurrentPoint(), mCameraRect.center()) - mCurrentAngle;
     mDragPathFrame = mEditor->currentFrame();
     mTransformOffset = getCurrentPoint();
 }
 
 void CameraTool::pointerMoveEvent(PointerEvent* event)
 {
-    Q_ASSERT(editor()->layers()->currentLayer()->type() == Layer::CAMERA);
-    LayerCamera* layer = static_cast<LayerCamera*>(editor()->layers()->currentLayer());
-
-    QTransform localCamT = layer->getViewAtFrame(mEditor->currentFrame());
-    QRect cameraRect = layer->getViewRect();
-    mHandle.update(localCamT, mEditor->view()->getView(), cameraRect, rotationHandlePoint(cameraRect));
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+    updateUIAssists(currentLayer);
 
     if (mScribbleArea->isPointerInUse())   // the user is also pressing the mouse (dragging)
     {
-        if (layer->keyExists(mEditor->currentFrame())) {
+        if (currentLayer->keyExists(mEditor->currentFrame())) {
             transformCamera(event->modifiers());
         }
         else if (mCamPathMoveMode == CameraMoveType::PATH)
@@ -292,12 +301,8 @@ void CameraTool::pointerMoveEvent(PointerEvent* event)
 
 void CameraTool::pointerReleaseEvent(PointerEvent* event)
 {
-    LayerCamera* layer = static_cast<LayerCamera*>(editor()->layers()->currentLayer());
-    Q_ASSERT(layer->type() == Layer::CAMERA);
-
-    QTransform localCamT = layer->getViewAtFrame(mEditor->currentFrame());
-    QRect cameraRect = layer->getViewRect();
-    mHandle.update(localCamT, mEditor->view()->getView(), cameraRect, rotationHandlePoint(cameraRect));
+    Layer* layer = editor()->layers()->currentLayer();
+    updateUIAssists(layer);
 
     int frame = mEditor->currentFrame();
     if (layer->keyExists(frame)) {
@@ -305,7 +310,6 @@ void CameraTool::pointerReleaseEvent(PointerEvent* event)
         mEditor->view()->forceUpdateViewTransform();
     } else if (mCamPathMoveMode == CameraMoveType::PATH) {
         transformCameraPath();
-        layer->setPathMovedAtFrame(frame, true);
         mEditor->view()->forceUpdateViewTransform();
     }
     emit mEditor->frameModified(frame);
@@ -316,16 +320,9 @@ qreal CameraTool::getAngleBetween(const QPointF& pos1, const QPointF& pos2) cons
     return qRadiansToDegrees(MathUtils::getDifferenceAngle(pos1, pos2));
 }
 
-QPointF CameraTool::rotationHandlePoint(const QRect& cameraRect) const
-{
-    float offsetLimiter = (0.8 * mEditor->viewScaleInversed());
-    return QPoint(0, (-cameraRect.height()*0.5 - (offsetLimiter) * RotationHandleOffset));
-}
-
 CameraMoveType CameraTool::getCameraMoveMode(const QPointF& point, qreal tolerance) const
 {
-    QPolygonF camPoly =  mHandle.cameraProjectedCorners();
-    QPointF rotationHandle = mHandle.cameraProjectedRotationPoint();
+    QPolygonF camPoly =  mCameraPolygon;
 
     if (camPoly.count() <= 0) { return CameraMoveType::NONE; }
 
@@ -345,7 +342,7 @@ CameraMoveType CameraTool::getCameraMoveMode(const QPointF& point, qreal toleran
     {
         return CameraMoveType::BOTTOMLEFT;
     }
-    else if (QLineF(point, rotationHandle).length() < tolerance)
+    else if (QLineF(point, mRotationHandlePoint).length() < tolerance)
     {
         return CameraMoveType::ROTATION;
     }
@@ -375,8 +372,8 @@ CameraMoveType CameraTool::getPathMoveMode(const LayerCamera* layerCamera, int f
 
 void CameraTool::transformView(LayerCamera* layerCamera, CameraMoveType mode, const QPointF& point, const QPointF& offset, qreal angle, int frameNumber) const
 {
-    QPolygon curPoly = mHandle.cameraProjectedCorners();
-    QPoint curCenter = QLineF(curPoly.at(0), curPoly.at(2)).pointAt(0.5).toPoint();
+    QPolygonF curPoly = mCameraPolygon;
+    QPointF curCenter = QLineF(curPoly.at(0), curPoly.at(2)).pointAt(0.5).toPoint();
     QLineF lineOld(curCenter, point);
     QLineF lineNew(curCenter, point);
     Camera* curCam = layerCamera->getCameraAtFrame(frameNumber);

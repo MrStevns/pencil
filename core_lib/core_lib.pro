@@ -82,7 +82,6 @@ HEADERS +=  \
     src/tool/basetool.h \
     src/tool/brushtool.h \
     src/tool/buckettool.h \
-    src/tool/camera/camerahandle.h \
     src/tool/cameratool.h \
     src/tool/erasertool.h \
     src/tool/eyedroppertool.h \
@@ -95,6 +94,7 @@ HEADERS +=  \
     src/tool/smudgetool.h \
     src/tool/strokemanager.h \
     src/tool/stroketool.h \
+    src/util/uiassists.h \
     src/util/blitrect.h \
     src/util/cameraeasingtype.h \
     src/util/camerafieldoption.h \
@@ -169,7 +169,6 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/basetool.cpp \
     src/tool/brushtool.cpp \
     src/tool/buckettool.cpp \
-    src/tool/camera/camerahandle.cpp \
     src/tool/cameratool.cpp \
     src/tool/erasertool.cpp \
     src/tool/eyedroppertool.cpp \
@@ -182,6 +181,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/smudgetool.cpp \
     src/tool/strokemanager.cpp \
     src/tool/stroketool.cpp \
+    src/util/uiassists.cpp \
     src/util/blitrect.cpp \
     src/util/cameraeasingtype.cpp \
     src/util/fileformat.cpp \

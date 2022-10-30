@@ -24,7 +24,7 @@ GNU General Public License for more details.
 #include "camerafieldoption.h"
 #include "preferencemanager.h"
 
-#include "camera/camerahandle.h"
+#include "uiassists.h"
 
 enum class CameraMoveType {
     PATH,
@@ -61,8 +61,6 @@ public:
     void setPathDotColorType(const DotColorType pathDotColor) override;
     void resetTransform(CameraFieldOption option);
 
-    QPointF rotationHandlePoint(const QRect& cameraRect) const;
-
     void transformView(LayerCamera* layerCamera, CameraMoveType mode, const QPointF& point, const QPointF& offset, qreal angle, int frameNumber) const;
 
 private:
@@ -73,6 +71,7 @@ private:
     int constrainedRotation(const qreal rotatedAngle, const int rotationIncrement) const;
 
     void updateProperties();
+    void updateUIAssists(const Layer* layer);
 
     qreal getAngleBetween(const QPointF& pos1, const QPointF& pos2) const;
 
@@ -85,7 +84,9 @@ private:
     int mDragPathFrame = 1;
     int mRotationIncrement = 0;
 
-    CameraHandle mHandle;
+    QRectF mCameraRect;
+    QPolygonF mCameraPolygon;
+    QPointF mRotationHandlePoint;
 
     qreal mStartAngle = 0;
     qreal mCurrentAngle = 0;
