@@ -14,36 +14,25 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 */
-#ifndef UIASSISTS_H
-#define UIASSISTS_H
+#ifndef TRANSFORM_H
+#define TRANSFORM_H
 
 #include <QTransform>
 #include <QPolygonF>
 
-class UIAssist
+class Transform
 {
 public:
-    UIAssist() {};
+    Transform() {};
 
     static QRectF mapFromLocalRect(const QTransform& transform, const QRect& rect);
     static QRectF mapToWorldRect(const QTransform& transform, const QTransform& worldT, const QRect rect);
+
+    static QPointF mapFromLocalPoint(const QTransform& transform, const QPoint& point);
+    static QPointF mapToWorldPoint(const QTransform& transform, const QTransform& worldT, const QPoint& point);
 
     static QPolygonF mapFromLocalPolygon(const QTransform& transform, const QRect& rect);
     static QPolygonF mapToWorldPolygon(const QTransform& transform, const QTransform& worldT, const QRect& rect);
 };
 
-class RotationUIAssist
-{
-public:
-    RotationUIAssist() { };
-
-    static QPointF mapFromLocalPoint(const QPoint& origin, const QTransform& localT, const qreal objectScale, float worldScale);
-    static QPointF mapToWorldPoint(const QPoint& origin, const QTransform& localT, const qreal objectScale, const QTransform& worldT, float worldScale);
-
-private:
-
-    // Spacer for rotation handle offset
-    Q_CONSTEXPR static qreal mOffsetFromFrame = 0.05;
-};
-
-#endif // UIASSISTS_H
+#endif // TRANSFORM_H

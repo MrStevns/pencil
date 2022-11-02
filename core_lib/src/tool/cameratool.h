@@ -24,7 +24,9 @@ GNU General Public License for more details.
 #include "camerafieldoption.h"
 #include "preferencemanager.h"
 
-#include "uiassists.h"
+#include "transform.h"
+
+#include <QPen>
 
 enum class CameraMoveType {
     PATH,
@@ -39,6 +41,7 @@ enum class CameraMoveType {
 
 class PointerEvent;
 class LayerCamera;
+class KeyFrame;
 
 class CameraTool : public BaseTool
 {
@@ -49,6 +52,8 @@ public:
 
     QCursor cursor() override;
     ToolType type() override { return ToolType::CAMERA; }
+
+    void paint(QPainter& painter) override;
 
     void loadSettings() override;
 
@@ -64,6 +69,14 @@ public:
     void transformView(LayerCamera* layerCamera, CameraMoveType mode, const QPointF& point, const QPointF& offset, qreal angle, int frameNumber) const;
 
 private:
+
+    QPointF localRotationHandlePoint(const QPoint& origin, const QTransform& localT, const qreal objectScale, float worldScale) const;
+    QPointF worldRotationHandlePoint(const QPoint& origin, const QTransform& localT, const qreal objectScale, const QTransform& worldT, float worldScale) const;
+
+    void paintHandles(QPainter& painter, const QTransform& worldTransform, const QTransform& camTransform, const QRect& cameraRect, const QPointF translation, const qreal scale, const qreal rotation, bool hollowHandles) const;
+    void paintInterpolations(QPainter& painter, const QTransform& worldTransform, int currentFrame, const LayerCamera* cameraLayer, const KeyFrame* keyframe, bool isPlaying) const;
+    void paintControlPoint(QPainter& painter, const QTransform& worldTransform, const LayerCamera* cameraLayer, const int frameIndex, const QPointF& pathPoint, bool hollowHandle) const;
+
     CameraMoveType moveMode();
     void transformCamera(Qt::KeyboardModifiers keyMod);
     void transformCameraPath();
@@ -90,6 +103,15 @@ private:
 
     qreal mStartAngle = 0;
     qreal mCurrentAngle = 0;
+
+    const int mDotWidth = 6;
+    const int mHandleWidth = 12;
+    const qreal mRotationHandleOffsetPercentage = 0.05;
+
+    QPen mHandlePen;
+    QColor mHandleColor;
+    QColor mHandleDisabledColor;
+    QColor mHandleTextColor;
 };
 
 #endif // CAMERATOOL_H

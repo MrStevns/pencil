@@ -22,6 +22,7 @@ GNU General Public License for more details.
 #include "pointerevent.h"
 #include "layermanager.h"
 #include "selectionmanager.h"
+#include "playbackmanager.h"
 #include "viewmanager.h"
 #include "layercamera.h"
 #include "mathutils.h"
@@ -52,6 +53,14 @@ void CameraTool::loadSettings()
     mRotationIncrement = mEditor->preference()->getInt(SETTING::ROTATION_INCREMENT);
 
     connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &CameraTool::updateSettings);
+
+    mHandleColor = Qt::white;
+    mHandleDisabledColor = Qt::black;
+    mHandleTextColor = QColor(0, 0, 0);
+
+    mHandlePen = QPen();
+    mHandlePen.setColor(QColor(0, 0, 0, 255));
+    mHandlePen.setWidth(2);
 }
 
 void CameraTool::updateUIAssists(const Layer* layer)
@@ -66,12 +75,12 @@ void CameraTool::updateUIAssists(const Layer* layer)
     const QTransform& localCamT = camLayer->getViewAtFrame(currentFrame);
     const QRect& cameraRect = camLayer->getViewRect();
 
-    mCameraRect = UIAssist::mapFromLocalRect(localCamT, cameraRect);
-    mCameraPolygon = UIAssist::mapFromLocalPolygon(localCamT, cameraRect);
+    mCameraRect = Transform::mapFromLocalRect(localCamT, cameraRect);
+    mCameraPolygon = Transform::mapFromLocalPolygon(localCamT, cameraRect);
 
     Camera* cam = camLayer->getLastCameraAtFrame(mEditor->currentFrame(), 0);
     if (cam) {
-        mRotationHandlePoint = RotationUIAssist::mapFromLocalPoint(cameraRect.topLeft(), localCamT, cam->scaling(), mEditor->view()->getViewScaleInverse());
+        mRotationHandlePoint = localRotationHandlePoint(cameraRect.topLeft(), localCamT, cam->scaling(), mEditor->view()->getViewScaleInverse());
     }
 }
 
@@ -370,6 +379,20 @@ CameraMoveType CameraTool::getPathMoveMode(const LayerCamera* layerCamera, int f
     return CameraMoveType::NONE;
 }
 
+
+QPointF CameraTool::localRotationHandlePoint(const QPoint& origin, const QTransform& localT, const qreal objectScale, float worldScale) const
+{
+    // Calculate the perceived distance from the frame to the handle
+    // so that it looks like the handle is always x pixels above the origin
+    qreal topDis = origin.y() + ((objectScale * origin.y()) * mRotationHandleOffsetPercentage) * worldScale;
+    return QPointF(localT.inverted().map(QPointF(0, topDis)));
+}
+
+QPointF CameraTool::worldRotationHandlePoint(const QPoint& origin, const QTransform& localT, const qreal objectScale, const QTransform& worldT, float worldScale) const
+{
+    return worldT.map(localRotationHandlePoint(origin, localT, objectScale, worldScale));
+}
+
 void CameraTool::transformView(LayerCamera* layerCamera, CameraMoveType mode, const QPointF& point, const QPointF& offset, qreal angle, int frameNumber) const
 {
     QPolygonF curPoly = mCameraPolygon;
@@ -421,3 +444,199 @@ void CameraTool::transformView(LayerCamera* layerCamera, CameraMoveType mode, co
     curCam->modification();
 }
 
+void CameraTool::paint(QPainter& painter)
+{
+    int frameIndex = mEditor->currentFrame();
+    LayerCamera* cameraLayerBelow = static_cast<LayerCamera*>(mEditor->object()->getLayerBelow(mEditor->currentLayerIndex(), Layer::CAMERA));
+
+    const QTransform& camTransform = cameraLayerBelow->getViewAtFrame(frameIndex);
+    const QRect& cameraRect = cameraLayerBelow->getViewRect();
+    const QTransform& worldT = mEditor->view()->getView();
+
+    bool isPlaying = mEditor->playback()->isPlaying();
+
+
+    // Show handles while we're on a camera layer and not doing playback
+    if (!isPlaying) {
+        int frame = cameraLayerBelow->getPreviousKeyFramePosition(frameIndex);
+        Camera* cam = cameraLayerBelow->getLastCameraAtFrame(qMax(frame, frameIndex), 0);
+        Q_ASSERT(cam);
+        qreal scale = cam->scaling();
+        qreal rotation = cam->rotation();
+        QPointF translation = cam->translation();
+        paintHandles(painter, worldT, camTransform, cameraRect, translation, scale, rotation, !cameraLayerBelow->keyExists(frameIndex));
+    }
+
+    cameraLayerBelow->foreachKeyFrame([&] (KeyFrame* keyframe) {
+        paintInterpolations(painter, worldT, frameIndex, cameraLayerBelow, keyframe, isPlaying);
+    });
+}
+
+
+void CameraTool::paintHandles(QPainter& painter, const QTransform& worldTransform, const QTransform& camTransform, const QRect& cameraRect, const QPointF translation, const qreal scale, const qreal rotation, bool hollowHandles) const
+{
+    painter.save();
+
+    // if the current view is narrower than the camera field
+    // Indicates that the quality of the output will be degraded
+    if (scale > 1)
+    {
+        painter.setPen(Qt::red);
+    }
+    else
+    {
+        painter.setPen(QColor(0, 0, 0, 255));
+    }
+
+    QPolygonF camPolygon = Transform::mapToWorldPolygon(camTransform, worldTransform, cameraRect);
+    painter.drawPolygon(camPolygon);
+
+    QTransform scaleT;
+    scaleT.scale(1, 1);
+    scaleT.rotate(rotation);
+    scaleT.translate(translation.x(), translation.y());
+
+    QPolygonF nonScaledCamPoly = Transform::mapToWorldPolygon(scaleT, worldTransform, cameraRect);
+    painter.drawPolygon(nonScaledCamPoly);
+    painter.drawText(nonScaledCamPoly[0]-QPoint(0, 2), "100%");
+
+    if (hollowHandles) {
+        painter.setPen(mHandleDisabledColor);
+        painter.setBrush(Qt::gray);
+    } else {
+        painter.setPen(mHandlePen);
+        painter.setBrush(mHandleColor);
+    }
+    int handleW = mHandleWidth;
+    int radius = handleW / 2;
+
+    const QRectF topRightCorner = QRectF(camPolygon.at(1).x() - radius,
+                                            camPolygon.at(1).y() - radius,
+                                            handleW, handleW);
+    painter.drawRect(topRightCorner);
+
+    const QRectF bottomRightCorner = QRectF(camPolygon.at(2).x() - radius,
+                                            camPolygon.at(2).y() - radius,
+                                            handleW, handleW);
+    painter.drawRect(bottomRightCorner);
+    const QRectF topLeftCorner = QRectF(camPolygon.at(0).x() - radius,
+                                            camPolygon.at(0).y() - radius,
+                                            handleW, handleW);
+    painter.drawRect(topLeftCorner);
+
+    const QRectF bottomLeftCorner = QRectF(camPolygon.at(3).x() - radius,
+                                            camPolygon.at(3).y() - radius,
+                                            handleW, handleW);
+    painter.drawRect(bottomLeftCorner);
+
+    // Paint rotation handle
+    QPointF topCenter = QLineF(camPolygon.at(0), camPolygon.at(1)).pointAt(.5);
+    QPointF rotationHandle = worldRotationHandlePoint(cameraRect.topLeft(), camTransform, scale, worldTransform, mEditor->viewScaleInversed());
+
+    painter.drawLine(topCenter, QPointF(rotationHandle.x(),
+                                       (rotationHandle.y())));
+
+    painter.drawEllipse(QRectF((rotationHandle.x() - handleW*0.5),
+                               (rotationHandle.y() - handleW*0.5),
+                               handleW, handleW));
+
+    painter.restore();
+}
+
+void CameraTool::paintInterpolations(QPainter& painter, const QTransform& worldTransform, int currentFrame, const LayerCamera* cameraLayer, const KeyFrame* keyframe, bool isPlaying) const
+{
+    QColor cameraDotColor = cameraLayer->getDotColor();
+    int frame = keyframe->pos();
+    int nextFrame = cameraLayer->getNextKeyFramePosition(frame);
+
+    if (cameraLayer->getShowCameraPath() && !cameraLayer->hasSameTranslation(frame, nextFrame)) {
+        painter.save();
+
+        QPointF cameraPathPoint = worldTransform.map(cameraLayer->getPathControlPointAtFrame(currentFrame));
+        painter.setBrush(cameraDotColor);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+        // Highlight current dot
+        QPen pen(Qt::black);
+        pen.setWidth(2);
+        painter.setPen(pen);
+        const QRect& cameraRect = cameraLayer->getViewRect();
+        const QTransform& cameraTransform = cameraLayer->getViewAtFrame(currentFrame);
+        cameraPathPoint = Transform::mapToWorldRect(cameraTransform, worldTransform, cameraRect).center();
+        painter.drawEllipse(cameraPathPoint, mDotWidth/2., mDotWidth/2.);
+
+        cameraPathPoint = worldTransform.map(cameraLayer->getPathControlPointAtFrame(frame + 1));
+
+        painter.save();
+        QColor color = cameraDotColor;
+        if (currentFrame > frame && currentFrame < nextFrame)
+            color.setAlphaF(0.5);
+        else
+            color.setAlphaF(0.2);
+        painter.setPen(Qt::black);
+        painter.setBrush(color);
+
+        for (int frameInBetween = frame; frameInBetween <= nextFrame ; frameInBetween++)
+        {
+            const QTransform& transform = cameraLayer->getViewAtFrame(frameInBetween);
+            QPointF center = Transform::mapToWorldRect(transform, worldTransform, cameraRect).center();
+            painter.drawEllipse(center, mDotWidth/2., mDotWidth/2.);
+        }
+        painter.restore();
+
+        int distance = nextFrame - frame;
+        // It makes no sense to paint the path when there's no interpolation.
+        if (distance >= 2 && !isPlaying) {
+            paintControlPoint(painter, worldTransform, cameraLayer, frame, cameraPathPoint, cameraLayer->keyExists(currentFrame));
+        }
+
+        painter.restore();
+    }
+}
+
+void CameraTool::paintControlPoint(QPainter& painter, const QTransform& worldTransform, const LayerCamera* cameraLayer, const int frameIndex, const QPointF& pathPoint, bool hollowHandle) const
+{
+    painter.save();
+
+    // if active path, draw bezier help lines for active path
+    QList<QPointF> points = cameraLayer->getBezierPointsAtFrame(frameIndex + 1);
+
+    if (!points.empty())
+    {
+        Q_ASSERT(points.size() == 3);
+        QPointF p0 = worldTransform.map(points.at(0));
+        QPointF p1 = worldTransform.map(points.at(1));
+        QPointF p2 = worldTransform.map(points.at(2));
+
+        painter.save();
+        QPen pen (Qt::black, 0.5, Qt::PenStyle::DashLine);
+        painter.setPen(pen);
+        painter.drawLine(p0, p1);
+        painter.drawLine(p1, p2);
+        painter.restore();
+    }
+
+    // draw movemode in text
+    painter.setPen(Qt::black);
+    QString pathType = cameraLayer->getInterpolationTextAtFrame(frameIndex);
+
+    // Space text according to path point so it doesn't overlap
+    painter.drawText(pathPoint - QPoint(0, mHandleWidth), pathType);
+    painter.restore();
+
+    // if active path, draw move handle
+    painter.save();
+    painter.setPen(mHandleTextColor);
+
+    if (hollowHandle) {
+        painter.setPen(mHandleDisabledColor);
+        painter.setBrush(Qt::gray);
+    } else {
+        painter.setPen(mHandlePen);
+        painter.setBrush(mHandleColor);
+    }
+    painter.drawRect(static_cast<int>(pathPoint.x() - mHandleWidth/2),
+                     static_cast<int>(pathPoint.y() - mHandleWidth/2),
+                     mHandleWidth, mHandleWidth);
+    painter.restore();
+}

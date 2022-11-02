@@ -94,7 +94,6 @@ HEADERS +=  \
     src/tool/smudgetool.h \
     src/tool/strokemanager.h \
     src/tool/stroketool.h \
-    src/util/uiassists.h \
     src/util/blitrect.h \
     src/util/cameraeasingtype.h \
     src/util/camerafieldoption.h \
@@ -108,6 +107,7 @@ HEADERS +=  \
     src/util/pencildef.h \
     src/util/pencilerror.h \
     src/util/pencilsettings.h \
+    src/util/transform.h \
     src/util/util.h \
     src/util/log.h \
     src/util/movemode.h \
@@ -181,13 +181,13 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/smudgetool.cpp \
     src/tool/strokemanager.cpp \
     src/tool/stroketool.cpp \
-    src/util/uiassists.cpp \
     src/util/blitrect.cpp \
     src/util/cameraeasingtype.cpp \
     src/util/fileformat.cpp \
     src/util/pencilerror.cpp \
     src/util/pencilsettings.cpp \
     src/util/log.cpp \
+    src/util/transform.cpp \
     src/util/util.cpp \
     src/util/pointerevent.cpp \
     src/canvaspainter.cpp \
