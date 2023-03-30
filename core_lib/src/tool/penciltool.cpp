@@ -112,7 +112,7 @@ void PencilTool::setPressure(const bool pressure)
 void PencilTool::setPreserveAlpha(const bool preserveAlpha)
 {
     // force value
-    Q_UNUSED( preserveAlpha );
+    Q_UNUSED( preserveAlpha )
     properties.preserveAlpha = 0;
 }
 
@@ -253,5 +253,5 @@ void PencilTool::paintVectorStroke()
 
     // TODO: selection doesn't apply on enter
 
-    mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
 }

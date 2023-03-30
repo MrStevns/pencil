@@ -382,7 +382,7 @@ void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
     }
 
     mScribbleArea->clearBitmapBuffer();
-    mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
 
     endStroke();
 }

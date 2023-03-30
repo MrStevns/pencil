@@ -44,6 +44,7 @@ GNU General Public License for more details.
 #include "preferencemanager.h"
 #include "strokemanager.h"
 #include "selectionpainter.h"
+#include "camerapainter.h"
 
 #include "brushsetting.h"
 
@@ -82,10 +83,8 @@ public:
 
 
     void deleteSelection();
-    void applySelectionChanges();
     void displaySelectionProperties();
 
-    void paintTransformedSelection();
     void applyTransformedSelection();
     void cancelTransformedSelection();
 
@@ -127,10 +126,6 @@ public:
     /** Frame modified, invalidate cache for frame if any */
     void onFrameModified(int frameNumber);
 
-    /** Current frame modified, invalidate current frame cache if any.
-     * Convenient function that does the same as onFrameModified */
-    void onCurrentFrameModified();
-
     /** Layer changed, invalidate relevant cache */
     void onLayerChanged();
 
@@ -144,6 +139,12 @@ public:
     /** Object updated, invalidate all cache */
     void onObjectLoaded();
 
+    /** Tool property updated, invalidate cache and frame if needed */
+    void onToolPropertyUpdated(ToolType, ToolPropertyType);
+
+    /** Tool changed, invalidate cache and frame if needed */
+    void onToolChanged(ToolType);
+    
     /** After applying a stroke,
      * note: optimization to avoid clearing mypaint when we draw on the canvas */
     void onDidDraw(int frameNumber);
@@ -153,8 +154,6 @@ public:
     void setModified(const Layer* layer, int frameNumber);
 
     void flipSelection(bool flipVertical);
-    void renderOverlays();
-    void prepOverlays();
 
     BaseTool* currentTool() const;
     BaseTool* getTool(ToolType eToolMode);
@@ -190,6 +189,7 @@ public:
 signals:
     void multiLayerOnionSkinChanged(bool);
     void refreshPreview();
+    void selectionUpdated();
 
 public slots:
     void clearCanvas();
@@ -211,7 +211,6 @@ public slots:
 
     void updateTile(MPSurface* surface, MPTile* tile);
     void clearTile(MPSurface *surface, MPTile *tile);
-
 
 protected:
     bool event(QEvent *event) override;
@@ -266,7 +265,7 @@ public:
     QHash<QString, MPTile*> mBufferTiles;
 private:
 
-    /** Invalidate the layer pixmap cache.
+    /** Invalidate the layer pixmap and camera painter caches.
      * Call this in most situations where the layer rendering order is affected.
      * Peviously known as setAllDirty.
     */
@@ -285,6 +284,13 @@ private:
     /** invalidate onion skin cache around frame */
     void invalidateOnionSkinsCacheAround(int frame);
 
+    void prepOverlays(int frame);
+    void renderOverlays();
+    void prepCameraPainter(int frame);
+    void prepCanvas(int frame, QRect rect);
+    void settingUpdated(SETTING setting);
+    void paintSelectionVisuals(QPainter &painter);
+
     /** reloadMyPaint
      * Use this method whenver the mypaint surface should be cleared
      * eg. when changing layer
@@ -296,9 +302,6 @@ private:
      */
     void forceUpdateMyPaintStates();
 
-    void prepCanvas(int frame, QRect rect);
-    void settingUpdated(SETTING setting);
-    void paintSelectionVisuals(QPainter &painter);
 
     BitmapImage* currentBitmapImage(Layer* layer) const;
     VectorImage* currentVectorImage(Layer* layer) const;
@@ -333,6 +336,15 @@ private:
     void updateMyPaintCanvas(BitmapImage* bitmapImage = nullptr);
 
 private:
+
+    /* Under certain circumstances a mouse press event will fire after a tablet release event.
+       This causes unexpected behaviours for some of the tools, eg. the bucket.
+       The problem only seems to occur on windows and only when tapping.
+       prior to this fix the event queue would look like this:
+       eg: TabletPress -> TabletRelease -> MousePress
+       The following will filter mouse events created after a tablet release event.
+    */
+    void tabletReleaseEventFired();
     bool mKeyboardInUse = false;
     bool mMouseInUse = false;
     bool mMouseRightButtonInUse = false;
@@ -345,10 +357,13 @@ private:
     int mDoubleClickMillis = 0;
     // Microsoft suggests that a double click action should be no more than 500 ms
     const int DOUBLE_CLICK_THRESHOLD = 500;
-    QTimer* mDoubleClickTimer;
+    QTimer* mDoubleClickTimer = nullptr;
+    int mTabletReleaseMillisAgo;
+    const int MOUSE_FILTER_THRESHOLD = 200;
+
+    QTimer* mMouseFilterTimer = nullptr;
 
     QPoint mCursorCenterPos;
-
     QPointF mTransformedCursorPos;
 
     bool mIsPainting = false;
@@ -359,6 +374,9 @@ private:
     CanvasPainter mCanvasPainter;
     OverlayPainter mOverlayPainter;
     SelectionPainter mSelectionPainter;
+    CameraPainter mCameraPainter;
+
+    QPolygonF mOriginalPolygonF = QPolygonF();
 
     // Pixmap Cache keys
     QMap<unsigned int, QPixmapCache::Key> mPixmapCacheKeys;

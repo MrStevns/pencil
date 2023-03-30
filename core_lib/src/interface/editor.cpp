@@ -48,9 +48,6 @@ GNU General Public License for more details.
 #include "clipboardmanager.h"
 
 #include "scribblearea.h"
-#include "timeline.h"
-#include "util.h"
-
 
 Editor::Editor(QObject* parent) : QObject(parent)
 {
@@ -128,6 +125,7 @@ void Editor::makeConnections()
     connect(mPreferenceManager, &PreferenceManager::optionChanged, this, &Editor::settingUpdated);
     // XXX: This is a hack to prevent crashes until #864 is done (see #1412)
     connect(mLayerManager, &LayerManager::layerDeleted, this, &Editor::sanitizeBackupElementsAfterLayerDeletion);
+    connect(mLayerManager, &LayerManager::currentLayerWillChange, this, &Editor::onCurrentLayerWillChange);
 }
 
 void Editor::settingUpdated(SETTING setting)
@@ -142,7 +140,7 @@ void Editor::settingUpdated(SETTING setting)
         break;
     case SETTING::ONION_TYPE:
         mScribbleArea->onOnionSkinTypeChanged();
-        emit updateTimeLine();
+        emit updateTimeLineCached();
         break;
     case SETTING::FRAME_POOL_SIZE:
         mObject->setActiveFramePoolSize(mPreferenceManager->getInt(SETTING::FRAME_POOL_SIZE));
@@ -153,6 +151,27 @@ void Editor::settingUpdated(SETTING setting)
         break;
     default:
         break;
+    }
+}
+
+void Editor::onCurrentLayerWillChange(int index)
+{
+    Layer* newLayer = layers()->getLayer(index);
+    Layer* currentLayer = layers()->currentLayer();
+    Q_ASSERT(newLayer && currentLayer);
+    if (currentLayer->type() != newLayer->type()) {
+        // We apply transform changes upon leaving a layer and deselect all
+        mScribbleArea->applyTransformedSelection();
+
+        if (currentLayer->type() == Layer::VECTOR) {
+            auto keyFrame = static_cast<VectorImage*>(currentLayer->getLastKeyFrameAtPosition(mFrame));
+            if (keyFrame)
+            {
+                keyFrame->deselectAll();
+            }
+        }
+
+        select()->resetSelectionProperties();
     }
 }
 
@@ -233,9 +252,12 @@ bool Editor::backup(int backupLayer, int backupFrame, const QString& undoText)
                 element->undoText = undoText;
                 element->somethingSelected = select()->somethingSelected();
                 element->mySelection = select()->mySelectionRect();
-                element->myTransformedSelection = select()->myTransformedSelectionRect();
-                element->myTempTransformedSelection = select()->myTempTransformedSelectionRect();
                 element->rotationAngle = select()->myRotation();
+                element->scaleX = select()->myScaleX();
+                element->scaleY = select()->myScaleY();
+                element->translation = select()->myTranslation();
+                element->selectionAnchor = select()->currentTransformAnchor();
+
                 mBackupList.append(element);
                 mBackupIndex++;
             }
@@ -256,9 +278,11 @@ bool Editor::backup(int backupLayer, int backupFrame, const QString& undoText)
                 element->undoText = undoText;
                 element->somethingSelected = select()->somethingSelected();
                 element->mySelection = select()->mySelectionRect();
-                element->myTransformedSelection = select()->myTransformedSelectionRect();
-                element->myTempTransformedSelection = select()->myTempTransformedSelectionRect();
                 element->rotationAngle = select()->myRotation();
+                element->scaleX = select()->myScaleX();
+                element->scaleY = select()->myScaleY();
+                element->translation = select()->myTranslation();
+                element->selectionAnchor = select()->currentTransformAnchor();
                 mBackupList.append(element);
                 mBackupIndex++;
             }
@@ -455,18 +479,7 @@ void Editor::undo()
         qDebug() << "Undo" << mBackupIndex;
         mBackupList[mBackupIndex]->restore(this);
         mBackupIndex--;
-        mScribbleArea->cancelTransformedSelection();
 
-        Layer* layer = layers()->currentLayer();
-        if (layer == nullptr) { return; }
-
-        select()->resetSelectionTransform();
-        if (layer->type() == Layer::VECTOR)
-        {
-            VectorImage *vectorImage = static_cast<VectorImage*>(layer->getKeyFrameAt(mFrame));
-            vectorImage->calculateSelectionRect();
-            select()->setSelection(vectorImage->getSelectionRect(), false);
-        }
         emit updateBackup();
     }
 }
@@ -553,6 +566,37 @@ void Editor::copyAndCut()
     }
 }
 
+void Editor::pasteFromPreviousFrame()
+{
+    Layer* currentLayer = layers()->currentLayer();
+    int prevFrame = currentLayer->getPreviousKeyFramePosition(mFrame);
+    if (!currentLayer->keyExists(mFrame) || prevFrame == mFrame)
+    {
+        return;
+    }
+
+    if (currentLayer->type() == Layer::BITMAP)
+    {
+        backup(tr("Paste from Previous Keyframe"));
+        BitmapImage* bitmapImage = static_cast<BitmapImage*>(currentLayer->getKeyFrameAt(prevFrame));
+        if (select()->somethingSelected())
+        {
+            BitmapImage copy = bitmapImage->copy(select()->mySelectionRect().toRect());
+            pasteToCanvas(&copy, mFrame);
+        }
+        else
+        {
+            pasteToCanvas(bitmapImage, mFrame);
+        }
+    }
+    else if (currentLayer->type() == Layer::VECTOR)
+    {
+        backup(tr("Paste from Previous Keyframe"));
+        VectorImage* vectorImage = static_cast<VectorImage*>(currentLayer->getKeyFrameAt(prevFrame));
+        pasteToCanvas(vectorImage, mFrame);
+    }
+}
+
 void Editor::pasteToCanvas(BitmapImage* bitmapImage, int frameNumber)
 {
     Layer* currentLayer = layers()->currentLayer();
@@ -580,7 +624,7 @@ void Editor::pasteToCanvas(BitmapImage* bitmapImage, int frameNumber)
     // TODO: currently we don't support placing an image without already pasting it on an already existing
     // image, this should be reworked such that a hovering selection could be shown, before applying it...
     select()->setSelection(bitmapImage->bounds());
-    mScribbleArea->paintTransformedSelection();
+    emit frameModified(frameNumber);
 }
 
 void Editor::pasteToCanvas(VectorImage* vectorImage, int frameNumber)
@@ -594,7 +638,7 @@ void Editor::pasteToCanvas(VectorImage* vectorImage, int frameNumber)
     VectorImage* canvasImage = static_cast<VectorImage*>(currentLayer->getLastKeyFrameAtPosition(frameNumber));
     canvasImage->paste(*vectorImage);
     select()->setSelection(vectorImage->getSelectionRect());
-    mScribbleArea->paintTransformedSelection();
+    emit frameModified(frameNumber);
 }
 
 void Editor::pasteToFrames()
@@ -666,13 +710,45 @@ void Editor::paste()
 
 void Editor::flipSelection(bool flipVertical)
 {
+    if (flipVertical) {
+        backup(tr("Flip selection vertically"));
+    } else {
+        backup(tr("Flip selection horizontally"));
+    }
     mScribbleArea->flipSelection(flipVertical);
+}
+
+void Editor::repositionImage(QPoint transform, int frame)
+{
+    if (layers()->currentLayer()->type() == Layer::BITMAP)
+    {
+        scrubTo(frame);
+        LayerBitmap* layer = static_cast<LayerBitmap*>(layers()->currentLayer());
+        QRect reposRect = layer->getFrameBounds(frame);
+        select()->setSelection(reposRect);
+        QPoint point = reposRect.topLeft();
+        point += transform;
+        layer->repositionFrame(point, frame);
+        backup(layer->id(), frame, tr("Reposition frame")); // TOOD: backup multiple reposition operations.
+    }
+}
+
+void Editor::setModified(int layerNumber, int frameNumber)
+{
+    Layer* layer = object()->getLayer(layerNumber);
+    if (layer == nullptr) { return; }
+
+    layer->setModified(frameNumber, true);
+
+    mLastModifiedLayer = layerNumber;
+    mLastModifiedFrame = frameNumber;
+
+    emit frameModified(frameNumber);
 }
 
 void Editor::clipboardChanged()
 {
     Layer* layer = layers()->currentLayer();
-
 
     clipboards()->setFromSystemClipboard(mScribbleArea->getCentralPoint(), layer);
 
@@ -921,8 +997,9 @@ bool Editor::importImage(const QString& filePath)
 
     if (view()->getImportFollowsCamera())
     {
-        QRectF cameraRect = mScribbleArea->getCameraRect(); // Must be QRectF for the precision of cameraRect.center()
-        QTransform transform = QTransform::fromTranslate(cameraRect.center().x(), cameraRect.center().y());
+        LayerCamera* camera = static_cast<LayerCamera*>(layers()->getLastCameraLayer());
+        Q_ASSERT(camera);
+        QTransform transform = camera->getViewAtFrame(currentFrame());
         view()->setImportView(transform);
     }
     switch (layer->type())
@@ -1033,7 +1110,7 @@ void Editor::scrubTo(int frame)
     // Will remove all Timeline related code in Editor class.
     if (mPlaybackManager && !mPlaybackManager->isPlaying())
     {
-        emit updateTimeLine(); // needs to update the timeline to update onion skin positions
+        emit updateTimeLineCached(); // needs to update the timeline to update onion skin positions
     }
     mObject->updateActiveFrames(frame);
 }
@@ -1155,7 +1232,9 @@ void Editor::switchVisibilityOfLayer(int layerNumber)
 
 void Editor::swapLayers(int i, int j)
 {
-    mObject->swapLayers(i, j);
+    bool didSwapLayer = mObject->swapLayers(i, j);
+    if (!didSwapLayer) { return; }
+
     if (j < i)
     {
         layers()->setCurrentLayer(j + 1);
@@ -1166,6 +1245,11 @@ void Editor::swapLayers(int i, int j)
     }
     emit updateTimeLine();
     mScribbleArea->onLayerChanged();
+}
+
+bool Editor::canSwapLayers(int layerIndexLeft, int layerIndexRight) const
+{
+    return mObject->canSwapLayers(layerIndexLeft, layerIndexRight);
 }
 
 void Editor::prepareSave()

@@ -92,7 +92,6 @@ HEADERS += \
     src/predefinedsetmodel.h \
     src/pegbaralignmentdialog.h \
     src/shortcutfilter.h \
-    src/timeline2.h \
     src/actioncommands.h \
     src/preferencesdialog.h \
     src/filespage.h \
@@ -101,12 +100,17 @@ HEADERS += \
     src/timelinepage.h \
     src/toolspage.h \
     src/preview.h \
+    src/basedockwidget.h \
     src/colorbox.h \
     src/colorinspector.h \
     src/colorpalettewidget.h \
     src/colorwheel.h \
+    src/timeline.h \
+    src/timelinecells.h \
+    src/timecontrols.h \
+    src/cameracontextmenu.h \
+    src/camerapropertiesdialog.h \
     src/filedialog.h \
-    src/displayoptionwidget.h \
     src/pencil2d.h \
     src/exportmoviedialog.h \
     src/app_util.h \
@@ -123,11 +127,14 @@ HEADERS += \
     src/doubleprogressdialog.h \
     src/colorslider.h \
     src/checkupdatesdialog.h \
+    src/presetdialog.h     \
+    src/repositionframesdialog.h \
     src/presetdialog.h \
     src/commandlineparser.h \
     src/commandlineexporter.h \
     src/statusbar.h \
-    src/elidedlabel.h
+    src/elidedlabel.h \
+    src/cameraoptionswidget.h
 
 SOURCES += \
     src/main.cpp \
@@ -153,7 +160,6 @@ SOURCES += \
     src/importlayersdialog.cpp \
     src/importpositiondialog.cpp \
     src/shortcutfilter.cpp \
-    src/timeline2.cpp \
     src/actioncommands.cpp \
     src/preferencesdialog.cpp \
     src/filespage.cpp \
@@ -162,12 +168,17 @@ SOURCES += \
     src/timelinepage.cpp \
     src/toolspage.cpp \
     src/preview.cpp \
+    src/basedockwidget.cpp \
     src/colorbox.cpp \
     src/colorinspector.cpp \
     src/colorpalettewidget.cpp \
     src/colorwheel.cpp \
+    src/timeline.cpp \
+    src/timelinecells.cpp \
+    src/timecontrols.cpp \
+    src/cameracontextmenu.cpp \
+    src/camerapropertiesdialog.cpp \
     src/filedialog.cpp \
-    src/displayoptionwidget.cpp \
     src/pencil2d.cpp \
     src/exportmoviedialog.cpp \
     src/errordialog.cpp \
@@ -184,26 +195,28 @@ SOURCES += \
     src/colorslider.cpp \
     src/checkupdatesdialog.cpp \
     src/presetdialog.cpp \
+    src/repositionframesdialog.cpp \
     src/app_util.cpp \
     src/commandlineparser.cpp \
     src/commandlineexporter.cpp \
     src/statusbar.cpp \
-    src/elidedlabel.cpp
+    src/elidedlabel.cpp \
+    src/cameraoptionswidget.cpp
 
 FORMS += \
     ui/mainwindow2.ui \
-    ui/mpbrushpresetswidget.ui \
+    ui/cameraoptionswidget.ui \
+    ui/camerapropertiesdialog.ui \
     ui/importimageseqpreview.ui \
     ui/importlayersdialog.ui \
     ui/importpositiondialog.ui \
     ui/layeropacitydialog.ui \
     ui/onionskin.ui \
     ui/pegbaralignmentdialog.ui \
-    ui/timeline2.ui \
+    ui/repositionframesdialog.ui \
     ui/shortcutspage.ui \
     ui/colorinspector.ui \
     ui/colorpalette.ui \
-    ui/displayoption.ui \
     ui/errordialog.ui \
     ui/importexportdialog.ui \
     ui/exportmovieoptions.ui \
@@ -219,7 +232,8 @@ FORMS += \
     ui/filespage.ui \
     ui/toolspage.ui \
     ui/toolboxwidget.ui \
-    ui/presetdialog.ui
+    ui/presetdialog.ui \
+    ui/mpbrushpresetswidget.ui
 
 GIT {
     DEFINES += GIT_EXISTS \

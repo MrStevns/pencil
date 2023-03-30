@@ -146,6 +146,7 @@ signals:
     void selectedFramesChanged();
 
     void updateTimeLine() const;
+    void updateTimeLineCached();
     void updateLayerCount();
     void updateBackup();
 
@@ -173,6 +174,8 @@ public: //slots
     */
     void updateFrame(int frameNumber);
 
+    void setModified(int layerNumber, int frameNumber);
+
     void clearCurrentFrame();
 
     bool importImage(const QString& filePath);
@@ -189,6 +192,7 @@ public: //slots
 
     void switchVisibilityOfLayer(int layerNumber);
     void swapLayers(int i, int j);
+    bool canSwapLayers(int layerIndexLeft, int layerIndexRight) const;
 
     void backup(const QString& undoText);
     bool backup(int layerNumber, int frameNumber, const QString& undoText);
@@ -203,11 +207,14 @@ public: //slots
      *          (see #1412).
      */
     void sanitizeBackupElementsAfterLayerDeletion(int layerIndex);
+
+    void onCurrentLayerWillChange(int index);
     void undo();
     void redo();
 
     void copy();
     void copyAndCut();
+    void pasteFromPreviousFrame();
     void paste();
 
     bool canCopy() const;
@@ -216,6 +223,7 @@ public: //slots
     void increaseLayerVisibilityIndex();
     void decreaseLayerVisibilityIndex();
     void flipSelection(bool flipVertical);
+    void repositionImage(QPoint transform, int frame);
 
     void clearTemporary();
     void addTemporaryDir(QTemporaryDir* dir);

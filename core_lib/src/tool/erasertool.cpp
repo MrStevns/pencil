@@ -199,7 +199,7 @@ void EraserTool::removeVectorPaint()
         mScribbleArea->clearBitmapBuffer();
         vectorImage->deleteSelectedPoints();
 
-        mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+        mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
     }
 }
 

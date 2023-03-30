@@ -6,45 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>231</width>
-    <height>634</height>
+    <width>185</width>
+    <height>686</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>5</number>
-   </property>
-   <property name="leftMargin">
-    <number>5</number>
-   </property>
-   <property name="topMargin">
-    <number>5</number>
-   </property>
-   <property name="rightMargin">
-    <number>5</number>
-   </property>
-   <property name="bottomMargin">
-    <number>5</number>
-   </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QScrollArea" name="scrollArea">
-     <property name="minimumSize">
-      <size>
-       <width>170</width>
-       <height>0</height>
-      </size>
-     </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Plain</enum>
-     </property>
-     <property name="horizontalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
      </property>
      <property name="widgetResizable">
       <bool>true</bool>
@@ -54,25 +30,22 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>221</width>
-        <height>340</height>
+        <width>169</width>
+        <height>647</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <property name="spacing">
-        <number>0</number>
-       </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
        <property name="leftMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <property name="topMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <item>
         <widget class="ToolBrushSettingsWidget" name="brushSettingsWidget" native="true">
@@ -94,106 +67,103 @@
         </widget>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>10</number>
-         </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="SpinSlider" name="sizeSlider" native="true">
-             <property name="toolTip">
-              <string>Set Stroke Width &lt;br&gt;&lt;b&gt;[SHIFT]+drag&lt;/b&gt;&lt;br&gt;for quick adjustment</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="brushSpinBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>60</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="minimum">
-              <double>0.500000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>200.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>1.500000000000000</double>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="SpinSlider" name="featherSlider" native="true">
-             <property name="toolTip">
-              <string>Set Pen Feather &lt;br&gt;&lt;b&gt;[CTRL]+drag&lt;/b&gt;&lt;br&gt;for quick adjustment</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="featherSpinBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>60</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="minimum">
-              <double>0.100000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>99.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>5.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="useFeatherBox">
+          <widget class="SpinSlider" name="sizeSlider" native="true">
            <property name="toolTip">
-            <string>Enable or disable feathering</string>
-           </property>
-           <property name="text">
-            <string>Use Feather</string>
+            <string>Set Stroke Width &lt;br&gt;&lt;b&gt;[SHIFT]+drag&lt;/b&gt;&lt;br&gt;for quick adjustment</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="fillContourBox">
-           <property name="toolTip">
-            <string>Contour will be filled</string>
+          <widget class="QDoubleSpinBox" name="brushSpinBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-           <property name="text">
-            <string>Fill Contour</string>
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="minimum">
+            <double>0.500000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>200.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.500000000000000</double>
            </property>
           </widget>
          </item>
         </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="SpinSlider" name="featherSlider" native="true">
+           <property name="toolTip">
+            <string>Set Stroke Feather &lt;br&gt;&lt;b&gt;[CTRL]+drag&lt;/b&gt;&lt;br&gt;for quick adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="featherSpinBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="minimum">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>99.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>5.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="showInfoBox">
+         <property name="text">
+          <string>Show Size and Diff.</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="useFeatherBox">
+         <property name="text">
+          <string>Feather</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="fillContourBox">
+         <property name="toolTip">
+          <string>Contour will be filled</string>
+         </property>
+         <property name="text">
+          <string>Fill Contour</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QCheckBox" name="useBezierBox">
@@ -201,7 +171,7 @@
           <string>Use Bézier curves to create curved lines</string>
          </property>
          <property name="text">
-          <string>Bezier</string>
+          <string comment="Tool options">Bézier</string>
          </property>
         </widget>
        </item>
@@ -211,7 +181,7 @@
           <string>Vary strokes based on pressure when drawing on a tablet</string>
          </property>
          <property name="text">
-          <string comment="Brush">Pressure</string>
+          <string comment="Tool options">Pressure</string>
          </property>
         </widget>
        </item>
@@ -221,7 +191,7 @@
           <string>Make invisible</string>
          </property>
          <property name="text">
-          <string>Invisible</string>
+          <string comment="Tool options">Invisible</string>
          </property>
         </widget>
        </item>
@@ -231,20 +201,17 @@
           <string>Preserve Alpha</string>
          </property>
          <property name="text">
-          <string>Alpha</string>
+          <string comment="Tool options">Alpha</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QCheckBox" name="vectorMergeBox">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
          <property name="toolTip">
           <string>Merge vector lines when they are close together</string>
          </property>
          <property name="text">
-          <string comment="Vector line merge">Merge</string>
+          <string comment="Vector line merge (Tool options)">Merge</string>
          </property>
         </widget>
        </item>
@@ -258,9 +225,6 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="toolTip">
-            <string>Use stabilizer to interpolate strokes</string>
-           </property>
            <property name="text">
             <string>Stabilizer</string>
            </property>
@@ -268,6 +232,12 @@
          </item>
          <item>
           <widget class="QComboBox" name="inpolLevelsCombo">
+           <property name="toolTip">
+            <string>Use stabilizer to interpolate strokes</string>
+           </property>
+           <property name="currentText">
+            <string comment="Stablizer level">None</string>
+           </property>
            <item>
             <property name="text">
              <string comment="Stabilizer option">None</string>
@@ -288,14 +258,17 @@
         </layout>
        </item>
        <item>
-        <spacer name="verticalSpacer_2">
+        <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
-           <height>40</height>
+           <width>0</width>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -303,19 +276,6 @@
       </layout>
      </widget>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

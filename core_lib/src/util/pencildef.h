@@ -36,6 +36,7 @@ enum ToolType : int
     MOVE,
     HAND,
     SMUDGE,
+    CAMERA,
     PEN,
     POLYLINE,
     BUCKET,
@@ -58,12 +59,22 @@ enum ToolPropertyType
     FILL_MODE,
     STABILIZATION,
     TOLERANCE,
+    FILLCONTOUR,
+    SHOWSELECTIONINFO,
     USETOLERANCE,
     BUCKETFILLEXPAND,
     USEBUCKETFILLEXPAND,
     BUCKETFILLLAYERMODE,
     BUCKETFILLLAYERREFERENCEMODE,
-    FILLCONTOUR
+    CAMERAPATH,
+};
+
+enum class DotColorType {
+    RED,
+    BLUE,
+    GREEN,
+    BLACK,
+    WHITE
 };
 
 enum BackgroundStyle
@@ -107,6 +118,9 @@ inline LayerVisibility& operator--(LayerVisibility& vis)
 // Max frames that can be imported and loaded onto the timeline
 const static int MaxFramesBound = 9999;
 
+// Spacer for rotation handle offset
+const static float RotationHandleOffset = 50;
+
 // shortcuts command code
 #define CMD_NEW_FILE  "CmdNewFile"
 #define CMD_OPEN_FILE "CmdOpenFile"
@@ -128,6 +142,7 @@ const static int MaxFramesBound = 9999;
 #define CMD_CUT "CmdCut"
 #define CMD_COPY "CmdCopy"
 #define CMD_PASTE "CmdPaste"
+#define CMD_PASTE_FROM_PREVIOUS "CmdPasteFromPrevious"
 #define CMD_SELECT_ALL "CmdSelectAll"
 #define CMD_DESELECT_ALL "CmdDeselectAll"
 #define CMD_CLEAR_FRAME "CmdClearFrame"
@@ -196,7 +211,6 @@ const static int MaxFramesBound = 9999;
 #define CMD_TOGGLE_COLOR_WHEEL "CmdToggleColorWheel"
 #define CMD_TOGGLE_COLOR_INSPECTOR "CmdToggleColorInspector"
 #define CMD_TOGGLE_COLOR_LIBRARY "CmdToggleColorLibrary"
-#define CMD_TOGGLE_DISPLAY_OPTIONS "CmdToggleDisplayOptions"
 #define CMD_TOGGLE_ONION_SKIN "CmdToggleOnionSkin"
 #define CMD_TOGGLE_TIMELINE "CmdToggleTimeline"
 #define CMD_INCREASE_SIZE "CmdIncreaseSize"
@@ -235,6 +249,7 @@ const static int MaxFramesBound = 9999;
 #define SETTING_QUICK_SIZING        "QuickSizing"
 #define SETTING_LAYOUT_LOCK         "LayoutLock"
 #define SETTING_ROTATION_INCREMENT  "RotationIncrement"
+#define SETTING_SHOW_SELECTION_INFO "ShowSelectionInfo"
 #define SETTING_ASK_FOR_PRESET      "AskForPreset"
 #define SETTING_LOAD_MOST_RECENT    "LoadMostRecent"
 #define SETTING_LOAD_DEFAULT_PRESET "LoadDefaultPreset"
@@ -284,7 +299,6 @@ const static int MaxFramesBound = 9999;
 #define SETTING_SOUND_SCRUB_ACTIVE      "SoundScrubActive"
 #define SETTING_SOUND_SCRUB_MSEC        "SoundScrubMsec"
 
-// Ideally this should also BucketTolerance eg.. but for compatibility sake, i'm not changing it now
 #define SETTING_BUCKET_TOLERANCE "Tolerance"
 #define SETTING_BUCKET_TOLERANCE_ON "BucketToleranceEnabled"
 #define SETTING_BUCKET_FILL_EXPAND "BucketFillExpand"

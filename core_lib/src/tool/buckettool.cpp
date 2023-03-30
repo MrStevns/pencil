@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include "layer.h"
 #include "layervector.h"
 #include "layerbitmap.h"
+#include "layercamera.h"
 #include "layermanager.h"
 #include "colormanager.h"
 #include "strokemanager.h"
@@ -71,7 +72,7 @@ void BucketTool::resetToDefault()
     setFillMode(0);
     setFillExpand(2);
     setFillExpandEnabled(true);
-    setFillToLayer(0);
+    setFillToLayerMode(0);
     setToleranceEnabled(false);
     setFillReferenceMode(0);
 }
@@ -160,7 +161,7 @@ void BucketTool::setFillExpand(const int fillExpandValue)
     settings.sync();
 }
 
-void BucketTool::setFillToLayer(int layerMode)
+void BucketTool::setFillToLayerMode(int layerMode)
 {
     properties.bucketFillToLayerMode = layerMode;
 
@@ -188,9 +189,11 @@ void BucketTool::pointerPressEvent(PointerEvent* event)
 
     if (targetLayer->type() != Layer::BITMAP) { return; }
 
+    LayerCamera* layerCam = mEditor->layers()->getCameraLayerBelow(mEditor->currentLayerIndex());
+
     mBitmapBucket = BitmapBucket(mEditor,
                                  mEditor->color()->frontColor(),
-                                 mScribbleArea->getCameraRect(),
+                                 layerCam ? layerCam->getViewRect() : QRect(),
                                  getCurrentPoint(),
                                  properties);
 
@@ -252,7 +255,7 @@ void BucketTool::paintBitmap()
         }
         else if (progress == BucketState::DidFillTarget)
         {
-            mScribbleArea->setModified(layerIndex, frameIndex);
+            mEditor->setModified(layerIndex, frameIndex);
 
             // Need to invalidate layer pixmap cache when filling anything else but current layer
             // otherwise dragging won't show until release event
@@ -282,7 +285,7 @@ void BucketTool::paintVector(Layer* layer)
 
     applyChanges();
 
-    mScribbleArea->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
 }
 
 void BucketTool::applyChanges()
