@@ -48,7 +48,7 @@ public:
     int frontColorNumber() const;
 
 signals:
-    void colorChanged(QColor, int); // new color and color index
+    void colorChanged(QColor); // new color and color index
     void colorNumberChanged(int);
 
 private:

@@ -1591,6 +1591,7 @@ void MainWindow2::makeConnections(Editor* pEditor, ColorPaletteWidget* pColorPal
 
     connect(pColorPalette, &ColorPaletteWidget::colorNumberChanged, pColorManager, &ColorManager::setColorNumber);
     connect(pColorManager, &ColorManager::colorNumberChanged, pScribbleArea, &ScribbleArea::paletteColorChanged);
+    connect(pColorManager, &ColorManager::colorChanged, pScribbleArea, &ScribbleArea::paletteColorChanged);
     connect(pColorManager, &ColorManager::colorNumberChanged, pColorPalette, &ColorPaletteWidget::selectColorNumber);
 }
 
