@@ -1449,10 +1449,11 @@ void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float yt
 {
     if (!mIsPainting) { return; }
 //    qDebug() << "stroke to: " << point;
-    mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, dt);
-
-    // update dirty region
-    updateDirtyTiles();
+    if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+        mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, dt);
+        // update dirty region
+        updateDirtyTiles();
+    }
 }
 
 void ScribbleArea::forceUpdateMyPaintStates()
