@@ -63,7 +63,7 @@ public:
     int getWidth();
     int getHeight();
 
-    void loadTile(const QImage& image, const QPoint& position);
+    void loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile);
     void loadTiles(const QList<std::shared_ptr<QImage> > &images, const QList<QPoint> &positions);
 
     void setTilesWidth(int newWidth) { tiles_width = newWidth; }

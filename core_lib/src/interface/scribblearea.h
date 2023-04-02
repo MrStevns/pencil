@@ -211,6 +211,7 @@ public slots:
 
     void updateTile(MPSurface* surface, MPTile* tile);
     void clearTile(MPSurface *surface, MPTile *tile);
+    void loadTile(MPSurface* surface, MPTile* tile);
 
 protected:
     bool event(QEvent *event) override;
@@ -327,13 +328,6 @@ private:
     qreal mCurveSmoothingLevel = 0.0;
     bool mMultiLayerOnionSkin = false; // future use. If required, just add a checkbox to updated it.
     QColor mOnionColor;
-
-    /**
-     * @brief ScribbleArea::updateMyPaintCanvas
-     * Loads an image into libmypaint
-       should preferably only be used when loading new content that is otherwise not added automatically.
-     */
-    void updateMyPaintCanvas(BitmapImage* bitmapImage = nullptr);
 
 private:
 

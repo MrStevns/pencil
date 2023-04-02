@@ -106,29 +106,39 @@ MPSurface::~MPSurface()
 
 void MPSurface::onUpdateTile(MPSurface *surface, MPTile *tile)
 {
-    mParentHandler->tileUpdated(surface, tile);
+    emit mParentHandler->tileUpdated(surface, tile);
 }
 
 void MPSurface::onNewTile(MPSurface *surface, MPTile *tile)
 {
-    mParentHandler->tileAdded(surface, tile);
+    emit mParentHandler->tileAdded(surface, tile);
 }
 
 void MPSurface::onClearedSurface(MPSurface *surface)
 {
-    mParentHandler->surfaceCleared(surface);
+    emit mParentHandler->surfaceCleared(surface);
 }
 
 void MPSurface::onClearTile(MPSurface *surface, MPTile *tile)
 {
-    mParentHandler->tileCleared(surface, tile);
+    emit mParentHandler->tileCleared(surface, tile);
 }
 
-void MPSurface::loadTile(const QImage& image, const QPoint& pos)
+void MPSurface::loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile)
 {
-    MPTile* tile = getTileFromPos(pos);
-    tile->setImage(image);
-    this->onUpdateTile(this, tile);
+    QImage paintTo(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE, QImage::Format_ARGB32_Premultiplied);
+
+    paintTo.fill(Qt::transparent);
+    QPainter painter(&paintTo);
+
+    painter.save();
+    painter.translate(-tile->pos());
+    painter.drawImage(topLeft, image);
+    painter.restore();
+    painter.end();
+
+    tile->setImage(paintTo);
+    tile->updateMyPaintBuffer(tile->boundingRect().size());
 }
 
 void MPSurface::loadTiles(const QList<std::shared_ptr<QImage> >& images, const QList<QPoint>& positions)

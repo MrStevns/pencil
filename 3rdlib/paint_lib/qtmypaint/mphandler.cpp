@@ -93,9 +93,9 @@ void MPHandler::clearAreaFromSurface(const QRect& bounds)
     m_surface->clearArea(bounds);
 }
 
-void MPHandler::loadTile(const QImage& image, const QPoint pos)
+void MPHandler::loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile)
 {
-    m_surface->loadTile(image, pos);
+    m_surface->loadTile(image, topLeft, tile);
 }
 
 void MPHandler::loadBrush(const QByteArray &content)

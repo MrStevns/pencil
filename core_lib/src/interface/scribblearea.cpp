@@ -73,7 +73,7 @@ bool ScribbleArea::init()
     mMouseFilterTimer = new QTimer(this);
     mMyPaint = new MPHandler();
 
-    connect(mMyPaint, &MPHandler::tileAdded, this, &ScribbleArea::updateTile);
+    connect(mMyPaint, &MPHandler::tileAdded, this, &ScribbleArea::loadTile);
     connect(mMyPaint, &MPHandler::tileUpdated, this, &ScribbleArea::updateTile);
     connect(mMyPaint, &MPHandler::tileCleared, this, &ScribbleArea::clearTile);
 
@@ -195,22 +195,6 @@ void ScribbleArea::setEffect(SETTING e, bool isOn)
     invalidateLayerPixmapCache();
 }
 
-void ScribbleArea::updateMyPaintCanvas(BitmapImage* bitmapImage)
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-
-    if (!bitmapImage) {
-        bitmapImage = currentBitmapImage(layer);
-    }
-
-    if (bitmapImage->bounds().isNull()) { return; }
-
-    QImage image = *bitmapImage->image();
-
-    // Autocrop should not be used here, otherwise the image is adjusted slightly from its original position..
-    mMyPaint->loadImage(image, bitmapImage->bounds().topLeft());
-}
-
 void ScribbleArea::prepareForDrawing()
 {
     qDebug() << "prepare for drawing";
@@ -221,7 +205,6 @@ void ScribbleArea::prepareForDrawing()
     switch(layer->type()) {
         case Layer::BITMAP:
         {
-            updateMyPaintCanvas();
             break;
         }
         default:
@@ -1419,6 +1402,17 @@ void ScribbleArea::updateTile(MPSurface *surface, MPTile *tile)
     tile->setDirty(true);
 
     mBufferTiles.insert(QString::number(pos.x())+"_"+QString::number(pos.y()), tile);
+}
+
+void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
+{
+    Q_UNUSED(surface)
+    Layer* layer = mEditor->layers()->currentLayer();
+
+    auto bitmapImage = currentBitmapImage(layer);
+    QImage image = *bitmapImage->image();
+
+    mMyPaint->loadTile(image, bitmapImage->topLeft(), tile);
 }
 
 void ScribbleArea::clearTile(MPSurface *surface, MPTile *tile)

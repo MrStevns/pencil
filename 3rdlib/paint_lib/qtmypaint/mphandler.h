@@ -93,14 +93,14 @@ public:
 
     void drawImageAt(const QImage& image, const QPoint topLeft);
     void loadImage(const QImage &image, const QPoint pos);
-    void loadTile(const QImage& image, const QPoint pos);
+    void loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile);
     void clearAreaFromSurface(const QRect& bounds);
 
 signals:
-    void tileUpdated(MPSurface *surface, MPTile *tile) const;
-    void tileAdded(MPSurface *surface, MPTile *tile) const;
-    void tileCleared(MPSurface* surface, MPTile* tile) const;
-    void surfaceCleared(MPSurface *surface) const;
+    void tileUpdated(MPSurface *surface, MPTile *tile);
+    void tileAdded(MPSurface *surface, MPTile *tile);
+    void tileCleared(MPSurface* surface, MPTile* tile);
+    void surfaceCleared(MPSurface *surface);
 
 public slots:
     void loadBrush(const QByteArray& content);
