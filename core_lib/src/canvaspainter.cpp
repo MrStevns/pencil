@@ -326,7 +326,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
 
 void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
 {
-    auto tilesToRender = mOptions.tilesToBeRendered;
+    const auto& tilesToRender = mOptions.tilesToBeRendered;
 
     painter.save();
 
@@ -337,18 +337,17 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
 
     QPainter imagePaintDevice(&output);
 
-    imagePaintDevice.translate(-painter.viewport().width()/2, -painter.viewport().height()/2);
     imagePaintDevice.setTransform(mViewTransform);
-    for (MPTile* item : tilesToRender) {
+
+    if (mOptions.useCanvasBuffer) {
+        imagePaintDevice.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    } else {
+        imagePaintDevice.setCompositionMode(QPainter::CompositionMode_Source);
+    }
+    for (const MPTile* item : tilesToRender) {
         const QImage& img = item->image();
 
-        QRect tileRect = QRect(item->pos(), img.size());
-
-        if (mOptions.useCanvasBuffer) {
-            imagePaintDevice.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        } else {
-            imagePaintDevice.setCompositionMode(QPainter::CompositionMode_Source);
-        }
+        const QRect& tileRect = QRect(item->pos(), img.size());
         imagePaintDevice.drawImage(tileRect, img, img.rect());
     }
 
