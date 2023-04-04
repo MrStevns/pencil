@@ -16,7 +16,7 @@
 // This basic class store a tile info & display it. the ushort table is the
 // real info modified by libMyPaint. Before any screen refresh, we transfer
 // it to a QImage acting as a cache. this QImage is only necessary to paint.
-// NOTE that the uint16_t data (premul RGB 15 bits) is transfered in premul
+// NOTE that the uint16_t data (premul RGB 16 bits) is transfered in premul
 // format. This is only useful if you plan to have several layers.
 // if it is not the case, you could simply convert to RGBA (not premul)
 
@@ -58,6 +58,12 @@ public:
     QPoint pos() const { return m_pos; }
 
 private:
+
+    /// Convert 16 bit pixel format to 32 bit
+    inline uint constexpr convert_from_mypaint(uint16_t value) const { return ((value*255)/(1<<15)); }
+
+    /// Convert 32 bit pixel format to 16 bit
+    inline uint16_t constexpr convert_to_mypaint(int value) const { return ((value*(1<<15))/255); }
 
     uint16_t  t_pixels [k_tile_dim][k_tile_dim][4];
     QImage    m_cache_img;

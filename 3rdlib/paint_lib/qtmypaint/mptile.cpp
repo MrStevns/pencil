@@ -52,14 +52,15 @@ void MPTile::drawPoint(uint x, uint y, uint16_t r, uint16_t g, uint16_t b, uint1
 void MPTile::updateCache()
 {
     QRgb* dst = (reinterpret_cast<QRgb*>(m_cache_img.bits()));
+
     for (int y = 0 ; y < k_tile_dim ; y++) {
          for (int x = 0 ; x < k_tile_dim ; x++) {
               uint16_t& alpha = t_pixels[y][x][k_alpha];
               *dst = alpha ? qRgba(
-              CONV_16_8(t_pixels[y][x][k_red]),
-              CONV_16_8(t_pixels[y][x][k_green]),
-              CONV_16_8(t_pixels[y][x][k_blue]),
-              CONV_16_8(alpha)) : 0; // aplha is 0 => all is zero (little optimization)
+              convert_from_mypaint(t_pixels[y][x][k_red]),
+              convert_from_mypaint(t_pixels[y][x][k_green]),
+              convert_from_mypaint(t_pixels[y][x][k_blue]),
+              convert_from_mypaint(alpha)) : 0; // aplha is 0 => all is zero (little optimization)
               dst++; // next image pixel...
          }
     }
@@ -78,15 +79,15 @@ void MPTile::setImage(const QImage& image)
 
 void MPTile::updateMyPaintBuffer(const QSize& tileSize)
 {
+    const QRgb* dst = (reinterpret_cast<const QRgb*>(m_cache_img.constBits()));
     for (int y = 0 ; y < tileSize.height(); y++) {
          for (int x = 0 ; x < tileSize.width() ; x++) {
 
-            const QRgb& pixelColor = *(reinterpret_cast<const QRgb*>(m_cache_img.constScanLine(y))+x);
-
-            t_pixels[y][x][k_alpha]    = static_cast<uint16_t>CONV_8_16(qAlpha(pixelColor));
-            t_pixels[y][x][k_red]      = static_cast<uint16_t>CONV_8_16(qRed(pixelColor));
-            t_pixels[y][x][k_green]    = static_cast<uint16_t>CONV_8_16(qGreen(pixelColor));
-            t_pixels[y][x][k_blue]     = static_cast<uint16_t>CONV_8_16(qBlue(pixelColor));
+            t_pixels[y][x][k_alpha]    = convert_to_mypaint(qAlpha(*dst));
+            t_pixels[y][x][k_red]      = convert_to_mypaint(qRed(*dst));
+            t_pixels[y][x][k_green]    = convert_to_mypaint(qGreen(*dst));
+            t_pixels[y][x][k_blue]     = convert_to_mypaint(qBlue(*dst));
+            dst++;
          }
     }
 }
