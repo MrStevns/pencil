@@ -201,10 +201,10 @@ void ScribbleArea::prepareForDrawing()
 
     Layer* layer = mEditor->layers()->currentLayer();
 
-    mMyPaint->clearSurface();
     switch(layer->type()) {
         case Layer::BITMAP:
         {
+            mMyPaint->clearSurface();
             break;
         }
         default:
@@ -379,7 +379,9 @@ void ScribbleArea::onFramesModified()
 
 void ScribbleArea::onFrameModified(int frameNumber)
 {
-    mNeedLoadImageToMyPaint = true;
+    if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+        mMyPaint->clearSurface();
+    }
     if (mPrefs->isOn(SETTING::PREV_ONION) || mPrefs->isOn(SETTING::NEXT_ONION)) {
         invalidateOnionSkinsCacheAround(frameNumber);
         invalidateLayerPixmapCache();
@@ -1559,11 +1561,6 @@ void ScribbleArea::applyTransformedSelection()
             BitmapImage transformed = currentBitmapImage(layer)->transformed(selectMan->mySelectionRect().toRect(), selectMan->selectionTransform(), true);
             bitmapImage->clear(selectMan->mySelectionRect());
             bitmapImage->paste(&transformed, QPainter::CompositionMode_SourceOver);
-
-            mMyPaint->clearAreaFromSurface(selectMan->mySelectionRect().toRect());
-
-            //QRect movedRect = selectMan->selectionTransform().mapRect(selectMan->mySelectionRect()).toRect();
-            mMyPaint->drawImageAt(*transformed.image(), selectMan->mySelectionRect().toRect().topLeft());
         }
         else if (layer->type() == Layer::VECTOR)
         {

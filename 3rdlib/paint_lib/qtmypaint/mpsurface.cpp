@@ -187,46 +187,46 @@ void MPSurface::loadImage(const QImage &image, const QPoint topLeft)
     }
 }
 
-/**
- * @brief MPSurface::clearArea
- * Clears surface area at the given rectangle
- * @param bounds
- */
-void MPSurface::clearArea(const QRect& bounds)
-{
-    QImage paintTo(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE, QImage::Format_ARGB32_Premultiplied);
+///**
+// * @brief MPSurface::clearArea
+// * Clears surface area at the given rectangle
+// * @param bounds
+// */
+//void MPSurface::clearArea(const QRect& bounds)
+//{
+//    QImage paintTo(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE, QImage::Format_ARGB32_Premultiplied);
 
-    QList<QPoint> touchedPoints = findCorrespondingTiles(bounds);
+//    QList<QPoint> touchedPoints = findCorrespondingTiles(bounds);
 
-    for (int point = 0; point < touchedPoints.count(); point++) {
+//    for (int point = 0; point < touchedPoints.count(); point++) {
 
-        const QPoint touchedPoint = touchedPoints.at(point);
+//        const QPoint touchedPoint = touchedPoints.at(point);
 
-        MPTile *tile = getTileFromPos(touchedPoint);
+//        MPTile *tile = getTileFromPos(touchedPoint);
 
-        paintTo.fill(Qt::transparent);
-        QPainter painter(&paintTo);
+//        paintTo.fill(Qt::transparent);
+//        QPainter painter(&paintTo);
 
-        painter.save();
-        painter.translate(-touchedPoint);
+//        painter.save();
+//        painter.translate(-touchedPoint);
 
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.drawImage(tile->pos(), tile->image());
+//        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+//        painter.drawImage(tile->pos(), tile->image());
 
-        painter.setCompositionMode(QPainter::CompositionMode_Clear);
-        painter.fillRect(bounds, Qt::transparent);
-        painter.restore();
-        painter.end();
+//        painter.setCompositionMode(QPainter::CompositionMode_Clear);
+//        painter.fillRect(bounds, Qt::transparent);
+//        painter.restore();
+//        painter.end();
 
-        if (isFullyTransparent(paintTo)) {
-            clearTile(tile);
-        } else {
-            // tile is updated here and the mypaint buffer is updated
-            tile->setImage(paintTo);
-            tile->updateMyPaintBuffer(tile->boundingRect().size());
-        }
-    }
-}
+//        if (isFullyTransparent(paintTo)) {
+//            clearTile(tile);
+//        } else {
+//            // tile is updated here and the mypaint buffer is updated
+//            tile->setImage(paintTo);
+//            tile->updateMyPaintBuffer(tile->boundingRect().size());
+//        }
+//    }
+//}
 
 /**
  * @brief MPSurface::drawImageAt

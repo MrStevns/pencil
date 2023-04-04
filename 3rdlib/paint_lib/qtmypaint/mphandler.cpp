@@ -90,7 +90,8 @@ void MPHandler::saveSurface(const QString path)
 
 void MPHandler::clearAreaFromSurface(const QRect& bounds)
 {
-    m_surface->clearArea(bounds);
+    Q_UNUSED(bounds)
+//    m_surface->clearArea(bounds);
 }
 
 void MPHandler::loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile)

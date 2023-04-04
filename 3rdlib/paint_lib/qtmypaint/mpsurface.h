@@ -91,7 +91,7 @@ public:
 
     void loadImage(const QImage &image, const QPoint topLeft);
     void drawImageAt(const QImage& image, const QPoint topLeft);
-    void clearArea(const QRect& bounds);
+//    void clearArea(const QRect& bounds);
 
     QHash<QString, MPTile*> getTiles() { return m_Tiles; }
 
