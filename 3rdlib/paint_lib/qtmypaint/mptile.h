@@ -35,6 +35,7 @@ public:
     enum { k_red = 0, k_green = 1, k_blue = 2, k_alpha = 3 }; // Index to access RGBA values in myPaint
 
     const QImage& image() const { return m_cache_img; }
+    QImage& image() { return m_cache_img; }
 
     QRect boundingRect() const;
 

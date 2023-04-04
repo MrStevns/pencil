@@ -126,18 +126,12 @@ void MPSurface::onClearTile(MPSurface *surface, MPTile *tile)
 
 void MPSurface::loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile)
 {
-    QImage paintTo(MYPAINT_TILE_SIZE,MYPAINT_TILE_SIZE, QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&tile->image());
 
-    paintTo.fill(Qt::transparent);
-    QPainter painter(&paintTo);
-
-    painter.save();
     painter.translate(-tile->pos());
     painter.drawImage(topLeft, image);
-    painter.restore();
     painter.end();
 
-    tile->setImage(paintTo);
     tile->updateMyPaintBuffer(tile->boundingRect().size());
 }
 

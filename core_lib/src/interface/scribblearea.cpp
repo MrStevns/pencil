@@ -1411,8 +1411,8 @@ void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
     Q_UNUSED(surface)
     Layer* layer = mEditor->layers()->currentLayer();
 
-    auto bitmapImage = currentBitmapImage(layer);
-    QImage image = *bitmapImage->image();
+    const auto& bitmapImage = currentBitmapImage(layer);
+    const QImage& image = *bitmapImage->image();
 
     mMyPaint->loadTile(image, bitmapImage->topLeft(), tile);
 }
