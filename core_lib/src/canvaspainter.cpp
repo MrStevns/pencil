@@ -163,7 +163,7 @@ void CanvasPainter::renderCurLayer(QPainter& painter)
         return;
 
     if (mOptions.eLayerVisibility == LayerVisibility::RELATED && !isCameraLayer) {
-        painter.setOpacity(calculateRelativeOpacityForLayer(currentLayerIndex, 0, mOptions.fLayerVisibilityThreshold));
+        painter.setOpacity(calculateRelativeOpacityForLayer(currentLayerIndex, currentLayerIndex, mOptions.fLayerVisibilityThreshold));
     }
 
     switch (layer->type())
