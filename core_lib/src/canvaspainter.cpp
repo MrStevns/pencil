@@ -40,8 +40,18 @@ CanvasPainter::~CanvasPainter()
 void CanvasPainter::setCanvas(QPixmap* canvas)
 {
     Q_ASSERT(canvas);
-    mCanvas = canvas;
-    mCanvasRect = mCanvas->rect();
+    if (mCanvas == nullptr || mCanvasRect != mCanvas->rect()) {
+
+        mCanvas = canvas;
+        mPostLayersPixmap = QPixmap(mCanvas->size());
+        mPreLayersPixmap = QPixmap(mCanvas->size());
+        mPreLayersPixmap.fill(Qt::transparent);
+        mCanvas->fill(Qt::transparent);
+        mPostLayersPixmap.fill(Qt::transparent);
+
+        mCanvas = canvas;
+        mCanvasRect = mCanvas->rect();
+    }
 }
 
 void CanvasPainter::setViewTransform(const QTransform view, const QTransform viewInverse)
@@ -73,64 +83,58 @@ void CanvasPainter::ignoreTransformedSelection()
     mRenderTransform = false;
 }
 
-void CanvasPainter::paintCached()
+void CanvasPainter::paintCached(const QRect& blitRect)
 {
-    QPixmap tempPixmap(mCanvas->size());
-    tempPixmap.fill(Qt::transparent);
-    mCanvas->fill(Qt::transparent);
-    QPainter tempPainter;
-    QPainter painter;
-    initializePainter(tempPainter, tempPixmap);
-    initializePainter(painter, *mCanvas);
+    QPainter preLayerPainter;
+    QPainter mainPainter;
+    QPainter postLayerPainter;
 
-    if (!mPreLayersCache)
+    initializePainter(mainPainter, *mCanvas, blitRect);
+
+    if (!mPreLayersPixmapCacheValid)
     {
-        renderPreLayers(painter);
-        mPreLayersCache.reset(new QPixmap(*mCanvas));
-    }
-    else
-    {
-        painter.setWorldMatrixEnabled(false);
-        painter.drawPixmap(0, 0, *(mPreLayersCache.get()));
-        painter.setWorldMatrixEnabled(true);
+        initializePainter(preLayerPainter, mPreLayersPixmap, blitRect);
+        renderPreLayers(preLayerPainter);
+        preLayerPainter.end();
+        mPreLayersPixmapCacheValid = true;
     }
 
-    renderCurLayer(painter);
+    mainPainter.setWorldMatrixEnabled(false);
+    mainPainter.drawPixmap(blitRect, mPreLayersPixmap, blitRect);
+    mainPainter.setWorldMatrixEnabled(true);
 
-    if (!mPostLayersCache)
+    renderCurLayer(mainPainter, blitRect);
+
+    if (!mPostLayersPixmapCacheValid)
     {
-        renderPostLayers(tempPainter);
-        mPostLayersCache.reset(new QPixmap(tempPixmap));
-        painter.setWorldMatrixEnabled(false);
-        painter.drawPixmap(0, 0, tempPixmap);
-        painter.setWorldMatrixEnabled(true);
+        renderPostLayers(postLayerPainter);
+        mPostLayersPixmapCacheValid = true;
     }
-    else
-    {
-        painter.setWorldMatrixEnabled(false);
-        painter.drawPixmap(0, 0, *(mPostLayersCache.get()));
-        painter.setWorldMatrixEnabled(true);
-    }
+
+    mainPainter.setWorldMatrixEnabled(false);
+    mainPainter.drawPixmap(blitRect, mPostLayersPixmap, blitRect);
+    mainPainter.setWorldMatrixEnabled(true);
 }
 
 void CanvasPainter::resetLayerCache()
 {
-    mPreLayersCache.reset();
-    mPostLayersCache.reset();
+    mPreLayersPixmapCacheValid = false;
+    mPreLayersPixmapCacheValid = false;
 }
 
-void CanvasPainter::initializePainter(QPainter& painter, QPixmap& pixmap)
+void CanvasPainter::initializePainter(QPainter& painter, QPaintDevice& device, const QRect& blitRect)
 {
-    painter.begin(&pixmap);
+    painter.begin(&device);
+
+    // Clear the area that's about to be painted again, to avoid painting on top of existing pixels
+    // causing artifacts.
+    painter.setCompositionMode(QPainter::CompositionMode_Clear);
+    painter.fillRect(blitRect, Qt::transparent);
+
+    // Surface has been cleared and is ready to be painted on
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     painter.setWorldMatrixEnabled(true);
     painter.setWorldTransform(mViewTransform);
-}
-
-void CanvasPainter::renderPreLayers(QPixmap* pixmap)
-{
-    QPainter painter;
-    initializePainter(painter, *pixmap);
-    renderPreLayers(painter);
 }
 
 void CanvasPainter::renderPreLayers(QPainter& painter)
@@ -141,17 +145,9 @@ void CanvasPainter::renderPreLayers(QPainter& painter)
     }
 
     paintOnionSkin(painter);
-    painter.setOpacity(1.0);
 }
 
-void CanvasPainter::renderCurLayer(QPixmap* pixmap)
-{
-    QPainter painter;
-    initializePainter(painter, *pixmap);
-    renderCurLayer(painter);
-}
-
-void CanvasPainter::renderCurLayer(QPainter& painter)
+void CanvasPainter::renderCurLayer(QPainter& painter, const QRect& blitRect)
 {
     int currentLayerIndex = mCurrentLayerIndex;
     Layer* layer = mObject->getLayer(currentLayerIndex);
@@ -168,17 +164,10 @@ void CanvasPainter::renderCurLayer(QPainter& painter)
 
     switch (layer->type())
     {
-    case Layer::BITMAP: { paintCurrentBitmapFrame(painter, layer); break; }
+    case Layer::BITMAP: { paintCurrentBitmapFrame(painter, layer, blitRect); break; }
     case Layer::VECTOR: { paintVectorFrame(painter, layer, mFrameNumber, false, true, true); break; } // TODO: do same refactoring for vector..
     default: break;
     }
-}
-
-void CanvasPainter::renderPostLayers(QPixmap *pixmap)
-{
-    QPainter painter;
-    initializePainter(painter, *pixmap);
-    renderPostLayers(painter);
 }
 
 void CanvasPainter::renderPostLayers(QPainter& painter)
@@ -200,14 +189,34 @@ void CanvasPainter::setPaintSettings(const Object* object, int currentLayer, int
     mBuffer = buffer;
 }
 
-void CanvasPainter::paint()
+void CanvasPainter::paint(const QRect& blitRect)
 {
-    QPainter painter;
-    initializePainter(painter, *mCanvas);
+    QPainter preLayerPainter;
+    QPainter mainPainter;
+    QPainter postLayerPainter;
 
-    renderPreLayers(painter);
-    renderCurLayer(painter);
-    renderPostLayers(painter);
+    initializePainter(mainPainter, *mCanvas, blitRect);
+
+    initializePainter(preLayerPainter, mPreLayersPixmap, blitRect);
+    renderPreLayers(preLayerPainter);
+    preLayerPainter.end();
+
+    mainPainter.setWorldMatrixEnabled(false);
+    mainPainter.drawPixmap(blitRect, mPreLayersPixmap, blitRect);
+    mainPainter.setWorldMatrixEnabled(true);
+
+    renderCurLayer(mainPainter, blitRect);
+
+    initializePainter(postLayerPainter, mPostLayersPixmap, blitRect);
+    renderPostLayers(postLayerPainter);
+    postLayerPainter.end();
+
+    mainPainter.setWorldMatrixEnabled(false);
+    mainPainter.drawPixmap(blitRect, mPostLayersPixmap, blitRect);
+    mainPainter.setWorldMatrixEnabled(true);
+
+    mPreLayersPixmapCacheValid = true;
+    mPostLayersPixmapCacheValid = true;
 }
 
 void CanvasPainter::paintBackground()
@@ -297,7 +306,7 @@ void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame
     }
 }
 
-void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
+void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer, const QRect& blitRect)
 {
     LayerBitmap* bitmapLayer = static_cast<LayerBitmap*>(layer);
     BitmapImage* bitmapImage = bitmapLayer->getLastBitmapImageAtFrame(mFrameNumber);
@@ -307,8 +316,8 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
 
     painter.setWorldMatrixEnabled(false);
     // Only paint with tiles for the frame we are painting on
-    if (isPainting) {
-        paintBitmapTiles(painter, bitmapImage);
+    if (isPainting && !mOptions.tilesToBeRendered.isEmpty()) {
+        paintBitmapTiles(painter, bitmapImage, blitRect);
     } else {
         painter.save();
         ImageCompositor compositor(mCanvasRect, bitmapImage->topLeft(), mViewTransform);
@@ -318,13 +327,13 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer)
             compositor.addEffect(CompositeEffect::Transformation, mSelectionTransform, mSelection);
         }
 
-        painter.drawImage(QPoint(), compositor.output());
+        painter.drawImage(blitRect, compositor.output(), blitRect);
 
         painter.restore();
     }
 }
 
-void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
+void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image, const QRect& blitRect)
 {
     const auto& tilesToRender = mOptions.tilesToBeRendered;
 
@@ -339,6 +348,7 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
 
     imagePaintDevice.setTransform(mViewTransform);
 
+    // FIXME: polyline tool rendering broken after optimizing painting backend
     if (mOptions.useCanvasBuffer) {
         imagePaintDevice.setCompositionMode(QPainter::CompositionMode_SourceOver);
     } else {
@@ -351,7 +361,7 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image)
         imagePaintDevice.drawImage(tileRect, img, img.rect());
     }
 
-    painter.drawImage(QPoint(), output);
+    painter.drawImage(blitRect, output, blitRect);
     painter.restore();
 }
 

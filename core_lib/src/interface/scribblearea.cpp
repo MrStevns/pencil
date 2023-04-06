@@ -857,7 +857,6 @@ void ScribbleArea::resizeEvent(QResizeEvent* event)
     QWidget::resizeEvent(event);
     mDevicePixelRatio = devicePixelRatioF();
     mCanvas = QPixmap(QSizeF(size() * mDevicePixelRatio).toSize());
-    mCanvas.fill(Qt::transparent);
 
     mMyPaint->setSurfaceSize(size());
     mEditor->view()->setCanvasSize(size());
@@ -1092,7 +1091,7 @@ void ScribbleArea::paintEvent(QPaintEvent* event)
         prepCameraPainter(currentFrame);
         prepOverlays(currentFrame);
 
-        mCanvasPainter.paintCached();
+        mCanvasPainter.paintCached(event->rect());
         mCameraPainter.paintCached();
     }
 
@@ -1316,12 +1315,11 @@ void ScribbleArea::prepCanvas(int frame, QRect rect)
 
 void ScribbleArea::drawCanvas(int frame, QRect rect)
 {
-    mCanvas.fill(Qt::transparent);
     mCanvas.setDevicePixelRatio(mDevicePixelRatio);
     prepCanvas(frame, rect);
     prepCameraPainter(frame);
     prepOverlays(frame);
-    mCanvasPainter.paint();
+    mCanvasPainter.paint(rect);
     mCameraPainter.paint();
 }
 

@@ -75,8 +75,8 @@ public:
     void ignoreTransformedSelection();
 
     void setPaintSettings(const Object* object, int currentLayer, int frame, QRect rect, BitmapImage* buffer);
-    void paint();
-    void paintCached();
+    void paint(const QRect& blitRect);
+    void paintCached(const QRect& blitRect);
     void resetLayerCache();
 
 private:
@@ -87,18 +87,14 @@ private:
      * @param painter The in/out painter
      * @param pixmap The paint device ie. a pixmap
      */
-    void initializePainter(QPainter& painter, QPixmap& pixmap);
+    void initializePainter(QPainter& painter, QPaintDevice& device, const QRect& blitRect);
 
     void renderPreLayers(QPainter& painter);
-    void renderCurLayer(QPainter& painter);
+    void renderCurLayer(QPainter& painter, const QRect& blitRect);
     void renderPostLayers(QPainter& painter);
 
     void paintBackground();
     void paintOnionSkin(QPainter& painter);
-
-    void renderPostLayers(QPixmap* pixmap);
-    void renderCurLayer(QPixmap* pixmap);
-    void renderPreLayers(QPixmap* pixmap);
 
     void paintCurrentFrameAtLayer(QPainter& painter, int startLayer, int endLayer);
 
@@ -107,14 +103,14 @@ private:
      * @param painter
      * @param layer
      */
-    void paintCurrentBitmapFrame(QPainter& painter, Layer* layer);
+    void paintCurrentBitmapFrame(QPainter& painter, Layer* layer, const QRect& blitRect);
 
     /** paintBitmapTiles
      * Paints tiled images on top of the given bitmap image and canvas painter if needed.
      * @param painter
      * @param image
      */
-    void paintBitmapTiles(QPainter& painter, BitmapImage* image);
+    void paintBitmapTiles(QPainter& painter, BitmapImage* image, const QRect& blitRect);
 
     /** paintBitmapFrame
      * Paints bitmap frames to any given layer, do not use on current frame at current layer.
@@ -128,7 +124,6 @@ private:
     void paintVectorFrame(QPainter&, Layer* layer, int nFrame, bool colorize, bool useLastKeyFrame, bool isCurrentFrame);
 
     void paintTransformedSelection(QPainter& painter) const;
-    //void prescale(BitmapImage* bitmapImage);
 
     /** Check if the given rect lies inside the canvas, assumes that the input rect is mapped correctly **/
     inline bool isRectInsideCanvas(const QRect& rect) const;
@@ -140,6 +135,13 @@ private:
 
     const Object* mObject = nullptr;
     QPixmap* mCanvas = nullptr;
+
+    // Caches specifically for when drawing on the canvas
+    QPixmap mPostLayersPixmap;
+    QPixmap mPreLayersPixmap;
+    bool mPreLayersPixmapCacheValid = false;
+    bool mPostLayersPixmapCacheValid = false;
+
     QTransform mViewTransform;
     QTransform mViewInvTransform;
 
@@ -150,18 +152,15 @@ private:
     int mFrameNumber = 0;
     BitmapImage* mBuffer = nullptr;
 
-    QImage mScaledBitmap;
-
     // Handle selection transformation
     bool mRenderTransform = false;
     QRect mSelection;
     QTransform mSelectionTransform;
 
-    // Caches specifically for when drawing on the canvas
-    std::unique_ptr<QPixmap> mPreLayersCache, mPostLayersCache;
-
     OnionSkinSubPainter mOnionSkinSubPainter;
     OnionSkinPainterOptions mOnionSkinPainterOptions;
+
+    QPaintDevice* mPaintDevice = nullptr;
 
     const static int OVERLAY_SAFE_CENTER_CROSS_SIZE = 25;
 };
