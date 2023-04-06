@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include "pencildef.h"
 
 #include "imagepainter.h"
+#include "imagecompositor.h"
 
 #include "layer.h"
 
@@ -89,14 +90,14 @@ private:
      */
     void initializePainter(QPainter& painter, QPaintDevice& device, const QRect& blitRect);
 
-    void renderPreLayers(QPainter& painter);
+    void renderPreLayers(QPainter& painter, const QRect& blitRect);
     void renderCurLayer(QPainter& painter, const QRect& blitRect);
-    void renderPostLayers(QPainter& painter);
+    void renderPostLayers(QPainter& painter, const QRect& blitRect);
 
     void paintBackground();
-    void paintOnionSkin(QPainter& painter);
+    void paintOnionSkin(QPainter& painter, const QRect& blitRect);
 
-    void paintCurrentFrameAtLayer(QPainter& painter, int startLayer, int endLayer);
+    void paintCurrentFrameAtLayer(QPainter& painter, int startLayer, int endLayer, const QRect& blitRect);
 
     /** paintCurrentBitmapFrame
      * This should only be used for the current frame at the current layer
@@ -126,21 +127,27 @@ private:
      * Paints bitmap frames to any given layer, do not use on current frame at current layer.
      * @param layer
      * @param nFrame
-     * @param colorize
-     * @param isCurrentLayer
      * @param isCurrentFrame
+     * @param isCurrentLayer
      */
-    void paintBitmapFrame(QPainter&, Layer* layer, int nFrame, bool isCurrentFrame, bool isCurrentLayer);
-    void paintVectorFrame(QPainter&, Layer* layer, int nFrame, bool useLastKeyFrame, bool isCurrentFrame);
+    void paintBitmapFrame(QPainter&, Layer* layer, int nFrame, bool isCurrentFrame, bool isCurrentLayer, const QRect& blitRect);
 
-    void paintTransformedSelection(QPainter& painter) const;
+    /** paintVectorFrame
+     * Paints vector frames to any given layer, do not use on current frame at current layer.
+     * @param layer
+     * @param nFrame
+     * @param isCurrentFrame
+     * @param isCurrentLayer
+     */
+    void paintVectorFrame(QPainter&, Layer* layer, int nFrame, bool isCurrentFrame, bool isCurrentLayer, const QRect& blitRect);
 
     /** Check if the given rect lies inside the canvas, assumes that the input rect is mapped correctly **/
     inline bool isRectInsideCanvas(const QRect& rect) const;
 
 private:
-    void paintBitmapOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize);
-    void paintVectorOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize);
+    void paintOnionSkinFrame(QPainter& painter, ImageCompositor& compositor, int nFrame, bool colorize, qreal frameOpacity, const QRect& blitRect);
+    void paintBitmapOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize, const QRect& blitRect);
+    void paintVectorOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize, const QRect& blitRect);
 
     CanvasPainterOptions mOptions;
 
