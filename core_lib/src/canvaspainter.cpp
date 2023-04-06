@@ -362,6 +362,8 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer, con
 
     painter.setWorldMatrixEnabled(false);
     // Only paint with tiles for the frame we are painting on
+
+    painter.setOpacity(bitmapImage->getOpacity() - (1.0-painter.opacity()));
     if (isPainting && !mOptions.tilesToBeRendered.isEmpty()) {
         paintBitmapTiles(painter, bitmapImage, blitRect);
     } else {
