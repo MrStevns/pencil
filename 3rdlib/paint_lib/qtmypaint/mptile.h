@@ -61,10 +61,10 @@ public:
 private:
 
     /// Convert 16 bit pixel format to 32 bit
-    inline uint constexpr convert_from_mypaint(uint16_t value) const { return ((value*255)/(1<<15)); }
+    inline uint convert_from_mypaint(uint16_t value) const { return ((value*255)/(1<<15)); }
 
     /// Convert 32 bit pixel format to 16 bit
-    inline uint16_t constexpr convert_to_mypaint(int value) const { return ((value*(1<<15))/255); }
+    inline uint16_t convert_to_mypaint(int value) const { return ((value*(1<<15))/255); }
 
     uint16_t  t_pixels [k_tile_dim][k_tile_dim][4];
     QImage    m_cache_img;
