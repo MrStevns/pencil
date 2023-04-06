@@ -1409,10 +1409,16 @@ void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
     Q_UNUSED(surface)
     Layer* layer = mEditor->layers()->currentLayer();
 
-    const auto& bitmapImage = currentBitmapImage(layer);
-    const QImage& image = *bitmapImage->image();
 
-    mMyPaint->loadTile(image, bitmapImage->topLeft(), tile);
+    // Polyline is special because the surface must be cleared on every update, given its nature of drawing a long stroke segment.
+    // Therefore we only load the mypaint surface with bitmap data when not using the polyline tool.
+
+    // TODO: This code would be better served in Polyline rather than here.
+    if (mIsPainting && currentTool()->type() != ToolType::POLYLINE) {
+        const auto& bitmapImage = currentBitmapImage(layer);
+        const QImage& image = *bitmapImage->image();
+        mMyPaint->loadTile(image, bitmapImage->topLeft(), tile);
+    }
 }
 
 void ScribbleArea::clearTile(MPSurface *surface, MPTile *tile)

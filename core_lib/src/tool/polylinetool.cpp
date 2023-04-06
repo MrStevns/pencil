@@ -224,8 +224,9 @@ void PolylineTool::pointerMoveOnVector(PointerEvent *)
 void PolylineTool::pointerMoveOnBitmap(PointerEvent * event)
 {
     mScribbleArea->mMyPaint->clearSurface();
-
     mScribbleArea->mMyPaint->startStroke();
+
+    // TODO: can we get the old bezier functionality back when using mypaint?
     for(int i=0; i<mPoints.size(); i++) {
 
         drawStroke(mPoints[i], calculateDeltaTime(event->timeStamp()));
@@ -377,8 +378,11 @@ void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
     }
     if (layer->type() == Layer::BITMAP)
     {
-        drawPolyline(points, points.last(), timeStamp);
-        mScribbleArea->prepareForDrawing();
+        for(int i=0; i<mPoints.size(); i++) {
+
+            drawStroke(mPoints[i], calculateDeltaTime(timeStamp));
+        }
+        drawStroke(getCurrentPoint(), calculateDeltaTime(timeStamp));
     }
 
     mScribbleArea->clearBitmapBuffer();
