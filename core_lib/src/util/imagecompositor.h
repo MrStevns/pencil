@@ -18,7 +18,7 @@ public:
      * Add an image to the compositor
      * @param image
      */
-    void addImage(QImage& image);
+    void addImage(QImage& image, QPainter::CompositionMode compositionMode = QPainter::CompositionMode_SourceOver);
 
     /** addEffect
      * Add a colorEffect to the compositor
@@ -39,7 +39,8 @@ public:
      *
      * @return The output of the composited image
      */
-    QImage output() const;
+    const QImage& output() const { return mOutputImage; }
+    QImage& output() { return mOutputImage; }
 
 private:
 

@@ -102,8 +102,18 @@ private:
      * This should only be used for the current frame at the current layer
      * @param painter
      * @param layer
+     * @param blitRect The rect to update upon a paintEvent
      */
     void paintCurrentBitmapFrame(QPainter& painter, Layer* layer, const QRect& blitRect);
+
+
+    /** paintCurrentBitmapFrame
+     * This should only be used for the current frame at the current layer
+     * @param painter
+     * @param layer
+     * @param blitRect The rect to update upon a paintEvent
+     */
+    void paintCurrentVectorFrame(QPainter& painter, Layer* layer, const QRect& blitRect);
 
     /** paintBitmapTiles
      * Paints tiled images on top of the given bitmap image and canvas painter if needed.
@@ -121,7 +131,7 @@ private:
      * @param isCurrentFrame
      */
     void paintBitmapFrame(QPainter&, Layer* layer, int nFrame, bool isCurrentFrame, bool isCurrentLayer);
-    void paintVectorFrame(QPainter&, Layer* layer, int nFrame, bool colorize, bool useLastKeyFrame, bool isCurrentFrame);
+    void paintVectorFrame(QPainter&, Layer* layer, int nFrame, bool useLastKeyFrame, bool isCurrentFrame);
 
     void paintTransformedSelection(QPainter& painter) const;
 
@@ -130,6 +140,7 @@ private:
 
 private:
     void paintBitmapOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize);
+    void paintVectorOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize);
 
     CanvasPainterOptions mOptions;
 

@@ -11,9 +11,10 @@ ImageCompositor::ImageCompositor(QRect compositorRect, QPoint origin, QTransform
     mOutputImage.fill(Qt::transparent);
 }
 
-void ImageCompositor::addImage(QImage& image)
+void ImageCompositor::addImage(QImage& image, QPainter::CompositionMode compositionMode)
 {
     QPainter mainCompositor(&mOutputImage);
+    mainCompositor.setCompositionMode(compositionMode);
     mainCompositor.setTransform(mCanvasTransform);
     mainCompositor.translate(mOutputOrigin);
     mainCompositor.drawImage(QPoint(), image);
@@ -81,8 +82,4 @@ void ImageCompositor::addTransformationEffect(QPainter& effectPainter, QTransfor
     // Draw the selection image separately and on top
     effectPainter.drawImage(selection, tranformedImage);
     effectPainter.restore();
-}
-
-QImage ImageCompositor::output() const {
-    return mOutputImage;
 }

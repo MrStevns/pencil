@@ -165,7 +165,7 @@ void CanvasPainter::renderCurLayer(QPainter& painter, const QRect& blitRect)
     switch (layer->type())
     {
     case Layer::BITMAP: { paintCurrentBitmapFrame(painter, layer, blitRect); break; }
-    case Layer::VECTOR: { paintVectorFrame(painter, layer, mFrameNumber, false, true, true); break; } // TODO: do same refactoring for vector..
+    case Layer::VECTOR: { paintCurrentVectorFrame(painter, layer, blitRect); break; }
     default: break;
     }
 }
@@ -233,7 +233,7 @@ void CanvasPainter::paintOnionSkin(QPainter& painter)
             switch (layer->type())
             {
             case Layer::BITMAP: { paintBitmapOnionSkinFrame(painter, layer, onionFrameNumber, mOnionSkinPainterOptions.colorizePrevFrames); break; }
-            case Layer::VECTOR: { paintVectorFrame(painter, layer, onionFrameNumber, mOnionSkinPainterOptions.colorizePrevFrames, false, false); break; }
+            case Layer::VECTOR: { paintVectorOnionSkinFrame(painter, layer, onionFrameNumber, mOnionSkinPainterOptions.colorizePrevFrames); break; }
             default: break;
             }
         }
@@ -241,7 +241,7 @@ void CanvasPainter::paintOnionSkin(QPainter& painter)
             switch (layer->type())
             {
             case Layer::BITMAP: { paintBitmapOnionSkinFrame(painter, layer, onionFrameNumber, mOnionSkinPainterOptions.colorizeNextFrames); break; }
-            case Layer::VECTOR: { paintVectorFrame(painter, layer, onionFrameNumber, mOnionSkinPainterOptions.colorizeNextFrames, false, false); break; }
+            case Layer::VECTOR: { paintVectorOnionSkinFrame(painter, layer, onionFrameNumber, mOnionSkinPainterOptions.colorizeNextFrames); break; }
             default: break;
             }
         }
@@ -281,6 +281,52 @@ void CanvasPainter::paintBitmapOnionSkinFrame(QPainter& painter, Layer* layer, i
     painter.drawImage(QPoint(), compositor.output());
     painter.restore();
 }
+
+
+void CanvasPainter::paintVectorOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize)
+{
+    LayerVector* vectorLayer = static_cast<LayerVector*>(layer);
+
+    CANVASPAINTER_LOG("Paint Onion skin vector, Frame = %d", nFrame);
+    VectorImage* vectorImage = vectorLayer->getLastVectorImageAtFrame(nFrame, 0);
+    if (vectorImage == nullptr)
+    {
+        return;
+    }
+
+    ImageCompositor compositor(mCanvasRect, mBuffer->topLeft(), QTransform());
+
+    if (mRenderTransform) {
+        vectorImage->setSelectionTransformation(mSelectionTransform);
+    }
+
+    // Paint vector image to offscreen buffer, strokeImage.
+    vectorImage->outputImage(&compositor.output(), mViewTransform, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
+
+    compositor.addImage(*mBuffer->image(), mOptions.cmBufferBlendMode);
+    if (colorize)
+    {
+        QColor colorBrush = Qt::transparent; //no color for the current frame
+
+        if (nFrame < mFrameNumber)
+        {
+            colorBrush = Qt::red;
+        }
+        else if (nFrame > mFrameNumber)
+        {
+            colorBrush = Qt::blue;
+        }
+        compositor.addEffect(CompositeEffect::Colorize, colorBrush);
+    }
+
+    // Don't transform the image here as we used the viewTransform in the image output
+    painter.setWorldMatrixEnabled(false);
+
+    // Remember to adjust opacity based on addition opacity value from image
+    painter.setOpacity(vectorImage->getOpacity() - (1.0-painter.opacity()));
+    painter.drawImage(QPoint(), compositor.output());
+}
+
 
 void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame, bool isCurrentFrame, bool isCurrentLayer)
 {
@@ -333,6 +379,36 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer, con
     }
 }
 
+void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, Layer* layer, const QRect& blitRect)
+{
+    LayerVector* vectorLayer = static_cast<LayerVector*>(layer);
+
+    CANVASPAINTER_LOG("Paint Onion skin vector, Frame = %d", nFrame);
+    VectorImage* vectorImage = vectorLayer->getLastVectorImageAtFrame(mFrameNumber, 0);
+    if (vectorImage == nullptr)
+    {
+        return;
+    }
+
+    ImageCompositor compositor(mCanvasRect, mBuffer->topLeft(), QTransform());
+
+    if (mRenderTransform) {
+        vectorImage->setSelectionTransformation(mSelectionTransform);
+    }
+
+    // Paint vector image to offscreen buffer, strokeImage.
+    vectorImage->outputImage(&compositor.output(), mViewTransform, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
+
+    compositor.addImage(*mBuffer->image(), mOptions.cmBufferBlendMode);
+
+    // Don't transform the image here as we used the viewTransform in the image output
+    painter.setWorldMatrixEnabled(false);
+
+    // Remember to adjust opacity based on addition opacity value from image
+    painter.setOpacity(vectorImage->getOpacity() - (1.0-painter.opacity()));
+    painter.drawImage(blitRect, compositor.output(), blitRect);
+}
+
 void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image, const QRect& blitRect)
 {
     const auto& tilesToRender = mOptions.tilesToBeRendered;
@@ -376,7 +452,6 @@ bool CanvasPainter::isRectInsideCanvas(const QRect& rect) const
 void CanvasPainter::paintVectorFrame(QPainter& painter,
                                      Layer* layer,
                                      int nFrame,
-                                     bool colorize,
                                      bool useLastKeyFrame,
                                      bool isCurrentFrame)
 {
@@ -402,48 +477,18 @@ void CanvasPainter::paintVectorFrame(QPainter& painter,
         return;
     }
 
-    QImage* strokeImage = new QImage(mCanvas->size(), QImage::Format_ARGB32_Premultiplied);
+    ImageCompositor compositor(mCanvasRect, mBuffer->topLeft(), QTransform());
 
-    if (mRenderTransform) {
-        vectorImage->setSelectionTransformation(mSelectionTransform);
-    }
+    // Paint vector image to offscreen buffer, strokeImage.
+    vectorImage->outputImage(&compositor.output(), mViewTransform, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
 
-    vectorImage->outputImage(strokeImage, mViewTransform, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
-
-    // Go through a Bitmap image to paint the onion skin colour
-    BitmapImage rasterizedVectorImage;
-    rasterizedVectorImage.setImage(strokeImage);
-
-    if (colorize)
-    {
-        QBrush colorBrush = QBrush(Qt::transparent); //no color for the current frame
-
-        if (nFrame < mFrameNumber)
-        {
-            colorBrush = QBrush(Qt::red);
-        }
-        else if (nFrame > mFrameNumber)
-        {
-            colorBrush = QBrush(Qt::blue);
-        }
-        rasterizedVectorImage.drawRect(strokeImage->rect(),
-                                 Qt::NoPen, colorBrush,
-                                 QPainter::CompositionMode_SourceIn, false);
-    }
+    compositor.addImage(*mBuffer->image());
 
     // Don't transform the image here as we used the viewTransform in the image output
     painter.setWorldMatrixEnabled(false);
 
     painter.setOpacity(vectorImage->getOpacity() - (1.0-painter.opacity()));
-    if (isCurrentFrame)
-    {
-        // Paste buffer onto image to see stroke in realtime
-        rasterizedVectorImage.paste(mBuffer, mOptions.cmBufferBlendMode);
-    }
-
-    // Paint buffer pasted on top of vector image:
-    // fixes polyline not being rendered properly
-    rasterizedVectorImage.paintImage(painter);
+    painter.drawImage(QPoint(), compositor.output());
 }
 
 void CanvasPainter::paintTransformedSelection(QPainter& painter) const
@@ -496,7 +541,7 @@ void CanvasPainter::paintCurrentFrameAtLayer(QPainter& painter, int startLayer, 
         switch (layer->type())
         {
         case Layer::BITMAP: { paintBitmapFrame(painter, layer, mFrameNumber, true, isCurrentLayer); break; }
-        case Layer::VECTOR: { paintVectorFrame(painter, layer, mFrameNumber, false, true, isCurrentLayer); break; }
+        case Layer::VECTOR: { paintVectorFrame(painter, layer, mFrameNumber, true, isCurrentLayer); break; }
         default: break;
         }
     }
