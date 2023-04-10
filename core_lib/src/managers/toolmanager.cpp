@@ -108,11 +108,16 @@ void ToolManager::setCurrentTool(ToolType eToolType)
        mCurrentTool->leavingThisTool();
     }
 
-    mCurrentTool = getTool(eToolType);
-    if (mTemporaryTool == nullptr && mTabletEraserTool == nullptr)
+    BaseTool* newTool = getTool(eToolType);
+
+    // Because you might be using a temporary tool right now, or the eraser function on your tablet pen.
+    // only update the toolChanged state when both are nullptr.
+    // Addtionally there's no reason to signal if the tool hasn't changed
+    if (mTemporaryTool == nullptr && mTabletEraserTool == nullptr && mCurrentTool != newTool)
     {
         emit toolChanged(eToolType);
     }
+    mCurrentTool = newTool;
 }
 
 bool ToolManager::leavingThisTool()
