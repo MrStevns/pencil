@@ -639,7 +639,7 @@ void ScribbleArea::tabletEvent(QTabletEvent *e)
     }
     else
     {
-        editor()->tools()->tabletRestorePrevTool();
+        editor()->tools()->tabletSwitchFromEraser();
     }
 
     if (event.eventType() == QTabletEvent::TabletPress)

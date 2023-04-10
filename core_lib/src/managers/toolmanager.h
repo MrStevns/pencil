@@ -42,7 +42,7 @@ public:
     void setDefaultTool();
     void setCurrentTool(ToolType eToolType);
     void tabletSwitchToEraser();
-    void tabletRestorePrevTool();
+    void tabletSwitchFromEraser();
     bool temporaryToolActive() const { return mTemporaryTool; }
     bool setTemporaryTool(ToolType eToolType, QFlags<Qt::Key> keys, Qt::KeyboardModifiers modifiers);
     bool setTemporaryTool(ToolType eToolType, Qt::MouseButtons buttons);

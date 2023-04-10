@@ -309,13 +309,18 @@ void ToolManager::tabletSwitchToEraser()
     }
 }
 
-void ToolManager::tabletRestorePrevTool()
+void ToolManager::tabletSwitchFromEraser()
 {
-    mTabletEraserTool = nullptr;
-    if (mTemporaryTool == nullptr)
+    // The assumption here is that the tablet was just flipped again, going back to the previous tool
+    // in order to avoid calling toolChanged too often, we first make sure that.
+    // 1. the eraser was in use.
+    // 2. The temporary tool is not in use
+    // otherwise we do not call tool changed, this could potentially call expensive GUI methods (it does...)
+    if (mTabletEraserTool != nullptr && mTemporaryTool == nullptr)
     {
         emit toolChanged(currentTool()->type());
     }
+    mTabletEraserTool = nullptr;
 }
 
 bool ToolManager::setTemporaryTool(ToolType eToolType, QFlags<Qt::Key> keys, Qt::KeyboardModifiers modifiers)
@@ -405,7 +410,7 @@ void ToolManager::mapQuickPropertyToBrushSettingValue(qreal value, QuickProperty
     }
 }
 
-/// Already mapped values can go diectly to mypaint backend and update the engine.
+/// Already mapped values can go directly to mypaint backend and update the engine.
 void ToolManager::setMPBrushSetting(qreal value, BrushSettingType setting)
 {
     editor()->setMPBrushSettingBaseValue(setting, static_cast<float>(value));
