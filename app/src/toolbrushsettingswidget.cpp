@@ -127,8 +127,8 @@ void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
 
     MPBrushSettingCategories settingListConfig;
 
-    for (auto brushCategory : settingListConfig.allBrushSettings() ) {
-        for (auto brushSetting : brushCategory.settings) {
+    for (const auto &brushCategory : settingListConfig.allBrushSettings() ) {
+        for (const auto &brushSetting : brushCategory.settings) {
 
             QListIterator<QString> settingsIt(pencilSettings.childGroups());
             while(settingsIt.hasNext()) {
