@@ -43,14 +43,14 @@ void CanvasPainter::setCanvas(QPixmap* canvas)
     if (mCanvas == nullptr || mCanvasRect != mCanvas->rect()) {
 
         mCanvas = canvas;
-        mPostLayersPixmap = QPixmap(mCanvas->size());
-        mPreLayersPixmap = QPixmap(mCanvas->size());
+        mCanvasRect = mCanvas->rect();
+        mPostLayersPixmap = QPixmap(mCanvasRect.size());
+        mPreLayersPixmap = QPixmap(mCanvasRect.size());
         mPreLayersPixmap.fill(Qt::transparent);
         mCanvas->fill(Qt::transparent);
         mPostLayersPixmap.fill(Qt::transparent);
-
-        mCanvas = canvas;
-        mCanvasRect = mCanvas->rect();
+        mOnionSkinCompositor = ImageCompositor(mCanvasRect);
+        mCanvasCompositor = ImageCompositor(mCanvasRect);
     }
 }
 
@@ -282,10 +282,10 @@ void CanvasPainter::paintBitmapOnionSkinFrame(QPainter& painter, Layer* layer, i
     BitmapImage* bitmapImage = bitmapLayer->getLastBitmapImageAtFrame(nFrame, 0);
 
     if (bitmapImage == nullptr) { return; }
-    ImageCompositor compositor(mCanvasRect, bitmapImage->topLeft(), mViewTransform);
+    mOnionSkinCompositor.initialize(blitRect, bitmapImage->topLeft(), mViewTransform);
 
-    compositor.addImage(*bitmapImage->image());
-    paintOnionSkinFrame(painter, compositor, nFrame, colorize, bitmapImage->getOpacity(), blitRect);
+    mOnionSkinCompositor.addImage(*bitmapImage->image());
+    paintOnionSkinFrame(painter, mOnionSkinCompositor, nFrame, colorize, bitmapImage->getOpacity(), blitRect);
 }
 
 
@@ -300,10 +300,10 @@ void CanvasPainter::paintVectorOnionSkinFrame(QPainter& painter, Layer* layer, i
         return;
     }
 
-    ImageCompositor compositor(mCanvasRect, mBuffer->topLeft(), QTransform());
-    vectorImage->outputImage(&compositor.output(), mViewTransform, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
-    compositor.addImage(*mBuffer->image(), mOptions.cmBufferBlendMode);
-    paintOnionSkinFrame(painter, compositor, nFrame, colorize, vectorImage->getOpacity(), blitRect);
+    mOnionSkinCompositor.initialize(blitRect, mBuffer->topLeft(), QTransform());
+    vectorImage->outputImage(&mOnionSkinCompositor.output(), mViewTransform, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
+    mOnionSkinCompositor.addImage(*mBuffer->image(), mOptions.cmBufferBlendMode);
+    paintOnionSkinFrame(painter, mOnionSkinCompositor, nFrame, colorize, vectorImage->getOpacity(), blitRect);
 }
 
 void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame, bool isCurrentFrame, bool isCurrentLayer, const QRect& blitRect)
@@ -321,11 +321,11 @@ void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame
         painter.save();
         painter.setWorldMatrixEnabled(false);
 
-        ImageCompositor compositor(mCanvasRect, bitmapImage->topLeft(), mViewTransform);
+        mCanvasCompositor.initialize(blitRect, bitmapImage->topLeft(), mViewTransform);
 
-        compositor.addImage(*bitmapImage->image());
+        mCanvasCompositor.addImage(*bitmapImage->image());
 
-        painter.drawImage(blitRect, compositor.output(), blitRect);
+        painter.drawImage(blitRect, mCanvasCompositor.output(), blitRect);
         painter.restore();
     }
 }
@@ -346,14 +346,15 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer, con
         paintBitmapTiles(painter, bitmapImage, blitRect);
     } else {
         painter.save();
-        ImageCompositor compositor(mCanvasRect, bitmapImage->topLeft(), mViewTransform);
-        compositor.addImage(*bitmapImage->image());
+
+        mCanvasCompositor.initialize(blitRect, bitmapImage->topLeft(), mViewTransform);
+        mCanvasCompositor.addImage(*bitmapImage->image());
 
         if (mRenderTransform) {
-            compositor.addEffect(CompositeEffect::Transformation, mSelectionTransform, mSelection);
+            mCanvasCompositor.addEffect(CompositeEffect::Transformation, mSelectionTransform, mSelection);
         }
 
-        painter.drawImage(blitRect, compositor.output(), blitRect);
+        painter.drawImage(blitRect, mCanvasCompositor.output(), blitRect);
 
         painter.restore();
     }
@@ -370,23 +371,23 @@ void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, Layer* layer, con
         return;
     }
 
-    ImageCompositor compositor(mCanvasRect, mBuffer->topLeft(), QTransform());
+    mCanvasCompositor.initialize(blitRect, mBuffer->topLeft(), QTransform());
 
     if (mRenderTransform) {
         vectorImage->setSelectionTransformation(mSelectionTransform);
     }
 
     // Paint vector image to offscreen buffer, strokeImage.
-    vectorImage->outputImage(&compositor.output(), mViewTransform, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
+    vectorImage->outputImage(&mCanvasCompositor.output(), mViewTransform, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
 
-    compositor.addImage(*mBuffer->image(), mOptions.cmBufferBlendMode);
+    mCanvasCompositor.addImage(*mBuffer->image(), mOptions.cmBufferBlendMode);
 
     // Don't transform the image here as we used the viewTransform in the image output
     painter.setWorldMatrixEnabled(false);
 
     // Remember to adjust opacity based on addition opacity value from image
     painter.setOpacity(vectorImage->getOpacity() - (1.0-painter.opacity()));
-    painter.drawImage(blitRect, compositor.output(), blitRect);
+    painter.drawImage(blitRect, mCanvasCompositor.output(), blitRect);
 }
 
 void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image, const QRect& blitRect)
@@ -395,10 +396,9 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image, cons
 
     painter.save();
 
-    ImageCompositor compositor(mCanvasRect, image->topLeft(), mViewTransform);
-
-    compositor.addImage(*image->image());
-    auto output = compositor.output();
+    mCanvasCompositor.initialize(blitRect, image->topLeft(), mViewTransform);
+    mCanvasCompositor.addImage(*image->image());
+    auto output = mCanvasCompositor.output();
 
     QPainter imagePaintDevice(&output);
 
@@ -420,14 +420,6 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image, cons
     painter.restore();
 }
 
-bool CanvasPainter::isRectInsideCanvas(const QRect& rect) const
-{
-    return mCanvasRect.adjusted(-rect.width(),
-                                    -rect.width(),
-                                    rect.width(),
-                                    rect.width()).contains(rect);
-}
-
 void CanvasPainter::paintVectorFrame(QPainter& painter,
                                      Layer* layer,
                                      int nFrame,
@@ -446,18 +438,18 @@ void CanvasPainter::paintVectorFrame(QPainter& painter,
         return;
     }
 
-    ImageCompositor compositor(mCanvasRect, mBuffer->topLeft(), QTransform());
+    mCanvasCompositor.initialize(blitRect, mBuffer->topLeft(), QTransform());
 
     // Paint vector image to offscreen buffer, strokeImage.
-    vectorImage->outputImage(&compositor.output(), mViewTransform, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
+    vectorImage->outputImage(&mCanvasCompositor.output(), mViewTransform, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
 
-    compositor.addImage(*mBuffer->image());
+    mCanvasCompositor.addImage(*mBuffer->image());
 
     // Don't transform the image here as we used the viewTransform in the image output
     painter.setWorldMatrixEnabled(false);
 
     painter.setOpacity(vectorImage->getOpacity() - (1.0-painter.opacity()));
-    painter.drawImage(blitRect, compositor.output(), blitRect);
+    painter.drawImage(blitRect, mCanvasCompositor.output(), blitRect);
 }
 
 /** Paints layers within the specified range for the current frame.

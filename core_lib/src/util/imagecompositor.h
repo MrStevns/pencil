@@ -12,7 +12,15 @@ enum class CompositeEffect {
 class ImageCompositor
 {
 public:
-    ImageCompositor(QRect compositorRect, QPoint origin, QTransform compositorView);
+    ImageCompositor(QRect bounds = QRect());
+
+    /** initialize
+     *  Get ready to clear the area again
+     *  @param blitRect the area that will be cleared for repainting
+     *  @param origin the origin of the painter
+     *  @param the transform of the painter
+     */
+    void initialize(QRect blitRect, QPoint origin, QTransform transform);
 
     /** addImage
      * Add an image to the compositor

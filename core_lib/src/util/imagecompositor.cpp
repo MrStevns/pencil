@@ -2,13 +2,26 @@
 
 #include <QPainter>
 
-ImageCompositor::ImageCompositor(QRect compositorRect, QPoint origin, QTransform compsitorView)
+ImageCompositor::ImageCompositor(QRect bounds)
 {
-    mCanvasTransform = compsitorView;
-    mOutputImage = QImage(compositorRect.size(), QImage::Format_ARGB32_Premultiplied);
-    mOutputOrigin = origin;
-
+    mOutputImage = QImage(bounds.size(), QImage::Format_ARGB32_Premultiplied);
     mOutputImage.fill(Qt::transparent);
+}
+
+void ImageCompositor::initialize(QRect blitRect, QPoint origin, QTransform transform)
+{
+    QPainter painter(&mOutputImage);
+
+    // Clear the area that's about to be painted again, to avoid painting on top of existing pixels
+    // causing artifacts.
+    painter.setCompositionMode(QPainter::CompositionMode_Clear);
+    painter.fillRect(blitRect, Qt::transparent);
+
+    // Surface has been cleared and is ready to be painted on
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+    mCanvasTransform = transform;
+    mOutputOrigin = origin;
 }
 
 void ImageCompositor::addImage(QImage& image, QPainter::CompositionMode compositionMode)

@@ -141,9 +141,6 @@ private:
      */
     void paintVectorFrame(QPainter&, Layer* layer, int nFrame, bool isCurrentFrame, bool isCurrentLayer, const QRect& blitRect);
 
-    /** Check if the given rect lies inside the canvas, assumes that the input rect is mapped correctly **/
-    inline bool isRectInsideCanvas(const QRect& rect) const;
-
 private:
     void paintOnionSkinFrame(QPainter& painter, ImageCompositor& compositor, int nFrame, bool colorize, qreal frameOpacity, const QRect& blitRect);
     void paintBitmapOnionSkinFrame(QPainter& painter, Layer* layer, int nFrame, bool colorize, const QRect& blitRect);
@@ -178,7 +175,8 @@ private:
     OnionSkinSubPainter mOnionSkinSubPainter;
     OnionSkinPainterOptions mOnionSkinPainterOptions;
 
-    QPaintDevice* mPaintDevice = nullptr;
+    ImageCompositor mOnionSkinCompositor;
+    ImageCompositor mCanvasCompositor;
 
     const static int OVERLAY_SAFE_CENTER_CROSS_SIZE = 25;
 };
