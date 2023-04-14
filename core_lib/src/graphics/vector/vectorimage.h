@@ -93,7 +93,7 @@ public:
     void moveColor(int start, int end);
 
     void paintImage(QPainter& painter, bool simplified, bool showThinCurves, bool antialiasing);
-    void outputImage(QImage* image, QTransform myView, bool simplified, bool showThinCurves, bool antialiasing); // uses paintImage
+    void outputImage(QPixmap* image, QTransform myView, bool simplified, bool showThinCurves, bool antialiasing); // uses paintImage
 
     void clear();
     void clean();

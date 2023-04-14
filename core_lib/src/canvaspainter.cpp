@@ -271,7 +271,7 @@ void CanvasPainter::paintOnionSkinFrame(QPainter& painter, ImageCompositor& comp
 
     // Remember to adjust opacity based on addition opacity value from image
     painter.setOpacity(frameOpacity - (1.0-painter.opacity()));
-    painter.drawImage(blitRect, compositor.output(), blitRect);
+    painter.drawPixmap(blitRect, compositor.output(), blitRect);
     painter.restore();
 }
 
@@ -325,7 +325,7 @@ void CanvasPainter::paintBitmapFrame(QPainter& painter, Layer* layer, int nFrame
 
         mCanvasCompositor.addImage(*bitmapImage->image());
 
-        painter.drawImage(blitRect, mCanvasCompositor.output(), blitRect);
+        painter.drawPixmap(blitRect, mCanvasCompositor.output(), blitRect);
         painter.restore();
     }
 }
@@ -354,7 +354,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, Layer* layer, con
             mCanvasCompositor.addEffect(CompositeEffect::Transformation, mSelectionTransform, mSelection);
         }
 
-        painter.drawImage(blitRect, mCanvasCompositor.output(), blitRect);
+        painter.drawPixmap(blitRect, mCanvasCompositor.output(), blitRect);
 
         painter.restore();
     }
@@ -387,7 +387,7 @@ void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, Layer* layer, con
 
     // Remember to adjust opacity based on addition opacity value from image
     painter.setOpacity(vectorImage->getOpacity() - (1.0-painter.opacity()));
-    painter.drawImage(blitRect, mCanvasCompositor.output(), blitRect);
+    painter.drawPixmap(blitRect, mCanvasCompositor.output(), blitRect);
 }
 
 void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image, const QRect& blitRect)
@@ -416,7 +416,7 @@ void CanvasPainter::paintBitmapTiles(QPainter& painter, BitmapImage* image, cons
         imagePaintDevice.drawImage(tileRect, img, img.rect());
     }
 
-    painter.drawImage(blitRect, output, blitRect);
+    painter.drawPixmap(blitRect, output, blitRect);
     painter.restore();
 }
 
@@ -449,7 +449,7 @@ void CanvasPainter::paintVectorFrame(QPainter& painter,
     painter.setWorldMatrixEnabled(false);
 
     painter.setOpacity(vectorImage->getOpacity() - (1.0-painter.opacity()));
-    painter.drawImage(blitRect, mCanvasCompositor.output(), blitRect);
+    painter.drawPixmap(blitRect, mCanvasCompositor.output(), blitRect);
 }
 
 /** Paints layers within the specified range for the current frame.

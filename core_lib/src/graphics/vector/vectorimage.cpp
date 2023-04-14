@@ -1243,7 +1243,7 @@ void VectorImage::paintImage(QPainter& painter,
  * @param showThinCurves: bool
  * @param antialiasing: bool
  */
-void VectorImage::outputImage(QImage* image,
+void VectorImage::outputImage(QPixmap* image,
                               QTransform myView,
                               bool simplified,
                               bool showThinCurves,

@@ -4,13 +4,13 @@
 
 ImageCompositor::ImageCompositor(QRect bounds)
 {
-    mOutputImage = QImage(bounds.size(), QImage::Format_ARGB32_Premultiplied);
-    mOutputImage.fill(Qt::transparent);
+    mOutputPixmap = QPixmap(bounds.size());
+    mOutputPixmap.fill(Qt::transparent);
 }
 
 void ImageCompositor::initialize(QRect blitRect, QPoint origin, QTransform transform)
 {
-    QPainter painter(&mOutputImage);
+    QPainter painter(&mOutputPixmap);
 
     // Clear the area that's about to be painted again, to avoid painting on top of existing pixels
     // causing artifacts.
@@ -24,9 +24,9 @@ void ImageCompositor::initialize(QRect blitRect, QPoint origin, QTransform trans
     mOutputOrigin = origin;
 }
 
-void ImageCompositor::addImage(QImage& image, QPainter::CompositionMode compositionMode)
+void ImageCompositor::addImage(const QImage& image, QPainter::CompositionMode compositionMode)
 {
-    QPainter mainCompositor(&mOutputImage);
+    QPainter mainCompositor(&mOutputPixmap);
     mainCompositor.setCompositionMode(compositionMode);
     mainCompositor.setTransform(mCanvasTransform);
     mainCompositor.translate(mOutputOrigin);
@@ -37,7 +37,7 @@ void ImageCompositor::addImage(QImage& image, QPainter::CompositionMode composit
 
 void ImageCompositor::addEffect(CompositeEffect effect, QColor effectColor)
 {
-    QPainter effectPainter(&mOutputImage);
+    QPainter effectPainter(&mOutputPixmap);
 
     if (effect == CompositeEffect::Colorize) {
         addColorizeEffect(effectPainter, effectColor);
@@ -46,7 +46,7 @@ void ImageCompositor::addEffect(CompositeEffect effect, QColor effectColor)
 
 void ImageCompositor::addEffect(CompositeEffect effect, QTransform effectTransform, QRect selection)
 {
-    QPainter effectPainter(&mOutputImage);
+    QPainter effectPainter(&mOutputPixmap);
 
     if (effect == CompositeEffect::Transformation) {
         addTransformationEffect(effectPainter, effectTransform, selection);
