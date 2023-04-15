@@ -45,6 +45,7 @@ GNU General Public License for more details.
 #include "strokemanager.h"
 #include "selectionpainter.h"
 #include "camerapainter.h"
+#include "blitrect.h"
 
 #include "brushsetting.h"
 
@@ -206,7 +207,6 @@ public slots:
 
     void showLayerNotVisibleWarning();
 
-    void updateDirtyTiles();
     void refreshSurface();
 
     void updateTile(MPSurface* surface, MPTile* tile);
@@ -264,6 +264,7 @@ public:
 
     MPHandler* mMyPaint = nullptr;
     QHash<QString, MPTile*> mBufferTiles;
+    BlitRect mTilesBlitRect;
 private:
 
     /** Invalidate the layer pixmap and camera painter caches.

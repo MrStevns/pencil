@@ -912,10 +912,8 @@ void ScribbleArea::paintBitmapBuffer(QPainter::CompositionMode composition)
 
     // adds content from canvas and saves to bitmapimage
     const auto bufferTiles = mBufferTiles;
-    for (const MPTile* item : bufferTiles) {
-        QImage tileImage = item->image();
-        targetImage->paste(tileImage, item->pos(), cm);
-    }
+    targetImage->paste(bufferTiles, mTilesBlitRect, cm);
+    mTilesBlitRect = BlitRect();
 
     layer->setModified(frameNumber, true);
 
@@ -1401,7 +1399,11 @@ void ScribbleArea::updateTile(MPSurface *surface, MPTile *tile)
 
     tile->setDirty(true);
 
+    const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(pos, tile->boundingRect().size()));
+    update(mappedRect.toRect());
+
     mBufferTiles.insert(QString::number(pos.x())+"_"+QString::number(pos.y()), tile);
+    mTilesBlitRect.extend(pos, tile->boundingRect().size());
 }
 
 void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
@@ -1413,12 +1415,15 @@ void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
     // Polyline is special because the surface must be cleared on every update, given its nature of drawing a long stroke segment.
     // Therefore we only load the mypaint surface with bitmap data when not using the polyline tool.
 
-    // TODO: This code would be better served in Polyline rather than here.
+    // TODO: This code would be better served in StrokeTool  rather than here.
     if (mIsPainting && currentTool()->type() != ToolType::POLYLINE) {
         const auto& bitmapImage = currentBitmapImage(layer);
         const QImage& image = *bitmapImage->image();
         mMyPaint->loadTile(image, bitmapImage->topLeft(), tile);
     }
+    mTilesBlitRect.extend(tile->pos(), tile->boundingRect().size());
+    const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tile->pos(), tile->boundingRect().size()));
+    update(mappedRect.toRect());
 }
 
 void ScribbleArea::clearTile(MPSurface *surface, MPTile *tile)
@@ -1428,6 +1433,8 @@ void ScribbleArea::clearTile(MPSurface *surface, MPTile *tile)
     QPointF pos = tile->pos();
 
     mBufferTiles.remove(QString::number(pos.x())+"_"+QString::number(pos.y()));
+    const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tile->pos(), tile->boundingRect().size()));
+    update(mappedRect.toRect());
 }
 
 /************************************************************************************/
@@ -1448,11 +1455,9 @@ void ScribbleArea::startStroke()
 void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float ytilt, double dt)
 {
     if (!mIsPainting) { return; }
-//    qDebug() << "stroke to: " << point;
+
     if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
         mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, dt);
-        // update dirty region
-        updateDirtyTiles();
     }
 }
 
@@ -1465,29 +1470,6 @@ void ScribbleArea::forceUpdateMyPaintStates()
                        mMyPaint->getBrushState(MyPaintBrushState::MYPAINT_BRUSH_STATE_PRESSURE),
                        0,0, 1.0);
     // TODO: deltatime should maybe not be fixed here?
-}
-
-void ScribbleArea::updateDirtyTiles()
-{
-    QTransform v = mEditor->view()->getView();
-    QHashIterator<QString, MPTile*> i(mBufferTiles);
-    int counter = 0;
-    while (i.hasNext()) {
-        i.next();
-        MPTile* tile = i.value();
-        const QPointF& tilePos = tile->pos();
-        const QSizeF& tileSize = tile->boundingRect().size();
-        if (tile->isDirty()) {
-
-            const QRectF& mappedRect = v.mapRect(QRectF(tilePos, tileSize));
-            update(mappedRect.toRect());
-
-            tile->setDirty(false);
-//            qDebug() << "found dirty tile: ";
-//            qDebug() << "tile clean counter" << counter;
-            counter++;
-        }
-    }
 }
 
 void ScribbleArea::refreshSurface()

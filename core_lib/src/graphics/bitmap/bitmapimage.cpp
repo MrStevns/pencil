@@ -23,6 +23,7 @@ GNU General Public License for more details.
 #include <QPainterPath>
 #include "util.h"
 
+#include "mptile.h"
 #include "blitrect.h"
 
 BitmapImage::BitmapImage()
@@ -212,6 +213,27 @@ void BitmapImage::paste(QImage& tileImage, QPoint point, QPainter::CompositionMo
     QPainter painter(image());
     painter.setCompositionMode(cm);
     painter.drawImage(point-mBounds.topLeft(), tileImage);
+    painter.end();
+
+    modification();
+}
+
+void BitmapImage::paste(QHash<QString, MPTile*> tiles, const QRect blitRect, QPainter::CompositionMode cm)
+{
+    if(blitRect.width() <= 0 || blitRect.height() <= 0)
+    {
+        return;
+    }
+    extend(blitRect);
+
+    QPainter painter(image());
+
+    painter.setCompositionMode(cm);
+    for (const MPTile* item : tiles) {
+        const QImage& tileImage = item->image();
+        const QPoint& tilePos = item->pos();
+        painter.drawImage(tilePos-mBounds.topLeft(), tileImage);
+    }
     painter.end();
 
     modification();
