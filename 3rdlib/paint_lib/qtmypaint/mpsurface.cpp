@@ -348,10 +348,6 @@ void MPSurface::clear()
 {
     QHashIterator<QString, MPTile*> i(m_Tiles);
 
-    if (!m_Tiles.isEmpty()) {
-        m_Tiles.clear();
-    }
-
     while (i.hasNext()) {
         i.next();
         MPTile *tile = i.value();
@@ -361,7 +357,12 @@ void MPSurface::clear()
             //
             tile->clear();
             m_Tiles.remove(i.key());
+            delete tile;
         }
+    }
+
+    if (!m_Tiles.isEmpty()) {
+        m_Tiles.clear();
     }
 
     this->onClearedSurface(this);
