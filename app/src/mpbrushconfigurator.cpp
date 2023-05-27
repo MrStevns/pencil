@@ -295,7 +295,7 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
         mBrushWidgets.clear();
     }
 
-    removeBrushSettingSpacers();
+    removeBrushSettingSpacer();
 
     auto treeItem = static_cast<BrushSettingTreeItem*>(item);
 
@@ -342,19 +342,16 @@ void MPBrushConfigurator::brushCategorySelected(QTreeWidgetItem* item, int )
     updateSettingsView(item);
 }
 
-void MPBrushConfigurator::removeBrushSettingSpacers()
+void MPBrushConfigurator::removeBrushSettingSpacer()
 {
-    for (int i = 0; i < vBoxLayout->count(); i++) {
-        if (static_cast<QSpacerItem*>(vBoxLayout->itemAt(i)) != nullptr) {
-            vBoxLayout->removeItem(vBoxLayout->itemAt(i));
-        }
-    }
+    vBoxLayout->removeItem(mLayoutSpacer);
+    delete mLayoutSpacer;
 }
 
 void MPBrushConfigurator::addBrushSettingsSpacer()
 {
-    QSpacerItem *spacer = new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    vBoxLayout->addItem(spacer);
+    mLayoutSpacer = new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    vBoxLayout->addSpacerItem(mLayoutSpacer);
 }
 
 void MPBrushConfigurator::setBrushSettingValue(qreal value, BrushSettingType setting)

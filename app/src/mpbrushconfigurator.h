@@ -64,7 +64,7 @@ private:
     void removeBrushMappingForInput(BrushSettingType setting, BrushInputType input);
 
     void addBrushSettingsSpacer();
-    void removeBrushSettingSpacers();
+    void removeBrushSettingSpacer();
 
     void setupActiveSettings();
     void setupBasicBrushSettings();
@@ -93,6 +93,7 @@ private:
     QTreeWidget* mNavigatorWidget = nullptr;
     QLabel* mBrushImageWidget = nullptr;
     MPBrushPreview* mBrushPreviewWidget = nullptr;
+    QSpacerItem* mLayoutSpacer = nullptr;
 
     BrushSettingTreeItem* mActiveTreeRoot = nullptr;
 
