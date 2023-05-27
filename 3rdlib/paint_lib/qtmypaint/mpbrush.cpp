@@ -45,30 +45,11 @@ void MPBrush::initBrush()
 {
     brush = mypaint_brush_new();
     mypaint_brush_from_defaults(brush);
-
-    setBaseValue(MYPAINT_BRUSH_SETTING_COLOR_H, 0);
-    setBaseValue(MYPAINT_BRUSH_SETTING_COLOR_S, 0);
-    setBaseValue(MYPAINT_BRUSH_SETTING_COLOR_V, 0);
-    setBaseValue(MYPAINT_BRUSH_SETTING_SNAP_TO_PIXEL, 0.0);
-    setBaseValue(MYPAINT_BRUSH_SETTING_ANTI_ALIASING, 1.0);
-    setBaseValue(MYPAINT_BRUSH_SETTING_RADIUS_LOGARITHMIC, 0.3);
-//    setBaseValue(MYPAINT_BRUSH_SETTING_STROKE_DURATION_LOGARITHMIC, 4.0);
-//    setBaseValue(MYPAINT_BRUSH_SETTING_SPEED2_SLOWNESS, 0.8);
-//    setBaseValue(MYPAINT_BRUSH_SETTING_SPEED2_GAMMA, 10);
-//    setBaseValue(MYPAINT_BRUSH_SETTING_SPEED1_SLOWNESS, 0.04);
-//    setBaseValue(MYPAINT_BRUSH_SETTING_SPEED1_GAMMA, 10);
-//    setBaseValue(MYPAINT_BRUSH_SETTING_SMUDGE_LENGTH, 0.5);
-//    setBaseValue(MYPAINT_BRUSH_SETTING_SLOW_TRACKING_PER_DAB, 1.5);
-//    setBaseValue(MYPAINT_BRUSH_SETTING_SLOW_TRACKING, 1.03);
-//    setBaseValue(MYPAINT_BRUSH_SETTING_OFFSET_BY_RANDOM, 0.5);
-    setBaseValue(MYPAINT_BRUSH_SETTING_DIRECTION_FILTER, 10.0);
-    setBaseValue(MYPAINT_BRUSH_SETTING_DABS_PER_ACTUAL_RADIUS, 4.0);
 }
 
 void MPBrush::load(const QByteArray& content)
 {
-    brush = mypaint_brush_new();
-
+    mypaint_brush_from_defaults(brush);
     if (!mypaint_brush_from_string(brush, content.constData()))
     {
         // Not able to load the selected brush. Let's execute some backup code...
