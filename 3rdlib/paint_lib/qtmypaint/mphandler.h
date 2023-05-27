@@ -99,7 +99,7 @@ public:
 signals:
     void tileUpdated(MPSurface *surface, MPTile *tile);
     void tileAdded(MPSurface *surface, MPTile *tile);
-    void tileCleared(MPSurface* surface, MPTile* tile);
+    void tileCleared(MPSurface* surface, QRect tileRect);
     void surfaceCleared(MPSurface *surface);
 
 public slots:

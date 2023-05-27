@@ -77,7 +77,7 @@ public:
 
     void onUpdateTile(MPSurface *surface, MPTile *tile);
     void onNewTile(MPSurface *surface, MPTile *tile);
-    void onClearTile(MPSurface *surface, MPTile *tile);
+    void onClearTile(MPSurface *surface, QRect tileRect);
     void onClearedSurface(MPSurface *surface);
     void refreshSurface();
 
