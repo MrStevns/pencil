@@ -15,26 +15,23 @@ MPBrushPreview::MPBrushPreview(QWidget* parent) : QWidget(parent)
 {
     mMypaintHandler = new MPHandler();
 
-    connect(mMypaintHandler, &MPHandler::tileAdded, this, &MPBrushPreview::updateTile);
+    connect(mMypaintHandler, &MPHandler::tileAdded, this, &MPBrushPreview::loadTile);
     connect(mMypaintHandler, &MPHandler::tileUpdated, this, &MPBrushPreview::updateTile);
-
-    update();
+    connect(mMypaintHandler, &MPHandler::tileCleared, this, &MPBrushPreview::tileRemoved);
+    connect(mMypaintHandler, &MPHandler::surfaceCleared, this, &MPBrushPreview::surfaceTilesRemoved);
 
     perfTimer = new QElapsedTimer();
     perfTimer->start();
+
+    mSurfaceBackground = QImage(size(),QImage::Format_ARGB32_Premultiplied);
+    updatePaintSurface(size());
 }
 
 MPBrushPreview::~MPBrushPreview()
 {
     perfTimer->invalidate();
-}
-
-void MPBrushPreview::applyBackground()
-{
-    mSurfaceBackground = new QImage(this->width()/2,this->height(),QImage::Format_ARGB32_Premultiplied);
-    mSurfaceBackground->fill(Qt::white);
-
-    mMypaintHandler->loadImage(*mSurfaceBackground, QPoint(0,0));
+    delete perfTimer;
+    delete mMypaintHandler;
 }
 
 void MPBrushPreview::updatePreview(const QByteArray &content, const QColor& brushColor)
@@ -43,7 +40,9 @@ void MPBrushPreview::updatePreview(const QByteArray &content, const QColor& brus
     mMypaintHandler->setBrushColor(brushColor);
     mMypaintHandler->clearSurface();
 
-    applyBackground();
+    paintTestBackground();
+    mMypaintHandler->setSurfaceSize(this->size());
+
     drawStroke();
 
     update();
@@ -113,39 +112,78 @@ void MPBrushPreview::drawStroke() const
     perfTimer->restart();
 }
 
-void MPBrushPreview::paintEvent(QPaintEvent*)
+void MPBrushPreview::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
 
-    painter.fillRect(this->rect(), QBrush(QPixmap(":background/checkerboard.png")));
+    if (mSurfaceTiles.isEmpty()) { return; }
+    const QHash<QString, MPTile*> tiles = mSurfaceTiles;
 
-    if (mMypaintSurface == nullptr) { return; }
-    QHash<QString, MPTile*> tiles = mMypaintSurface->getTiles();
+    painter.drawImage(QPoint(), mSurfaceBackground);
 
     for (MPTile* item : tiles) {
         const QImage& img = item->image();
 
-        QRect tileRect = QRect(item->pos(), img.size());
+        const QRect& tileRect = QRect(item->pos(), img.size());
 
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
         painter.drawImage(tileRect, img, img.rect());
     }
     painter.end();
+
+    event->accept();
 }
 
-void MPBrushPreview::updateTile(MPSurface *surface, MPTile*)
+void MPBrushPreview::updateTile(MPSurface *surface, MPTile* tile)
 {
-    mMypaintSurface = surface;
+    Q_UNUSED(surface)
+    update(QRect(tile->pos(), tile->boundingRect().size()));
+}
+
+void MPBrushPreview::tileRemoved(MPSurface* surface, QRect tileRect)
+{
+    Q_UNUSED(surface)
+    mSurfaceTiles.remove(QString::number(tileRect.x())+"_"+QString::number(tileRect.y()));
+    update(tileRect);
+}
+
+void MPBrushPreview::loadTile(MPSurface* surface, MPTile* tile)
+{
+    Q_UNUSED(surface)
+    mMypaintHandler->loadTile(mSurfaceBackground, QPoint(), tile);
+
+    mSurfaceTiles.insert(QString::number(tile->pos().x())+"_"+QString::number(tile->pos().y()), tile);
+    update(QRect(tile->pos(), tile->boundingRect().size()));
+}
+
+void MPBrushPreview::surfaceTilesRemoved(MPSurface* surface)
+{
+    Q_UNUSED(surface)
+    mSurfaceTiles.clear();
     update();
 }
 
 void MPBrushPreview::resizeEvent(QResizeEvent* event)
 {
-    mMypaintHandler->setSurfaceSize(event->size());
-    mMypaintHandler->clearSurface();
-    applyBackground();
-    drawStroke();
     QWidget::resizeEvent(event);
+    mSurfaceBackground = QImage(event->size(),QImage::Format_ARGB32_Premultiplied);
+    updatePaintSurface(event->size());
+    drawStroke();
+}
+
+void MPBrushPreview::updatePaintSurface(QSize size)
+{
+    mSurfaceBackground.fill(Qt::gray);
+    paintTestBackground();
+    mMypaintHandler->setSurfaceSize(size);
+}
+
+void MPBrushPreview::paintTestBackground()
+{
+    QPainter painter(&mSurfaceBackground);
+
+    int middleX = qFloor(static_cast<qreal>(this->width()) / 2.0);
+    painter.fillRect(QRect(middleX, 0, middleX, this->height()), QBrush(QPixmap(":background/checkerboard.png")));
 }
 
 

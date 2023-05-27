@@ -2,6 +2,7 @@
 #define MPBRUSHPREVIEW_H
 
 #include <QWidget>
+#include <QHash>
 
 class MPHandler;
 class MPTile;
@@ -22,16 +23,20 @@ protected:
 
 private:
     void drawStroke() const;
-    void applyBackground();
+    void paintTestBackground();
+    void updatePaintSurface(QSize size);
+
+    void updateTile(MPSurface *surface, MPTile* tile);
+    void loadTile(MPSurface* surface, MPTile* tile);
+    void tileRemoved(MPSurface* surface, QRect tileRect);
+    void surfaceTilesRemoved(MPSurface* surface);
 
     MPHandler* mMypaintHandler = nullptr;
 
-    void updateTile(MPSurface *surface, MPTile *);
-
-    MPSurface* mMypaintSurface = nullptr;
+    QHash<QString, MPTile*> mSurfaceTiles;
     QElapsedTimer* perfTimer = nullptr;
 
-    QImage* mSurfaceBackground = nullptr;
+    QImage mSurfaceBackground;
 };
 
 #endif // MPBRUSHPREVIEW_H
