@@ -47,6 +47,22 @@ extern "C" {
 #include "mpbrush.h"
 #include "mptile.h"
 
+struct TileIndex {
+    int x;
+    int y;
+};
+
+inline uint qHash(const TileIndex &key, uint seed)
+{
+    return qHash(key.x, seed) ^ key.y;
+}
+
+inline bool operator==(const TileIndex &e1, const TileIndex &e2)
+{
+    return e1.x == e2.x
+           && e1.y == e2.y;
+}
+
 class MPHandler;
 
 class MPSurface : public MyPaintTiledSurface
@@ -70,10 +86,10 @@ public:
     void setTilesHeight(int newHeight) { tiles_height = newHeight; }
 
     MPTile* getTileFromPos(const QPoint& pos);
-    MPTile* getTileFromIdx(const QPoint& idx);
-    inline QPoint getTilePos(const QPoint& idx);
-    inline QPoint getTileIndex(const QPoint& pos);
-    inline QPointF getTileFIndex(const QPoint& pos);
+    MPTile* getTileFromIdx(int tileX, int tileY);
+
+    inline QPoint getTilePos(const TileIndex& index) const;
+    inline TileIndex getTileIndex(const QPoint& pos) const;
 
     void onUpdateTile(MPSurface *surface, MPTile *tile);
     void onNewTile(MPSurface *surface, MPTile *tile);
@@ -93,7 +109,7 @@ public:
     void drawImageAt(const QImage& image, const QPoint topLeft);
 //    void clearArea(const QRect& bounds);
 
-    QHash<QString, MPTile*> getTiles() { return m_Tiles; }
+    QHash<TileIndex, MPTile*> getTiles() { return m_Tiles; }
 
 private:
     void resetNullTile();
@@ -111,7 +127,7 @@ private:
     QColor      m_color;
 
 protected:
-    QHash<QString, MPTile*> m_Tiles;
+    QHash<TileIndex, MPTile*> m_Tiles;
     MPHandler* mParentHandler;
 };
 

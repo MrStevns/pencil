@@ -65,7 +65,7 @@ static void onTileRequestStart(MyPaintTiledSurface *tiled_surface, MyPaintTileRe
         tile_pointer = self->null_tile;
     } else {
 
-        MPTile* tile = self->getTileFromIdx(QPoint(tx,ty));
+        MPTile* tile = self->getTileFromIdx(tx,ty);
         tile_pointer = tile ? tile->bits(false) : nullptr;
     }
 
@@ -80,7 +80,7 @@ static void onTileRequestEnd(MyPaintTiledSurface *tiled_surface, MyPaintTileRequ
     const int tx = request->tx;
     const int ty = request->ty;
 
-    MPTile* tile = self->getTileFromIdx(QPoint(tx,ty));
+    MPTile* tile = self->getTileFromIdx(tx,ty);
     if (tile) {
         tile->updateCache();
     }
@@ -276,7 +276,7 @@ void MPSurface::saveSurface(const QString path)
     QPainter painter(&paintedImage);
     painter.translate(QPoint(width/2,height/2));
 
-    QHashIterator<QString, MPTile*> cuTiles(m_Tiles);
+    QHashIterator<TileIndex, MPTile*> cuTiles(m_Tiles);
     while (cuTiles.hasNext()) {
         cuTiles.next();
         const QImage& pix = cuTiles.value()->image();
@@ -313,10 +313,13 @@ QList<QPoint> MPSurface::findCorrespondingTiles(const QRect& rect)
     for (int h=0; h < nbTilesOnHeight; h++) {
         for (int w=0; w < nbTilesOnWidth; w++) {
 
-            const QPoint tilePos = getTilePos(QPoint(w,h));
+            TileIndex tileIndex;
+            tileIndex.x = w;
+            tileIndex.y = h;
+            const QPoint& tilePos = getTilePos(tileIndex);
             for (int i = 0; i < corners.count(); i++) {
-                QPoint movedPos = getTileIndex(corners[i]-cornerOffset);
-                movedPos = getTilePos(movedPos)+tilePos;
+                const TileIndex& tileOffset = getTileIndex(corners[i]-cornerOffset);
+                const QPoint& movedPos = getTilePos(tileOffset)+tilePos;
 
                 if (points.contains(movedPos)) {
                     continue;
@@ -346,7 +349,7 @@ QSize MPSurface::size()
 
 void MPSurface::clear()
 {
-    QHashIterator<QString, MPTile*> i(m_Tiles);
+    QHashIterator<TileIndex, MPTile*> i(m_Tiles);
 
     while (i.hasNext()) {
         i.next();
@@ -464,25 +467,27 @@ void MPSurface::refreshSurface()
 
 MPTile* MPSurface::getTileFromPos(const QPoint& pos)
 {
-    return getTileFromIdx(getTileIndex(pos));
+    TileIndex tileIndex = getTileIndex(pos);
+    return getTileFromIdx(tileIndex.x, tileIndex.y);
 }
 
-MPTile* MPSurface::getTileFromIdx(const QPoint& idx)
+MPTile* MPSurface::getTileFromIdx(int tileX, int tileY)
 {
+
+    TileIndex tileIndex;
+    tileIndex.x = tileX;
+    tileIndex.y = tileY;
 
     MPTile* selectedTile = nullptr;
 
-    // convert point to strign to check index
-    // it's faster to iterate qstring than a qpoint...
-    QString idxString = QString::number(idx.x())+"_"+QString::number(idx.y());
-    selectedTile = m_Tiles.value(idxString, nullptr);
+    selectedTile = m_Tiles.value(tileIndex, nullptr);
 
     if (!selectedTile) {
         // Time to allocate it, update table:
         selectedTile = new MPTile();
-        m_Tiles.insert(idxString, selectedTile);
+        m_Tiles.insert(tileIndex, selectedTile);
 
-        QPoint tilePos (getTilePos(idx));
+        QPoint tilePos (getTilePos(tileIndex));
         selectedTile->setPos(tilePos);
 
         this->onNewTile(this, selectedTile);
@@ -493,17 +498,12 @@ MPTile* MPSurface::getTileFromIdx(const QPoint& idx)
     return selectedTile;
 }
 
-inline QPoint MPSurface::getTilePos(const QPoint& idx)
+inline QPoint MPSurface::getTilePos(const TileIndex& idx) const
 {
-    return QPoint(qRound(MYPAINT_TILE_SIZE*static_cast<qreal>(idx.x())), qRound(MYPAINT_TILE_SIZE*static_cast<qreal>(idx.y())));
+    return QPoint(qRound(MYPAINT_TILE_SIZE*static_cast<qreal>(idx.x)), qRound(MYPAINT_TILE_SIZE*static_cast<qreal>(idx.y)));
 }
 
-inline QPoint MPSurface::getTileIndex(const QPoint& pos)
+inline TileIndex MPSurface::getTileIndex(const QPoint& pos) const
 {
-    return QPoint(qRound(static_cast<qreal>(pos.x())/MYPAINT_TILE_SIZE), qRound(static_cast<qreal>(pos.y())/MYPAINT_TILE_SIZE));
-}
-
-inline QPointF MPSurface::getTileFIndex(const QPoint& pos)
-{
-    return QPointF(static_cast<qreal>(pos.x())/MYPAINT_TILE_SIZE, static_cast<qreal>(pos.y())/MYPAINT_TILE_SIZE);
+    return { qRound(static_cast<qreal>(pos.x())/MYPAINT_TILE_SIZE), qRound(static_cast<qreal>(pos.y())/MYPAINT_TILE_SIZE) };
 }
