@@ -195,7 +195,7 @@ TEST_CASE("BitmapBucket - Fill drag behaviour across four segments")
         }
     }
 
-    SECTION("Filling on layer below - layer is pre-filled") {
+    SECTION("Filling on layer below - layer below is pre-filled") {
         properties.bucketFillToLayerMode = 1;
         properties.fillMode = 1;
 
@@ -226,6 +226,38 @@ TEST_CASE("BitmapBucket - Fill drag behaviour across four segments")
             image2->writeFile(resultsPath + "test6a-third.png");
 
             verifyOnlyPixelsInsideSegmentsAreFilled(pressPoint, image1, fillColor.rgba());
+        }
+    }
+
+    SECTION("Filling on layer below - layer above is pre-filled") {
+        properties.bucketFillToLayerMode = 0;
+        properties.fillMode = 1;
+
+        SECTION("when reference is all layers, then only pixels matching the fill color or transparent are filled")
+        {
+            properties.bucketFillReferenceMode = 1;
+
+            Layer* strokeLayer = editor->layers()->currentLayer();
+            Layer* fillLayer = editor->layers()->currentLayer(-1);
+
+            // Because the layer is blank, all pixels will be filled once
+            dragAndFill(pressPoint, editor, fillColor, beforeFill.bounds(), properties, 4);
+            BitmapImage* image1 = static_cast<LayerBitmap*>(strokeLayer)->getLastBitmapImageAtFrame(1);
+            image1->writeFile(resultsPath + "test7a-first.png");
+
+            fillColor = QColor(0,255,0,100);
+
+            // Changes fillTo mode to current layer
+            properties.bucketFillToLayerMode = 1;
+
+            // Now the layer has been filled with pixel data, so we'll only fill when the color matches the fill color
+            dragAndFill(pressPoint, editor, fillColor, beforeFill.bounds(), properties, 4);
+
+            BitmapImage* image2 = static_cast<LayerBitmap*>(fillLayer)->getLastBitmapImageAtFrame(1);
+            image1->writeFile(resultsPath + "test7a-second.png");
+            image2->writeFile(resultsPath + "test7a-third.png");
+
+            verifyOnlyPixelsInsideSegmentsAreFilled(pressPoint, image2, qPremultiply(fillColor.rgba()));
         }
     }
 }

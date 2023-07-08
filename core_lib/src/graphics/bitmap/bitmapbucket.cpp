@@ -85,17 +85,17 @@ bool BitmapBucket::allowFill(const QPoint& checkPoint) const
     QRgb colorOfReferenceImage = mReferenceImage.constScanLine(checkPoint.x(), checkPoint.y());
     QRgb targetPixelColor = targetImage.constScanLine(checkPoint.x(), checkPoint.y());
 
-    if (targetPixelColor == mBucketColor &&(mProperties.fillMode == 1 || qAlpha(targetPixelColor) == 255))
+    if (QColor(targetPixelColor).rgb() == QColor(mBucketColor).rgb() && targetPixelColor != 0)
     {
         // Avoid filling if target pixel color matches fill color
         // to avoid creating numerous seemingly useless undo operations
         return false;
     }
 
-    // Allow filling if the reference pixel matches the start reference color, and
-    // the target pixel is either transparent or matches the start reference color
-    return BitmapImage::compareColor(colorOfReferenceImage, mStartReferenceColor, mTolerance, mPixelCache) &&
-           (targetPixelColor == 0 || BitmapImage::compareColor(targetPixelColor, mStartReferenceColor, mTolerance, mPixelCache));
+    // Allow filling if the reference pixel matches the start reference color or is transparnet, and
+    // the target pixel is not transparent and matches the start reference color
+    return ((BitmapImage::compareColor(colorOfReferenceImage, mStartReferenceColor, mTolerance, mPixelCache) || colorOfReferenceImage == 0) ||
+            (BitmapImage::compareColor(targetPixelColor, mStartReferenceColor, mTolerance, mPixelCache) && targetPixelColor != 0));
 }
 
 void BitmapBucket::paint(const QPointF updatedPoint, std::function<void(BucketState, int, int)> state)
