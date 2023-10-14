@@ -88,12 +88,6 @@ void MPHandler::saveSurface(const QString path)
     m_surface->saveSurface(path);
 }
 
-void MPHandler::clearAreaFromSurface(const QRect& bounds)
-{
-    Q_UNUSED(bounds)
-//    m_surface->clearArea(bounds);
-}
-
 void MPHandler::loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile)
 {
     m_surface->loadTile(image, topLeft, tile);
@@ -168,6 +162,7 @@ void
 MPHandler::endStroke()
 {
     mypaint_brush_reset(m_brush->brush);
+    m_surface->clear();
 }
 
 float MPHandler::getBrushSettingBaseValue(MyPaintBrushSetting setting)

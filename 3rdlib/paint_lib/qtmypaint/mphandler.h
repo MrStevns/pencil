@@ -94,7 +94,6 @@ public:
     void drawImageAt(const QImage& image, const QPoint topLeft);
     void loadImage(const QImage &image, const QPoint pos);
     void loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile);
-    void clearAreaFromSurface(const QRect& bounds);
 
 signals:
     void tileUpdated(MPSurface *surface, MPTile *tile);

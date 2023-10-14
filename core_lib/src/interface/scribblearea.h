@@ -157,10 +157,6 @@ public:
     void flipSelection(bool flipVertical);
 
     BaseTool* currentTool() const;
-    BaseTool* getTool(ToolType eToolMode);
-    void setCurrentTool(ToolType eToolMode);
-
-    void floodFillError(int errorType);
 
     bool isMouseInUse() const { return mMouseInUse; }
     bool isTabletInUse() const { return mTabletInUse; }
@@ -193,7 +189,7 @@ signals:
     void selectionUpdated();
 
 public slots:
-    void clearCanvas();
+    void clearImage();
 
     void setCurveSmoothing(int);
     void toggleThinLines();
@@ -292,12 +288,6 @@ private:
     void prepCanvas(int frame);
     void settingUpdated(SETTING setting);
     void paintSelectionVisuals(QPainter &painter);
-
-    /** reloadMyPaint
-     * Use this method whenver the mypaint surface should be cleared
-     * eg. when changing layer
-     */
-    void reloadMyPaint();
 
     /** forceUpdateMyPaintStates
      * Use this method if you intend to update brush states without causing a stroke on the canvas

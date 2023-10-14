@@ -1298,7 +1298,7 @@ void Editor::prepareSave()
 
 void Editor::clearCurrentFrame()
 {
-    mScribbleArea->clearCanvas();
+    mScribbleArea->clearImage();
 }
 
 void Editor::loadBrush()

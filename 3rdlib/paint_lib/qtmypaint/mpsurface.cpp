@@ -356,16 +356,9 @@ void MPSurface::clear()
         MPTile *tile = i.value();
         if (tile)
         {
-            // Clear the content of the tile
-            //
-            tile->clear();
             m_Tiles.remove(i.key());
             delete tile;
         }
-    }
-
-    if (!m_Tiles.isEmpty()) {
-        m_Tiles.clear();
     }
 
     this->onClearedSurface(this);

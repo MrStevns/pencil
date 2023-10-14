@@ -237,12 +237,6 @@ void ScribbleArea::invalidateCacheForDirtyFrames()
     currentLayer->clearDirtyFrames();
 }
 
-void ScribbleArea::reloadMyPaint()
-{
-    mNeedLoadImageToMyPaint = true;
-}
-
-
 void ScribbleArea::invalidateOnionSkinsCacheAround(int frameNumber)
 {
     if (frameNumber < 0) { return; }
@@ -363,7 +357,6 @@ void ScribbleArea::onWillScrub(int frameNumber)
 
 void ScribbleArea::onDidScrub(int frameNumber)
 {
-    reloadMyPaint();
     invalidatePainterCaches();
     updateFrame(frameNumber);
 }
@@ -407,18 +400,6 @@ void ScribbleArea::onViewChanged()
 
 void ScribbleArea::onLayerChanged()
 {
-    Layer* layer = mEditor->layers()->currentLayer();
-    switch(layer->type())
-    {
-    case Layer::BITMAP:
-        reloadMyPaint();
-        break;
-    case Layer::VECTOR:
-        break;
-    default:
-        break;
-    }
-
     invalidateAllCache();
 }
 
@@ -436,7 +417,6 @@ void ScribbleArea::onOnionSkinTypeChanged()
 
 void ScribbleArea::onObjectLoaded()
 {
-    reloadMyPaint();
     invalidateAllCache();
 }
 
@@ -903,7 +883,7 @@ void ScribbleArea::paintBitmapBuffer(QPainter::CompositionMode composition)
     case BRUSH:
     case PEN:
     case PENCIL:
-        if (getTool(currentTool()->type())->properties.preserveAlpha)
+        if (currentTool()->properties.preserveAlpha)
         {
             cm = QPainter::CompositionMode_SourceAtop;
         }
@@ -1654,21 +1634,6 @@ BaseTool* ScribbleArea::currentTool() const
     return editor()->tools()->currentTool();
 }
 
-BaseTool* ScribbleArea::getTool(ToolType eToolType)
-{
-    return editor()->tools()->getTool(eToolType);
-}
-
-void ScribbleArea::setCurrentTool(ToolType eToolMode)
-{
-    Q_UNUSED(eToolMode)
-
-    // change cursor
-    setCursor(currentTool()->cursor());
-    updateCanvasCursor();
-    updateCurrentFrame();
-}
-
 void ScribbleArea::deleteSelection()
 {
     auto selectMan = mEditor->select();
@@ -1676,6 +1641,8 @@ void ScribbleArea::deleteSelection()
     {
         Layer* layer = mEditor->layers()->currentLayer();
         if (layer == nullptr) { return; }
+
+        handleDrawingOnEmptyFrame();
 
         mEditor->backup(tr("Delete Selection", "Undo Step: clear the selection area."));
 
@@ -1691,13 +1658,12 @@ void ScribbleArea::deleteSelection()
             BitmapImage* bitmapImage = currentBitmapImage(layer);
             Q_CHECK_PTR(bitmapImage);
             bitmapImage->clear(selectMan->mySelectionRect());
-            mMyPaint->clearAreaFromSurface(selectMan->mySelectionRect().toRect());
         }
         mEditor->setModified(mEditor->currentLayerIndex(), mEditor->currentFrame());
     }
 }
 
-void ScribbleArea::clearCanvas()
+void ScribbleArea::clearImage()
 {
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer == nullptr) { return; }
@@ -1706,14 +1672,21 @@ void ScribbleArea::clearCanvas()
     {
         mEditor->backup(tr("Clear Image", "Undo step text"));
 
-        currentVectorImage(layer)->clear();
+        VectorImage* vectorImage = currentVectorImage(layer);
+        if (vectorImage != nullptr)
+        {
+            vectorImage->clear();
+        }
         mEditor->select()->clearCurves();
         mEditor->select()->clearVertices();
     }
     else if (layer->type() == Layer::BITMAP)
     {
         mEditor->backup(tr("Clear Image", "Undo step text"));
-        currentBitmapImage(layer)->clear();
+
+        BitmapImage* bitmapImage = currentBitmapImage(layer);
+        if (bitmapImage == nullptr) return;
+        bitmapImage->clear();
         mMyPaint->clearSurface();
     }
     else
@@ -1816,19 +1789,4 @@ const BrushInputInfo ScribbleArea::getBrushInputInfo(BrushInputType input)
                 info->tooltip };
 
     return brushInfo;
-}
-
-void ScribbleArea::floodFillError(int errorType)
-{
-    QString message, error;
-    if (errorType == 1) { message = tr("There is a gap in your drawing (or maybe you have zoomed too much)."); }
-    if (errorType == 2 || errorType == 3) message = tr("Sorry! This doesn't always work."
-                                                       "Please try again (zoom a bit, click at another location... )<br>"
-                                                       "if it doesn't work, zoom a bit and check that your paths are connected by pressing F1.).");
-
-    if (errorType == 1) { error = tr("Out of bound.", "Bucket tool fill error message"); }
-    if (errorType == 2) { error = tr("Could not find a closed path.", "Bucket tool fill error message"); }
-    if (errorType == 3) { error = tr("Could not find the root index.", "Bucket tool fill error message"); }
-    QMessageBox::warning(this, tr("Flood fill error"), tr("%1<br><br>Error: %2").arg(message, error), QMessageBox::Ok, QMessageBox::Ok);
-    mEditor->deselectAll();
 }
