@@ -200,7 +200,7 @@ void BucketTool::pointerPressEvent(PointerEvent* event)
     // Because we can change layer to on the fly but we do not act reactively on it
     // it's neccesary to invalidate layer cache on press event, otherwise the cache
     // will be drawn until a move event has been initiated.
-    mScribbleArea->invalidateLayerPixmapCache();
+    mScribbleArea->invalidatePainterCaches();
 }
 
 void BucketTool::pointerMoveEvent(PointerEvent* event)
@@ -261,7 +261,7 @@ void BucketTool::paintBitmap()
             // otherwise dragging won't show until release event
             if (properties.bucketFillToLayerMode == 1)
             {
-                mScribbleArea->invalidateLayerPixmapCache();
+                mScribbleArea->invalidatePainterCaches();
             }
             mScribbleArea->endStroke();
         }

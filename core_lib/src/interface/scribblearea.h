@@ -271,7 +271,7 @@ private:
      * Call this in most situations where the layer rendering order is affected.
      * Peviously known as setAllDirty.
     */
-    void invalidateLayerPixmapCache();
+    void invalidatePainterCaches();
 
     /** Invalidate cache for the given frame */
     void invalidateCacheForFrame(int frameNumber);
@@ -289,7 +289,7 @@ private:
     void prepOverlays(int frame);
     void renderOverlays();
     void prepCameraPainter(int frame);
-    void prepCanvas(int frame, QRect rect);
+    void prepCanvas(int frame);
     void settingUpdated(SETTING setting);
     void paintSelectionVisuals(QPainter &painter);
 

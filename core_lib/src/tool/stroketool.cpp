@@ -156,7 +156,7 @@ double StrokeTool::calculateDeltaTime(quint64 timeStamp)
 void StrokeTool::paintBitmapStroke()
 {
     mScribbleArea->paintBitmapBuffer(QPainter::CompositionMode_Source);
-    mScribbleArea->invalidateLayerPixmapCache();
+    mScribbleArea->invalidatePainterCaches();
     mScribbleArea->clearBitmapBuffer();
 }
 
@@ -194,6 +194,6 @@ void StrokeTool::paintVectorStroke()
         vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
 
         mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-        mScribbleArea->invalidateLayerPixmapCache();
+        mScribbleArea->invalidatePainterCaches();
     }
 }
