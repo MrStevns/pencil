@@ -24,7 +24,6 @@ GNU General Public License for more details.
 
 #include "beziercurve.h"
 #include "vectorimage.h"
-#include "layervector.h"
 #include "editor.h"
 #include "colormanager.h"
 #include "strokemanager.h"
@@ -32,7 +31,6 @@ GNU General Public License for more details.
 #include "viewmanager.h"
 #include "selectionmanager.h"
 #include "scribblearea.h"
-#include "blitrect.h"
 #include "pointerevent.h"
 #include "brushsetting.h"
 
@@ -175,22 +173,19 @@ void BrushTool::drawStroke(PointerEvent* event)
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
         qreal brushWidth = properties.width * pressure;
 
-        int rad = qRound((brushWidth / 2 + 2) * mEditor->view()->scaling());
-
         QPen pen(mEditor->color()->frontColor(),
-                 brushWidth * mEditor->view()->scaling(),
+                 brushWidth,
                  Qt::SolidLine,
                  Qt::RoundCap,
                  Qt::MiterJoin);
 
         QList<QPointF> p = strokeManager()->interpolateStroke();
 
-        if (p.size() >= 2)
+        if (p.size() == 4)
         {
             QPainterPath path(p[0]);
-            path.quadTo(p.first(), p.last());
+            path.cubicTo(p[1], p[2], p[3]);
             mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
-            mScribbleArea->refreshVector(path.boundingRect().toRect(), rad);
         }
     }
 }

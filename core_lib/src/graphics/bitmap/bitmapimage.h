@@ -60,20 +60,18 @@ public:
     void moveTopLeft(QPointF point) { moveTopLeft(point.toPoint()); }
     void transform(QRect rectangle, bool smoothTransform);
     void transform(QRectF rectangle, bool smoothTransform) { transform(rectangle.toRect(), smoothTransform); }
-    void transform(const QRect& selection, const QTransform& transform);
     BitmapImage transformed(QRect selection, QTransform transform, bool smoothTransform);
     BitmapImage transformed(QRect rectangle, bool smoothTransform);
     BitmapImage transformed(QRectF rectangle, bool smoothTransform) { return transformed(rectangle.toRect(), smoothTransform); }
-    void moveSelectionTransform(const QRect& selection, const QTransform& transform);
+
+    bool contains(QPoint P) { return mBounds.contains(P); }
+    bool contains(QPointF P) { return contains(P.toPoint()); }
+    void autoCrop();
 
     QRgb pixel(int x, int y);
     QRgb pixel(QPoint p);
     void setPixel(int x, int y, QRgb color);
     void setPixel(QPoint p, QRgb color);
-
-    bool contains(QPoint P) { return mBounds.contains(P); }
-    bool contains(QPointF P) { return contains(P.toPoint()); }
-    void autoCrop();
 
     void fillNonAlphaPixels(const QRgb color);
 

@@ -29,7 +29,6 @@ GNU General Public License for more details.
 
 #include "editor.h"
 #include "scribblearea.h"
-#include "blitrect.h"
 #include "layervector.h"
 #include "vectorimage.h"
 
@@ -181,7 +180,7 @@ void PencilTool::endStroke()
     if (layer->type() == Layer::BITMAP)
         StrokeTool::paintBitmapStroke();
     else if (layer->type() == Layer::VECTOR)
-        paintVectorStroke();
+        StrokeTool::paintVectorStroke();
 
     StrokeTool::endStroke();
 }
@@ -203,55 +202,12 @@ void PencilTool::drawStroke(PointerEvent* event)
                  Qt::RoundCap,
                  Qt::MiterJoin);
 
-        int rad = qRound((mCurrentWidth / 2 + 2) * mEditor->view()->scaling());
-
-        if (p.size() >= 2)
+        if (p.size() == 4)
         {
             QPainterPath path(p.first());
             path.quadTo(p.first(),
                          p.last());
             mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
-            mScribbleArea->refreshVector(path.boundingRect().toRect(), rad);
         }
     }
-}
-
-void PencilTool::paintVectorStroke()
-{
-    if (mStrokePoints.empty())
-        return;
-
-    Layer* layer = mEditor->layers()->currentLayer();
-    // Clear the temporary pixel path
-    mScribbleArea->clearBitmapBuffer();
-    qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
-
-    BezierCurve curve(mStrokePoints, mStrokePressures, tol);
-    curve.setWidth(0);
-    curve.setFeather(0);
-    curve.setFilled(false);
-    curve.setInvisibility(true);
-    curve.setVariableWidth(false);
-    curve.setColorNumber(mEditor->color()->frontColorNumber());
-    VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-
-    vectorImage->addCurve(curve, qAbs(mEditor->view()->scaling()), properties.vectorMergeEnabled);
-
-    if (properties.useFillContour)
-    {
-        vectorImage->fillContour(mStrokePoints,
-                                 mEditor->color()->frontColorNumber());
-    }
-
-    if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
-    {
-        mEditor->deselectAll();
-    }
-
-    // select last/newest curve
-    vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
-
-    // TODO: selection doesn't apply on enter
-
-    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
 }

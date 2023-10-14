@@ -103,19 +103,15 @@ void ToolManager::setDefaultTool()
 
 void ToolManager::setCurrentTool(ToolType eToolType)
 {
-    BaseTool* newTool = getTool(eToolType);
-
-    if (mCurrentTool == newTool) { return; }
+    // We're already using this tool
+    if (mCurrentTool == getTool(eToolType)) { return; }
 
     if (mCurrentTool != nullptr)
     {
        mCurrentTool->leavingThisTool();
     }
 
-    mCurrentTool = newTool;
-    // Because you might be using a temporary tool right now, or the eraser function on your tablet pen.
-    // only update the toolChanged state when both are nullptr.
-    // Addtionally there's no reason to signal if the tool hasn't changed
+    mCurrentTool = getTool(eToolType);
     if (mTemporaryTool == nullptr && mTabletEraserTool == nullptr)
     {
         emit toolChanged(eToolType);
@@ -248,19 +244,8 @@ void ToolManager::setBucketFillExpand(int expandValue)
     emit toolPropertyChanged(currentTool()->type(), BUCKETFILLEXPAND);
 }
 
-void ToolManager::setBucketFillToLayerMode(int layerMode)
-{
-    currentTool()->setFillToLayerMode(layerMode);
-    emit toolPropertyChanged(currentTool()->type(), BUCKETFILLLAYERMODE);
-}
-
 void ToolManager::setBucketFillReferenceMode(int referenceMode)
 {
-    // If the bucket reference mode is current layer, enforce fillTo is also set to current layer
-    if (bucketReferenceModeIsCurrentLayer(referenceMode)) {
-        currentTool()->setFillToLayerMode(0);
-        emit toolPropertyChanged(currentTool()->type(), BUCKETFILLLAYERMODE);
-    }
     currentTool()->setFillReferenceMode(referenceMode);
     emit toolPropertyChanged(currentTool()->type(), BUCKETFILLLAYERREFERENCEMODE);
 }
@@ -270,6 +255,7 @@ void ToolManager::setUseFillContour(bool useFillContour)
     currentTool()->setUseFillContour(useFillContour);
     emit toolPropertyChanged(currentTool()->type(), FILLCONTOUR);
 }
+
 void ToolManager::setShowSelectionInfo(bool b)
 {
     currentTool()->setShowSelectionInfo(b);
@@ -307,27 +293,45 @@ bool ToolManager::bucketReferenceModeIsCurrentLayer(int referenceMode) const
     return referenceMode == 0;
 }
 
+// Switches on/off two actions
+// eg. if x = true, then y = false
+int ToolManager::propertySwitch(bool condition, int tool)
+{
+    int value = 0;
+    int newValue = 0;
+
+    if (condition == true)
+    {
+        value = -1;
+        newValue = mOldValue;
+        mOldValue = tool;
+    }
+    else if (condition == false)
+    {
+        value = (newValue == 1) ? 1 : mOldValue;
+    }
+    return value;
+}
+
 void ToolManager::tabletSwitchToEraser()
 {
     mTabletEraserTool = getTool(ERASER);
+
+    // We should only notify a tool change if we're positive that the state has changed and it should only happen once
+    // if the user for some reason is using another temporary tool at the same time, that takes first priority
     if (mTemporaryTool == nullptr)
     {
         emit toolChanged(ERASER);
     }
 }
 
-void ToolManager::tabletSwitchFromEraser()
+void ToolManager::tabletRestorePrevTool()
 {
-    // The assumption here is that the tablet was just flipped again, going back to the previous tool
-    // in order to avoid calling toolChanged too often, we first make sure that.
-    // 1. the eraser was in use.
-    // 2. The temporary tool is not in use
-    // otherwise we do not call tool changed, this could potentially call expensive GUI methods (it does...)
-    if (mTabletEraserTool != nullptr && mTemporaryTool == nullptr)
+    if (mTemporaryTool == nullptr && mTabletEraserTool != nullptr)
     {
+        mTabletEraserTool = nullptr;
         emit toolChanged(currentTool()->type());
     }
-    mTabletEraserTool = nullptr;
 }
 
 bool ToolManager::setTemporaryTool(ToolType eToolType, QFlags<Qt::Key> keys, Qt::KeyboardModifiers modifiers)

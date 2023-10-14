@@ -60,7 +60,6 @@ void BucketTool::loadSettings()
 
     properties.bucketFillExpand = settings.value(SETTING_BUCKET_FILL_EXPAND, 2.0).toInt();
     properties.bucketFillExpandEnabled = settings.value(SETTING_BUCKET_FILL_EXPAND_ON, true).toBool();
-    properties.bucketFillToLayerMode = settings.value(SETTING_BUCKET_FILL_TO_LAYER_MODE, 0).toInt();
     properties.bucketFillReferenceMode = settings.value(SETTING_BUCKET_FILL_REFERENCE_MODE, 0).toInt();
     properties.fillMode = settings.value(SETTING_FILL_MODE, 0).toInt();
 }
@@ -72,7 +71,6 @@ void BucketTool::resetToDefault()
     setFillMode(0);
     setFillExpand(2);
     setFillExpandEnabled(true);
-    setFillToLayerMode(0);
     setToleranceEnabled(false);
     setFillReferenceMode(0);
 }
@@ -161,16 +159,6 @@ void BucketTool::setFillExpand(const int fillExpandValue)
     settings.sync();
 }
 
-void BucketTool::setFillToLayerMode(int layerMode)
-{
-    properties.bucketFillToLayerMode = layerMode;
-
-    // Update settings
-    QSettings settings(PENCIL2D, PENCIL2D);
-    settings.setValue(SETTING_BUCKET_FILL_TO_LAYER_MODE, layerMode);
-    settings.sync();
-}
-
 void BucketTool::setFillReferenceMode(int referenceMode)
 {
     properties.bucketFillReferenceMode = referenceMode;
@@ -193,7 +181,7 @@ void BucketTool::pointerPressEvent(PointerEvent* event)
 
     mBitmapBucket = BitmapBucket(mEditor,
                                  mEditor->color()->frontColor(),
-                                 layerCam ? layerCam->getViewRect() : QRect(),
+                                 layerCam ? layerCam->getViewAtFrame(mEditor->currentFrame()).inverted().mapRect(layerCam->getViewRect()) : QRect(),
                                  getCurrentPoint(),
                                  properties);
 
@@ -241,6 +229,8 @@ void BucketTool::pointerReleaseEvent(PointerEvent* event)
     }
 
     mFilledOnMove = false;
+    
+    endStroke();
 }
 
 void BucketTool::paintBitmap()
@@ -256,21 +246,13 @@ void BucketTool::paintBitmap()
         else if (progress == BucketState::DidFillTarget)
         {
             mEditor->setModified(layerIndex, frameIndex);
-
-            // Need to invalidate layer pixmap cache when filling anything else but current layer
-            // otherwise dragging won't show until release event
-            if (properties.bucketFillToLayerMode == 1)
-            {
-                mScribbleArea->invalidatePainterCaches();
-            }
-            mScribbleArea->endStroke();
         }
     });
 }
 
 void BucketTool::paintVector(Layer* layer)
 {
-    mScribbleArea->clearBitmapBuffer();
+    mScribbleArea->clearDrawingBuffer();
 
     VectorImage* vectorImage = ((LayerVector *)layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
 
@@ -309,8 +291,6 @@ void BucketTool::drawStroke(PointerEvent* event)
     if (layer->type() == Layer::VECTOR)
     {
         mCurrentWidth = 30;
-        int rad = qRound((mCurrentWidth / 2 + 2) * mEditor->view()->scaling());
-
         QColor pathColor = qPremultiply(mEditor->color()->frontColor().rgba());
 
         QPen pen(pathColor,
@@ -324,7 +304,6 @@ void BucketTool::drawStroke(PointerEvent* event)
             QPainterPath path(p[0]);
             path.cubicTo(p[1], p[2], p[3]);
             mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
-            mScribbleArea->refreshVector(path.boundingRect().toRect(), rad);
         }
     }
 }

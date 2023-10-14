@@ -40,8 +40,6 @@ public:
     void drawStroke(PointerEvent* event);
     void endStroke();
 
-    void paintVectorStroke();
-
     void setWidth(const qreal width) override;
     void setFeather(const qreal feather) override;
     void setUseFeather(const bool useFeather) override;

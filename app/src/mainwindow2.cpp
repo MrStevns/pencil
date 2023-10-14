@@ -20,6 +20,7 @@ GNU General Public License for more details.
 #include "ui_mainwindow2.h"
 
 // Qt headers
+#include <QActionGroup>
 #include <QDir>
 #include <QList>
 #include <QMenu>
@@ -198,7 +199,9 @@ void MainWindow2::createDockWidgets()
     for (BaseDockWidget* pWidget : mDockWidgets)
     {
         pWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
-        pWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
+        pWidget->setFeatures(QDockWidget::DockWidgetFeature::DockWidgetClosable |
+                             QDockWidget::DockWidgetFeature::DockWidgetMovable |
+                             QDockWidget::DockWidgetFeature::DockWidgetFloatable);
         pWidget->setFocusPolicy(Qt::NoFocus);
 
         pWidget->setEditor(mEditor);
@@ -892,7 +895,7 @@ void MainWindow2::importImage()
         return;
     }
 
-    ui->scribbleArea->updateCurrentFrame();
+    ui->scribbleArea->updateFrame();
     mTimeLine->updateContent();
 }
 
@@ -1019,7 +1022,11 @@ void MainWindow2::importGIF()
 
 void MainWindow2::lockWidgets(bool shouldLock)
 {
-    QDockWidget::DockWidgetFeatures feat = shouldLock ? QDockWidget::NoDockWidgetFeatures : QDockWidget::AllDockWidgetFeatures;
+    QDockWidget::DockWidgetFeatures feat = shouldLock
+        ? QDockWidget::NoDockWidgetFeatures
+        : (QDockWidget::DockWidgetFeature::DockWidgetClosable |
+           QDockWidget::DockWidgetFeature::DockWidgetMovable |
+           QDockWidget::DockWidgetFeature::DockWidgetFloatable);
 
     for (QDockWidget* d : mDockWidgets)
     {
@@ -1512,6 +1519,7 @@ void MainWindow2::makeConnections(Editor* editor, ColorInspector* colorInspector
 
 void MainWindow2::makeConnections(Editor* editor, ScribbleArea* scribbleArea)
 {
+    connect(editor->tools(), &ToolManager::toolChanged, scribbleArea, &ScribbleArea::updateToolCursor);
     connect(editor->tools(), &ToolManager::toolChanged, mToolBox, &ToolBoxWidget::onToolSetActive);
     connect(editor->tools(), &ToolManager::toolPropertyChanged, scribbleArea, &ScribbleArea::updateToolCursor);
 

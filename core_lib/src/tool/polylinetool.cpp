@@ -23,7 +23,6 @@ GNU General Public License for more details.
 #include "mphandler.h"
 #include "pencilsettings.h"
 
-#include "strokemanager.h"
 #include "layermanager.h"
 #include "colormanager.h"
 #include "viewmanager.h"
@@ -140,7 +139,7 @@ void PolylineTool::pointerPressOnVector(PointerEvent*)
     mEditor->backup(typeName());
     mScribbleArea->handleDrawingOnEmptyFrame();
 
-    mScribbleArea->clearBitmapBuffer();
+    mScribbleArea->clearDrawingBuffer();
     static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0)->deselectAll();
     if (mScribbleArea->makeInvisible() && !mEditor->preference()->isOn(SETTING::INVISIBLE_LINES))
     {
@@ -164,9 +163,7 @@ void PolylineTool::pointerPressOnBitmap(PointerEvent* event)
         mPoints.takeAt(0);
     }
 
-    mScribbleArea->setIsPainting(true);
-
-    mScribbleArea->paintBitmapBuffer(QPainter::CompositionMode_SourceOver);
+    mScribbleArea->paintBitmapBuffer();
     mScribbleArea->clearTilesBuffer();
 
 }
@@ -233,7 +230,7 @@ void PolylineTool::pointerMoveOnBitmap(PointerEvent * event)
     }
     drawStroke(getCurrentPoint(), calculateDeltaTime(event->timeStamp()));
 
-    mScribbleArea->updateCurrentFrame();
+    mScribbleArea->updateFrame();
 }
 
 double PolylineTool::calculateDeltaTime(quint64)
@@ -299,7 +296,7 @@ void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint, quint64
                 drawStroke(points[i], calculateDeltaTime(timeStamp));
             }
             drawStroke(endPoint, calculateDeltaTime(timeStamp));
-            mScribbleArea->updateCurrentFrame();
+            mScribbleArea->updateFrame();
             mScribbleArea->mMyPaint->endStroke();
         }
         else if (layer->type() == Layer::VECTOR)
@@ -326,18 +323,14 @@ void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint, quint64
             // Vector otherwise
             if (layer->type() == Layer::VECTOR)
             {
-                if (mEditor->layers()->currentLayer()->type() == Layer::VECTOR)
+                if (mScribbleArea->makeInvisible() == true)
                 {
-                    tempPath = mEditor->view()->mapCanvasToScreen(tempPath);
-                    if (mScribbleArea->makeInvisible() == true)
-                    {
-                        pen.setWidth(0);
-                        pen.setStyle(Qt::DotLine);
-                    }
-                    else
-                    {
-                        pen.setWidth(properties.width * mEditor->view()->scaling());
-                    }
+                    pen.setWidth(0);
+                    pen.setStyle(Qt::DotLine);
+                }
+                else
+                {
+                    pen.setWidth(properties.width);
                 }
             }
 
@@ -350,8 +343,8 @@ void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint, quint64
 void PolylineTool::cancelPolyline()
 {
     // Clear the in-progress polyline from the bitmap buffer.
-    mScribbleArea->clearBitmapBuffer();
-    mScribbleArea->updateCurrentFrame();
+    mScribbleArea->clearDrawingBuffer();
+    mScribbleArea->updateFrame();
 }
 
 void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
@@ -360,7 +353,7 @@ void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
 
     if (layer->type() == Layer::VECTOR)
     {
-        mScribbleArea->clearBitmapBuffer();
+        mScribbleArea->clearDrawingBuffer();
         BezierCurve curve = BezierCurve(points, properties.bezier_state);
         if (mScribbleArea->makeInvisible() == true)
         {
@@ -384,9 +377,7 @@ void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
         }
         drawStroke(getCurrentPoint(), calculateDeltaTime(timeStamp));
     }
-
-    mScribbleArea->clearBitmapBuffer();
-    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-
+    
     endStroke();
+    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
 }

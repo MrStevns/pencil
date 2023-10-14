@@ -42,7 +42,7 @@ public:
     void setDefaultTool();
     void setCurrentTool(ToolType eToolType);
     void tabletSwitchToEraser();
-    void tabletSwitchFromEraser();
+    void tabletRestorePrevTool();
     bool temporaryToolActive() const { return mTemporaryTool; }
     bool setTemporaryTool(ToolType eToolType, QFlags<Qt::Key> keys, Qt::KeyboardModifiers modifiers);
     bool setTemporaryTool(ToolType eToolType, Qt::MouseButtons buttons);
@@ -82,7 +82,6 @@ public slots:
     void setTolerance(int);
     void setBucketColorToleranceEnabled(bool enabled);
     void setBucketFillExpandEnabled(bool enabled);
-    void setBucketFillToLayerMode(int layerMode);
     void setBucketFillReferenceMode(int referenceMode);
     void setBucketFillExpand(int);
     void setUseFillContour(bool);

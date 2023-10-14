@@ -212,8 +212,17 @@ void SmudgeTool::pointerMoveEvent(PointerEvent* event)
                 VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
                 // transforms the selection
 
+                BlitRect blit;
+
+                // Use the previous dirty bound and extend it with the current dirty bound
+                // this ensures that we won't get painting artifacts
+                blit.extend(vectorImage->getBoundsOfTransformedCurves().toRect());
                 selectMan->setSelectionTransform(QTransform().translate(offsetFromPressPos().x(), offsetFromPressPos().y()));
                 vectorImage->setSelectionTransformation(selectMan->selectionTransform());
+                blit.extend(vectorImage->getBoundsOfTransformedCurves().toRect());
+
+                // And now tell the widget to update the portion in local coordinates
+                mScribbleArea->update(mEditor->view()->mapCanvasToScreen(blit).toRect().adjusted(-1, -1, 1, 1));
             }
         }
     }
@@ -224,9 +233,9 @@ void SmudgeTool::pointerMoveEvent(PointerEvent* event)
             VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
 
             selectMan->setVertices(vectorImage->getVerticesCloseTo(getCurrentPoint(), selectMan->selectionTolerance()));
+            mScribbleArea->update();
         }
     }
-    mEditor->updateCurrentFrame();
 }
 
 void SmudgeTool::pointerReleaseEvent(PointerEvent* event)

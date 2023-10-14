@@ -21,6 +21,7 @@ GNU General Public License for more details.
 #include "stroketool.h"
 #include <QColor>
 
+class Layer;
 
 class BrushTool : public StrokeTool
 {

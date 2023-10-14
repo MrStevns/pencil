@@ -1112,14 +1112,9 @@ void Editor::deselectAll() const
     }
 }
 
-void Editor::updateFrame(int frameNumber)
+void Editor::updateFrame()
 {
-    mScribbleArea->updateFrame(frameNumber);
-}
-
-void Editor::updateCurrentFrame()
-{
-    mScribbleArea->updateCurrentFrame();
+    mScribbleArea->updateFrame();
 }
 
 void Editor::setCurrentLayerIndex(int i)

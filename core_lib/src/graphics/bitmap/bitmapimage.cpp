@@ -25,6 +25,8 @@ GNU General Public License for more details.
 
 #include "mptile.h"
 #include "blitrect.h"
+#include "tile.h"
+#include "tiledbuffer.h"
 
 BitmapImage::BitmapImage()
 {
@@ -99,7 +101,7 @@ BitmapImage* BitmapImage::clone() const
     b->setFileName(""); // don't link to the file of the source bitmap image
 
     const bool validKeyFrame = !fileName().isEmpty();
-    if (validKeyFrame && !isLoaded()) 
+    if (validKeyFrame && !isLoaded())
     {
         // This bitmapImage is temporarily unloaded.
         // since it's not in the memory, we need to copy the linked png file to prevent data loss.
@@ -265,19 +267,6 @@ void BitmapImage::moveTopLeft(QPoint point)
     modification();
 }
 
-/**
- * @brief BitmapImage::moveSelectionTransform
- * Uses the input selection and transformation to move a part of the image somewhere else
- * @param selection
- * @param transform
- */
-void BitmapImage::moveSelectionTransform(const QRect& selection, const QTransform& transform)
-{
-        BitmapImage transformedImage = this->transformed(selection, transform, true);
-        clear(selection);
-        paste(&transformedImage, QPainter::CompositionMode_SourceOver);
-}
-
 void BitmapImage::transform(QRect newBoundaries, bool smoothTransform)
 {
     mBounds = newBoundaries;
@@ -352,28 +341,6 @@ void BitmapImage::updateBounds(QRect newBoundaries)
 
     modification();
 }
-
-///**
-// * @brief BitmapImage::extendBoundaries
-// * Extends boundaries based on input coordinate
-// * If the coordinate lies outside the current bounding box
-// * @param topLeft coordinate
-// */
-//void BitmapImage::extendBoundaries(const QPoint &point)
-//{
-//    extend(point);
-//}
-
-///**
-// * @brief BitmapImage::extendBoundaries
-// * Extends boundaries based on the input rectangle
-// * if input rect lies outside the current bounding box
-// * @param rect
-// */
-//void BitmapImage::extendBoundaries(const QRect &rect)
-//{
-//    extend(rect);
-//}
 
 void BitmapImage::extend(const QPoint &p)
 {
@@ -685,7 +652,10 @@ void BitmapImage::drawRect(QRectF rectangle, QPen pen, QBrush brush, QPainter::C
         painter.setRenderHint(QPainter::Antialiasing, antialiasing);
         painter.setPen(pen);
         painter.setBrush(brush);
-        painter.drawRect(rectangle.translated(-mBounds.topLeft()));
+
+        // Adjust the brush rectangle to be bigger than the bounds itself,
+        // otherwise there will be artifacts shown in some cases when smudging
+        painter.drawRect(rectangle.translated(-mBounds.topLeft()).adjusted(-1, -1, 1, 1));
         painter.end();
     }
     modification();

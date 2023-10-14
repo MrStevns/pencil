@@ -157,15 +157,14 @@ void EraserTool::drawStroke(PointerEvent* event)
         qreal brushWidth = mCurrentWidth;
 
         QPen pen(Qt::white, brushWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-        int rad = qRound(brushWidth) / 2 + 2;
 
-        if (p.size() >= 2)
+        if (p.size() == 4)
         {
-            QPainterPath path(p.first());
-            path.quadTo(p.first(),
-                         p.last());
+            QPainterPath path(p[0]);
+            path.cubicTo(p[1],
+                         p[2],
+                         p[3]);
             mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
-            mScribbleArea->refreshVector(path.boundingRect().toRect(), rad);
         }
     }
 }
@@ -185,18 +184,13 @@ void EraserTool::endStroke()
 void EraserTool::removeVectorPaint()
 {
     Layer* layer = mEditor->layers()->currentLayer();
-    if (layer->type() == Layer::BITMAP)
-    {
-        mScribbleArea->paintBitmapBuffer();
-        mScribbleArea->clearBitmapBuffer();
-    }
-    else if (layer->type() == Layer::VECTOR)
+    if (layer->type() == Layer::VECTOR)
     {
         VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
         // Clear the area containing the last point
         //vectorImage->removeArea(lastPoint);
         // Clear the temporary pixel path
-        mScribbleArea->clearBitmapBuffer();
+        mScribbleArea->clearDrawingBuffer();
         vectorImage->deleteSelectedPoints();
 
         mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());

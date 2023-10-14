@@ -67,7 +67,6 @@ class ScribbleArea : public QWidget
     Q_OBJECT
 
     friend class MoveTool;
-    friend class EditTool;
     friend class SmudgeTool;
     friend class BucketTool;
     friend class StrokeTool;
@@ -84,31 +83,23 @@ public:
 
 
     void deleteSelection();
-    void displaySelectionProperties();
 
     void applyTransformedSelection();
     void cancelTransformedSelection();
 
     bool isLayerPaintable() const;
 
-    QVector<QPoint> calcSelectionCenterPoints();
-
     void setEffect(SETTING e, bool isOn);
 
     LayerVisibility getLayerVisibility() const { return mLayerVisibility; }
     qreal getCurveSmoothing() const { return mCurveSmoothingLevel; }
-    bool usePressure() const { return mUsePressure; }
     bool makeInvisible() const { return mMakeInvisible; }
 
-    QRect getCameraRect();
     QPointF getCentralPoint();
 
-    /** Update current frame.
-     *  calls update() behind the scene and update cache if necessary */
-    void updateCurrentFrame();
     /** Update frame.
      * calls update() behind the scene and update cache if necessary */
-    void updateFrame(int frame);
+    void updateFrame();
 
     /** Frame scrubbed, invalidate relevant cache */
     void onDidScrub(int frameNumber);
@@ -150,9 +141,9 @@ public:
      * note: optimization to avoid clearing mypaint when we draw on the canvas */
     void onDidDraw(int frameNumber);
 
-    /** Set frame on layer to modified and invalidate current frame cache */
-    void setModified(int layerNumber, int frameNumber);
-    void setModified(const Layer* layer, int frameNumber);
+    void startStroke();
+    void strokeTo(QPointF point, float pressure, float xtilt, float ytilt, double dt);
+    void endStroke();
 
     void flipSelection(bool flipVertical);
 
@@ -167,7 +158,9 @@ public:
      * Used to get the current frame content into mypaint
      */
     void prepareForDrawing();
-    void drawCanvas(int frame, QRect rect);
+
+    void paintBitmapBuffer();
+    void clearDrawingBuffer();
 
     // mypaint
     void loadMPBrush(const QByteArray &content);
@@ -185,7 +178,6 @@ public:
 
 signals:
     void multiLayerOnionSkinChanged(bool);
-    void refreshPreview();
     void selectionUpdated();
 
 public slots:
@@ -193,7 +185,6 @@ public slots:
 
     void setCurveSmoothing(int);
     void toggleThinLines();
-    void toggleOutlines();
     void increaseLayerVisibilityIndex();
     void decreaseLayerVisibilityIndex();
     void setLayerVisibility(LayerVisibility visibility);
@@ -223,21 +214,8 @@ protected:
     void resizeEvent(QResizeEvent*) override;
 
 public:
-    void startStroke();
-    void strokeTo(QPointF point, float pressure, float xtilt, float ytilt, double dt);
-    void endStroke();
-
-    void drawPolyline(QPainterPath path, QPen pen, bool useAA);
-    void drawLine(QPointF P1, QPointF P2, QPen pen, QPainter::CompositionMode cm);
-    void drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm);
-
-    void paintBitmapBuffer(QPainter::CompositionMode composition = QPainter::CompositionMode_Source);
-    void paintCanvasCursor(QPainter& painter);
-    void paintCanvasCursor();
-    void clearBitmapBuffer();
-    void refreshBitmap(const QRectF& rect, int rad);
-    void refreshVector(const QRectF& rect, int rad);
-    void setGaussianGradient(QGradient &gradient, QColor colour, qreal opacity, qreal offset);
+//    void drawPolyline(QPainterPath path, QPen pen, bool useAA);
+//    void drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm);
 
     void pointerPressEvent(PointerEvent*);
     void pointerMoveEvent(PointerEvent*);
@@ -251,17 +229,14 @@ public:
     /// on an empty frame, and if so, takes action according to use preference.
     void handleDrawingOnEmptyFrame();
 
-    void setIsPainting(bool isPainting) { mIsPainting = isPainting; }
-
-    BitmapImage* mBufferImg = nullptr; // used to pre-draw vector modifications
-
     QPixmap mCursorImg;
-    QPixmap mTransCursImg;
 
     MPHandler* mMyPaint = nullptr;
     QHash<QString, MPTile*> mBufferTiles;
     BlitRect mTilesBlitRect;
 private:
+
+    void paintCanvasCursor(QPainter& painter);
 
     /** Invalidate the layer pixmap and camera painter caches.
      * Call this in most situations where the layer rendering order is affected.
@@ -286,6 +261,7 @@ private:
     void renderOverlays();
     void prepCameraPainter(int frame);
     void prepCanvas(int frame);
+    void drawCanvas(int frame, QRect rect);
     void settingUpdated(SETTING setting);
     void paintSelectionVisuals(QPainter &painter);
 
@@ -298,29 +274,16 @@ private:
     BitmapImage* currentBitmapImage(Layer* layer) const;
     VectorImage* currentVectorImage(Layer* layer) const;
 
-    MoveMode mMoveMode = MoveMode::NONE;
-
-    BitmapImage mBitmapSelection; // used to temporary store a transformed portion of a bitmap image
-
     std::unique_ptr<StrokeManager> mStrokeManager;
 
     Editor* mEditor = nullptr;
 
-    /// Used to load frame into mypaint. Should only be true when the surface is not valid anymore
-    bool mNeedLoadImageToMyPaint = false;
-
-    bool mIsSimplified = false;
-    bool mShowThinLines = false;
     bool mQuickSizing = true;
     LayerVisibility mLayerVisibility = LayerVisibility::ALL;
-    bool mUsePressure   = true;
     bool mMakeInvisible = false;
-    bool mToolCursors = true;
     qreal mCurveSmoothingLevel = 0.0;
-    bool mMultiLayerOnionSkin = false; // future use. If required, just add a checkbox to updated it.
-    QColor mOnionColor;
-
-private:
+    bool mMultiLayerOnionSkin = false; // Future use. If required, just add a checkbox to update it.
+    int mDeltaFactor = 1;
 
     /* Under certain circumstances a mouse press event will fire after a tablet release event.
        This causes unexpected behaviours for some of the tools, eg. the bucket.
@@ -330,9 +293,7 @@ private:
        The following will filter mouse events created after a tablet release event.
     */
     void tabletReleaseEventFired();
-    bool mKeyboardInUse = false;
     bool mMouseInUse = false;
-    bool mMouseRightButtonInUse = false;
     bool mTabletInUse = false;
     qreal mDevicePixelRatio = 1.;
 

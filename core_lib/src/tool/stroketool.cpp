@@ -155,9 +155,9 @@ double StrokeTool::calculateDeltaTime(quint64 timeStamp)
 
 void StrokeTool::paintBitmapStroke()
 {
-    mScribbleArea->paintBitmapBuffer(QPainter::CompositionMode_Source);
+    mScribbleArea->paintBitmapBuffer();
     mScribbleArea->invalidatePainterCaches();
-    mScribbleArea->clearBitmapBuffer();
+    mScribbleArea->clearDrawingBuffer();
 }
 
 // This function uses the points from DrawStroke
@@ -172,7 +172,7 @@ void StrokeTool::paintVectorStroke()
     if (layer->type() == Layer::VECTOR && mStrokePoints.size() > -1)
     {
         // Clear the temporary pixel path
-        mScribbleArea->clearBitmapBuffer();
+        mScribbleArea->clearDrawingBuffer();
         qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
 
         BezierCurve curve(mStrokePoints, mStrokePressures, tol);
