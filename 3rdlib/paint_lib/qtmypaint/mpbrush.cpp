@@ -55,21 +55,21 @@ void MPBrush::load(const QByteArray& content)
         // Not able to load the selected brush. Let's execute some backup code...
         qDebug("Trouble when reading the selected brush !");
     }
-    setColor(m_color);
+    setColor(mColor);
 }
 
 QColor MPBrush::getColor()
 {
-    return m_color;
+    return mColor;
 }
 
 void MPBrush::setColor(QColor newColor)
 {
-    m_color = newColor;
+    mColor = newColor;
 
-    float h = m_color.hue()/360.0;
-    float s = m_color.saturation()/255.0;
-    float v = m_color.value()/255.0;
+    float h = mColor.hue()/360.0;
+    float s = mColor.saturation()/255.0;
+    float v = mColor.value()/255.0;
 
     // Opacity is not handled here as it is defined by the brush settings.
     // If you wish to force opacity, use MPHandler::setBrushValue()

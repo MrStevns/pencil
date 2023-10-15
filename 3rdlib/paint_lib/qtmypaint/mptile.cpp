@@ -9,14 +9,14 @@
 #include "mptile.h"
 
 MPTile::MPTile():
-    m_cache_img(k_tile_dim,k_tile_dim,QImage::Format_ARGB32_Premultiplied)
+    mCacheImg(k_tile_dim,k_tile_dim,QImage::Format_ARGB32_Premultiplied)
 {
     clear(); //Default tiles are transparent
 }
 
 MPTile::MPTile(QImage& image)
 {
-    m_cache_img = image;
+    mCacheImg = image;
 }
 
 MPTile::~MPTile()
@@ -25,25 +25,25 @@ MPTile::~MPTile()
 
 QRect MPTile::boundingRect() const
 {
-    return m_cache_img.rect();
+    return mCacheImg.rect();
 }
 
 uint16_t* MPTile::bits(bool readOnly)
 {
     // Correct C++ way of doing things is using "const" but MyPaint API is not compatible here
-    m_cache_valid = readOnly ? m_cache_valid : false;
-    return reinterpret_cast<uint16_t*>(t_pixels);
+    mCacheValid = readOnly ? mCacheValid : false;
+    return reinterpret_cast<uint16_t*>(mTPixels);
 }
 
 // debug function (simply replace previous value of pixel in t_pixels)
 //
 void MPTile::drawPoint(uint x, uint y, uint16_t r, uint16_t g, uint16_t b, uint16_t a)
 {
-    m_cache_valid = false;
-    t_pixels[y][x][k_red] = r;
-    t_pixels[y][x][k_green] = g;
-    t_pixels[y][x][k_blue ] = b;
-    t_pixels[y][x][k_alpha] = a;
+    mCacheValid = false;
+    mTPixels[y][x][k_red] = r;
+    mTPixels[y][x][k_green] = g;
+    mTPixels[y][x][k_blue ] = b;
+    mTPixels[y][x][k_alpha] = a;
 }
 
 
@@ -51,42 +51,42 @@ void MPTile::drawPoint(uint x, uint y, uint16_t r, uint16_t g, uint16_t b, uint1
 //
 void MPTile::updateCache()
 {
-    QRgb* dst = (reinterpret_cast<QRgb*>(m_cache_img.bits()));
+    QRgb* dst = (reinterpret_cast<QRgb*>(mCacheImg.bits()));
 
     for (int y = 0 ; y < k_tile_dim ; y++) {
          for (int x = 0 ; x < k_tile_dim ; x++) {
-              uint16_t& alpha = t_pixels[y][x][k_alpha];
+              uint16_t& alpha = mTPixels[y][x][k_alpha];
               *dst = alpha ? qRgba(
-              convert_from_mypaint(t_pixels[y][x][k_red]),
-              convert_from_mypaint(t_pixels[y][x][k_green]),
-              convert_from_mypaint(t_pixels[y][x][k_blue]),
+              convert_from_mypaint(mTPixels[y][x][k_red]),
+              convert_from_mypaint(mTPixels[y][x][k_green]),
+              convert_from_mypaint(mTPixels[y][x][k_blue]),
               convert_from_mypaint(alpha)) : 0; // aplha is 0 => all is zero (little optimization)
               dst++; // next image pixel...
          }
     }
 
-    m_cache_valid = true;
+    mCacheValid = true;
 }
 
 void MPTile::setImage(const QImage& image)
 {
     if (image.isNull()) { return; }
 
-    m_cache_img = image;
-    m_cache_valid = true;
+    mCacheImg = image;
+    mCacheValid = true;
 
 }
 
 void MPTile::updateMyPaintBuffer(const QSize& tileSize)
 {
-    const QRgb* dst = (reinterpret_cast<const QRgb*>(m_cache_img.constBits()));
+    const QRgb* dst = (reinterpret_cast<const QRgb*>(mCacheImg.constBits()));
     for (int y = 0 ; y < tileSize.height(); y++) {
          for (int x = 0 ; x < tileSize.width() ; x++) {
 
-            t_pixels[y][x][k_alpha]    = convert_to_mypaint(qAlpha(*dst));
-            t_pixels[y][x][k_red]      = convert_to_mypaint(qRed(*dst));
-            t_pixels[y][x][k_green]    = convert_to_mypaint(qGreen(*dst));
-            t_pixels[y][x][k_blue]     = convert_to_mypaint(qBlue(*dst));
+            mTPixels[y][x][k_alpha]    = convert_to_mypaint(qAlpha(*dst));
+            mTPixels[y][x][k_red]      = convert_to_mypaint(qRed(*dst));
+            mTPixels[y][x][k_green]    = convert_to_mypaint(qGreen(*dst));
+            mTPixels[y][x][k_blue]     = convert_to_mypaint(qBlue(*dst));
             dst++;
          }
     }
@@ -94,8 +94,8 @@ void MPTile::updateMyPaintBuffer(const QSize& tileSize)
 
 void MPTile::clear()
 {
-    memset(t_pixels, 0, sizeof(t_pixels)); // Tile is transparent
-    m_cache_img.fill(Qt::transparent); // image cache is transparent too, and aligned to the pixel table:
-    m_cache_valid = true;
-    m_dirty = false;
+    memset(mTPixels, 0, sizeof(mTPixels)); // Tile is transparent
+    mCacheImg.fill(Qt::transparent); // image cache is transparent too, and aligned to the pixel table:
+    mCacheValid = true;
+    mDirty = false;
 }

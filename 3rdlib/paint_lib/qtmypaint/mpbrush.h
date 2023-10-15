@@ -68,7 +68,7 @@ public:
     const MyPaintBrushSettingInfo* getBrushSettingInfo(MyPaintBrushSetting info);
 
 private:
-    QColor m_color;
+    QColor mColor;
 };
 
 #endif // MPBRUSH_H

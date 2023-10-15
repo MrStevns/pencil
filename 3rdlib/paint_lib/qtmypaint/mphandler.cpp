@@ -40,28 +40,28 @@ MPHandler::MPHandler()
 {
     QSize defaultSize = QSize(QTMYPAINT_SURFACE_WIDTH, QTMYPAINT_SURFACE_HEIGHT);
 
-    m_brush = new MPBrush();
-    m_surface = new MPSurface(this, defaultSize);
+    mBrush = new MPBrush();
+    mSurface = new MPSurface(this, defaultSize);
 }
 
 MPHandler::~MPHandler()
 {
-    mypaint_surface_unref(reinterpret_cast<MyPaintSurface*>(m_surface));
+    mypaint_surface_unref(reinterpret_cast<MyPaintSurface*>(mSurface));
 }
 
 void MPHandler::setSurfaceSize(QSize size)
 {
-    m_surface->setSize(size);
+    mSurface->setSize(size);
 }
 
 QSize MPHandler::surfaceSize()
 {
-    return m_surface->size();
+    return mSurface->size();
 }
 
 void MPHandler::clearSurface()
 {
-    m_surface->clear();
+    mSurface->clear();
 }
 
 /**
@@ -71,32 +71,32 @@ void MPHandler::clearSurface()
  */
 void MPHandler::saveSurface(const QString path)
 {
-    m_surface->saveSurface(path);
+    mSurface->saveSurface(path);
 }
 
 void MPHandler::loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile)
 {
-    m_surface->loadTile(image, topLeft, tile);
+    mSurface->loadTile(image, topLeft, tile);
 }
 
 void MPHandler::loadBrush(const QByteArray &content)
 {
-    m_brush->load(content);
+    mBrush->load(content);
 }
 
 void MPHandler::setBrushWidth(float width)
 {
-    m_brush->setWidth(width);
+    mBrush->setWidth(width);
 }
 
 void
 MPHandler::
 strokeTo(float x, float y, float pressure, float xtilt, float ytilt, double dtime)
 {
-    auto surface = reinterpret_cast<MyPaintSurface*>(m_surface);
+    auto surface = reinterpret_cast<MyPaintSurface*>(mSurface);
 
     mypaint_surface_begin_atomic(surface);
-    mypaint_brush_stroke_to(m_brush->brush, surface,
+    mypaint_brush_stroke_to(mBrush->brush, surface,
                             x,
                             y,
                             pressure,
@@ -112,7 +112,7 @@ strokeTo(float x, float y, float pressure, float xtilt, float ytilt, double dtim
 QColor
 MPHandler::getSurfaceColor(float x, float y, int radius)
 {
-    auto surface = reinterpret_cast<MyPaintSurface*>(m_surface);
+    auto surface = reinterpret_cast<MyPaintSurface*>(mSurface);
     float r, g, b, a;
     mypaint_surface_get_color(surface, x, y, radius, &r,&g,&b,&a);
 
@@ -130,8 +130,8 @@ MPHandler::getSurfaceColor(float x, float y, int radius)
 void
 MPHandler::startStroke()
 {
-    mypaint_brush_reset (m_brush->brush);
-    mypaint_brush_new_stroke(m_brush->brush);
+    mypaint_brush_reset (mBrush->brush);
+    mypaint_brush_new_stroke(mBrush->brush);
 }
 
 void
@@ -147,62 +147,62 @@ MPHandler::strokeTo(float x, float y)
 void
 MPHandler::endStroke()
 {
-    mypaint_brush_reset(m_brush->brush);
-    m_surface->clear();
+    mypaint_brush_reset(mBrush->brush);
+    mSurface->clear();
 }
 
 float MPHandler::getBrushSettingBaseValue(MyPaintBrushSetting setting)
 {
-    return this->m_brush->getBaseValue(setting);
+    return mBrush->getBaseValue(setting);
 }
 
 float MPHandler::getBrushState(MyPaintBrushState state)
 {
-    return this->m_brush->getState(state);
+    return mBrush->getState(state);
 }
 
 void
 MPHandler::setBrushColor(QColor newColor)
 {
-    this->m_brush->setColor(newColor);
+    mBrush->setColor(newColor);
 }
 
 void MPHandler::setBrushBaseValue(MyPaintBrushSetting setting, float value)
 {
-    this->m_brush->setBaseValue(setting, value);
+    mBrush->setBaseValue(setting, value);
 }
 
 int  MPHandler::getBrushNumberOfMappingPoints(MyPaintBrushSetting setting, MyPaintBrushInput input)
 {
-    return this->m_brush->getNumberOfMappingPoints(setting, input);
+    return mBrush->getNumberOfMappingPoints(setting, input);
 }
 
 void MPHandler::setBrushNumberOfMappingPoints(MyPaintBrushSetting setting, MyPaintBrushInput input, int value)
 {
-    this->m_brush->setNumberOfMappingPoints(setting, input, value);
+    mBrush->setNumberOfMappingPoints(setting, input, value);
 }
 
 int MPHandler::getBrushInputsUsed(MyPaintBrushSetting setting)
 {
-    return this->m_brush->getNumberOfInputsUsed(setting);
+    return mBrush->getNumberOfInputsUsed(setting);
 }
 
 const ControlPoints* MPHandler::getBrushInputMappingPoints(MyPaintBrushSetting setting, MyPaintBrushInput input)
 {
-    return this->m_brush->getMappingPoints(setting, input);
+    return mBrush->getMappingPoints(setting, input);
 }
 
 void MPHandler::setBrushInputMappingPoints(QVector<QPointF> points, MyPaintBrushSetting settingType, MyPaintBrushInput inputType)
 {
-    m_brush->setMappingPoints(points, settingType, inputType);
+    mBrush->setMappingPoints(points, settingType, inputType);
 }
 
 const MyPaintBrushSettingInfo* MPHandler::getBrushSettingInfo(MyPaintBrushSetting setting)
 {
-    return this->m_brush->getBrushSettingInfo(setting);
+    return mBrush->getBrushSettingInfo(setting);
 }
 
 const MyPaintBrushInputInfo* MPHandler::getBrushInputInfo(MyPaintBrushInput input)
 {
-    return this->m_brush->getBrushInputInfo(input);
+    return mBrush->getBrushInputInfo(input);
 }

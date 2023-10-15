@@ -71,8 +71,8 @@ public:
     MPSurface(MPHandler* parentHandler, QSize size);
     ~MPSurface();
 
-    uint16_t *tile_buffer; // Stores tiles in a linear chunk of memory (16bpc RGBA)
-    uint16_t *null_tile; // Single tile that we hand out and ignore writes to
+    uint16_t *tileBuffer; // Stores tiles in a linear chunk of memory (16bpc RGBA)
+    uint16_t *nullTile; // Single tile that we hand out and ignore writes to
 
     int getTilesWidth();
     int getTilesHeight();
@@ -82,8 +82,8 @@ public:
     void loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile);
     void loadTiles(const QList<std::shared_ptr<QImage> > &images, const QList<QPoint> &positions);
 
-    void setTilesWidth(int newWidth) { tiles_width = newWidth; }
-    void setTilesHeight(int newHeight) { tiles_height = newHeight; }
+    void setTilesWidth(int newWidth) { mTilesWidth = newWidth; }
+    void setTilesHeight(int newHeight) { mTilesHeight = newHeight; }
 
     MPTile* getTileFromPos(const QPoint& pos);
     MPTile* getTileFromIdx(int tileX, int tileY);
@@ -104,22 +104,18 @@ public:
     void clear();
     void clearTile(MPTile* tile);
 
-    QHash<TileIndex, MPTile*> getTiles() { return m_Tiles; }
-
 private:
     void resetNullTile();
     void resetSurface(QSize size);
     bool isFullyTransparent(QImage image);
 
-    int tiles_width; // width in tiles
-    int tiles_height; // height in tiles
-    int width; // width in pixels
-    int height; // height in pixels
-
-    QColor      m_color;
+    int mTilesWidth; // width in tiles
+    int mTilesHeight; // height in tiles
+    int mWidth; // width in pixels
+    int mHeight; // height in pixels
 
 protected:
-    QHash<TileIndex, MPTile*> m_Tiles;
+    QHash<TileIndex, MPTile*> mTilesHash;
     MPHandler* mParentHandler;
 };
 

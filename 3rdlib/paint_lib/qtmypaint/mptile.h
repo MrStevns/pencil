@@ -34,8 +34,8 @@ public:
     enum { k_tile_dim = 64 };
     enum { k_red = 0, k_green = 1, k_blue = 2, k_alpha = 3 }; // Index to access RGBA values in myPaint
 
-    const QImage& image() const { return m_cache_img; }
-    QImage& image() { return m_cache_img; }
+    const QImage& image() const { return mCacheImg; }
+    QImage& image() { return mCacheImg; }
 
     QRect boundingRect() const;
 
@@ -53,10 +53,10 @@ public:
      */
     void updateMyPaintBuffer(const QSize& tileSize);
 
-    bool isDirty() { return m_dirty; }
-    void setDirty(bool dirty) { m_dirty = dirty; }
-    void setPos(const QPoint& pos) { m_pos = pos; }
-    QPoint pos() const { return m_pos; }
+    bool isDirty() { return mDirty; }
+    void setDirty(bool dirty) { mDirty = dirty; }
+    void setPos(const QPoint& pos) { mPos = pos; }
+    QPoint pos() const { return mPos; }
 
 private:
 
@@ -66,11 +66,11 @@ private:
     /// Convert 32 bit pixel format to 16 bit
     inline uint16_t convert_to_mypaint(int value) const { return ((value*(1<<15))/255); }
 
-    uint16_t  t_pixels [k_tile_dim][k_tile_dim][4];
-    QImage    m_cache_img;
-    bool      m_cache_valid;
-    bool m_dirty = false;
-    QPoint m_pos;
+    uint16_t  mTPixels [k_tile_dim][k_tile_dim][4];
+    QImage    mCacheImg;
+    bool      mCacheValid;
+    bool mDirty = false;
+    QPoint mPos;
 };
 
 #endif // TILE_H

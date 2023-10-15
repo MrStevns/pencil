@@ -100,8 +100,8 @@ public slots:
     void loadBrush(const QByteArray& content);
 
 private:
-    MPBrush *   m_brush;
-    MPSurface * m_surface;
+    MPBrush*   mBrush;
+    MPSurface* mSurface;
 
 };
 

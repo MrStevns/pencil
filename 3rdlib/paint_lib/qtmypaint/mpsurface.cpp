@@ -38,18 +38,18 @@ static void freeTiledSurface(MyPaintSurface *surface)
     MPSurface *self = reinterpret_cast<MPSurface*>(surface);
     mypaint_tiled_surface_destroy(self);
 
-    free(self->tile_buffer);
-    free(self->null_tile);
+    free(self->tileBuffer);
+    free(self->nullTile);
     free(self);
 }
 
-static void onTileRequestStart(MyPaintTiledSurface *tiled_surface, MyPaintTileRequest *request)
+static void onTileRequestStart(MyPaintTiledSurface *tiledSurface, MyPaintTileRequest *request)
 {
-    MPSurface *self = static_cast<MPSurface*>(tiled_surface);
+    MPSurface *self = static_cast<MPSurface*>(tiledSurface);
 
     const int tx = request->tx;
     const int ty = request->ty;
-    uint16_t *tile_pointer = nullptr;
+    uint16_t *tilePointer = nullptr;
 
     if (tx > self->getTilesWidth()) {
         self->setTilesWidth(tx);
@@ -62,20 +62,20 @@ static void onTileRequestStart(MyPaintTiledSurface *tiled_surface, MyPaintTileRe
     if (self->getTilesWidth() == 0 || self->getTilesHeight() == 0) {
 
         // Give it a tile which we will ignore writes to
-        tile_pointer = self->null_tile;
+        tilePointer = self->nullTile;
     } else {
 
         MPTile* tile = self->getTileFromIdx(tx,ty);
-        tile_pointer = tile ? tile->bits(false) : nullptr;
+        tilePointer = tile ? tile->bits(false) : nullptr;
     }
 
     // here we send our buffer data to mypaint
-    request->buffer = tile_pointer;
+    request->buffer = tilePointer;
 }
 
-static void onTileRequestEnd(MyPaintTiledSurface *tiled_surface, MyPaintTileRequest *request)
+static void onTileRequestEnd(MyPaintTiledSurface *tiledSurface, MyPaintTileRequest *request)
 {
-    MPSurface *self = static_cast<MPSurface*>(tiled_surface);
+    MPSurface *self = static_cast<MPSurface*>(tiledSurface);
 
     const int tx = request->tx;
     const int ty = request->ty;
@@ -91,8 +91,8 @@ static void onTileRequestEnd(MyPaintTiledSurface *tiled_surface, MyPaintTileRequ
 MPSurface::MPSurface(MPHandler* parentHandler, QSize size)
 {
     // MPSurface vfuncs
-    this->parent.destroy = freeTiledSurface;
-    this->mParentHandler = parentHandler;
+    parent.destroy = freeTiledSurface;
+    mParentHandler = parentHandler;
 
     resetSurface(size);
 
@@ -150,7 +150,7 @@ void MPSurface::loadTiles(const QList<std::shared_ptr<QImage> >& images, const Q
 
             MPTile *tile = getTileFromPos(pos);
             tile->setImage(image);
-            this->onUpdateTile(this, tile);
+            onUpdateTile(this, tile);
         }
     }
 }
@@ -166,9 +166,9 @@ void MPSurface::saveSurface(const QString path)
     paintedImage.fill(Qt::transparent);
 
     QPainter painter(&paintedImage);
-    painter.translate(QPoint(width/2,height/2));
+    painter.translate(QPoint(mWidth/2,mHeight/2));
 
-    QHashIterator<TileIndex, MPTile*> cuTiles(m_Tiles);
+    QHashIterator<TileIndex, MPTile*> cuTiles(mTilesHash);
     while (cuTiles.hasNext()) {
         cuTiles.next();
         const QImage& pix = cuTiles.value()->image();
@@ -182,32 +182,32 @@ void MPSurface::saveSurface(const QString path)
 
 void MPSurface::setSize(QSize size)
 {
-    free(this->tile_buffer);
-    free(this->null_tile);
+    free(tileBuffer);
+    free(nullTile);
 
     resetSurface(size);
 }
 
 QSize MPSurface::size()
 {
-    return QSize(width, height);
+    return QSize(mWidth, mHeight);
 }
 
 void MPSurface::clear()
 {
-    QHashIterator<TileIndex, MPTile*> i(m_Tiles);
+    QHashIterator<TileIndex, MPTile*> i(mTilesHash);
 
     while (i.hasNext()) {
         i.next();
         MPTile *tile = i.value();
         if (tile)
         {
-            m_Tiles.remove(i.key());
+            mTilesHash.remove(i.key());
             delete tile;
         }
     }
 
-    this->onClearedSurface(this);
+    onClearedSurface(this);
 }
 
 void MPSurface::clearTile(MPTile* tile)
@@ -216,65 +216,65 @@ void MPSurface::clearTile(MPTile* tile)
     tile->clear();
     delete tile;
 
-    this->onClearTile(this, tileRect);
+    onClearTile(this, tileRect);
 }
 
 int MPSurface::getTilesWidth()
 {
-    return this->tiles_width;
+    return mTilesWidth;
 }
 
 int MPSurface::getTilesHeight()
 {
-    return this->tiles_height;
+    return mTilesHeight;
 }
 
 int MPSurface::getWidth()
 {
-    return this->width;
+    return mWidth;
 }
 
 int MPSurface::getHeight()
 {
-    return this->height;
+    return mHeight;
 }
 
 void MPSurface::resetNullTile()
 {
-    memset(this->null_tile, 0, static_cast<size_t>(this->tile_size));
+    memset(nullTile, 0, static_cast<size_t>(tile_size));
 }
 
 void MPSurface::resetSurface(QSize size)
 {
-    width = size.width();
-    height = size.height();
+    mWidth = size.width();
+    mHeight = size.height();
 
-    assert(width > 0);
-    assert(height > 0);
+    assert(mWidth > 0);
+    assert(mHeight > 0);
 
-    const int tile_size_pixels = MYPAINT_TILE_SIZE;
+    const int tileSizePixels = MYPAINT_TILE_SIZE;
 
-    const int tiles_width = static_cast<int>(ceil(static_cast<float>(width) / tile_size_pixels));
-    const int tiles_height = static_cast<int>(ceil(static_cast<float>(height) / tile_size_pixels));
+    const int tilesWidth = static_cast<int>(ceil(static_cast<float>(mWidth) / tileSizePixels));
+    const int tilesHeight = static_cast<int>(ceil(static_cast<float>(mHeight) / tileSizePixels));
 
-    const size_t tile_size = tile_size_pixels * tile_size_pixels * 4 * sizeof(uint16_t);
-    const size_t buffer_size = static_cast<size_t>(tiles_width * tiles_height) * tile_size;
+    const size_t tileSize = tileSizePixels * tileSizePixels * 4 * sizeof(uint16_t);
+    const size_t bufferSize = static_cast<size_t>(tilesWidth * tilesHeight) * tileSize;
 
-    assert(tile_size_pixels*tiles_width >= width);
-    assert(tile_size_pixels*tiles_height >= height);
-    assert(buffer_size >= static_cast<size_t>(width*height)*4*sizeof(uint16_t));
+    assert(tileSizePixels*tilesWidth >= mWidth);
+    assert(tileSizePixels*tilesHeight >= mHeight);
+    assert(bufferSize >= static_cast<size_t>(mWidth*mHeight)*4*sizeof(uint16_t));
 
-    uint16_t* buffer = static_cast<uint16_t*>(malloc(buffer_size));
+    uint16_t* buffer = static_cast<uint16_t*>(malloc(bufferSize));
     if (!buffer)
-        fprintf(stderr, "CRITICAL: unable to allocate enough memory: %lu bytes", buffer_size);
+        fprintf(stderr, "CRITICAL: unable to allocate enough memory: %lu bytes", bufferSize);
 
-    memset(buffer, 255, buffer_size);
+    memset(buffer, 255, bufferSize);
 
-    this->tile_buffer = buffer;
-    this->tile_size = tile_size;
-    this->null_tile = static_cast<uint16_t*>(malloc(tile_size));
-    this->tiles_width = tiles_width;
-    this->tiles_height = tiles_height;
+    this->tile_size = tileSize;
+    tileBuffer = buffer;
+    nullTile = static_cast<uint16_t*>(malloc(tile_size));
+    mTilesWidth = tilesWidth;
+    mTilesHeight = tilesHeight;
 
     resetNullTile();
 }
@@ -312,19 +312,19 @@ MPTile* MPSurface::getTileFromIdx(int tileX, int tileY)
 
     MPTile* selectedTile = nullptr;
 
-    selectedTile = m_Tiles.value(tileIndex, nullptr);
+    selectedTile = mTilesHash.value(tileIndex, nullptr);
 
     if (!selectedTile) {
         // Time to allocate it, update table:
         selectedTile = new MPTile();
-        m_Tiles.insert(tileIndex, selectedTile);
+        mTilesHash.insert(tileIndex, selectedTile);
 
         QPoint tilePos (getTilePos(tileIndex));
         selectedTile->setPos(tilePos);
 
-        this->onNewTile(this, selectedTile);
+        onNewTile(this, selectedTile);
     } else {
-        this->onUpdateTile(this, selectedTile);
+        onUpdateTile(this, selectedTile);
     }
 
     return selectedTile;
