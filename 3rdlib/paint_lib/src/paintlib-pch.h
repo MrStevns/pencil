@@ -1,0 +1,13 @@
+#ifndef PAINTLIBPCH_H
+#define PAINTLIBPCH_H
+
+/* Add C includes here */
+
+#if defined __cplusplus
+/* Add C++ includes here */
+
+#include <QObject>
+#include <QString>
+#include <QList>
+
+#endif // PAINTLIBPCH_H

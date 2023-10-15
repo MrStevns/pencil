@@ -29,9 +29,6 @@ HEADERS +=  \
     src/corelib-pch.h \
     src/graphics/bitmap/bitmapbucket.h \
     src/graphics/bitmap/bitmapimage.h \
-    src/graphics/bitmap/tile.h \
-    src/graphics/bitmap/tiledbuffer.h \
-    src/graphics/surface.h \
     src/graphics/vector/bezierarea.h \
     src/graphics/vector/beziercurve.h \
     src/graphics/vector/colorref.h \
@@ -90,7 +87,6 @@ HEADERS +=  \
     src/tool/strokemanager.h \
     src/tool/stroketool.h \
     src/util/brushsetting.h \
-    src/util/blitrect.h \
     src/util/cameraeasingtype.h \
     src/util/camerafieldoption.h \
     src/util/colordictionary.h \
@@ -124,8 +120,6 @@ HEADERS +=  \
 
 SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/graphics/bitmap/bitmapbucket.cpp \
-    src/graphics/bitmap/tile.cpp \
-    src/graphics/bitmap/tiledbuffer.cpp \
     src/graphics/vector/bezierarea.cpp \
     src/graphics/vector/beziercurve.cpp \
     src/graphics/vector/colorref.cpp \
@@ -178,7 +172,6 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/smudgetool.cpp \
     src/tool/strokemanager.cpp \
     src/tool/stroketool.cpp \
-    src/util/blitrect.cpp \
     src/util/cameraeasingtype.cpp \
     src/util/fileformat.cpp \
     src/util/imagecompositor.cpp \
@@ -217,9 +210,9 @@ unix:!macx {
 }
 
 # --- mypaint ---
-INCLUDEPATH += $$PWD/../3rdlib/paint_lib/json-c \
-               $$PWD/../3rdlib/paint_lib/libmypaint \
-               $$PWD/../3rdlib/paint_lib/qtmypaint \
-               $$PWD/../3rdlib/paint_lib
+INCLUDEPATH += $$PWD/../3rdlib/paint_lib/src/json-c \
+               $$PWD/../3rdlib/paint_lib/src/libmypaint \
+               $$PWD/../3rdlib/paint_lib/src/qtmypaint \
+               $$PWD/../3rdlib/paint_lib/src
 
-DEPENDPATH += $$PWD/../3rdlib/paint_lib
+DEPENDPATH += $$PWD/../3rdlib/paint_lib/src

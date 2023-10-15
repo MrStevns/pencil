@@ -1,4 +1,4 @@
-QT += core
+QT += core gui
 
 TARGET = paint_lib
 TEMPLATE = lib
@@ -31,56 +31,75 @@ unix:!macx {
     QMAKE_LINK_SHLIB = $$QMAKE_CXX
 }
 
-# libmypaint
+PRECOMPILED_HEADER = src/paintlib-pch.h
+
+# libpaint
+
 SOURCES += \
-            $$PWD/libmypaint/mypaint-brush.c \
-            $$PWD/libmypaint/brushmodes.c \
-            $$PWD/libmypaint/fifo.c \
-            $$PWD/libmypaint/helpers.c \
-            $$PWD/libmypaint/libmypaint.c \
-            $$PWD/libmypaint/mypaint-brush-settings.c \
-            $$PWD/libmypaint/mypaint-brush.c \
-            $$PWD/libmypaint/mypaint-fixed-tiled-surface.c \
-            $$PWD/libmypaint/mypaint-mapping.c \
-            $$PWD/libmypaint/mypaint-rectangle.c \
-            $$PWD/libmypaint/mypaint-surface.c \
-            $$PWD/libmypaint/mypaint-tiled-surface.c \
-            $$PWD/libmypaint/mypaint.c \
-            $$PWD/libmypaint/operationqueue.c \
-            $$PWD/libmypaint/rng-double.c \
-            $$PWD/libmypaint/tilemap.c \
-            $$PWD/libmypaint/utils.c
+            src/tile.cpp \
+            src/tiledbuffer.cpp \
+            src/blitrect.cpp
 
 HEADERS += \
-            $$PWD/libmypaint/brushmodes.h \
-            $$PWD/libmypaint/brushsettings-gen.h \
-#            $$PWD/libmypaint/config.h \
-            $$PWD/libmypaint/fifo.h \
-            $$PWD/libmypaint/helpers.h \
-            $$PWD/libmypaint/mypaint-brush-settings-gen.h \
-            $$PWD/libmypaint/mypaint-brush-settings.h \
-            $$PWD/libmypaint/mypaint-brush.h \
-            $$PWD/libmypaint/mypaint-brush.h \
-            $$PWD/libmypaint/mypaint-config.h \
-            $$PWD/libmypaint/mypaint-fixed-tiled-surface.h \
-            $$PWD/libmypaint/mypaint-glib-compat.h \
-            $$PWD/libmypaint/mypaint-mapping.h \
-            $$PWD/libmypaint/mypaint-rectangle.h \
-            $$PWD/libmypaint/mypaint-surface.h \
-            $$PWD/libmypaint/mypaint-tiled-surface.h \
-            $$PWD/libmypaint/mypaint.h \
-            $$PWD/libmypaint/operationqueue.h \
-            $$PWD/libmypaint/rng-double.h \
-            $$PWD/libmypaint/tiled-surface-private.h \
-            $$PWD/libmypaint/tilemap.h \
-            $$PWD/libmypaint/utils.h
+            src/paintlib-pch.h \
+            src/tile.h \
+            src/tiledbuffer.h \
+            src/tileindex.h \
+            src/blitrect.h
 
-INCLUDEPATH += $$PWD/libmypaint
-DEPENDPATH += $$PWD/libmypaint
+INCLUDEPATH += src
+DEPENDPATH += src
+
+# libmypaint
+SOURCES += \
+            src/libmypaint/mypaint-brush.c \
+            src/libmypaint/brushmodes.c \
+            src/libmypaint/fifo.c \
+            src/libmypaint/helpers.c \
+            src/libmypaint/libmypaint.c \
+            src/libmypaint/mypaint-brush-settings.c \
+            src/libmypaint/mypaint-brush.c \
+            src/libmypaint/mypaint-fixed-tiled-surface.c \
+            src/libmypaint/mypaint-mapping.c \
+            src/libmypaint/mypaint-rectangle.c \
+            src/libmypaint/mypaint-surface.c \
+            src/libmypaint/mypaint-tiled-surface.c \
+            src/libmypaint/mypaint.c \
+            src/libmypaint/operationqueue.c \
+            src/libmypaint/rng-double.c \
+            src/libmypaint/tilemap.c \
+            src/libmypaint/utils.c
+
+HEADERS += \
+            src/libmypaint/brushmodes.h \
+            src/libmypaint/brushsettings-gen.h \
+#            src/libmypaint/config.h \
+            src/libmypaint/fifo.h \
+            src/libmypaint/helpers.h \
+            src/libmypaint/mypaint-brush-settings-gen.h \
+            src/libmypaint/mypaint-brush-settings.h \
+            src/libmypaint/mypaint-brush.h \
+            src/libmypaint/mypaint-brush.h \
+            src/libmypaint/mypaint-config.h \
+            src/libmypaint/mypaint-fixed-tiled-surface.h \
+            src/libmypaint/mypaint-glib-compat.h \
+            src/libmypaint/mypaint-mapping.h \
+            src/libmypaint/mypaint-rectangle.h \
+            src/libmypaint/mypaint-surface.h \
+            src/libmypaint/mypaint-tiled-surface.h \
+            src/libmypaint/mypaint.h \
+            src/libmypaint/operationqueue.h \
+            src/libmypaint/rng-double.h \
+            src/libmypaint/tiled-surface-private.h \
+            src/libmypaint/tilemap.h \
+            src/libmypaint/utils.h
+
+INCLUDEPATH += src/libmypaint
+DEPENDPATH += src/libmypaint
 
 # json-c
 
-jsonlibpath = $$PWD/json-c
+jsonlibpath = src/json-c
 # HACK: Copy config.h that fits the respective platform, created by configure in another build
 exists($$jsonlibpath/config.h) {
     message("config.h moved to correct folder")
@@ -99,50 +118,50 @@ exists($$jsonlibpath/config.h) {
     }
 }
 
-INCLUDEPATH += $$PWD/json-c
-DEPENDPATH += $$PWD/json-c
+INCLUDEPATH += src/json-c
+DEPENDPATH += src/json-c
 
-HEADERS += $$PWD/json-c/arraylist.h \
-           $$PWD/json-c/bits.h \
-           $$PWD/json-c/debug.h \
-           $$PWD/json-c/json.h \
-           $$PWD/json-c/json_c_version.h \
-           $$PWD/json-c/json_inttypes.h \
-           $$PWD/json-c/json_object.h \
-           $$PWD/json-c/json_object_iterator.h \
-           $$PWD/json-c/json_object_private.h \
-           $$PWD/json-c/json_tokener.h \
-           $$PWD/json-c/json_util.h \
-           $$PWD/json-c/linkhash.h \
-           $$PWD/json-c/math_compat.h \
-           $$PWD/json-c/printbuf.h \
-           $$PWD/json-c/random_seed.h \
-           $$PWD/json-c/config.h \
-           $$PWD/json-c/json_config.h
+HEADERS += src/json-c/arraylist.h \
+           src/json-c/bits.h \
+           src/json-c/debug.h \
+           src/json-c/json.h \
+           src/json-c/json_c_version.h \
+           src/json-c/json_inttypes.h \
+           src/json-c/json_object.h \
+           src/json-c/json_object_iterator.h \
+           src/json-c/json_object_private.h \
+           src/json-c/json_tokener.h \
+           src/json-c/json_util.h \
+           src/json-c/linkhash.h \
+           src/json-c/math_compat.h \
+           src/json-c/printbuf.h \
+           src/json-c/random_seed.h \
+           src/json-c/config.h \
+           src/json-c/json_config.h
 
-SOURCES += $$PWD/json-c/arraylist.c \
-           $$PWD/json-c/debug.c \
-           $$PWD/json-c/json_c_version.c \
-           $$PWD/json-c/json_object.c \
-           $$PWD/json-c/json_object_iterator.c \
-           $$PWD/json-c/json_tokener.c \
-           $$PWD/json-c/json_util.c \
-           $$PWD/json-c/libjson.c \
-           $$PWD/json-c/linkhash.c \
-           $$PWD/json-c/printbuf.c \
-           $$PWD/json-c/random_seed.c
+SOURCES += src/json-c/arraylist.c \
+           src/json-c/debug.c \
+           src/json-c/json_c_version.c \
+           src/json-c/json_object.c \
+           src/json-c/json_object_iterator.c \
+           src/json-c/json_tokener.c \
+           src/json-c/json_util.c \
+           src/json-c/libjson.c \
+           src/json-c/linkhash.c \
+           src/json-c/printbuf.c \
+           src/json-c/random_seed.c
 
 
 # qtmypaint
-HEADERS += $$PWD/qtmypaint/mpbrush.h \
-           $$PWD/qtmypaint/mphandler.h \
-           $$PWD/qtmypaint/mpsurface.h \
-           $$PWD/qtmypaint/mptile.h
+HEADERS += src/qtmypaint/mpbrush.h \
+           src/qtmypaint/mphandler.h \
+           src/qtmypaint/mpsurface.h \
+           src/qtmypaint/mptile.h
 
-SOURCES += $$PWD/qtmypaint/mpbrush.cpp \
-           $$PWD/qtmypaint/mphandler.cpp \
-           $$PWD/qtmypaint/mpsurface.cpp \
-           $$PWD/qtmypaint/mptile.cpp
+SOURCES += src/qtmypaint/mpbrush.cpp \
+           src/qtmypaint/mphandler.cpp \
+           src/qtmypaint/mpsurface.cpp \
+           src/qtmypaint/mptile.cpp
 
-INCLUDEPATH += $$PWD/qtmypaint
-DEPENDPATH += $$PWD/qtmypaint
+INCLUDEPATH += src/qtmypaint
+DEPENDPATH += src/qtmypaint

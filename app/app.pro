@@ -321,12 +321,12 @@ unix {
 
 # --- paint_lib ---
 
-INCLUDEPATH += $$PWD/../3rdlib/paint_lib/json-c \
-               $$PWD/../3rdlib/paint_lib/libmypaint \
-               $$PWD/../3rdlib/paint_lib/qtmypaint \
-               $$PWD/../3rdlib/paint_lib
+INCLUDEPATH += $$PWD/../3rdlib/paint_lib/src/json-c \
+               $$PWD/../3rdlib/paint_lib/src/libmypaint \
+               $$PWD/../3rdlib/paint_lib/src/qtmypaint \
+               $$PWD/../3rdlib/paint_lib/src
 
-DEPENDPATH += $$PWD/../3rdlib/paint_lib
+DEPENDPATH += $$PWD/../3rdlib/paint_lib/src
 
 win32-msvc* {
   LIBS += -L$$OUT_PWD/../3rdlib/paint_lib/$$BUILDTYPE/ -lpaint_lib
