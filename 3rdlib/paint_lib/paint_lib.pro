@@ -1,3 +1,5 @@
+! include( ../../util/common.pri ) { error( Could not find the common.pri file! ) }
+
 QT += core gui
 
 TARGET = paint_lib
@@ -11,25 +13,6 @@ DEFINES += HAVE_JSON_C
 QMAKE_CFLAGS += -std=c99
 QMAKE_CFLAGS += -D_XOPEN_SOURCE=600
 QMAKE_CFLAGS += -Ofast
-
-win32-g++ {
-    QMAKE_CXXFLAGS += -std=c++11
-    QMAKE_CC = gcc
-}
-
-win32-msvc* {
-    QMAKE_CXXFLAGS += /MP
-}
-
-macx {
-    QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
-}
-
-unix:!macx {
-    QMAKE_CXXFLAGS += -std=c++11
-    QMAKE_LINK = $$QMAKE_CXX
-    QMAKE_LINK_SHLIB = $$QMAKE_CXX
-}
 
 PRECOMPILED_HEADER = src/paintlib-pch.h
 

@@ -30,8 +30,8 @@ GNU General Public License for more details.
 #include "onionskinpainteroptions.h"
 #include "onionskinsubpainter.h"
 
-#include "mpsurface.h"
-
+class MPTile;
+class TiledBuffer;
 class Object;
 class BitmapImage;
 class ViewManager;
@@ -67,7 +67,7 @@ public:
     void setTransformedSelection(QRect selection, QTransform transform);
     void ignoreTransformedSelection();
 
-    void setPaintSettings(const Object* object, int currentLayer, int frame, QHash<QString, MPTile*> tilesBuffer, const QRect& tilesBounds);
+    void setPaintSettings(const Object* object, int currentLayer, int frame, QHash<QString, MPTile*> tiledHash, const QRect& tilesBounds, const TiledBuffer* tiledBuffer);
     void paint(const QRect& blitRect);
     void paintCached(const QRect& blitRect);
     void resetLayerCache();
@@ -108,8 +108,10 @@ private:
 
     int mCurrentLayerIndex = 0;
     int mFrameNumber = 0;
-    QHash<QString, MPTile*> mTiledBuffer;
+    QHash<QString, MPTile*> mTiledHash;
     QRect mTilesRect;
+
+    const TiledBuffer* mTiledBuffer;
 
     QImage mScaledBitmap;
 

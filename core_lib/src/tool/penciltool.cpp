@@ -173,18 +173,6 @@ void PencilTool::pointerReleaseEvent(PointerEvent *event)
     endStroke();
 }
 
-void PencilTool::endStroke()
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-
-    if (layer->type() == Layer::BITMAP)
-        StrokeTool::paintBitmapStroke();
-    else if (layer->type() == Layer::VECTOR)
-        StrokeTool::paintVectorStroke();
-
-    StrokeTool::endStroke();
-}
-
 void PencilTool::drawStroke(PointerEvent* event)
 {
     StrokeTool::drawStroke(event);

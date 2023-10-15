@@ -169,18 +169,6 @@ void EraserTool::drawStroke(PointerEvent* event)
     }
 }
 
-void EraserTool::endStroke()
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-
-    if (layer->type() == Layer::BITMAP)
-        paintBitmapStroke();
-    else if (layer->type() == Layer::VECTOR)
-        paintVectorStroke();
-
-    StrokeTool::endStroke();
-}
-
 void EraserTool::removeVectorPaint()
 {
     Layer* layer = mEditor->layers()->currentLayer();

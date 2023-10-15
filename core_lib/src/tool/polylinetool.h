@@ -22,6 +22,7 @@ GNU General Public License for more details.
 #include "stroketool.h"
 
 #include "basetool.h"
+#include "blitrect.h"
 
 class BitmapImage;
 
@@ -43,9 +44,6 @@ public:
     void pointerPressOnVector(PointerEvent*);
     void pointerPressOnBitmap(PointerEvent*);
 
-    void pointerMoveOnVector(PointerEvent*);
-    void pointerMoveOnBitmap(PointerEvent*);
-
     bool keyPressEvent(QKeyEvent* event) override;
 
     void clearToolData() override;
@@ -64,6 +62,7 @@ private:
     QList<QPointF> mPoints;
     QPointF previousPoint;
 
+    void updateDirtyRect(QList<QPointF> linePoints, BlitRect dirtyRect);
     void drawPolyline(QList<QPointF> points, QPointF endPoint, quint64 timeStamp);
     void cancelPolyline();
     void endPolyline(QList<QPointF> points, quint64 timeStamp);

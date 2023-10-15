@@ -164,73 +164,14 @@ void PolylineTool::pointerPressOnBitmap(PointerEvent* event)
     }
 
     mScribbleArea->paintBitmapBuffer();
-    mScribbleArea->clearTilesBuffer();
+    mScribbleArea->clearDrawingBuffer();
 
 }
 
 void PolylineTool::pointerMoveEvent(PointerEvent* event)
 {
-    Layer* layer = mEditor->layers()->currentLayer();
-
-
-    if (mPoints.size() > 0)
-    {
-        if (layer->type() == Layer::VECTOR)
-        {
-            pointerMoveOnVector(event);
-        } else if (layer->type() == Layer::BITMAP) {
-            pointerMoveOnBitmap(event);
-        }
-    }
+    drawPolyline(mPoints, getCurrentPoint(), event->timeStamp());
     previousPoint = getCurrentPoint();
-}
-
-void PolylineTool::pointerMoveOnVector(PointerEvent *)
-{
-    QPen pen(mEditor->color()->frontColor(),
-             properties.width,
-             Qt::SolidLine,
-             Qt::RoundCap,
-             Qt::RoundJoin);
-
-    QPainterPath tempPath;
-    if (properties.bezier_state)
-    {
-        tempPath = BezierCurve(mPoints).getSimplePath();
-    }
-    else
-    {
-        tempPath = BezierCurve(mPoints).getStraightPath();
-    }
-    tempPath.lineTo(getCurrentPoint());
-
-    tempPath = mEditor->view()->mapCanvasToScreen(tempPath);
-    if (mScribbleArea->makeInvisible() == true)
-    {
-        pen.setWidth(0);
-        pen.setStyle(Qt::DotLine);
-    }
-    else
-    {
-        pen.setWidth(properties.width * mEditor->view()->scaling());
-    }
-
-    mScribbleArea->drawPolyline(tempPath, pen, true);
-}
-
-void PolylineTool::pointerMoveOnBitmap(PointerEvent * event)
-{
-    mScribbleArea->mMyPaint->clearSurface();
-    mScribbleArea->mMyPaint->startStroke();
-
-    // TODO: can we get the old bezier functionality back when using mypaint?
-    for(int i=0; i<mPoints.size(); i++) {
-
-        drawStroke(mPoints[i], calculateDeltaTime(event->timeStamp()));
-    }
-    drawStroke(getCurrentPoint(), calculateDeltaTime(event->timeStamp()));
-
-    mScribbleArea->updateFrame();
 }
 
 double PolylineTool::calculateDeltaTime(quint64)
@@ -279,7 +220,7 @@ bool PolylineTool::keyPressEvent(QKeyEvent* event)
         break;
     }
 
-    return BaseTool::keyPressEvent(event);
+    return StrokeTool::keyPressEvent(event);
 }
 
 void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint, quint64 timeStamp)
@@ -287,17 +228,19 @@ void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint, quint64
     Layer* layer = mEditor->layers()->currentLayer();
     if (points.size() > 0)
     {
-
         if (layer->type() == Layer::BITMAP) {
-            mScribbleArea->mMyPaint->clearSurface();
-            mScribbleArea->mMyPaint->startStroke();
+            BlitRect previousTilesRect = mScribbleArea->mTilesBlitRect;
+            mScribbleArea->clearDrawingBuffer();
+            mScribbleArea->startStroke();
 
             for(int i=0; i<points.size(); i++) {
                 drawStroke(points[i], calculateDeltaTime(timeStamp));
             }
             drawStroke(endPoint, calculateDeltaTime(timeStamp));
-            mScribbleArea->updateFrame();
-            mScribbleArea->mMyPaint->endStroke();
+
+            // In order to clear the polyline overall dirty bounds, we need to do an additional update, otherwise there will be residue
+            // of the previous stroke in some cases.
+            updateDirtyRect(points, previousTilesRect);
         }
         else if (layer->type() == Layer::VECTOR)
         {
@@ -339,6 +282,27 @@ void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint, quint64
     }
 }
 
+void PolylineTool::updateDirtyRect(QList<QPointF> linePoints, BlitRect dirtyRect)
+{
+    BlitRect blitRect;
+
+    // In order to clear what was previously dirty, we need to include the previous buffer bound
+    // this ensures that we won't see stroke artifacts
+    blitRect.extend(mEditor->view()->mapCanvasToScreen(dirtyRect).toRect());
+
+    BlitRect lineBounds;
+
+    for (QPointF point : linePoints) {
+        lineBounds.extend(point.toPoint());
+    }
+    QRect updateRect = mEditor->view()->mapCanvasToScreen(lineBounds).toRect();
+
+    // Now extend with the new path bounds mapped to the local coordinate
+    blitRect.extend(updateRect);
+
+    // And update only the affected area
+    mScribbleArea->update(blitRect.adjusted(-1, -1, 1, 1));
+}
 
 void PolylineTool::cancelPolyline()
 {
@@ -353,7 +317,6 @@ void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
 
     if (layer->type() == Layer::VECTOR)
     {
-        mScribbleArea->clearDrawingBuffer();
         BezierCurve curve = BezierCurve(points, properties.bezier_state);
         if (mScribbleArea->makeInvisible() == true)
         {
@@ -367,15 +330,13 @@ void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
         curve.setVariableWidth(false);
         curve.setInvisibility(mScribbleArea->makeInvisible());
 
-        static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0)->addCurve(curve, mEditor->view()->scaling());
+        VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+        if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
+        vectorImage->addCurve(curve, mEditor->view()->scaling());
     }
     if (layer->type() == Layer::BITMAP)
     {
-        for(int i=0; i<mPoints.size(); i++) {
-
-            drawStroke(mPoints[i], calculateDeltaTime(timeStamp));
-        }
-        drawStroke(getCurrentPoint(), calculateDeltaTime(timeStamp));
+        drawPolyline(mPoints, mPoints.last(), calculateDeltaTime(timeStamp));
     }
     
     endStroke();

@@ -77,6 +77,9 @@ bool ScribbleArea::init()
     connect(mMyPaint, &MPHandler::tileUpdated, this, &ScribbleArea::updateTile);
     connect(mMyPaint, &MPHandler::tileCleared, this, &ScribbleArea::clearTile);
 
+    connect(&mTiledBuffer, &TiledBuffer::tileUpdated, this, &ScribbleArea::onTileUpdated);
+    connect(&mTiledBuffer, &TiledBuffer::tileCreated, this, &ScribbleArea::onTileCreated);
+
     connect(mPrefs, &PreferenceManager::optionChanged, this, &ScribbleArea::settingUpdated);
     connect(mEditor->tools(), &ToolManager::toolPropertyChanged, this, &ScribbleArea::onToolPropertyUpdated);
     connect(mEditor->tools(), &ToolManager::toolChanged, this, &ScribbleArea::onToolChanged);
@@ -202,10 +205,6 @@ void ScribbleArea::setEffect(SETTING e, bool isOn)
 
 void ScribbleArea::updateFrame()
 {
-    if (currentTool()->isActive() && currentTool()->isDrawingTool()) {
-        return;
-    }
-
     update();
 }
 
@@ -263,8 +262,6 @@ void ScribbleArea::invalidateOnionSkinsCacheAround(int frameNumber)
 
 void ScribbleArea::invalidateAllCache()
 {
-    if (currentTool()->isDrawingTool() && currentTool()->isActive()) { return; }
-
     QPixmapCache::clear();
     mPixmapCacheKeys.clear();
     invalidatePainterCaches();
@@ -332,10 +329,8 @@ void ScribbleArea::onWillScrub(int frameNumber)
     Q_UNUSED(frameNumber)
 
     // If we're in the middle of a painting session, stop it and save what was painted
-    if (mIsPainting) {
-        paintBitmapBuffer();
-        invalidatePainterCaches();
-        clearDrawingBuffer();
+
+    if (mTiledBuffer.isValid() || !mTilesBlitRect.isEmpty()) {
         endStroke();
     }
 }
@@ -357,16 +352,6 @@ void ScribbleArea::onFramesModified()
 }
 
 void ScribbleArea::onFrameModified(int frameNumber)
-{
-    if (mPrefs->isOn(SETTING::PREV_ONION) || mPrefs->isOn(SETTING::NEXT_ONION)) {
-        invalidateOnionSkinsCacheAround(frameNumber);
-        invalidatePainterCaches();
-    }
-    invalidateCacheForFrame(frameNumber);
-    updateFrame();
-}
-
-void ScribbleArea::onDidDraw(int frameNumber)
 {
     if (mPrefs->isOn(SETTING::PREV_ONION) || mPrefs->isOn(SETTING::NEXT_ONION)) {
         invalidateOnionSkinsCacheAround(frameNumber);
@@ -872,6 +857,7 @@ void ScribbleArea::clearDrawingBuffer()
     mMyPaint->clearSurface();
     mBufferTiles.clear();
     mTilesBlitRect = BlitRect();
+    mTiledBuffer.clear();
 }
 
 void ScribbleArea::paintCanvasCursor(QPainter& painter)
@@ -1216,7 +1202,7 @@ void ScribbleArea::prepCanvas(int frame)
     mCanvasPainter.setViewTransform(vm->getView(), vm->getViewInverse());
     mCanvasPainter.setTransformedSelection(sm->mySelectionRect().toRect(), sm->selectionTransform());
 
-    mCanvasPainter.setPaintSettings(object, mEditor->layers()->currentLayerIndex(), frame, mBufferTiles, mTilesBlitRect);
+    mCanvasPainter.setPaintSettings(object, mEditor->layers()->currentLayerIndex(), frame, mBufferTiles, mTilesBlitRect, &mTiledBuffer);
 }
 
 void ScribbleArea::drawCanvas(int frame, QRect rect)
@@ -1273,6 +1259,30 @@ void ScribbleArea::loadMPBrush(const QByteArray &content)
     updateCanvasCursor();
 }
 
+void ScribbleArea::onTileUpdated(TiledBuffer* tiledBuffer, Tile* tile)
+{
+    Q_UNUSED(tiledBuffer);
+    const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tile->bounds()));
+    update(mappedRect.toAlignedRect());
+}
+
+void ScribbleArea::onTileCreated(TiledBuffer* tiledBuffer, Tile* tile)
+{
+    Q_UNUSED(tiledBuffer)
+    Layer::LAYER_TYPE layerType = mEditor->layers()->currentLayer()->type();
+    if (layerType == Layer::BITMAP) {
+        const auto& bitmapImage = currentBitmapImage(mEditor->layers()->currentLayer());
+        const QImage& image = *bitmapImage->image();
+        tile->load(image, bitmapImage->topLeft());
+    } else if (layerType == Layer::VECTOR) {
+
+        // Not used, we only use the buffer to paint the stroke before painting the real vector stroke
+    }
+
+    const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tile->bounds()));
+    update(mappedRect.toAlignedRect());
+}
+
 void ScribbleArea::updateTile(MPSurface *surface, MPTile *tile)
 {
     Q_UNUSED(surface)
@@ -1298,11 +1308,11 @@ void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
     // Therefore we only load the mypaint surface with bitmap data when not using the polyline tool.
 
     // TODO: This code would be better served in StrokeTool  rather than here.
-    if (mIsPainting && currentTool()->type() != ToolType::POLYLINE) {
+//    if (mIsPainting && currentTool()->type() != ToolType::POLYLINE) {
         const auto& bitmapImage = currentBitmapImage(layer);
         const QImage& image = *bitmapImage->image();
         mMyPaint->loadTile(image, bitmapImage->topLeft(), tile);
-    }
+//    }
     mTilesBlitRect.extend(tile->pos(), tile->boundingRect().size());
     const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tile->pos(), tile->boundingRect().size()));
     update(mappedRect.toRect());
@@ -1326,16 +1336,13 @@ void ScribbleArea::clearTile(MPSurface *surface, QRect tileRect)
 void ScribbleArea::startStroke()
 {
     mMyPaint->startStroke();
-    mIsPainting = true;
 }
 
 void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float ytilt, double dt)
 {
-    if (!mIsPainting) { return; }
+    Q_ASSERT(mEditor->layers()->currentLayer()->type() == Layer::BITMAP);
 
-    if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
-        mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, dt);
-    }
+    mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, dt);
 }
 
 void ScribbleArea::forceUpdateMyPaintStates()
@@ -1350,26 +1357,19 @@ void ScribbleArea::forceUpdateMyPaintStates()
 }
 
 void ScribbleArea::endStroke()
-{
+{   
     if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
-        paintBitmapBuffer();
+        mMyPaint->endStroke();
     }
-    
-    clearTilesBuffer();
 
-    mIsPainting = false;
-    mMyPaint->endStroke();
+    if (mPrefs->isOn(SETTING::PREV_ONION) || mPrefs->isOn(SETTING::NEXT_ONION)) {
+        invalidateOnionSkinsCacheAround(mEditor->currentFrame());
+        invalidatePainterCaches();
+    }
+    invalidateCacheForFrame(mEditor->currentFrame());
+    updateFrame();
 
-    onDidDraw(mEditor->currentFrame());
     qDebug() << "end stroke";
-}
-
-void ScribbleArea::clearTilesBuffer()
-{
-    // clear the temp tiles buffer
-    if (!mBufferTiles.isEmpty()) {
-        mBufferTiles.clear();
-    }
 }
 
 void ScribbleArea::flipSelection(bool flipVertical)
@@ -1377,16 +1377,29 @@ void ScribbleArea::flipSelection(bool flipVertical)
     mEditor->select()->flipSelection(flipVertical);
 }
 
-//void ScribbleArea::drawPolyline(QPainterPath path, QPen pen, bool useAA)
-//{
-//    QRectF updateRect = mEditor->view()->mapCanvasToScreen(path.boundingRect().toRect()).adjusted(-1, -1, 1, 1);
+void ScribbleArea::drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm)
+{
+    mTiledBuffer.drawPath(mEditor->view()->mapScreenToCanvas(path), mEditor->view()->mapScreenToCanvas(mCursorImg.rect()).width(), pen, brush, cm, mPrefs->isOn(SETTING::ANTIALIAS));
+}
 
-//    // Update region outside updateRect
-//    QRectF boundingRect = updateRect.adjusted(-width(), -height(), width(), height());
-//    mBufferImg->clear();
-//    mBufferImg->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_SourceOver, useAA);
-//    update(boundingRect.toRect());
-//}
+void ScribbleArea::drawPolyline(QPainterPath path, QPen pen, bool useAA)
+{
+    BlitRect blitRect;
+
+    // In order to clear what was previously dirty, we need to include the previous buffer bound
+    // this ensures that we won't see stroke artifacts
+    blitRect.extend(mEditor->view()->mapCanvasToScreen(mTiledBuffer.bounds()).toRect());
+
+    QRect updateRect = mEditor->view()->mapCanvasToScreen(path.boundingRect()).toRect();
+    // Now extend with the new path bounds mapped to the local coordinate
+    blitRect.extend(updateRect);
+
+    mTiledBuffer.clear();
+    mTiledBuffer.drawPath(path, mEditor->view()->mapScreenToCanvas(mCursorImg.rect()).width(), pen, Qt::NoBrush, QPainter::CompositionMode_SourceOver, useAA);
+
+    // And update only the affected area
+    update(blitRect.adjusted(-1, -1, 1, 1));
+}
 
 /************************************************************************************/
 // view handling

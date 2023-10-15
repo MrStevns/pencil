@@ -38,8 +38,8 @@ public:
     void drawStroke(PointerEvent* event);
     void endStroke();
 
-    void paintBitmapStroke();
-    void paintVectorStroke();
+    void commitBitmapStroke();
+    void commitVectorStroke();
 
     bool keyPressEvent(QKeyEvent* event) override;
 

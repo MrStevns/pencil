@@ -37,7 +37,6 @@ public:
     void pointerReleaseEvent(PointerEvent*) override;
 
     void drawStroke(PointerEvent* event);
-    void endStroke();
 
     void setWidth(const qreal width) override;
     void setPressure(const bool pressure) override;

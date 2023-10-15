@@ -255,7 +255,7 @@ QList<QPointF> StrokeManager::noInpolOp(QList<QPointF> points)
 {
     setPressure(getPressure());
 
-    points << mLastPixel << mCurrentPixel;
+    points << mLastPixel << mLastPixel << mCurrentPixel << mCurrentPixel;
 
     // Set lastPixel to CurrentPixel
     // new interpolated pixel

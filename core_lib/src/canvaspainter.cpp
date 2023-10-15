@@ -25,6 +25,8 @@ GNU General Public License for more details.
 #include "vectorimage.h"
 
 #include "painterutils.h"
+#include "mptile.h"
+#include "tiledbuffer.h"
 
 CanvasPainter::CanvasPainter(QPixmap& canvas) : mCanvas(canvas)
 {
@@ -157,7 +159,7 @@ void CanvasPainter::renderPostLayers(QPainter& painter, const QRect& blitRect)
     }
 }
 
-void CanvasPainter::setPaintSettings(const Object* object, int currentLayer, int frame, QHash<QString, MPTile*> tiledBuffer, const QRect& tilesBounds)
+void CanvasPainter::setPaintSettings(const Object* object, int currentLayer, int frame, QHash<QString, MPTile*> tiledHash, const QRect& tilesBounds, const TiledBuffer* tiledBuffer)
 {
     Q_ASSERT(object);
     mObject = object;
@@ -165,8 +167,9 @@ void CanvasPainter::setPaintSettings(const Object* object, int currentLayer, int
     CANVASPAINTER_LOG("Set CurrentLayerIndex = %d", currentLayer);
     mCurrentLayerIndex = currentLayer;
     mFrameNumber = frame;
-    mTiledBuffer = tiledBuffer;
+    mTiledHash = tiledHash;
     mTilesRect = tilesBounds;
+    mTiledBuffer = tiledBuffer;
 }
 
 void CanvasPainter::paint(const QRect& blitRect)
@@ -289,7 +292,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     if (paintedImage == nullptr) { return; }
     paintedImage->loadFile(); // Critical! force the BitmapImage to load the image
 
-    const bool isDrawing = !mTiledBuffer.isEmpty();
+    const bool isDrawing = !mTiledHash.isEmpty();
 
     QPainter currentBitmapPainter;
     initializePainter(currentBitmapPainter, mCurrentLayerPixmap, blitRect);
@@ -297,7 +300,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     painter.setOpacity(paintedImage->getOpacity() - (1.0-painter.opacity()));
     painter.setWorldMatrixEnabled(false);
 
-    if (isCurrentLayer && isDrawing)
+    if ((isCurrentLayer && isDrawing) || (mOptions.bIgnoreCanvasBuffer))
     {
         // Certain tools require being painted continuously, for example, the Polyline tool.
         // The tiled buffer does not update the area outside which it paints,
@@ -309,7 +312,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
             currentBitmapPainter.drawImage(paintedImage->topLeft(), *paintedImage->image());
         }
 
-        const auto tilesMap = mTiledBuffer;
+        const auto tilesMap = mTiledHash;
         for (const MPTile* tile : tilesMap) {
             currentBitmapPainter.drawImage(tile->pos(), tile->image());
         }
@@ -340,7 +343,7 @@ void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blit
     QPainter currentVectorPainter;
     initializePainter(currentVectorPainter, mCurrentLayerPixmap, blitRect);
 
-    const bool isDrawing = !mTiledBuffer.isEmpty();
+    const bool isDrawing = mTiledBuffer->isValid();
 
     // Paint existing vector image to the painter
     vectorImage->paintImage(currentVectorPainter, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
@@ -349,9 +352,9 @@ void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blit
         if (isDrawing) {
             currentVectorPainter.setCompositionMode(mOptions.cmBufferBlendMode);
 
-            const auto tiles = mTiledBuffer;
-            for (const MPTile* tile : tiles) {
-                currentVectorPainter.drawImage(tile->pos(), tile->image());
+            const auto tiles = mTiledBuffer->tiles();
+            for (const Tile* tile : tiles) {
+                currentVectorPainter.drawPixmap(tile->posF(), tile->pixmap());
             }
         } else if (mRenderTransform) {
             vectorImage->setSelectionTransformation(mSelectionTransform);

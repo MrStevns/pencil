@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MPHANDLER_H
 
 #include <QColor>
+#include <QObject>
 #include <memory>
 
 extern "C" {

@@ -38,7 +38,6 @@ public:
     void pointerReleaseEvent(PointerEvent*) override;
 
     void drawStroke(PointerEvent* event);
-    void endStroke();
 
     void setWidth(const qreal width) override;
     void setFeather(const qreal feather) override;

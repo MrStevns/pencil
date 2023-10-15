@@ -46,6 +46,7 @@ GNU General Public License for more details.
 #include "selectionpainter.h"
 #include "camerapainter.h"
 #include "blitrect.h"
+#include "tiledbuffer.h"
 
 #include "brushsetting.h"
 
@@ -60,7 +61,6 @@ class VectorImage;
 class MPHandler;
 class MPSurface;
 class MPTile;
-class QGraphicsPixmapItem;
 
 class ScribbleArea : public QWidget
 {
@@ -136,10 +136,6 @@ public:
 
     /** Tool changed, invalidate cache and frame if needed */
     void onToolChanged(ToolType);
-    
-    /** After applying a stroke,
-     * note: optimization to avoid clearing mypaint when we draw on the canvas */
-    void onDidDraw(int frameNumber);
 
     void startStroke();
     void strokeTo(QPointF point, float pressure, float xtilt, float ytilt, double dt);
@@ -198,6 +194,9 @@ public slots:
     void clearTile(MPSurface *surface, QRect tileRect);
     void loadTile(MPSurface* surface, MPTile* tile);
 
+    void onTileUpdated(TiledBuffer* tiledBuffer, Tile* tile);
+    void onTileCreated(TiledBuffer* tiledBuffer, Tile* tile);
+
 protected:
     bool event(QEvent *event) override;
     void tabletEvent(QTabletEvent*) override;
@@ -212,16 +211,14 @@ protected:
     void resizeEvent(QResizeEvent*) override;
 
 public:
-//    void drawPolyline(QPainterPath path, QPen pen, bool useAA);
-//    void drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm);
+    void drawPolyline(QPainterPath path, QPen pen, bool useAA);
+    void drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm);
 
     void pointerPressEvent(PointerEvent*);
     void pointerMoveEvent(PointerEvent*);
     void pointerReleaseEvent(PointerEvent*);
 
     void updateCanvasCursor();
-
-    void clearTilesBuffer();
 
     /// Call this when starting to use a paint tool. Checks whether we are drawing
     /// on an empty frame, and if so, takes action according to use preference.
@@ -231,6 +228,7 @@ public:
 
     MPHandler* mMyPaint = nullptr;
     QHash<QString, MPTile*> mBufferTiles;
+    TiledBuffer mTiledBuffer;
     BlitRect mTilesBlitRect;
 private:
 
@@ -309,8 +307,6 @@ private:
 
     QPoint mCursorCenterPos;
     QPointF mTransformedCursorPos;
-
-    bool mIsPainting = false;
 
     PreferenceManager* mPrefs = nullptr;
 

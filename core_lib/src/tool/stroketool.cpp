@@ -61,7 +61,9 @@ void StrokeTool::startStroke(PointerEvent::InputType inputType)
 
     mEditor->backup(typeName());
 
-    mScribbleArea->startStroke();
+    if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+       mScribbleArea->startStroke();
+    }
 
     mFirstDraw = true;
     mLastPixel = getCurrentPixel();
@@ -106,6 +108,13 @@ bool StrokeTool::emptyFrameActionEnabled()
 
 void StrokeTool::endStroke()
 {
+    const Layer* layer = mEditor->layers()->currentLayer();
+    if (layer->type() == Layer::BITMAP)
+        commitBitmapStroke();
+    if (layer->type() == Layer::VECTOR) {
+        commitVectorStroke();
+    }
+
     strokeManager()->interpolateEnd();
     mStrokePressures << strokeManager()->getPressure();
     mStrokePoints.clear();
@@ -132,7 +141,12 @@ void StrokeTool::drawStroke(const QPointF pos, double dt)
     const QPointF pixel = pos;
 
     const float pressure = static_cast<float>(mCurrentPressure);
-    mScribbleArea->strokeTo(pixel, pressure, mCurrentXTilt,  mCurrentYTilt, dt);
+
+    if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+        mScribbleArea->strokeTo(pixel, pressure, mCurrentXTilt,  mCurrentYTilt, dt);
+    } else {
+        // Only mypaint utilizes a strokeTo method currently...
+    }
 
     if ( pixel != mLastPixel || !mFirstDraw )
     {
@@ -153,16 +167,15 @@ double StrokeTool::calculateDeltaTime(quint64 timeStamp)
     return frameTime;
 }
 
-void StrokeTool::paintBitmapStroke()
+void StrokeTool::commitBitmapStroke()
 {
     mScribbleArea->paintBitmapBuffer();
-    mScribbleArea->invalidatePainterCaches();
     mScribbleArea->clearDrawingBuffer();
 }
 
 // This function uses the points from DrawStroke
 // and turns them into vector lines.
-void StrokeTool::paintVectorStroke()
+void StrokeTool::commitVectorStroke()
 {
     if (mStrokePoints.empty())
         return;
@@ -171,8 +184,6 @@ void StrokeTool::paintVectorStroke()
 
     if (layer->type() == Layer::VECTOR && mStrokePoints.size() > -1)
     {
-        // Clear the temporary pixel path
-        mScribbleArea->clearDrawingBuffer();
         qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
 
         BezierCurve curve(mStrokePoints, mStrokePressures, tol);
@@ -193,7 +204,7 @@ void StrokeTool::paintVectorStroke()
 
         vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
 
+        mScribbleArea->clearDrawingBuffer();
         mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-        mScribbleArea->invalidatePainterCaches();
     }
 }

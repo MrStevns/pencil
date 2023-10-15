@@ -88,3 +88,6 @@ ipch
 
 # Build directory
 build
+
+# Configs
+/3rdlib/paint_lib/src/json-c/config.h

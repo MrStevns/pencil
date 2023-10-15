@@ -148,7 +148,6 @@ void
 MPHandler::endStroke()
 {
     mypaint_brush_reset(mBrush->brush);
-    mSurface->clear();
 }
 
 float MPHandler::getBrushSettingBaseValue(MyPaintBrushSetting setting)

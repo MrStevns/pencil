@@ -22,8 +22,7 @@ GNU General Public License for more details.
 #include <QtMath>
 #include <QHash>
 
-class MPTile;
-
+#include "mptile.h"
 
 class BitmapImage : public KeyFrame
 {
