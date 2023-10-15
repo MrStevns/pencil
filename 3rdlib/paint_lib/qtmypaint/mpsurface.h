@@ -95,7 +95,6 @@ public:
     void onNewTile(MPSurface *surface, MPTile *tile);
     void onClearTile(MPSurface *surface, QRect tileRect);
     void onClearedSurface(MPSurface *surface);
-    void refreshSurface();
 
     void saveSurface(const QString path);
 
@@ -105,19 +104,12 @@ public:
     void clear();
     void clearTile(MPTile* tile);
 
-    void loadImage(const QImage &image, const QPoint topLeft);
-    void drawImageAt(const QImage& image, const QPoint topLeft);
-//    void clearArea(const QRect& bounds);
-
     QHash<TileIndex, MPTile*> getTiles() { return m_Tiles; }
 
 private:
     void resetNullTile();
     void resetSurface(QSize size);
     bool isFullyTransparent(QImage image);
-
-    QList<QPoint> findCorrespondingTiles(const QRect& rect);
-    std::string key;
 
     int tiles_width; // width in tiles
     int tiles_height; // height in tiles

@@ -1349,11 +1349,6 @@ void ScribbleArea::forceUpdateMyPaintStates()
     // TODO: deltatime should maybe not be fixed here?
 }
 
-void ScribbleArea::refreshSurface()
-{
-    mMyPaint->refreshSurface();
-}
-
 void ScribbleArea::endStroke()
 {
     if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {

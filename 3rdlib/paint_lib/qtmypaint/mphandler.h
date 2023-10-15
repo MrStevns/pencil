@@ -56,8 +56,6 @@ public:
     MPHandler();
     ~MPHandler();
 
-    static MPHandler *handler();
-
     void startStroke();
     void strokeTo(float x, float y, float pressure, float xtilt, float ytilt, double dtime);
     void strokeTo(float x, float y);
@@ -83,7 +81,6 @@ public:
     void setBrushInputMappingPoints(QVector<QPointF> points, MyPaintBrushSetting settingType, MyPaintBrushInput inputType);
     const ControlPoints* getBrushInputMappingPoints(MyPaintBrushSetting setting, MyPaintBrushInput input);
 
-    void refreshSurface();
     void saveSurface(const QString path);
 
     void setSurfaceSize(QSize size);
@@ -91,8 +88,6 @@ public:
 
     void clearSurface();
 
-    void drawImageAt(const QImage& image, const QPoint topLeft);
-    void loadImage(const QImage &image, const QPoint pos);
     void loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile);
 
 signals:

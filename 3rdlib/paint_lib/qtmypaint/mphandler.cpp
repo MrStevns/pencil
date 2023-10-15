@@ -59,25 +59,11 @@ QSize MPHandler::surfaceSize()
     return m_surface->size();
 }
 
-void MPHandler::refreshSurface()
-{
-    m_surface->refreshSurface();
-}
-
 void MPHandler::clearSurface()
 {
     m_surface->clear();
 }
 
-void MPHandler::loadImage(const QImage &image, const QPoint topLeft)
-{
-    m_surface->loadImage(image, topLeft);
-}
-
-void MPHandler::drawImageAt(const QImage& image, const QPoint topLeft)
-{
-    m_surface->drawImageAt(image, topLeft);
-}
 /**
  * @brief MPHandler::saveSurface
  * Debug method to check the content of surface
