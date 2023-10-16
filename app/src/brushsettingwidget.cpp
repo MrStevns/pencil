@@ -38,7 +38,7 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
     mMappedMax = max;
 
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
-    mHBoxLayout->setMargin(0);
+    mHBoxLayout->setContentsMargins(0,0,0,0);
     mHBoxLayout->addWidget(mValueSlider);
     mHBoxLayout->addWidget(mValueBox);
     mHBoxLayout->addWidget(mVisualBox);

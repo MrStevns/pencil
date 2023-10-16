@@ -289,8 +289,9 @@ void MPBrushInfoDialog::didPressSave()
 
         QJsonDocument doc = QJsonDocument(mBrushInfoObject);
 
-        // Change spaces with underscores
-        QString noSpaceName = mBrushName.replace(QRegExp("[ ]"), "_");
+        // Replace spaces with underscores
+        regExp.setPattern("[ ]");
+        QString noSpaceName = mBrushName.replace(regExp, "_");
 
         Status status = Status::OK;
         if (mDialogContext == DialogContext::Clone) {
@@ -300,7 +301,7 @@ void MPBrushInfoDialog::didPressSave()
             }
 
             if (mIconModified) {
-                if (!processStatus(mEditor->brushes()->writeBrushIcon(*mImageLabel->pixmap(), mBrushPreset, noSpaceName))) {
+                if (!processStatus(mEditor->brushes()->writeBrushIcon(mImageLabel->pixmap(Qt::ReturnByValueConstant()), mBrushPreset, noSpaceName))) {
                     return;
                 }
             }

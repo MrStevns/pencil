@@ -360,7 +360,7 @@ Status MPBrushManager::readBrushFromFile(const QString& brushPreset, const QStri
             QString line = stream.readLine();
 
             // Only libmypaint v1 brushes supported currently.
-            if (line.at(0) != "{") {
+            if (QString(line.at(0)).compare("{", Qt::CaseInsensitive) != 0) {
 
                 Status status = replaceBrushIfNeeded(file.fileName());
                 if (status.fail()) {
@@ -462,7 +462,7 @@ QVector<MPBrushPreset> MPBrushManager::parseConfig(QFile& file, QString brushesP
 
         brushesForPreset.insert(currentTool, brushList);
 
-        Q_ASSUME(presetIndex <= brushPresets.size());
+        Q_ASSERT(presetIndex <= brushPresets.size());
 
         brushPresets[presetIndex] = brushesForPreset;
         presetIndex++;
@@ -824,7 +824,7 @@ QString MPBrushManager::getBrushConfigPath(const QString extension)
     return brushPath;
 }
 
-Status MPBrushManager::writeBrushIcon(const QPixmap& iconPix, const QString brushPreset, const QString brushName) {
+Status MPBrushManager::writeBrushIcon(const QPixmap iconPix, const QString brushPreset, const QString brushName) {
     Status status = Status::OK;
 
     const QString brushPath = MPCONF::getBrushesPath() + "/" + brushPreset + "/" + brushName;

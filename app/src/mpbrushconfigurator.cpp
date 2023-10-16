@@ -49,7 +49,7 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
     QHBoxLayout* hLayout = new QHBoxLayout();
     QVBoxLayout* vLayout = new QVBoxLayout();
 
-    vLayout->setMargin(0);
+    vLayout->setContentsMargins(0,0,0,0);
     QScrollArea* scrollArea = new QScrollArea(nullptr);
 
     QToolBar* toolbar = new QToolBar(this);
@@ -112,7 +112,7 @@ MPBrushConfigurator::MPBrushConfigurator(QWidget *parent)
     viewSplitter->addWidget(mNavigatorWidget);
     viewSplitter->addWidget(scrollArea);
     hLayout->addWidget(viewSplitter);
-    hLayout->setMargin(0);
+    hLayout->setContentsMargins(0,0,0,0);
 
     viewSplitter->setSizes({150, 600});
     viewSplitter->setStretchFactor(1,4);

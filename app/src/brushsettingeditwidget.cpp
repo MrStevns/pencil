@@ -51,7 +51,7 @@ BrushSettingEditWidget::BrushSettingEditWidget(BrushSettingCategoryType settingC
     mMappingButton->setIconSize(QSize(20,20));
 
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    gridLayout->setMargin(0);
+    gridLayout->setContentsMargins(0,0,0,0);
 
     gridLayout->addWidget(mVisibleCheck, 0, 0);
     gridLayout->addWidget(mSettingWidget, 0, 1);

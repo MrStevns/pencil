@@ -75,7 +75,7 @@ void MappingConfiguratorWidget::setupUI()
     inputDescriptionLayout->addWidget(maxInputDescLabel);
 
     QGridLayout* layoutGrid = new QGridLayout(this);
-    layoutGrid->setMargin(0);
+    layoutGrid->setContentsMargins(0,0,0,0);
     layoutGrid->setSpacing(0);
 
     layoutGrid->addWidget(resetButton, 1, 0, 1, 1, Qt::AlignCenter);

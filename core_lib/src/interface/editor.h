@@ -37,6 +37,7 @@ Q_MOC_INCLUDE("selectionmanager.h")
 Q_MOC_INCLUDE("soundmanager.h")
 Q_MOC_INCLUDE("overlaymanager.h")
 Q_MOC_INCLUDE("clipboardmanager.h")
+Q_MOC_INCLUDE("mpbrushmanager.h")
 #endif
 
 class QClipboard;

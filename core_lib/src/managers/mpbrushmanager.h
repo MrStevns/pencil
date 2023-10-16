@@ -41,7 +41,7 @@ public:
     Status writeBrushToFile(const QString& brushPreset, const QString& brushName, const QByteArray& data);
     Status renameMoveBrushFileIfNeeded(QString originalPreset, QString originalName, QString newPreset, QString newName);
     Status copyRenameBrushFileIfNeeded(const QString& originalPreset, const QString& originalName, const QString& newPreset, QString& newName);
-    Status writeBrushIcon(const QPixmap& iconPix, const QString brushPreset, const QString brushName);
+    Status writeBrushIcon(const QPixmap iconPix, const QString brushPreset, const QString brushName);
 
     QString getBrushPath(const QString& brushPreset, const QString& brushName, const QString& extension);
     QString getBrushConfigPath(const QString extension = "");

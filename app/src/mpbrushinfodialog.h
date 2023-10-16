@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QJsonObject>
+#include <QRegularExpression>
 
 #include "pencildef.h"
 #include <mpbrushutils.h>
@@ -73,6 +74,8 @@ private:
     QString mOldPresetName;
 
     bool mIconModified = false;
+
+    QRegularExpression regExp;
 
     MPBrushInfo mBrushInfo;
     const DialogContext mDialogContext;
