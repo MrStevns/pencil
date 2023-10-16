@@ -1291,11 +1291,11 @@ void ScribbleArea::updateTile(MPSurface *surface, MPTile *tile)
 
     tile->setDirty(true);
 
-    const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(pos, tile->boundingRect().size()));
-    update(mappedRect.toRect());
-
     mBufferTiles.insert(QString::number(pos.x())+"_"+QString::number(pos.y()), tile);
     mTilesBlitRect.extend(pos, tile->boundingRect().size());
+
+    const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(pos, tile->boundingRect().size()));
+    update(mappedRect.toAlignedRect());
 }
 
 void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
@@ -1315,7 +1315,7 @@ void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
 //    }
     mTilesBlitRect.extend(tile->pos(), tile->boundingRect().size());
     const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tile->pos(), tile->boundingRect().size()));
-    update(mappedRect.toRect());
+    update(mappedRect.toAlignedRect());
 }
 
 void ScribbleArea::clearTile(MPSurface *surface, QRect tileRect)
@@ -1327,7 +1327,7 @@ void ScribbleArea::clearTile(MPSurface *surface, QRect tileRect)
 
     mBufferTiles.remove(QString::number(posX)+"_"+QString::number(posY));
     const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tileRect));
-    update(mappedRect.toRect());
+    update(mappedRect.toAlignedRect());
 }
 
 /************************************************************************************/
