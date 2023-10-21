@@ -124,7 +124,7 @@ MPMappingOptionsWidget::MPMappingOption MPMappingOptionsWidget::createMappingOpt
     auto inputMapping = mEditor->getBrushInputMapping(mSettingType, input);
 
     MPInputButton* removeActionButton = new MPInputButton(input, nullptr);
-    removeActionButton->setIcon(QIcon(":/app/icons/new/trash-changes.png"));
+    removeActionButton->setText(tr("Remove"));
     removeActionButton->setContentsMargins(5,0,5,0);
 
     int row =  mGridLayout->rowCount();

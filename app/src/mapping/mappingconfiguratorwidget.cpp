@@ -45,7 +45,7 @@ void MappingConfiguratorWidget::setupUI()
     minOutputDesc->setAlignment(Qt::AlignBottom | Qt::AlignRight);
 
     QToolButton* resetButton = new QToolButton(this);
-    resetButton->setIcon(QIcon(":/app/icons/new/trash-changes.png"));
+    resetButton->setText(tr("Reset"));
 
     outputDescriptionWidget->setLayout(outputDescriptionLayout);
 
