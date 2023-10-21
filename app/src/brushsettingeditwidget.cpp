@@ -47,8 +47,8 @@ BrushSettingEditWidget::BrushSettingEditWidget(BrushSettingCategoryType settingC
         "QToolButton:checked { border: 1px solid #ADADAD; border-radius: 2px; background-color: #D5D5D5; }";
     mMappingButton->setStyleSheet(sStyle);
 #endif
-    mMappingButton->setIcon(QIcon("://icons/new/mapping-icon.png"));
-    mMappingButton->setIconSize(QSize(20,20));
+    mMappingButton->setIcon(QIcon("://icons/themes/playful/misc/curve-input.svg"));
+    mMappingButton->setIconSize(QSize(22,22));
 
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     gridLayout->setContentsMargins(0,0,0,0);
