@@ -44,8 +44,6 @@ void MPBrushPreview::updatePreview(const QByteArray &content, const QColor& brus
     mMypaintHandler->setSurfaceSize(this->size());
 
     drawStroke();
-
-    update();
 }
 
 void MPBrushPreview::drawStroke() const
@@ -167,6 +165,7 @@ void MPBrushPreview::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
     mSurfaceBackground = QImage(event->size(),QImage::Format_ARGB32_Premultiplied);
+    mMypaintHandler->clearSurface();
     updatePaintSurface(event->size());
     drawStroke();
 }
