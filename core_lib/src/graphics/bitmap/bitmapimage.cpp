@@ -220,7 +220,7 @@ void BitmapImage::paste(QImage& tileImage, QPoint point, QPainter::CompositionMo
     modification();
 }
 
-void BitmapImage::paste(QHash<QString, MPTile*> tiles, const QRect blitRect, QPainter::CompositionMode cm)
+void BitmapImage::paste(QHash<TileIndex, const MPTile*> tiles, const QRect blitRect, QPainter::CompositionMode cm)
 {
     if(blitRect.width() <= 0 || blitRect.height() <= 0)
     {

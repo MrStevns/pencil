@@ -330,13 +330,3 @@ MPTile* MPSurface::getTileFromIdx(int tileX, int tileY)
 
     return selectedTile;
 }
-
-inline QPoint MPSurface::getTilePos(const TileIndex& idx) const
-{
-    return QPoint(qRound(MYPAINT_TILE_SIZE*static_cast<qreal>(idx.x)), qRound(MYPAINT_TILE_SIZE*static_cast<qreal>(idx.y)));
-}
-
-inline TileIndex MPSurface::getTileIndex(const QPoint& pos) const
-{
-    return { qRound(static_cast<qreal>(pos.x())/MYPAINT_TILE_SIZE), qRound(static_cast<qreal>(pos.y())/MYPAINT_TILE_SIZE) };
-}

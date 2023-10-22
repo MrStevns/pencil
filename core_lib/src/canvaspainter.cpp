@@ -159,7 +159,7 @@ void CanvasPainter::renderPostLayers(QPainter& painter, const QRect& blitRect)
     }
 }
 
-void CanvasPainter::setPaintSettings(const Object* object, int currentLayer, int frame, QHash<QString, MPTile*> tiledHash, const QRect& tilesBounds, const TiledBuffer* tiledBuffer)
+void CanvasPainter::setPaintSettings(const Object* object, int currentLayer, int frame, QHash<TileIndex, const MPTile*> tiledHash, const QRect& tilesBounds, const TiledBuffer* tiledBuffer)
 {
     Q_ASSERT(object);
     mObject = object;

@@ -227,7 +227,7 @@ public:
     QPixmap mCursorImg;
 
     MPHandler* mMyPaint = nullptr;
-    QHash<QString, MPTile*> mBufferTiles;
+    QHash<TileIndex, const MPTile*> mBufferTiles;
     TiledBuffer mTiledBuffer;
     BlitRect mTilesBlitRect;
 private:

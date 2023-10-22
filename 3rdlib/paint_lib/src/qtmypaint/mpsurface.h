@@ -73,8 +73,20 @@ public:
     MPTile* getTileFromPos(const QPoint& pos);
     MPTile* getTileFromIdx(int tileX, int tileY);
 
-    inline QPoint getTilePos(const TileIndex& index) const;
-    inline TileIndex getTileIndex(const QPoint& pos) const;
+    inline QPoint getTilePos(const TileIndex& idx) const
+    {
+        return QPoint(qRound(MYPAINT_TILE_SIZE*static_cast<qreal>(idx.x)), qRound(MYPAINT_TILE_SIZE*static_cast<qreal>(idx.y)));
+    }
+
+    TileIndex getTileIndex(const QPoint& pos) const
+    {
+        return { qRound(static_cast<qreal>(pos.x())/MYPAINT_TILE_SIZE), qRound(static_cast<qreal>(pos.y())/MYPAINT_TILE_SIZE) };
+    }
+
+    TileIndex getTileIndex(const int x, const int y) const
+    {
+        return { qRound(static_cast<qreal>(x)/MYPAINT_TILE_SIZE), qRound(static_cast<qreal>(y)/MYPAINT_TILE_SIZE) };
+    }
 
     void onUpdateTile(MPSurface *surface, MPTile *tile);
     void onNewTile(MPSurface *surface, MPTile *tile);

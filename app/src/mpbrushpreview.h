@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QHash>
 
+#include "tileindex.h"
+
 class MPHandler;
 class MPTile;
 class MPSurface;
@@ -33,7 +35,7 @@ private:
 
     MPHandler* mMypaintHandler = nullptr;
 
-    QHash<QString, MPTile*> mSurfaceTiles;
+    QHash<TileIndex, MPTile*> mSurfaceTiles;
     QElapsedTimer* perfTimer = nullptr;
 
     QImage mSurfaceBackground;

@@ -22,6 +22,7 @@ GNU General Public License for more details.
 #include <QtMath>
 #include <QHash>
 
+#include "tileindex.h"
 #include "mptile.h"
 
 class BitmapImage : public KeyFrame
@@ -53,7 +54,7 @@ public:
     void paste(BitmapImage*, QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver);
     void paste(QPixmap& pixmap, QPoint point, QPainter::CompositionMode cm);
     void paste(QImage& tileImage, QPoint point, QPainter::CompositionMode cm);
-    void paste(QHash<QString, MPTile*> tiles, const QRect blitRect, QPainter::CompositionMode cm);
+    void paste(QHash<TileIndex, const MPTile*> tiles, const QRect blitRect, QPainter::CompositionMode cm);
 
     void moveTopLeft(QPoint point);
     void moveTopLeft(QPointF point) { moveTopLeft(point.toPoint()); }

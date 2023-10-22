@@ -53,15 +53,21 @@ void MPTile::updateCache()
 {
     QRgb* dst = (reinterpret_cast<QRgb*>(mCacheImg.bits()));
 
-    for (int y = 0 ; y < k_tile_dim ; y++) {
-         for (int x = 0 ; x < k_tile_dim ; x++) {
-              uint16_t& alpha = mTPixels[y][x][k_alpha];
-              *dst = alpha ? qRgba(
-              convert_from_mypaint(mTPixels[y][x][k_red]),
-              convert_from_mypaint(mTPixels[y][x][k_green]),
-              convert_from_mypaint(mTPixels[y][x][k_blue]),
-              convert_from_mypaint(alpha)) : 0; // aplha is 0 => all is zero (little optimization)
-              dst++; // next image pixel...
+    const int width = mCacheImg.width();
+    const int height = mCacheImg.height();
+    for (int y = 0 ; y < height ; y++) {
+         for (int x = 0 ; x < width ; x++) {
+             const int r = convert_from_mypaint(mTPixels[y][x][k_red]);
+             const int g = convert_from_mypaint(mTPixels[y][x][k_green]);
+             const int b = convert_from_mypaint(mTPixels[y][x][k_blue]);
+             const int a = convert_from_mypaint(mTPixels[y][x][k_alpha]);
+
+             const uint32_t pixel = (static_cast<uint32_t>(a) << 24) |
+                                    (static_cast<uint32_t>(r) << 16) |
+                                    (static_cast<uint32_t>(g) << 8)  |
+                                    static_cast<uint32_t>(b);
+             *dst = pixel;
+             dst++;
          }
     }
 
@@ -97,5 +103,4 @@ void MPTile::clear()
     memset(mTPixels, 0, sizeof(mTPixels)); // Tile is transparent
     mCacheImg.fill(Qt::transparent); // image cache is transparent too, and aligned to the pixel table:
     mCacheValid = true;
-    mDirty = false;
 }

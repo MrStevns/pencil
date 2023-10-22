@@ -117,16 +117,16 @@ void MPBrushPreview::paintEvent(QPaintEvent* event)
     QPainter painter(this);
 
     if (mSurfaceTiles.isEmpty()) { return; }
-    const QHash<QString, MPTile*> tiles = mSurfaceTiles;
+    const QHash<TileIndex, MPTile*> tiles = mSurfaceTiles;
 
     painter.drawImage(QPoint(), mSurfaceBackground);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
 
     for (MPTile* item : tiles) {
         const QImage& img = item->image();
 
         const QRect& tileRect = QRect(item->pos(), img.size());
 
-        painter.setCompositionMode(QPainter::CompositionMode_Source);
         painter.drawImage(tileRect, img, img.rect());
     }
     painter.end();
@@ -143,7 +143,7 @@ void MPBrushPreview::updateTile(MPSurface *surface, MPTile* tile)
 void MPBrushPreview::tileRemoved(MPSurface* surface, QRect tileRect)
 {
     Q_UNUSED(surface)
-    mSurfaceTiles.remove(QString::number(tileRect.x())+"_"+QString::number(tileRect.y()));
+    mSurfaceTiles.remove(surface->getTileIndex(tileRect.x(), tileRect.y()));
     update(tileRect);
 }
 
@@ -152,7 +152,7 @@ void MPBrushPreview::loadTile(MPSurface* surface, MPTile* tile)
     Q_UNUSED(surface)
     mMypaintHandler->loadTile(mSurfaceBackground, QPoint(), tile);
 
-    mSurfaceTiles.insert(QString::number(tile->pos().x())+"_"+QString::number(tile->pos().y()), tile);
+    mSurfaceTiles.insert(surface->getTileIndex(tile->pos()), tile);
     update(QRect(tile->pos(), tile->boundingRect().size()));
 }
 

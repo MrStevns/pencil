@@ -53,17 +53,15 @@ public:
      */
     void updateMyPaintBuffer(const QSize& tileSize);
 
-    bool isDirty() { return mDirty; }
-    void setDirty(bool dirty) { mDirty = dirty; }
     void setPos(const QPoint& pos) { mPos = pos; }
     QPoint pos() const { return mPos; }
 
 private:
 
-    /// Convert 16 bit pixel format to 32 bit
-    inline uint convert_from_mypaint(uint16_t value) const { return ((value*255)/(1<<15)); }
+    /// Convert 64 bit (16 bpc) pixel format to 32 bit (8 bpc)
+    inline int convert_from_mypaint(uint16_t value) const { return (value * 255) >> 15; }
 
-    /// Convert 32 bit pixel format to 16 bit
+    /// Convert 32 bit (8 bpc) pixel format to 64 bit (16 bpc)
     inline uint16_t convert_to_mypaint(int value) const { return ((value*(1<<15))/255); }
 
     uint16_t  mTPixels [k_tile_dim][k_tile_dim][4];

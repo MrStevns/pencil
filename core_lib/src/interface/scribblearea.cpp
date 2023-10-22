@@ -1289,9 +1289,6 @@ void ScribbleArea::updateTile(MPSurface *surface, MPTile *tile)
 
     QPoint pos = tile->pos();
 
-    tile->setDirty(true);
-
-    mBufferTiles.insert(QString::number(pos.x())+"_"+QString::number(pos.y()), tile);
     mTilesBlitRect.extend(pos, tile->boundingRect().size());
 
     const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(pos, tile->boundingRect().size()));
@@ -1303,16 +1300,13 @@ void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
     Q_UNUSED(surface)
     Layer* layer = mEditor->layers()->currentLayer();
 
+    const auto& bitmapImage = currentBitmapImage(layer);
+    const QImage& image = *bitmapImage->image();
+    mMyPaint->loadTile(image, bitmapImage->topLeft(), tile);
 
-    // Polyline is special because the surface must be cleared on every update, given its nature of drawing a long stroke segment.
-    // Therefore we only load the mypaint surface with bitmap data when not using the polyline tool.
+    TileIndex idx = surface->getTileIndex(tile->pos());
+    mBufferTiles.insert(idx, tile);
 
-    // TODO: This code would be better served in StrokeTool  rather than here.
-//    if (mIsPainting && currentTool()->type() != ToolType::POLYLINE) {
-        const auto& bitmapImage = currentBitmapImage(layer);
-        const QImage& image = *bitmapImage->image();
-        mMyPaint->loadTile(image, bitmapImage->topLeft(), tile);
-//    }
     mTilesBlitRect.extend(tile->pos(), tile->boundingRect().size());
     const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tile->pos(), tile->boundingRect().size()));
     update(mappedRect.toAlignedRect());
@@ -1325,7 +1319,7 @@ void ScribbleArea::clearTile(MPSurface *surface, QRect tileRect)
     int posX = tileRect.x();
     int posY = tileRect.y();
 
-    mBufferTiles.remove(QString::number(posX)+"_"+QString::number(posY));
+    mBufferTiles.remove(surface->getTileIndex(posX, posY));
     const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tileRect));
     update(mappedRect.toAlignedRect());
 }
