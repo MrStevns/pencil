@@ -40,6 +40,9 @@ Q_SIGNALS:
     void brushSettingChanged(qreal value, BrushSettingType setting);
 
 private:
+
+    void addBrushSetting(QString settingName, BrushSettingType type, qreal min, qreal max);
+
     void setupSettingsForTool(ToolType toolType);
     void setupDefaultSettings();
     void clearSettings();
