@@ -312,6 +312,7 @@ const static float RotationHandleOffset = 50;
 #define SETTING_LAYER_VISIBILITY "LayerVisibility"
 #define SETTING_LAYER_VISIBILITY_THRESHOLD "LayerVisibilityThreshold"
 
+#define MPBRUSH_GROUP "MyPaint"
 #define SETTING_MPBRUSHPRESET "MpBrushPreset"
 #define SETTING_MPBRUSHFORTOOL "LastBrushFor_"
 #define SETTING_MPBRUSHSETTING "ToolSetting_%1_Preset_%2_Brush_%3"

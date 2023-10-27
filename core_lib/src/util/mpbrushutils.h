@@ -649,12 +649,12 @@ struct MPBrushPreset {
     }
 
     QStringList brushesForTool(QString toolKey) const {
-        return brushForToolMap.value(toolKey);
+        return brushForToolMap.value(toolKey.toLower());
     }
 
     void insert(QString toolName, QStringList brushNames)
     {
-        brushForToolMap.insert(toolName, brushNames);
+        brushForToolMap.insert(toolName.toLower(), brushNames);
     }
 
     bool isEmpty() const {

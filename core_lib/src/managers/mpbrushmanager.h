@@ -4,6 +4,8 @@
 #include "basemanager.h"
 #include "pencildef.h"
 
+#include <functional>
+#include <QSettings>
 #include "QJsonDocument"
 #include <QJsonParseError>
 #include <QJsonParseError>
@@ -61,6 +63,8 @@ public:
     void clearCurrentBrushModifications();
 
     QString currentToolBrushIdentifier() const;
+
+    void brushPreferences(std::function<void (QSettings&)> callback);
 
     bool brushLoaded() const { return !mCurrentBrushName.isEmpty() && !mCurrentBrushData.isEmpty(); }
 

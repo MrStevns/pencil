@@ -210,35 +210,35 @@ void MPBrushConfigurator::updateConfig()
 
 void MPBrushConfigurator::setupActiveSettings()
 {
-    QSettings settings(PENCIL2D, PENCIL2D);
-    auto groups = settings.childGroups();
+    mEditor->brushes()->brushPreferences([=] (QSettings& settings) {
+        auto groups = settings.childGroups();
+        QString toolGroup = mEditor->brushes()->currentToolBrushIdentifier();
 
-    QString toolGroup = mEditor->brushes()->currentToolBrushIdentifier();
+        settings.beginGroup(toolGroup);
 
-    settings.beginGroup(toolGroup);
+        for (const QString& key : settings.childGroups())
+        {
+            settings.beginGroup(key);
 
-    for (QString key : settings.childGroups())
-    {
-        settings.beginGroup(key);
+            bool show = settings.value("visible").toBool();
+            QString name = settings.value("name").toString();
+            qreal min = settings.value("min").toReal();
+            qreal max = settings.value("max").toReal();
+            settings.endGroup();
 
-        bool show = settings.value("visible").toBool();
-        QString name = settings.value("name").toString();
-        qreal min = settings.value("min").toReal();
-        qreal max = settings.value("max").toReal();
-        settings.endGroup();
-
-        if (show) {
-            BrushSettingEditWidget* settingWidget = new BrushSettingEditWidget(BrushSettingCategoryType::Other, name, getBrushSetting(key), min, max, this);
-            mBrushWidgets.append(settingWidget);
+            if (show) {
+                BrushSettingEditWidget* settingWidget = new BrushSettingEditWidget(BrushSettingCategoryType::Other, name, getBrushSetting(key), min, max, this);
+                mBrushWidgets.append(settingWidget);
+            }
         }
-    }
+    });
 }
 
 void MPBrushConfigurator::setupBasicBrushSettings()
 {
-    for (auto category : settingCategories.basicBrushSettings()) {
+    for (const auto &category : settingCategories.basicBrushSettings()) {
 
-        for (auto setting : category.settings) {
+        for (const auto &setting : category.settings) {
             mBrushWidgets << new BrushSettingEditWidget(category.categoryType, setting, this);
         }
     }
@@ -265,7 +265,7 @@ void MPBrushConfigurator::setupAdvancedBrushSettings()
 void MPBrushConfigurator::setupSettingsFor(BrushSettingCategoryType type)
 {
     auto category = settingCategories.categoryForType(type);
-    for (auto setting : category.settings) {
+    for (const auto &setting : qAsConst(category.settings)) {
         mBrushWidgets << new BrushSettingEditWidget(category.categoryType, setting, this);
     }
 }
@@ -310,7 +310,7 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
         setupSettingsFor(static_cast<BrushSettingTreeItem*>(item)->categoryType());
     }
 
-    for (BrushSettingEditWidget* item : mBrushWidgets) {
+    for (BrushSettingEditWidget* item : qAsConst(mBrushWidgets)) {
         vBoxLayout->addWidget(item);
 
         mListOfConnections << connect(item, &BrushSettingEditWidget::brushSettingChanged, this, &MPBrushConfigurator::prepareBrushChanges);
@@ -360,7 +360,7 @@ void MPBrushConfigurator::setBrushSettingValue(qreal value, BrushSettingType set
     prepareBrushChanges(value, setting);
     prepareUpdateBrushPreview();
     this->blockSignals(false);
-    for (BrushSettingEditWidget* widget : mBrushWidgets)
+    for (BrushSettingEditWidget* widget : qAsConst(mBrushWidgets))
     {
         if (widget->settingType() == setting) {
             widget->setValue(value);

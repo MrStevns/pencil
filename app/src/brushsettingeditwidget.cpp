@@ -92,19 +92,18 @@ void BrushSettingEditWidget::updateUIInternal()
 {
     QString toolGroup = mEditor->brushes()->currentToolBrushIdentifier();
 
-//    qDebug() << "getting value for : " << toolGroup;
-    QSettings settings(PENCIL2D, PENCIL2D);
+    mEditor->brushes()->brushPreferences([=] (QSettings& settings) {
+        settings.beginGroup(toolGroup);
+        settings.beginGroup(getBrushSettingIdentifier(settingType()));
 
-    settings.beginGroup(toolGroup);
-    settings.beginGroup(getBrushSettingIdentifier(settingType()));
+        bool isChecked = settings.value("visible").toBool();
 
-    bool isChecked = settings.value("visible").toBool();
+        settings.endGroup();
+        settings.endGroup();
 
-    settings.endGroup();
-    settings.endGroup();
-
-    QSignalBlocker b(mVisibleCheck);
-    mVisibleCheck->setChecked(isChecked);
+        QSignalBlocker b(mVisibleCheck);
+        mVisibleCheck->setChecked(isChecked);
+    });
 }
 
 void BrushSettingEditWidget::initUI()
@@ -129,7 +128,7 @@ void BrushSettingEditWidget::updateUI()
     mSettingWidget->updateUI();
 
     if (mMappingOptionsWidget) {
-        mMappingOptionsWidget->notifyMappingWidgetNeedsUpdate(mCurrentInputType);
+        emit mMappingOptionsWidget->notifyMappingWidgetNeedsUpdate(mCurrentInputType);
     }
 }
 
@@ -154,23 +153,22 @@ void BrushSettingEditWidget::visibilityChanged(bool state)
 {
     QString toolSetting = mEditor->brushes()->currentToolBrushIdentifier();
 
-    QSettings settings(PENCIL2D, PENCIL2D);
+    mEditor->brushes()->brushPreferences([=] (QSettings& settings) {
+        settings.beginGroup(toolSetting);
+        settings.beginGroup(getBrushSettingIdentifier(settingType()));
+        settings.setValue("visible", state);
+        settings.setValue("name", settingName());
+        settings.setValue("min", mMin);
+        settings.setValue("max", mMax);
+        settings.endGroup();
+        settings.endGroup();
 
-    settings.beginGroup(toolSetting);
-    settings.beginGroup(getBrushSettingIdentifier(settingType()));
-    settings.setValue("visible", state);
-    settings.setValue("name", settingName());
-    settings.setValue("min", mMin);
-    settings.setValue("max", mMax);
-    settings.endGroup();
-    settings.endGroup();
-
-    emit brushSettingToggled(mSettingCategoryType, settingName(), settingType(), mMin, mMax, state);
+        emit brushSettingToggled(mSettingCategoryType, settingName(), settingType(), mMin, mMax, state);
+    });
 }
 
 void BrushSettingEditWidget::openMappingWindow()
 {
-    QVector<QPointF> tempPoints = { QPointF(0.0,0.0), QPointF(0.5,0.5), QPointF(1.0,1.0) };
     mMappingOptionsWidget = new MPMappingOptionsWidget(settingName(), settingType());
     mMappingOptionsWidget->setCore(mEditor);
     mMappingOptionsWidget->initUI();

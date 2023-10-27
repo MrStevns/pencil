@@ -1,6 +1,5 @@
 #include "mpbrushmanager.h"
 
-#include <QSettings>
 #include "pencildef.h"
 #include "basetool.h"
 
@@ -31,6 +30,14 @@ Status MPBrushManager::save(Object *o)
     return Status::OK;
 }
 
+void MPBrushManager::brushPreferences(std::function<void(QSettings&)> callback)
+{
+    QSettings settings(PENCIL2D, PENCIL2D);
+    settings.beginGroup(MPBRUSH_GROUP);
+    callback(settings);
+    settings.endGroup();
+}
+
 Status MPBrushManager::loadPresets()
 {
     QFile fileOrder(getBrushConfigPath(BrushConfigFile));
@@ -51,15 +58,16 @@ Status MPBrushManager::loadPresets()
             st.setDetails(dd);
         }
 
-        QSettings settings(PENCIL2D,PENCIL2D);
-        QString lastPreset = settings.value(SETTING_MPBRUSHPRESET).toString();
-
-        if (lastPreset.isEmpty()) {
-            mCurrentPresetName = mBrushPresets.first().name;
-            settings.setValue(SETTING_MPBRUSHPRESET, mCurrentPresetName);
-        } else {
-            mCurrentPresetName = lastPreset;
-        }
+        brushPreferences( [=] (QSettings& settings)
+        {
+            QString lastPreset = settings.value(SETTING_MPBRUSHPRESET).toString();
+            if (lastPreset.isEmpty()) {
+                mCurrentPresetName = mBrushPresets.constFirst().name;
+                settings.setValue(SETTING_MPBRUSHPRESET, mCurrentPresetName);
+            } else {
+                mCurrentPresetName = lastPreset;
+            }
+        });
     }
 
     return st;

@@ -63,15 +63,15 @@ void ToolBrushSettingsWidget::updateUI()
 
 void ToolBrushSettingsWidget::resetSettings()
 {
-    QSettings settings(PENCIL2D, PENCIL2D);
+    mEditor->brushes()->brushPreferences([=] (QSettings& settings) {
+        QString toolSetting = mEditor->brushes()->currentToolBrushIdentifier();
 
-    QString toolSetting = mEditor->brushes()->currentToolBrushIdentifier();
+        settings.beginGroup(toolSetting);
+        settings.remove("");
+        settings.endGroup();
 
-    settings.beginGroup(toolSetting);
-    settings.remove("");
-    settings.endGroup();
-
-    setupDefaultSettings();
+        setupDefaultSettings();
+    });
 }
 
 void ToolBrushSettingsWidget::setupDefaultSettings()
@@ -82,25 +82,24 @@ void ToolBrushSettingsWidget::setupDefaultSettings()
 
     BaseTool* tool = mEditor->tools()->currentTool();
 
-    qDebug() << "setup settings for :" << tool->typeName();
-    QSettings settings(PENCIL2D, PENCIL2D);
+    mEditor->brushes()->brushPreferences([=] (QSettings& settings) {
+        const QString& configGroupForBrush = mEditor->brushes()->currentToolBrushIdentifier();
 
-    QString configGroupForBrush = mEditor->brushes()->currentToolBrushIdentifier();
+        MPBrushSettingCategories config;
+        for (BrushSetting& setting : config.defaultBrushListForTool(tool->type())) {
 
-    MPBrushSettingCategories config;
-    for (BrushSetting& setting : config.defaultBrushListForTool(tool->type())) {
-
-        settings.beginGroup(configGroupForBrush);
-            settings.beginGroup(getBrushSettingIdentifier(setting.type));
-            settings.setValue("visible", true);
-            settings.setValue("name", setting.name);
-            settings.setValue("min", setting.min);
-            settings.setValue("max", setting.max);
+            settings.beginGroup(configGroupForBrush);
+                settings.beginGroup(getBrushSettingIdentifier(setting.type));
+                settings.setValue("visible", true);
+                settings.setValue("name", setting.name);
+                settings.setValue("min", setting.min);
+                settings.setValue("max", setting.max);
+                settings.endGroup();
             settings.endGroup();
-        settings.endGroup();
 
-        addBrushSetting(setting.name, setting.type, setting.min, setting.max);
-    }
+            addBrushSetting(setting.name, setting.type, setting.min, setting.max);
+        }
+    });
 }
 
 void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
@@ -109,33 +108,33 @@ void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
         clearSettings();
     }
 
-    QSettings pencilSettings(PENCIL2D, PENCIL2D);
+    mEditor->brushes()->brushPreferences([=] (QSettings& settings) {
+        const QString& toolGroup = mEditor->brushes()->currentToolBrushIdentifier();
 
-    QString toolGroup = mEditor->brushes()->currentToolBrushIdentifier();
+        settings.beginGroup(toolGroup);
+        auto groups = settings.childGroups();
 
-    pencilSettings.beginGroup(toolGroup);
-    auto groups = pencilSettings.childGroups();
+        QListIterator<QString> settingsIt(groups);
+        while(settingsIt.hasNext()) {
+            const QString& key = settingsIt.next();
 
-    QListIterator<QString> settingsIt(groups);
-    while(settingsIt.hasNext()) {
-        const QString& key = settingsIt.next();
+            settings.beginGroup(key);
 
-        pencilSettings.beginGroup(key);
+            if (settings.value("visible").toBool() == false) {
+                settings.endGroup();
+                continue;
+            }
 
-        if (pencilSettings.value("visible").toBool() == false) {
-            pencilSettings.endGroup();
-            continue;
+            BrushSettingType brushSettingType = getBrushSetting(key);
+
+            QString name = settings.value("name").toString();
+            qreal min = settings.value("min").toReal();
+            qreal max = settings.value("max").toReal();
+            settings.endGroup();
+
+            addBrushSetting(name, brushSettingType, min, max);
         }
-
-        BrushSettingType brushSettingType = getBrushSetting(key);
-
-        QString name = pencilSettings.value("name").toString();
-        qreal min = pencilSettings.value("min").toReal();
-        qreal max = pencilSettings.value("max").toReal();
-        pencilSettings.endGroup();
-
-        addBrushSetting(name, brushSettingType, min, max);
-    }
+    });
 }
 
 void ToolBrushSettingsWidget::addBrushSetting(QString settingName, BrushSettingType type, qreal min, qreal max)
@@ -156,14 +155,15 @@ void ToolBrushSettingsWidget::setupSettings(ToolType toolType)
 
     QString toolGroupKey = mEditor->brushes()->currentToolBrushIdentifier();
 
-    QSettings settings(PENCIL2D, PENCIL2D);
-    auto groups = settings.childGroups();
+    mEditor->brushes()->brushPreferences([=] (QSettings& settings) {
+        auto groups = settings.childGroups();
 
-    if (!groups.contains(toolGroupKey)) {
-        setupDefaultSettings();
-    } else {
-        setupSettingsForTool(toolType);
-    }
+        if (!groups.contains(toolGroupKey)) {
+            setupDefaultSettings();
+        } else {
+            setupSettingsForTool(toolType);
+        }
+    });
 }
 
 void ToolBrushSettingsWidget::updateFromUnmappedSetting(qreal value, BrushSettingType setting)

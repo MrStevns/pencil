@@ -309,7 +309,6 @@ void ScribbleArea::onToolChanged(ToolType)
     updateFrame();
 }
 
-
 void ScribbleArea::onPlayStateChanged()
 {
     int currentFrame = mEditor->currentFrame();
