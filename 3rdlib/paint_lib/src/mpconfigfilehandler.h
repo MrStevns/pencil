@@ -15,35 +15,30 @@ GNU General Public License for more details.
 
 */
 
-#ifndef TOOLSPAGE_H
-#define TOOLSPAGE_H
+#ifndef MPCONFIGFILEHANDLER_H
+#define MPCONFIGFILEHANDLER_H
 
-class PreferenceManager;
+#include "mpbrushutils.h"
 
-namespace Ui {
-class ToolsPage;
-}
+#include <QFile>
 
-class ToolsPage : public QWidget
+class MPConfigFileHandler: public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-    ToolsPage();
-    ~ToolsPage() override;
-    void setManager(PreferenceManager* p) { mManager = p; }
+    MPConfigFileHandler(QObject* parent = nullptr);
 
-signals:
-    void brushPresetsUpdated();
+    Status read();
 
-public slots:
-    void updateValues();
-    void quickSizingChange(int);
-    void setRotationIncrement(int);
-    void rotationIncrementChange(int);
-    void invertZoomDirectionChange(int);
+    const QVector<MPBrushPreset> presets() const;
+
 private:
-    Ui::ToolsPage* ui = nullptr;
-    PreferenceManager* mManager = nullptr;
+    QVector<MPBrushPreset> parseConfig(QFile& file);
+
+    QString resourcePath() const;
+    QString configPath() const;
+
+    QVector<MPBrushPreset> mPresets;
 };
 
-#endif // TOOLSPAGE_H
+#endif // MPCONFIGFILEHANDLER_H

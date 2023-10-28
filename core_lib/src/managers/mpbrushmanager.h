@@ -10,6 +10,7 @@
 #include <QJsonParseError>
 #include <QJsonParseError>
 
+#include "mpconfigfilehandler.h"
 #include "brushchanges.h"
 #include "mpbrushutils.h"
 
@@ -50,8 +51,6 @@ public:
     QString getBrushImagePath(const QString& brushPreset, const QString& brushName);
     QString getBrushPreviewImagePath(const QString& brushPreset, const QString brushName);
 
-    QVector<MPBrushPreset> parseConfig(QFile& file, QString brushesPath);
-
     void removeBrushInputMapping(BrushSettingType settingType, BrushInputType inputType);
     void backupBrushInputChanges(BrushSettingType settingType, BrushInputType inputType, QVector<QPointF> mappingPoints);
     void backupInitialBrushSettingChanges(BrushSettingType settingType);
@@ -88,6 +87,8 @@ private:
 
     QHash<QString, QHash<BrushSettingType, BrushChanges>> mBrushModsForTools;
     QHash<QString, QHash<BrushSettingType, BrushChanges>> mOldBrushModsForTools;
+
+    MPConfigFileHandler fileHandler;
 
     Editor* mEditor = nullptr;
 };

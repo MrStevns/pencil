@@ -1,7 +1,7 @@
 #ifndef MPBRUSHPRESETSWIDGET_H
 #define MPBRUSHPRESETSWIDGET_H
 
-#include <QDialog>
+#include <QVector>
 #include <QItemSelection>
 #include <QListWidgetItem>
 
@@ -9,11 +9,13 @@
 
 struct MPBrushPreset;
 
+class MPBrushManager;
+
 namespace Ui {
 class MPBrushPresetsWidget;
 }
 
-class MPBrushPresetsWidget : public QDialog
+class MPBrushPresetsWidget : public QWidget
 {
 
     enum class PresetState {
@@ -25,12 +27,14 @@ class MPBrushPresetsWidget : public QDialog
 
     Q_OBJECT
 public:
-    MPBrushPresetsWidget(QVector<MPBrushPreset> presets, QWidget* parent = nullptr);
+    explicit MPBrushPresetsWidget(QWidget* parent = nullptr);
 
+    void setManager(MPBrushManager* mpBrushManager);
 signals:
     void presetsChanged();
 
 private:
+    void loadPresets();
     void addNewPreset();
     void removePreset();
 
@@ -47,6 +51,7 @@ private:
     QVector<QString> mPresets;
 
     PresetState mState = PresetState::NONE;
+    MPBrushManager* mBrushManager;
 };
 
 #endif // MPBRUSHPRESETSWIDGET_H

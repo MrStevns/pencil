@@ -47,6 +47,7 @@ signals:
     void curveOpacityChange(int);
     void clearRecentList();
     void updateRecentFileListBtn();
+    void brushPresetsUpdated();
 
 protected:
     void closeEvent(QCloseEvent*) override;

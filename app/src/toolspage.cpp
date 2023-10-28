@@ -26,10 +26,12 @@ GNU General Public License for more details.
 ToolsPage::ToolsPage() : ui(new Ui::ToolsPage)
 {
     ui->setupUi(this);
-
     connect(ui->useQuickSizingBox, &QCheckBox::stateChanged, this, &ToolsPage::quickSizingChange);
     connect(ui->rotationIncrementSlider, &QSlider::valueChanged, this, &ToolsPage::rotationIncrementChange);
     connect(ui->invertZoomDirectionBox, &QCheckBox::stateChanged, this, &ToolsPage::invertZoomDirectionChange);
+    connect(ui->brushPresetWidget, &MPBrushPresetsWidget::presetsChanged, this, [=](void) {
+       emit this->brushPresetsUpdated();
+    });
 }
 
 ToolsPage::~ToolsPage()

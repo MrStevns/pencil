@@ -52,7 +52,6 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
     mPresetComboBox = new ComboBox();
 
     QToolButton* configuratorButton = new QToolButton(this);
-    QToolButton* presetsManagerButton = new QToolButton(this);
 
     configuratorButton->setText(tr("Config"));
     configuratorButton->setToolTip(tr("Open brush configurator window"));
@@ -75,7 +74,6 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
 
     hLayout->addWidget(configuratorButton);
     hLayout->addWidget(mPresetComboBox);
-    hLayout->addWidget(presetsManagerButton);
 
     mVLayout->setContentsMargins(8,2,8,8);
 
@@ -84,7 +82,6 @@ MPBrushSelector::MPBrushSelector(QWidget *parent)
 
     connect(configuratorButton, &QToolButton::pressed, this, [=](void) { this->showBrushConfigurator(true); } );
     connect(mPresetComboBox, &ComboBox::activated, this, &MPBrushSelector::changeBrushPreset);
-    connect(presetsManagerButton, &QToolButton::pressed, this, [=](void) { this->showPresetManager(true); });
 }
 
 void MPBrushSelector::initUI()
@@ -325,22 +322,6 @@ void MPBrushSelector::showBrushConfigurator(bool show)
         mBrushConfiguratorWidget->updateUI();
     } else {
         mBrushConfiguratorWidget->hideUI();
-    }
-}
-
-void MPBrushSelector::showPresetManager(bool show)
-{
-    if (mPresetsWidget == nullptr) {
-        mPresetsWidget = new MPBrushPresetsWidget(mEditor->brushes()->presets(), this);
-        connect(mPresetsWidget.data(), &MPBrushPresetsWidget::presetsChanged, this, &MPBrushSelector::reloadBrushes);
-    }
-
-    if (show) {
-        if (!mPresetsWidget->isVisible()) {
-            mPresetsWidget->show();
-        }
-    } else {
-        mPresetsWidget->hide();
     }
 }
 

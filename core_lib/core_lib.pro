@@ -86,19 +86,15 @@ HEADERS +=  \
     src/tool/smudgetool.h \
     src/tool/strokemanager.h \
     src/tool/stroketool.h \
-    src/util/brushsetting.h \
     src/util/cameraeasingtype.h \
     src/util/camerafieldoption.h \
     src/util/colordictionary.h \
     src/util/fileformat.h \
     src/util/filetype.h \
-    src/util/imagecompositor.h \
     src/util/mathutils.h \
     src/util/onionskinpainteroptions.h \
     src/util/onionskinpaintstate.h \
     src/util/painterutils.h \
-    src/util/pencildef.h \
-    src/util/pencilerror.h \
     src/util/pencilsettings.h \
     src/util/preferencesdef.h \
     src/util/transform.h \
@@ -106,7 +102,6 @@ HEADERS +=  \
     src/util/util.h \
     src/util/log.h \
     src/util/movemode.h \
-    src/util/mpbrushutils.h \
     src/util/pointerevent.h \
     src/canvaspainter.h \
     src/soundplayer.h \
@@ -174,8 +169,6 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/stroketool.cpp \
     src/util/cameraeasingtype.cpp \
     src/util/fileformat.cpp \
-    src/util/imagecompositor.cpp \
-    src/util/pencilerror.cpp \
     src/util/pencilsettings.cpp \
     src/util/log.cpp \
     src/util/transform.cpp \
@@ -209,7 +202,10 @@ unix:!macx {
     SOURCES += src/external/linux/linux.cpp
 }
 
-# --- mypaint ---
+# -- common_lib --
+INCLUDEPATH += $$PWD/../common_lib/src
+
+# --- paint_lib ---
 INCLUDEPATH += $$PWD/../3rdlib/paint_lib/src/json-c \
                $$PWD/../3rdlib/paint_lib/src/libmypaint \
                $$PWD/../3rdlib/paint_lib/src/qtmypaint \

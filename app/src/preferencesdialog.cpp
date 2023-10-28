@@ -54,6 +54,7 @@ void PreferencesDialog::init(PreferenceManager* m)
     connect(ui->timeline, &TimelinePage::soundScrubMsecChanged, this, &PreferencesDialog::soundScrubMsecChanged);
     connect(ui->filesPage, &FilesPage::clearRecentList, this, &PreferencesDialog::clearRecentList);
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &PreferencesDialog::close);
+    connect(ui->tools, &ToolsPage::brushPresetsUpdated, this, &PreferencesDialog::brushPresetsUpdated);
 
     auto onCurrentItemChanged = static_cast<void (QListWidget::*)(QListWidgetItem*, QListWidgetItem*)>(&QListWidget::currentItemChanged);
     connect(ui->contentsWidget, onCurrentItemChanged, this, &PreferencesDialog::changePage);

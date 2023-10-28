@@ -7,20 +7,27 @@ TEMPLATE = subdirs
 # build the project sequentially as listed in SUBDIRS !
 CONFIG += ordered
 
+SUBDIRS += common_lib
+common_lib.subdir = common_lib
+
 SUBDIRS += paint_lib
 paint_lib.subdir = 3rdlib/paint_lib
+paint_lib.depends = common_lib
 
 SUBDIRS += core_lib
 core_lib.subdir = core_lib
+core_lib.depends = common_lib
 core_lib.depends = paint_lib
 
 SUBDIRS += app
 app.subdir      = app
+app.depends = common_lib
 app.depends = core_lib
 app.depends = paint_lib
 
 SUBDIRS += tests
 tests.subdir = tests
+tests.depends = common_lib
 tests.depends = core_lib
 tests.depends = paint_lib
 

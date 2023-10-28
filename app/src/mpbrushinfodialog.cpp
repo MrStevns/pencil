@@ -23,6 +23,7 @@
 #include "combobox.h"
 #include "mpbrushutils.h"
 #include "filedialog.h"
+#include "mpconfigfilehandler.h"
 
 MPBrushInfoDialog::MPBrushInfoDialog(DialogContext dialogContext, QWidget* parent)
     : QDialog(parent), mDialogContext(dialogContext)
@@ -188,14 +189,12 @@ void MPBrushInfoDialog::initUI()
         mToolComboBox->addItem(mEditor->getTool(toolType)->typeName(), static_cast<int>(toolType));
     }
 
-    QFile fileOrder(mEditor->brushes()->getBrushConfigPath(BrushConfigFile));
+    MPConfigFileHandler fileHandler;
+    Status st = fileHandler.read();
+    if (processStatus(st)) {
+        const auto presets = fileHandler.presets();
 
-    if (fileOrder.open(QIODevice::ReadOnly))
-    {
-        // TODO: will probably have to create a brush importer
-        auto brushPresets = mEditor->brushes()->parseConfig(fileOrder, MPCONF::getBrushesPath());
-
-        for (MPBrushPreset preset : brushPresets) {
+        for (const MPBrushPreset &preset : presets) {
             mPresetComboBox->addItem(preset.name);
         }
     }

@@ -35,8 +35,11 @@ GNU General Public License for more details.
 #include <QToolBar>
 #include <QToolButton>
 
-// core_lib headers
+// common_lib headers
+#include "pencilerror.h"
 #include "pencildef.h"
+
+// core_lib headers
 #include "pencilsettings.h"
 #include "object.h"
 #include "editor.h"
@@ -1063,6 +1066,7 @@ void MainWindow2::preferences()
         ui->scribbleArea->updateCanvasCursor();
         mPrefDialog = nullptr;
     });
+    connect(mPrefDialog, &PreferencesDialog::brushPresetsUpdated, mBrushSelectorWidget, &MPBrushSelector::reloadBrushes);
 
     mPrefDialog->show();
 }
@@ -1480,7 +1484,6 @@ void MainWindow2::hideBrushSelectorWidgetIfNeeded(const bool hide)
         }
 
         menuAction->setDisabled(true);
-        mBrushSelectorWidget->showPresetManager(false);
         mBrushSelectorWidget->showBrushConfigurator(false);
     } else {
         menuAction->setDisabled(false);

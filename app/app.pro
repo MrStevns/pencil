@@ -12,6 +12,10 @@ QT += core widgets gui xml multimedia svg network
 
 TARGET = pencil2d
 
+BUILDTYPE =
+debug_and_release:CONFIG(debug,debug|release) BUILDTYPE = debug
+debug_and_release:CONFIG(release,debug|release) BUILDTYPE = release
+
 RESOURCES += \
     data/app.qrc \
     data/brushes.qrc
@@ -80,7 +84,6 @@ HEADERS += \
     src/importlayersdialog.h \
     src/importpositiondialog.h \
     src/layeropacitydialog.h \
-    src/mpbrushsettingcategories.h \
     src/onionskinwidget.h \
     src/predefinedsetmodel.h \
     src/pegbaralignmentdialog.h \
@@ -145,7 +148,6 @@ SOURCES += \
     src/mpbrushpresetswidget.cpp \
     src/mpbrushpreview.cpp \
     src/mpbrushselector.cpp \
-    src/mpbrushsettingcategories.cpp \
     src/onionskinwidget.cpp \
     src/predefinedsetmodel.cpp \
     src/pegbaralignmentdialog.cpp \
@@ -295,13 +297,37 @@ unix:!macx {
     INSTALLS += bashcompletion zshcompletion target metainfo mimepackage desktopentry icon
 }
 
+# -- common_lib --
+
+INCLUDEPATH += ../common_lib/src
+
+win32-msvc* {
+  LIBS += -L$$OUT_PWD/../common_lib/$$BUILDTYPE/ -lcommon_lib
+  PRE_TARGETDEPS += $$OUT_PWD/../common_lib/$$BUILDTYPE/common_lib.lib
+}
+
+# From 5.14, MinGW windows builds are not build with debug-release flag
+versionAtLeast(QT_VERSION, 5.14) {
+    win32-g++ {
+      LIBS += -L$$OUT_PWD/../common_lib/ -lcommon_lib
+      PRE_TARGETDEPS += $$OUT_PWD/../common_lib/libcommon_lib.a
+    }
+} else {
+
+    win32-g++ {
+      LIBS += -L$$OUT_PWD/../common_lib/$$BUILDTYPE/ -lcommon_lib
+      PRE_TARGETDEPS += $$OUT_PWD/../common_lib/$$BUILDTYPE/libcommon_lib.a
+    }
+}
+
+unix: {
+  LIBS += -L$$OUT_PWD/../common_lib/ -lcommon_lib
+  PRE_TARGETDEPS += $$OUT_PWD/../common_lib/libcommon_lib.a
+}
+
 # --- core_lib ---
 
 INCLUDEPATH += ../../core_lib/src
-
-BUILDTYPE =
-debug_and_release:CONFIG(debug,debug|release) BUILDTYPE = debug
-debug_and_release:CONFIG(release,debug|release) BUILDTYPE = release
 
 win32-msvc* {
     LIBS += -L$$OUT_PWD/../core_lib/$$BUILDTYPE/ -lcore_lib

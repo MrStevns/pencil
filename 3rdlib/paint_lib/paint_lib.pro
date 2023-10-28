@@ -16,22 +16,32 @@ QMAKE_CFLAGS += -Ofast
 
 PRECOMPILED_HEADER = src/paintlib-pch.h
 
-# libpaint
+# paint_lib
 
 SOURCES += \
+            src/mpconfigfilehandler.cpp \
             src/tile.cpp \
             src/tiledbuffer.cpp \
-            src/blitrect.cpp
+            src/blitrect.cpp \
+            src/mpbrushsettingcategories.cpp
 
 HEADERS += \
+            src/mpconfigfilehandler.h \
             src/paintlib-pch.h \
             src/tile.h \
             src/tiledbuffer.h \
             src/tileindex.h \
-            src/blitrect.h
+            src/blitrect.h \
+            src/mpbrushutils.h \
+            src/brushsetting.h \
+            src/mpbrushsettingcategories.h
 
 INCLUDEPATH += src
 DEPENDPATH += src
+
+# common_lib
+
+INCLUDEPATH += ../../common_lib/src
 
 # libmypaint
 SOURCES += \

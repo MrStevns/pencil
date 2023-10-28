@@ -6,18 +6,14 @@
 #include <QtMath>
 #include <QMessageBox>
 
-MPBrushPresetsWidget::MPBrushPresetsWidget(QVector<MPBrushPreset> presets, QWidget* parent)
-    : QDialog(parent, Qt::Tool), ui(new Ui::MPBrushPresetsWidget)
+#include "editor.h"
+#include "mpbrushmanager.h"
+
+#include "errordialog.h"
+
+MPBrushPresetsWidget::MPBrushPresetsWidget(QWidget* parent) : QWidget(parent), ui(new Ui::MPBrushPresetsWidget)
 {
     ui->setupUi(this);
-
-    for (const MPBrushPreset& preset : presets) {
-        QListWidgetItem* nameItem = new QListWidgetItem(preset.name);
-        nameItem->setData(Qt::UserRole, 0);
-        nameItem->setFlags(nameItem->flags() | Qt::ItemIsEditable);
-        ui->presetsListView->addItem(nameItem);
-        mPresets.append(preset.name);
-    }
 
     ui->removePresetButton->setEnabled(false);
     ui->presetsListView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -29,6 +25,44 @@ MPBrushPresetsWidget::MPBrushPresetsWidget(QVector<MPBrushPreset> presets, QWidg
     connect(ui->presetsListView, &QListWidget::itemChanged, this, &MPBrushPresetsWidget::didChangeItem);
 
     ui->presetsListView->setEditTriggers(QAbstractItemView::EditTrigger::DoubleClicked);
+
+    loadPresets();
+}
+
+void MPBrushPresetsWidget::loadPresets()
+{
+    MPConfigFileHandler fileHandler;
+
+    Status st = fileHandler.read();
+
+    if (!st.ok()) {
+        QListWidgetItem* errorItem = new QListWidgetItem();
+        errorItem->setFlags(Qt::NoItemFlags);
+        errorItem->setText(tr("Failed to load brush presets, see details for more info"));
+        ui->presetsListView->addItem(errorItem);
+
+        QPushButton* detailsButton = new QPushButton(this);
+        detailsButton->setText(tr("Details"));
+        ui->verticalLayout_2->addWidget(detailsButton);
+        ui->addPresetButton->setEnabled(false);
+        ui->removePresetButton->setEnabled(false);
+
+        connect(detailsButton, &QPushButton::pressed, this, [=] {
+            auto dialog = new ErrorDialog(st.title(), st.description(), st.details().str(), this);
+            dialog->setAttribute(Qt::WA_DeleteOnClose);
+            dialog->show();
+        });
+
+        return;
+    }
+
+    for (const MPBrushPreset& preset : fileHandler.presets()) {
+        QListWidgetItem* nameItem = new QListWidgetItem(preset.name);
+        nameItem->setData(Qt::UserRole, 0);
+        nameItem->setFlags(nameItem->flags() | Qt::ItemIsEditable);
+        ui->presetsListView->addItem(nameItem);
+        mPresets.append(preset.name);
+    }
 }
 
 void MPBrushPresetsWidget::addNewPreset()
@@ -112,7 +146,7 @@ QString MPBrushPresetsWidget::createBlankName() const
     QString blankName = "blank";
     QString nameCheck = blankName;
     int numCount = 0;
-    for (QString name : mPresets) {
+    for (const QString &name : mPresets) {
         if (mPresets.contains(nameCheck)) {
             numCount++;
         }

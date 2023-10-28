@@ -47,7 +47,6 @@ public slots:
   void typeChanged(ToolType);
   void reloadBrushes();
   void updateBrushList(QString brushName, QString brushPreset);
-  void showPresetManager(bool show);
   void showBrushConfigurator(bool show);
   void onDidReloadBrushSettings();
 

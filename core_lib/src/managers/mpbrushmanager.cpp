@@ -5,6 +5,7 @@
 
 #include "editor.h"
 #include "mpbrushutils.h"
+#include "mpconfigfilehandler.h"
 #include <QMessageBox>
 
 MPBrushManager::MPBrushManager(Editor* editor) : BaseManager(editor, __FUNCTION__)
@@ -40,35 +41,25 @@ void MPBrushManager::brushPreferences(std::function<void(QSettings&)> callback)
 
 Status MPBrushManager::loadPresets()
 {
-    QFile fileOrder(getBrushConfigPath(BrushConfigFile));
+    // TODO: will probably have to create a brush importer
+    Status st = fileHandler.read();
 
-    Status st = Status::OK;
-    if (fileOrder.open(QIODevice::ReadOnly))
-    {
-        // TODO: will probably have to create a brush importer
-        mBrushPresets = parseConfig(fileOrder, mBrushesPath);
-
-        if (mBrushPresets.isEmpty() || mBrushPresets.first().allBrushes().isEmpty()) {
-            st = Status::FAIL;
-            DebugDetails dd;
-
-            dd << "file path: " + fileOrder.fileName();
-            st.setTitle(tr("Parse error!"));
-            st.setDescription(tr("Not able to parse brush config"));
-            st.setDetails(dd);
-        }
-
-        brushPreferences( [=] (QSettings& settings)
-        {
-            QString lastPreset = settings.value(SETTING_MPBRUSHPRESET).toString();
-            if (lastPreset.isEmpty()) {
-                mCurrentPresetName = mBrushPresets.constFirst().name;
-                settings.setValue(SETTING_MPBRUSHPRESET, mCurrentPresetName);
-            } else {
-                mCurrentPresetName = lastPreset;
-            }
-        });
+    if (!st.ok()) {
+        return st;
     }
+
+    mBrushPresets = fileHandler.presets();
+
+    brushPreferences( [=] (QSettings& settings)
+    {
+        QString lastPreset = settings.value(SETTING_MPBRUSHPRESET).toString();
+        if (lastPreset.isEmpty()) {
+            mCurrentPresetName = fileHandler.presets().constFirst().name;
+            settings.setValue(SETTING_MPBRUSHPRESET, mCurrentPresetName);
+        } else {
+            mCurrentPresetName = lastPreset;
+        }
+    });
 
     return st;
 }
@@ -402,81 +393,6 @@ Status MPBrushManager::readBrushFromFile(const QString& brushPreset, const QStri
     }
 
     return status;
-}
-
-/// Parses the mypaint brush config ".conf" format and returns a map of the brush groups
-QVector<MPBrushPreset> MPBrushManager::parseConfig(QFile& file, QString brushesPath)
-{
-    MPBrushPreset brushesForPreset;
-    QString currentTool;
-    QString currentPreset;
-    QStringList brushList;
-
-    QVector<MPBrushPreset> brushPresets;
-
-    int presetIndex = 0;
-    while (!file.atEnd())
-    {
-        QString line ( file.readLine().trimmed() );
-        if (line.isEmpty() || line.startsWith("#")) continue;
-
-        if (MPCONF::isPresetToken(line))
-        {
-            if (!brushesForPreset.isEmpty() && !currentTool.isEmpty()) {
-
-                brushesForPreset.insert(currentTool, brushList);
-
-                brushPresets[presetIndex] = brushesForPreset;
-                presetIndex++;
-            }
-            currentPreset = MPCONF::getValue(line);
-            brushesForPreset.name = currentPreset;
-
-            brushesForPreset.clear();
-            brushList.clear();
-
-            brushPresets.append(brushesForPreset);
-            continue;
-        }
-
-        if (MPCONF::isToolToken(line))
-        {
-
-            if (!currentTool.isEmpty()) {
-                brushesForPreset.insert(currentTool, brushList);
-            }
-
-            currentTool = MPCONF::getValue(line);
-            brushList.clear();
-            continue;
-        }
-
-        if (MPCONF::isBrushToken(line)) {
-
-            QString brush = MPCONF::getValue(line);
-            QString relativePath = currentPreset + "/" + brush;
-            if (QFileInfo(brushesPath + "/" + relativePath + BRUSH_CONTENT_EXT).isReadable()) {
-                brushList << brush;
-            }
-            continue;
-        }
-
-        if (!currentTool.isEmpty() && !brushPresets.isEmpty()) {
-            brushPresets.append(brushesForPreset);
-        }
-    }
-
-    if (!brushesForPreset.isEmpty() && !currentTool.isEmpty()) {
-
-        brushesForPreset.insert(currentTool, brushList);
-
-        Q_ASSERT(presetIndex <= brushPresets.size());
-
-        brushPresets[presetIndex] = brushesForPreset;
-        presetIndex++;
-    }
-
-    return brushPresets;
 }
 
 Status MPBrushManager::writeBrushToFile(const QString& brushPreset, const QString& brushName, const QByteArray& data)
