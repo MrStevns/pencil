@@ -88,12 +88,11 @@ void MPBrushSelector::initUI()
 {
     // First, we parse the "brushes.conf" file to fill m_brushLib
     loadPresets();
-    loadToolBrushes(mEditor->tools()->currentTool()->type());
 }
 
 void MPBrushSelector::updateUI()
 {
-
+    loadToolBrushes(mEditor->tools()->currentTool()->type());
 }
 
 void MPBrushSelector::loadPresets()
