@@ -47,7 +47,7 @@ struct BrushChanges {
     {
         QJsonObject::iterator baseValueObjIt = object.find("base_value");
 
-        if (baseValueObjIt->isUndefined()) {
+        if (object.empty() || baseValueObjIt->isUndefined()) {
             object.insert("base_value", baseValue);
         } else {
             object.remove("base_value");
@@ -70,7 +70,7 @@ struct BrushChanges {
             QString inputId = getBrushInputIdentifier(inputChanges.inputType);
             QJsonObject::iterator inputContainerObjIt = inputsContainerObj.find(inputId);
 
-            if (inputContainerObjIt->isUndefined()) {
+            if (inputsContainerObj.isEmpty() || inputContainerObjIt->isUndefined()) {
                 if (inputChanges.enabled) {
                     QJsonArray inputArray;
                     inputChanges.write(inputArray);

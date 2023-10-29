@@ -316,7 +316,7 @@ QJsonDocument MPBrushManager::writeModifications(const QJsonDocument& doc, QJson
 
         QJsonObject::iterator settingObjIt = settingsContainerObj.find(settingId);
 
-        if (settingObjIt->isUndefined()) {
+        if (settingsContainerObj.isEmpty() || settingObjIt->isUndefined()) {
             QJsonObject settingObj;
             brushChanges.write(settingObj);
             settingsContainerObj.insert(settingId, settingObj);
