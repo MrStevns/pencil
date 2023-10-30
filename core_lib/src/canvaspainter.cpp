@@ -314,7 +314,9 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
         const auto tilesMap = mTiledHash;
         for (const MPTile* tile : tilesMap) {
-            currentBitmapPainter.drawImage(tile->pos(), tile->image());
+            if (tile) {
+                currentBitmapPainter.drawImage(tile->pos(), tile->image());
+            }
         }
     } else {
         // When we're drawing using a tool, the surface will be painted by the tiled buffer,

@@ -195,12 +195,13 @@ void MPSurface::clear()
 
     while (i.hasNext()) {
         i.next();
-        MPTile *tile = i.value();
+        MPTile* tile = i.value();
+
         if (tile)
         {
-            mTilesHash.remove(i.key());
             delete tile;
         }
+        mTilesHash.remove(i.key());
     }
 
     onClearedSurface(this);
