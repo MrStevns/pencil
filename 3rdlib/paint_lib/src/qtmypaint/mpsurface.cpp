@@ -120,11 +120,6 @@ void MPSurface::onClearedSurface(MPSurface *surface)
     emit mParentHandler->surfaceCleared(surface);
 }
 
-void MPSurface::onClearTile(MPSurface *surface, QRect tileRect)
-{
-    emit mParentHandler->tileCleared(surface, tileRect);
-}
-
 void MPSurface::loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile)
 {
     QPainter painter(&tile->image());
@@ -209,15 +204,6 @@ void MPSurface::clear()
     }
 
     onClearedSurface(this);
-}
-
-void MPSurface::clearTile(MPTile* tile)
-{
-    QRect tileRect = QRect(tile->pos(), tile->boundingRect().size());
-    tile->clear();
-    delete tile;
-
-    onClearTile(this, tileRect);
 }
 
 int MPSurface::getTilesWidth()
