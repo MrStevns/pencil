@@ -29,6 +29,7 @@ public:
     MPConfigFileHandler(QObject* parent = nullptr);
 
     Status read();
+    void deleteConfig();
 
     const QVector<MPBrushPreset> presets() const;
 

@@ -41,6 +41,13 @@
    <item>
     <widget class="QListWidget" name="presetsListView"/>
    </item>
+   <item>
+    <widget class="QPushButton" name="resetPresetsButton">
+     <property name="text">
+      <string>Reset to default</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

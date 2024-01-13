@@ -17,20 +17,20 @@
 #include "pencilerror.h"
 #include "brushsetting.h"
 
-static const QString BRUSH_CONTENT_EXT = ".myb";
-static const QString BRUSH_PREVIEW_EXT = "_prev.png";
-static const QString BRUSH_QRC = ":brushes";
-static const QString BrushesFolderName = "brushes";
-static const QString BrushConfigExtension = ".conf";
-static const QString BrushConfigFile = BrushesFolderName+BrushConfigExtension;
-static const int ICON_SZ = 64;
-static const QString BRUSH_COPY_POSTFIX = "_clone";
-static const QString DefaultPreset = "deevad";
+const QString BRUSH_CONTENT_EXT = ".myb";
+const QString BRUSH_PREVIEW_EXT = "_prev.png";
+const QString BRUSH_QRC = ":brushes";
+const QString BrushesFolderName = "brushes";
+const QString BrushConfigExtension = ".conf";
+const QString BrushConfigFile = BrushesFolderName+BrushConfigExtension;
+const int ICON_SZ = 64;
+const QString BRUSH_COPY_POSTFIX = "_clone";
+const QString DefaultPreset = "deevad";
 
-static const QString CommentToken= "#";
-static const QString PresetToken = "Preset:";
-static const QString BrushToken = "-";
-static const QString ToolToken = "Tool:";
+const QString CommentToken= "#";
+const QString PresetToken = "Preset:";
+const QString BrushToken = "-";
+const QString ToolToken = "Tool:";
 struct MPCONF {
 
     static Status renamePreset(const QString& oldName, const QString& newName)

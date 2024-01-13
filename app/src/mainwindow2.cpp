@@ -53,6 +53,7 @@ GNU General Public License for more details.
 #include "soundmanager.h"
 #include "viewmanager.h"
 #include "selectionmanager.h"
+#include "mpbrushmanager.h"
 
 #include "actioncommands.h"
 #include "fileformat.h"     //contains constants used by Pencil File Format
@@ -1054,7 +1055,7 @@ void MainWindow2::preferences()
     mPrefDialog = new PreferencesDialog(this);
     mPrefDialog->setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     mPrefDialog->setAttribute(Qt::WA_DeleteOnClose);
-    mPrefDialog->init(mEditor->preference());
+    mPrefDialog->init(mEditor);
 
     connect(mPrefDialog, &PreferencesDialog::windowOpacityChange, this, &MainWindow2::setOpacity);
     connect(mPrefDialog, &PreferencesDialog::soundScrubChanged, mEditor->playback(), &PlaybackManager::setSoundScrubActive);

@@ -39,8 +39,18 @@ ToolsPage::~ToolsPage()
     delete ui;
 }
 
+void ToolsPage::setManagers(PreferenceManager* preferenceManager,
+                            MPBrushManager* brushManager) {
+   mManager = preferenceManager;
+   mBrushManager = brushManager;
+
+   ui->brushPresetWidget->setBrushManager(mBrushManager);
+}
+
 void ToolsPage::updateValues()
 {
+    Q_ASSERT(mBrushManager);
+    ui->brushPresetWidget->setBrushManager(mBrushManager);
     ui->useQuickSizingBox->setChecked(mManager->isOn(SETTING::QUICK_SIZING));
     ui->invertZoomDirectionBox->setChecked(mManager->isOn(SETTING::INVERT_DRAG_ZOOM_DIRECTION));
     setRotationIncrement(mManager->getInt(SETTING::ROTATION_INCREMENT));

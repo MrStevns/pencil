@@ -20,6 +20,7 @@ MPBrushPresetsWidget::MPBrushPresetsWidget(QWidget* parent) : QWidget(parent), u
 
     connect(ui->addPresetButton, &QPushButton::pressed, this, &MPBrushPresetsWidget::addNewPreset);
     connect(ui->removePresetButton, &QPushButton::pressed, this, &MPBrushPresetsWidget::removePreset);
+    connect(ui->resetPresetsButton, &QPushButton::pressed, this, &MPBrushPresetsWidget::didPressResetButton);
     connect(ui->presetsListView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MPBrushPresetsWidget::didChangeSelection);
     connect(ui->presetsListView->itemDelegate(), &QAbstractItemDelegate::commitData, this, &MPBrushPresetsWidget::didCommitChanges);
     connect(ui->presetsListView, &QListWidget::itemChanged, this, &MPBrushPresetsWidget::didChangeItem);
@@ -88,6 +89,34 @@ void MPBrushPresetsWidget::addNewPreset()
 void MPBrushPresetsWidget::didCommitChanges(QWidget* widgetItem)
 {
     Q_UNUSED(widgetItem)
+
+    emit presetsChanged();
+}
+
+void MPBrushPresetsWidget::didPressResetButton()
+{
+    QMessageBox confirmBox(this);
+    confirmBox.setIcon(QMessageBox::Warning);
+    confirmBox.setText(tr("You are about to reset all brush resources, all existing presets and custom brushes will be removed. Are you sure you want to proceed?"));
+    confirmBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    confirmBox.setDefaultButton(QMessageBox::No);
+
+    if (confirmBox.exec() != QMessageBox::Yes) { return; }
+
+    Status st = mBrushManager->resetBrushResources();
+
+    if (!st.ok()) {
+        ErrorDialog dialog(st.title(), st.description());
+        return dialog.show();
+    }
+
+    if (!mPresets.isEmpty()) {
+        ui->presetsListView->clear();
+        mPresets.clear();
+    }
+
+    // Update presets UI
+    loadPresets();
 
     emit presetsChanged();
 }

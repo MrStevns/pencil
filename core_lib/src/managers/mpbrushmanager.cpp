@@ -39,6 +39,31 @@ void MPBrushManager::brushPreferences(std::function<void(QSettings&)> callback)
     settings.endGroup();
 }
 
+Status MPBrushManager::resetBrushResources()
+{
+    QDir dir(MPCONF::getBrushesPath());
+
+    if (dir.isEmpty() || !dir.removeRecursively()) {
+        Status st = Status::FAIL;
+        st.setTitle(tr("Something went wrong"));
+        return st;
+    }
+
+    fileHandler.deleteConfig();
+
+    Status st = copyResourcesToAppData();
+
+    if (!st.ok()) {
+        return st;
+    }
+
+    mBrushesPath = MPCONF::getBrushesPath();
+
+    emit brushesLoaded();
+
+    return Status::OK;
+}
+
 Status MPBrushManager::loadPresets()
 {
     // TODO: will probably have to create a brush importer

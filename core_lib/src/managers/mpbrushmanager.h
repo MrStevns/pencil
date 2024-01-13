@@ -28,6 +28,9 @@ public:
     Status applyChangesToBrushFile(bool flush);
     Status loadPresets();
 
+    /// Reset all brush resources, config and files
+    Status resetBrushResources();
+
     QVector<MPBrushPreset> presets() { return mBrushPresets; }
 
     QString brushesPath() { return mBrushesPath; }
@@ -70,6 +73,8 @@ public:
 Q_SIGNALS:
     void errorFromStatus(Status& status);
     void errorFromTitleMessage(QString title, QString description);
+
+    void brushesLoaded();
 
 private:
     Status replaceBrushIfNeeded(QString brushPath);

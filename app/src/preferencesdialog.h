@@ -21,6 +21,7 @@ GNU General Public License for more details.
 
 class PreferenceManager;
 class QListWidgetItem;
+class Editor;
 
 namespace Ui {
 class PreferencesDialog;
@@ -34,7 +35,7 @@ public:
     explicit PreferencesDialog(QWidget* parent);
     ~PreferencesDialog() override;
 
-    void init(PreferenceManager* m);
+    void init(Editor* editor);
     void updateRecentListBtn(bool isEmpty);
 
 public slots:
@@ -48,6 +49,7 @@ signals:
     void clearRecentList();
     void updateRecentFileListBtn();
     void brushPresetsUpdated();
+    void brushPresetsResetRequested();
 
 protected:
     void closeEvent(QCloseEvent*) override;
@@ -56,6 +58,7 @@ private:
     Ui::PreferencesDialog* ui = nullptr;
 
     PreferenceManager* mPrefManager = nullptr;
+    Editor* mEditor = nullptr;
 };
 
 #endif // PREFERENCESDIALOG_H

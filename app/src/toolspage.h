@@ -19,6 +19,7 @@ GNU General Public License for more details.
 #define TOOLSPAGE_H
 
 class PreferenceManager;
+class MPBrushManager;
 
 namespace Ui {
 class ToolsPage;
@@ -30,7 +31,8 @@ Q_OBJECT
 public:
     ToolsPage();
     ~ToolsPage() override;
-    void setManager(PreferenceManager* p) { mManager = p; }
+    void setManagers(PreferenceManager* preferenceManager,
+                     MPBrushManager* brushManager);
 
 signals:
     void brushPresetsUpdated();
@@ -44,6 +46,7 @@ public slots:
 private:
     Ui::ToolsPage* ui = nullptr;
     PreferenceManager* mManager = nullptr;
+    MPBrushManager* mBrushManager = nullptr;
 };
 
 #endif // TOOLSPAGE_H

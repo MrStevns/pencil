@@ -6,10 +6,9 @@
 #include <QListWidgetItem>
 
 #include "mpbrushutils.h"
+#include "mpbrushmanager.h"
 
 struct MPBrushPreset;
-
-class MPBrushManager;
 
 namespace Ui {
 class MPBrushPresetsWidget;
@@ -29,7 +28,7 @@ class MPBrushPresetsWidget : public QWidget
 public:
     explicit MPBrushPresetsWidget(QWidget* parent = nullptr);
 
-    void setManager(MPBrushManager* mpBrushManager);
+    void setBrushManager(MPBrushManager* manager) { mBrushManager = manager; }
 signals:
     void presetsChanged();
 
@@ -45,13 +44,14 @@ private:
 
     void didCommitChanges(QWidget* widgetItem);
     void didChangeItem(QListWidgetItem* item);
+    void didPressResetButton();
 
     Ui::MPBrushPresetsWidget* ui = nullptr;
 
     QVector<QString> mPresets;
 
     PresetState mState = PresetState::NONE;
-    MPBrushManager* mBrushManager;
+    MPBrushManager* mBrushManager = nullptr;
 };
 
 #endif // MPBRUSHPRESETSWIDGET_H

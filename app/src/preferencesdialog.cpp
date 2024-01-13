@@ -17,6 +17,7 @@ GNU General Public License for more details.
 #include "preferencesdialog.h"
 
 #include "ui_preferencesdialog.h"
+#include "editor.h"
 
 PreferencesDialog::PreferencesDialog(QWidget* parent) :
     QDialog(parent),
@@ -30,10 +31,11 @@ PreferencesDialog::~PreferencesDialog()
     delete ui;
 }
 
-void PreferencesDialog::init(PreferenceManager* m)
+void PreferencesDialog::init(Editor* editor)
 {
-    Q_ASSERT(m != nullptr);
-    mPrefManager = m;
+    Q_ASSERT(editor->preference() != nullptr);
+    mPrefManager = editor->preference();
+    mEditor = editor;
 
     ui->general->setManager(mPrefManager);
     ui->general->updateValues();
@@ -44,7 +46,7 @@ void PreferencesDialog::init(PreferenceManager* m)
     ui->timeline->setManager(mPrefManager);
     ui->timeline->updateValues();
 
-    ui->tools->setManager(mPrefManager);
+    ui->tools->setManagers(mPrefManager, mEditor->brushes());
     ui->tools->updateValues();
 
     ui->shortcuts->setManager(mPrefManager);

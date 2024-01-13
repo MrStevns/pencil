@@ -48,6 +48,12 @@ Status MPConfigFileHandler::read()
     return st;
 }
 
+void MPConfigFileHandler::deleteConfig()
+{
+    QFile configFile(configPath());
+    configFile.remove();
+}
+
 const QVector<MPBrushPreset> MPConfigFileHandler::presets() const
 {
     return mPresets;
