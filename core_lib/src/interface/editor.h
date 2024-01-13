@@ -186,7 +186,7 @@ public: //slots
     void clearCurrentFrame();
 
     Status importImage(const QString& filePath);
-    Status importGIF(const QString& filePath, int numOfImages = 0);
+    Status importAnimatedImage(const QString& filePath, int frameSpacing, const std::function<void (int)>& progressChanged, const std::function<bool ()>& wasCanceled);
     void restoreKey();
 
     void scrubNextKeyFrame();
@@ -254,7 +254,7 @@ public: //slots
 
 
 private:
-    Status importBitmapImage(const QString&, int space = 0);
+    Status importBitmapImage(const QString&);
     Status importVectorImage(const QString&);
 
     void pasteToCanvas(BitmapImage* bitmapImage, int frameNumber);

@@ -47,7 +47,6 @@ public:
     void setShowSelectionInfo(const bool b) override;
 
 private:
-    void cancelChanges();
     void applyTransformation();
     void updateSettings(const SETTING setting);
 
@@ -61,7 +60,6 @@ private:
 
     Layer* currentPaintableLayer();
 
-    Layer* mCurrentLayer = nullptr;
     qreal mRotatedAngle = 0.0;
     qreal mPreviousAngle = 0.0;
     int mRotationIncrement = 0;
