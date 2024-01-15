@@ -300,14 +300,14 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     painter.setOpacity(paintedImage->getOpacity() - (1.0-painter.opacity()));
     painter.setWorldMatrixEnabled(false);
 
-    if ((isCurrentLayer && isDrawing) || (mOptions.bIgnoreCanvasBuffer))
+    if (isCurrentLayer && isDrawing)
     {
         currentBitmapPainter.drawImage(paintedImage->topLeft(), *paintedImage->image());
 
         currentBitmapPainter.setCompositionMode(mOptions.cmBufferBlendMode);
-        const auto tiles = mTiledBuffer->tiles();
-        for (const Tile* tile : tiles) {
-            currentBitmapPainter.drawPixmap(tile->posF(), tile->pixmap());
+        const auto tilesMap = mTiledHash;
+        for (const MPTile* tile : tilesMap) {
+            currentBitmapPainter.drawImage(tile->pos(), tile->image());
         }
     } else {
         // When we're drawing using a tool, the surface will be painted by the tiled buffer,

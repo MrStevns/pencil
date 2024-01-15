@@ -838,24 +838,8 @@ void ScribbleArea::paintBitmapBuffer()
 
     if (targetImage != nullptr)
     {
-        QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver;
-        switch (currentTool()->type())
-        {
-        case ERASER:
-            cm = QPainter::CompositionMode_DestinationOut;
-            break;
-        case BRUSH:
-        case PEN:
-        case PENCIL:
-            if (currentTool()->properties.preserveAlpha)
-            {
-                cm = QPainter::CompositionMode_SourceOver;
-            }
-            break;
-        default: //nothing
-            break;
-        }
-        targetImage->paste(&mTiledBuffer, cm);
+        QPainter::CompositionMode cm = QPainter::CompositionMode_Source;
+        targetImage->paste(mBufferTiles, mTilesBlitRect, cm);
     }
 
     QRect rect = mEditor->view()->mapCanvasToScreen(mTilesBlitRect).toRect();
@@ -1193,7 +1177,7 @@ void ScribbleArea::prepCanvas(int frame)
     o.eLayerVisibility = mLayerVisibility;
     o.fLayerVisibilityThreshold = mPrefs->getFloat(SETTING::LAYER_VISIBILITY_THRESHOLD);
     o.scaling = mEditor->view()->scaling();
-    o.cmBufferBlendMode = mEditor->tools()->currentTool()->type() == ToolType::ERASER ? QPainter::CompositionMode_DestinationOut : QPainter::CompositionMode_SourceOver;
+    o.cmBufferBlendMode = QPainter::CompositionMode_Source;
 
     OnionSkinPainterOptions onionSkinOptions;
     onionSkinOptions.enabledWhilePlaying = mPrefs->getInt(SETTING::ONION_WHILE_PLAYBACK);

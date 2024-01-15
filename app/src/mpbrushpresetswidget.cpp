@@ -97,7 +97,7 @@ void MPBrushPresetsWidget::didPressResetButton()
 {
     QMessageBox confirmBox(this);
     confirmBox.setIcon(QMessageBox::Warning);
-    confirmBox.setText(tr("You are about to reset all brush resources, all existing presets and custom brushes will be removed. Are you sure you want to proceed?"));
+    confirmBox.setText(tr("You are about to reset all brush resources, all existing presets and custom brushes will be removed. \n\nAre you sure you want to proceed?"));
     confirmBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     confirmBox.setDefaultButton(QMessageBox::No);
 
