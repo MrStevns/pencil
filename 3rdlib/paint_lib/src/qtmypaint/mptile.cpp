@@ -56,19 +56,19 @@ void MPTile::updateCache()
     const int width = mCacheImg.width();
     const int height = mCacheImg.height();
     for (int y = 0 ; y < height ; y++) {
-         for (int x = 0 ; x < width ; x++) {
-             const int r = convert_from_mypaint(mTPixels[y][x][k_red]);
-             const int g = convert_from_mypaint(mTPixels[y][x][k_green]);
-             const int b = convert_from_mypaint(mTPixels[y][x][k_blue]);
-             const int a = convert_from_mypaint(mTPixels[y][x][k_alpha]);
+        for (int x = 0 ; x < width ; x++) {
+            const int r = convert_from_mypaint(mTPixels[y][x][k_red]);
+            const int g = convert_from_mypaint(mTPixels[y][x][k_green]);
+            const int b = convert_from_mypaint(mTPixels[y][x][k_blue]);
+            const int a = convert_from_mypaint(mTPixels[y][x][k_alpha]);
 
-             const uint32_t pixel = (static_cast<uint32_t>(a) << 24) |
-                                    (static_cast<uint32_t>(r) << 16) |
-                                    (static_cast<uint32_t>(g) << 8)  |
-                                    static_cast<uint32_t>(b);
-             *dst = pixel;
-             dst++;
-         }
+            const uint32_t pixel = (static_cast<uint32_t>(a) << 24) |
+                                   (static_cast<uint32_t>(r) << 16) |
+                                   (static_cast<uint32_t>(g) << 8)  |
+                                   static_cast<uint32_t>(b);
+            *dst = pixel;
+            dst++;
+        }
     }
 
     mCacheValid = true;
@@ -87,14 +87,14 @@ void MPTile::updateMyPaintBuffer(const QSize& tileSize)
 {
     const QRgb* dst = (reinterpret_cast<const QRgb*>(mCacheImg.constBits()));
     for (int y = 0 ; y < tileSize.height(); y++) {
-         for (int x = 0 ; x < tileSize.width() ; x++) {
+        for (int x = 0 ; x < tileSize.width() ; x++) {
 
             mTPixels[y][x][k_alpha]    = convert_to_mypaint(qAlpha(*dst));
             mTPixels[y][x][k_red]      = convert_to_mypaint(qRed(*dst));
             mTPixels[y][x][k_green]    = convert_to_mypaint(qGreen(*dst));
             mTPixels[y][x][k_blue]     = convert_to_mypaint(qBlue(*dst));
             dst++;
-         }
+        }
     }
 }
 
