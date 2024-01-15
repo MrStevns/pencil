@@ -59,10 +59,10 @@ public:
 private:
 
     /// Convert 64 bit (16 bpc) pixel format to 32 bit (8 bpc)
-    inline int convert_from_mypaint(uint16_t value) const { return (value * 255) >> 15; }
+    inline int convert_from_mypaint(uint16_t value) const { return ((value * 255) / 32767); }
 
     /// Convert 32 bit (8 bpc) pixel format to 64 bit (16 bpc)
-    inline uint16_t convert_to_mypaint(int value) const { return ((value*(1<<15))/255); }
+    inline uint16_t convert_to_mypaint(int value) const { return ((value * (1<<15)) / 255); }
 
     uint16_t  mTPixels [k_tile_dim][k_tile_dim][4];
     QImage    mCacheImg;
