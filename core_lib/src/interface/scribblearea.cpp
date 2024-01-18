@@ -330,6 +330,7 @@ void ScribbleArea::onWillScrub(int frameNumber)
     // If we're in the middle of a painting session, stop it and save what was painted
 
     if (mTiledBuffer.isValid() || !mTilesBlitRect.isEmpty()) {
+        // FIXME(MrStevns): does not commit the stroke! so changing keyframe while drawing still breaks the drawing.
         endStroke();
     }
 }
