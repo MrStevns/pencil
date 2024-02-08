@@ -17,8 +17,12 @@ GNU General Public License for more details.
 #include "selectionpainter.h"
 
 #include "object.h"
-#include "qpainter.h"
 #include "basetool.h"
+#include "bitmapimage.h"
+#include "vectorimage.h"
+
+#include <QDebug>
+#include <QPainter>
 
 SelectionPainter::SelectionPainter()
 {
@@ -27,15 +31,20 @@ SelectionPainter::SelectionPainter()
 void SelectionPainter::paint(QPainter& painter,
                              const Object* object,
                              int layerIndex,
-                             BaseTool* tool,
-                             TransformParameters& tParams)
+                             BaseTool* tool)
 {
     Layer* layer = object->getLayer(layerIndex);
 
     if (layer == nullptr) { return; }
 
-    QTransform transform = tParams.selectionTransform * tParams.viewTransform;
-    QPolygonF projectedSelectionPolygon = transform.map(tParams.originalSelectionRectF);
+    const QRectF& selectionRect = mOptions.selectionRect;
+    const QTransform& viewTransform = mOptions.viewTransform;
+    const QTransform& selectionTransform = mOptions.selectionTransform;
+
+    if (selectionRect.isEmpty()) { return; }
+
+    QTransform transform = selectionTransform * viewTransform;
+    QPolygonF projectedSelectionPolygon = transform.map(selectionRect);
 
     if (layer->type() == Layer::BITMAP)
     {
@@ -81,7 +90,7 @@ void SelectionPainter::paint(QPainter& painter,
     }
 
     if (tool->properties.showSelectionInfo) {
-        paintSelectionInfo(painter, transform, tParams.viewTransform, tParams.originalSelectionRectF, projectedSelectionPolygon);
+        paintSelectionInfo(painter, transform, viewTransform, selectionRect, projectedSelectionPolygon);
     }
 }
 

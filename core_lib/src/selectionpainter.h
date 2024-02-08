@@ -25,12 +25,11 @@ class QPainter;
 class Object;
 class BaseTool;
 
-struct TransformParameters
+struct SelectionPainterOptions
 {
-    QRectF originalSelectionRectF;
-
     QTransform viewTransform;
     QTransform selectionTransform;
+    QRectF selectionRect;
 };
 
 class SelectionPainter
@@ -38,11 +37,14 @@ class SelectionPainter
 public:
     SelectionPainter();
 
-    void paint(QPainter& painter, const Object* object, int layerIndex, BaseTool* tool, TransformParameters& transformParameters);
+    void paint(QPainter& painter, const Object* object, int layerIndex, BaseTool* tool);
+
+    void setPainterOptions(const SelectionPainterOptions& options) { mOptions = options; }
 
 private:
     void paintSelectionInfo(QPainter& painter, const QTransform& mergedTransform, const QTransform& viewTransform, const QRectF& selectionRect, const QPolygonF& projectedPolygonF);
 
+    SelectionPainterOptions mOptions;
     const static int HANDLE_WIDTH = 6;
 };
 

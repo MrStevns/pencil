@@ -40,6 +40,9 @@ void ClipboardManager::setFromSystemClipboard(const QPointF& pos, const Layer* l
         return;
     }
 
+    // NOTE(MrStevns): In order to support clipboard properly, we'll need to use setMimeData and keep our state as byte array,
+    // the image data should only be used to allow normal image copy outside of pencil2D, but proper handling of clipboard data with
+    // position data as well as layers etc. requires use of QMimeData and storing our information as QByteArray
     QImage image = mClipboard->image(QClipboard::Clipboard);
     if (!image.isNull()) {
         mBitmapImage = BitmapImage(pos.toPoint()-QPoint(image.size().width()/2, image.size().height()/2), image);

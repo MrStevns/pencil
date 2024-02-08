@@ -36,6 +36,9 @@ VectorImage::VectorImage(const VectorImage& v2) : KeyFrame(v2)
     mCurves = v2.mCurves;
     mArea = v2.mArea;
     mOpacity = v2.mOpacity;
+    mSelectionTransformation = v2.mSelectionTransformation;
+    mSelectionRect = v2.mSelectionRect;
+    mSize = v2.mSize;
 }
 
 VectorImage::~VectorImage()
@@ -54,6 +57,9 @@ VectorImage& VectorImage::operator=(const VectorImage& a) {
     mCurves = a.mCurves;
     mArea = a.mArea;
     mOpacity = a.mOpacity;
+    mSelectionTransformation = a.mSelectionTransformation;
+    mSelectionRect = a.mSelectionRect;
+    mSize = a.mSize;
     modification();
     return *this;
 }
@@ -1238,6 +1244,10 @@ void VectorImage::paintImage(QPainter& painter,
     {
         curve.drawPath(painter, object, mSelectionTransformation, simplified, showThinCurves);
         painter.setClipping(false);
+    }
+
+    if (mTemporaryVectorImage) {
+        mTemporaryVectorImage->paintImage(painter, object, simplified, showThinCurves, antialiasing);
     }
     painter.restore();
 }

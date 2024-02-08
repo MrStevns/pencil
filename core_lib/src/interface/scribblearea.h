@@ -130,7 +130,6 @@ public:
     bool isPointerInUse() const { return mMouseInUse || mTabletInUse; }
 
     void keyEvent(QKeyEvent* event);
-    void keyEventForSelection(QKeyEvent* event);
 
 signals:
     void multiLayerOnionSkinChanged(bool);
@@ -266,10 +265,9 @@ private:
     QPixmap mCanvas;
     CanvasPainter mCanvasPainter;
     OverlayPainter mOverlayPainter;
-    SelectionPainter mSelectionPainter;
     CameraPainter mCameraPainter;
 
-    QPolygonF mOriginalPolygonF = QPolygonF();
+    SelectionPainter* mSelectionPainter = nullptr;
 
     // Pixmap Cache keys
     QMap<unsigned int, QPixmapCache::Key> mPixmapCacheKeys;

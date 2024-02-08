@@ -46,6 +46,8 @@ public:
 
     BezierCurve& curve(int i);
 
+    void resetSelectionTransform() { mSelectionTransformation.reset(); }
+
     void insertCurve(int position, BezierCurve& newCurve, qreal factor, bool interacts);
     void addCurve(BezierCurve& newCurve, qreal factor, bool interacts = true);
     void removeCurveAt(int i);
@@ -140,6 +142,13 @@ public:
 
     QPainterPath getStrokedPath() { return mGetStrokedPath; }
 
+    VectorImage* temporaryImage() const { return mTemporaryVectorImage; }
+    void setTemporaryImage(VectorImage* vectorImage) { mTemporaryVectorImage = vectorImage; }
+    void resetTemporaryImage() {
+        delete mTemporaryVectorImage;
+        mTemporaryVectorImage = nullptr;
+    }
+
     QList<BezierArea> mArea;
     QList<int> mCurveDisplayOrders;
 
@@ -161,6 +170,8 @@ private:
 
 private:
     QList<BezierCurve> mCurves;
+
+    VectorImage* mTemporaryVectorImage = nullptr;
 
     QRectF mSelectionRect;
     QTransform mSelectionTransformation;

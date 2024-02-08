@@ -34,6 +34,8 @@ GNU General Public License for more details.
 #include "layercamera.h"
 #include "backupelement.h"
 
+#include "movetool.h"
+
 #include "colormanager.h"
 #include "filemanager.h"
 #include "toolmanager.h"
@@ -590,52 +592,32 @@ void Editor::pasteFromPreviousFrame()
     {
         backup(tr("Paste from Previous Keyframe"));
         VectorImage* vectorImage = static_cast<VectorImage*>(currentLayer->getKeyFrameAt(prevFrame));
-        pasteToCanvas(vectorImage, mFrame);
+        pasteToCanvas(*vectorImage, mFrame);
     }
 }
 
 void Editor::pasteToCanvas(BitmapImage* bitmapImage, int frameNumber)
 {
+    Q_UNUSED(frameNumber)
     Layer* currentLayer = layers()->currentLayer();
 
     Q_ASSERT(currentLayer->type() == Layer::BITMAP);
-
-    if (select()->somethingSelected())
-    {
-       QRectF selection = select()->mySelectionRect();
-       if (bitmapImage->width() <= selection.width() && bitmapImage->height() <= selection.height())
-       {
-           bitmapImage->moveTopLeft(selection.topLeft());
-       }
-       else
-       {
-           bitmapImage->transform(selection, true);
-       }
-    }
-    mScribbleArea->handleDrawingOnEmptyFrame();
-    BitmapImage *canvasImage = static_cast<BitmapImage*>(currentLayer->getLastKeyFrameAtPosition(frameNumber));
-
-    // Paste clipboard onto current shown image
-    canvasImage->paste(bitmapImage);
-
-    // TODO: currently we don't support placing an image without already pasting it on an already existing
-    // image, this should be reworked such that a hovering selection could be shown, before applying it...
-    select()->setSelection(bitmapImage->bounds());
-    emit frameModified(frameNumber);
+    tools()->setCurrentTool(MOVE);
+    MoveTool* moveTool = static_cast<MoveTool*>(tools()->currentTool());
+    moveTool->setFloatingImage(*bitmapImage);
 }
 
-void Editor::pasteToCanvas(VectorImage* vectorImage, int frameNumber)
+void Editor::pasteToCanvas(VectorImage& vectorImage, int frameNumber)
 {
     Layer* currentLayer = layers()->currentLayer();
 
     Q_ASSERT(currentLayer->type() == Layer::VECTOR);
 
     deselectAll();
-    mScribbleArea->handleDrawingOnEmptyFrame();
-    VectorImage* canvasImage = static_cast<VectorImage*>(currentLayer->getLastKeyFrameAtPosition(frameNumber));
-    canvasImage->paste(*vectorImage);
-    select()->setSelection(vectorImage->getSelectionRect());
-    emit frameModified(frameNumber);
+    // mScribbleArea->handleDrawingOnEmptyFrame();
+    tools()->setCurrentTool(MOVE);
+    MoveTool* moveTool = static_cast<MoveTool*>(tools()->currentTool());
+    moveTool->setFloatingImage(vectorImage);
 }
 
 void Editor::pasteToFrames()
@@ -695,7 +677,7 @@ void Editor::paste()
         if (currentLayer->type() == Layer::BITMAP && clipboardImage.isLoaded()) {
             pasteToCanvas(&clipboardImage, mFrame);
         } else if (currentLayer->type() == Layer::VECTOR && !clipboardVectorImage.isEmpty()) {
-            pasteToCanvas(&clipboardVectorImage, mFrame);
+            pasteToCanvas(clipboardVectorImage, mFrame);
         }
     } else {
         // TODO: implement undo/redo
@@ -954,18 +936,19 @@ Status Editor::importBitmapImage(const QString& filePath)
     const QPoint pos(view()->getImportView().dx() - (img.width() / 2),
                      view()->getImportView().dy() - (img.height() / 2));
 
+
     if (!layer->keyExists(mFrame))
     {
         addNewKey();
     }
-    BitmapImage* bitmapImage = layer->getBitmapImageAtFrame(mFrame);
-    BitmapImage importedBitmapImage(pos, img);
-    bitmapImage->paste(&importedBitmapImage);
-    emit frameModified(bitmapImage->pos());
-
-    scrubTo(mFrame+1);
 
     backup(tr("Import Image"));
+    BitmapImage importedBitmapImage(pos, img);
+    tools()->setCurrentTool(MOVE);
+    auto moveTool = static_cast<MoveTool*>(tools()->getTool(MOVE));
+
+    select()->setSelection(QRect(pos, img.size()), true);
+    moveTool->setFloatingImage(importedBitmapImage);
 
     return status;
 }

@@ -151,25 +151,25 @@ void PreferenceManager::turnOff(SETTING option)
     set(option, false);
 }
 
-bool PreferenceManager::isOn(SETTING option)
+bool PreferenceManager::isOn(SETTING option) const
 {
     int optionId = static_cast<int>(option);
     return mBooleanSet.value(optionId, false);
 }
 
-int PreferenceManager::getInt(SETTING option)
+int PreferenceManager::getInt(SETTING option) const
 {
     int optionId = static_cast<int>(option);
     return mIntegerSet.value(optionId, -1);
 }
 
-float PreferenceManager::getFloat(SETTING option)
+float PreferenceManager::getFloat(SETTING option) const
 {
     int optionId = static_cast<int>(option);
     return mFloatingPointSet.value(optionId, -1);
 }
 
-QString PreferenceManager::getString(SETTING option)
+QString PreferenceManager::getString(SETTING option) const
 {
     int optionId = static_cast<int>(option);
     if (mIntegerSet.contains(optionId))

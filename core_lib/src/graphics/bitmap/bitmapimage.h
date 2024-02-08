@@ -54,6 +54,15 @@ public:
     void paste(BitmapImage*, QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver);
     void paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver);
 
+    /// Set a temporary image which can be displayed on the canvas without affecting the keyframe directly.
+    /// The image will only be applied by explicitly pasting it.
+    ///
+    /// Note(MrStevns): We have no concept of sub layers for a keyframe currently, this could be the start of that.
+    /// Consider reworking this into a list of images in the future for more flexible compositing.
+    void setTemporaryImage(QImage& image) { mTemporaryImage = image; }
+    void clearTemporaryImage() { mTemporaryImage = QImage(); }
+    const QImage& temporaryImage() const { return mTemporaryImage; }
+
     void moveTopLeft(QPoint point);
     void moveTopLeft(QPointF point) { moveTopLeft(point.toPoint()); }
     void transform(QRect rectangle, bool smoothTransform);
@@ -182,6 +191,8 @@ private:
     bool mMinBound = true;
     bool mEnableAutoCrop = false;
     qreal mOpacity = 1.0;
+
+    QImage mTemporaryImage;
 };
 
 #endif

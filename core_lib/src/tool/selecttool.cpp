@@ -20,6 +20,7 @@ GNU General Public License for more details.
 #include "vectorimage.h"
 #include "editor.h"
 #include "layervector.h"
+#include "layerbitmap.h"
 #include "scribblearea.h"
 #include "layermanager.h"
 #include "toolmanager.h"
@@ -284,20 +285,83 @@ void SelectTool::manageSelectionOrigin(QPointF currentPoint, QPointF originPoint
 
 bool SelectTool::keyPressEvent(QKeyEvent* event)
 {
+    auto selectMan = editor()->select();
+    if (!selectMan->somethingSelected()) { return false; }
+
     switch (event->key())
     {
     case Qt::Key_Alt:
-        if (mEditor->tools()->setTemporaryTool(MOVE, {}, Qt::AltModifier))
-        {
-            return true;
-        }
-        break;
+        return editor()->tools()->setTemporaryTool(MOVE, {}, Qt::AltModifier);
     default:
         break;
     }
 
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+    if (currentLayer->type() == Layer::BITMAP) {
+        return keyEventForBitmapLayer(event);
+    } else if (currentLayer->type() == Layer::VECTOR) {
+        return keyEventForVectorLayer(event);
+    }
+
     // Follow the generic behavior anyway
     return BaseTool::keyPressEvent(event);
+}
+
+bool SelectTool::keyEventForVectorLayer(QKeyEvent* event)
+{
+    switch (event->key()) {
+    case Qt::Key_Return:
+    case Qt::Key_Escape: {
+        mEditor->deselectAll();
+        return true;
+    }
+    case Qt::Key_Backspace:
+        mScribbleArea->deleteSelection();
+        mEditor->deselectAll();
+        return true;
+    }
+
+    return false;
+}
+
+bool SelectTool::keyEventForBitmapLayer(QKeyEvent* event)
+{
+    auto selectMan = editor()->select();
+    QRectF selectionRect = selectMan->mySelectionRect();
+    switch (event->key()) {
+    case Qt::Key_Right:
+        selectionRect.translate(QPointF(1, 0));
+        selectMan->setSelectionRect(selectionRect);
+        emit mEditor->frameModified(mEditor->currentFrame());
+        return true;
+    case Qt::Key_Left:
+        selectionRect.translate(QPointF(-1, 0));
+        selectMan->setSelectionRect(selectionRect);
+        emit mEditor->frameModified(mEditor->currentFrame());
+        return true;
+    case Qt::Key_Up:
+        selectionRect.translate(QPointF(0, -1));
+        selectMan->setSelectionRect(selectionRect);
+        emit mEditor->frameModified(mEditor->currentFrame());
+        return true;
+    case Qt::Key_Down:
+        selectionRect.translate(QPointF(0, 1));
+        selectMan->setSelectionRect(selectionRect);
+        emit mEditor->frameModified(mEditor->currentFrame());
+        return true;
+    case Qt::Key_Return:
+        mEditor->deselectAll();
+        return true;
+    case Qt::Key_Escape:
+        mEditor->deselectAll();
+        return true;
+    case Qt::Key_Backspace:
+        mScribbleArea->deleteSelection();
+        mEditor->deselectAll();
+        return true;
+    }
+
+    return false;
 }
 
 QPointF SelectTool::offsetFromPressPos()

@@ -21,8 +21,11 @@ GNU General Public License for more details.
 #include "basetool.h"
 #include "movemode.h"
 #include "preferencemanager.h"
+#include "bitmapimage.h"
 
 class Layer;
+class LayerVector;
+class LayerBitmap;
 class VectorImage;
 
 
@@ -39,13 +42,24 @@ public:
     void pointerPressEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
     void pointerMoveEvent(PointerEvent*) override;
+    bool keyPressEvent(QKeyEvent* keyEvent) override;
 
     bool leavingThisTool() override;
 
     void resetToDefault() override;
     void setShowSelectionInfo(const bool b) override;
 
+    void setFloatingImage(BitmapImage& bitmapImage);
+    void setFloatingImage(VectorImage& vectorImage);
+
 private:
+    void paintBitmapTransformation(QPainter& painter);
+    void paintVectorTransformation(QPainter& painter);
+
+    void commitChanges();
+    void discardChanges();
+
+    void cancelTransformation();
     void applyTransformation();
     void updateSettings(const SETTING setting);
 

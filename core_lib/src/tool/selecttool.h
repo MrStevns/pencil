@@ -24,6 +24,9 @@ GNU General Public License for more details.
 #include <QRectF>
 
 class Layer;
+class LayerVector;
+class LayerBitmap;
+
 class SelectionManager;
 
 class SelectTool : public BaseTool
@@ -46,6 +49,8 @@ private:
     void pointerMoveEvent(PointerEvent*) override;
 
     bool keyPressEvent(QKeyEvent* event) override;
+    bool keyEventForVectorLayer(QKeyEvent* event);
+    bool keyEventForBitmapLayer(QKeyEvent* event);
 
     void manageSelectionOrigin(QPointF currentPoint, QPointF originPoint);
     void controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint);

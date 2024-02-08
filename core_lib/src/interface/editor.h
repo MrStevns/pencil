@@ -234,7 +234,7 @@ private:
     Status importVectorImage(const QString&);
 
     void pasteToCanvas(BitmapImage* bitmapImage, int frameNumber);
-    void pasteToCanvas(VectorImage* vectorImage, int frameNumber);
+    void pasteToCanvas(VectorImage& vectorImage, int frameNumber);
     void pasteToFrames();
 
     bool canCopyBitmapImage(BitmapImage* bitmapImage) const;

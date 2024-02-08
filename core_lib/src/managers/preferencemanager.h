@@ -44,11 +44,11 @@ public:
 
     void turnOn(SETTING option);
     void turnOff(SETTING option);
-    bool isOn(SETTING option);
+    bool isOn(SETTING option) const;
 
-    QString getString(SETTING option);
-    int     getInt(SETTING option);
-    float getFloat(SETTING option);
+    QString getString(SETTING option) const;
+    int     getInt(SETTING option) const;
+    float getFloat(SETTING option) const;
 
 signals:
     void optionChanged(SETTING e);

@@ -96,10 +96,11 @@ public:
     void setRotation(const qreal& rotation) { mRotatedAngle = rotation; }
     void setScale(const qreal scaleX, const qreal scaleY) { mScaleX = scaleX; mScaleY = scaleY; }
     void setTranslation(const QPointF& translation) { mTranslation = translation; }
+    void setSelectionRect(const QRectF& selectionRect) { mOriginalRect = selectionRect; }
 
     qreal angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const;
 
-    QPointF mapToSelection(const QPointF& point) const { return mSelectionTransform.map(point); };
+    QPointF mapToSelection(const QPointF& point) const { return mSelectionTransform.map(point); }
     QPointF mapFromLocalSpace(const QPointF& point) const { return mSelectionTransform.inverted().map(point); }
     QPolygonF mapToSelection(const QPolygonF& polygon) const { return mSelectionTransform.map(polygon); }
     QPolygonF mapFromLocalSpace(const QPolygonF& polygon) const { return mSelectionTransform.inverted().map(polygon); }
