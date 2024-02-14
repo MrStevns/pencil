@@ -99,6 +99,10 @@ void SelectTool::beginSelection(Layer* currentLayer)
 {
     auto selectMan = mEditor->select();
 
+    if (selectMan->activeKeyFrame()) {
+        selectMan->commitChanges();
+    }
+    selectMan->setActiveSelectionFrame(currentLayer->getLastKeyFrameAtPosition(mEditor->currentFrame()));
     if (selectMan->somethingSelected() && mMoveMode != MoveMode::NONE) // there is something selected
     {
         if (currentLayer->type() == Layer::VECTOR)

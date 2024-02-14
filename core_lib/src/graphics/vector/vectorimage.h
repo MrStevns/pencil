@@ -142,11 +142,12 @@ public:
 
     QPainterPath getStrokedPath() { return mGetStrokedPath; }
 
-    VectorImage* temporaryImage() const { return mTemporaryVectorImage; }
-    void setTemporaryImage(VectorImage* vectorImage) { mTemporaryVectorImage = vectorImage; }
+    VectorImage* temporaryImage() const { return mTemporaryVectorImage.data(); }
+    void setTemporaryImage(VectorImage* vectorImage) { mTemporaryVectorImage.reset(vectorImage); }
     void resetTemporaryImage() {
-        delete mTemporaryVectorImage;
-        mTemporaryVectorImage = nullptr;
+        if (mTemporaryVectorImage) {
+            mTemporaryVectorImage.reset();
+        }
     }
 
     QList<BezierArea> mArea;
@@ -171,7 +172,7 @@ private:
 private:
     QList<BezierCurve> mCurves;
 
-    VectorImage* mTemporaryVectorImage = nullptr;
+    QScopedPointer<VectorImage> mTemporaryVectorImage;
 
     QRectF mSelectionRect;
     QTransform mSelectionTransformation;

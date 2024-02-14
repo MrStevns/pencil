@@ -397,9 +397,13 @@ void MoveTool::setFloatingImage(BitmapImage& bitmapImage)
     int currentFrameNumber = mEditor->currentFrame();
     Q_ASSERT(layer->type() == Layer::BITMAP);
 
-    mEditor->select()->setSelection(bitmapImage.bounds(), true);
+    SelectionManager* selectMan = mEditor->select();
+    selectMan->commitChanges();
+
     BitmapImage* currentKeyFrame = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(currentFrameNumber);
     currentKeyFrame->setTemporaryImage(*bitmapImage.image());
+    selectMan->setActiveSelectionFrame(currentKeyFrame);
+    selectMan->setSelection(bitmapImage.bounds(), true);
 
     emit mEditor->frameModified(currentFrameNumber);
 }
@@ -411,10 +415,13 @@ void MoveTool::setFloatingImage(VectorImage& vectorImage)
     if (layer == nullptr) { return; }
 
     vectorImage.calculateSelectionRect();
-    mEditor->select()->setSelection(vectorImage.getSelectionRect());
+    SelectionManager* selectMan = mEditor->select();
+    selectMan->commitChanges();
 
     VectorImage* currentKeyFrame = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(currentFrameNumber, 0);
     currentKeyFrame->setTemporaryImage(vectorImage.clone());
+    selectMan->setActiveSelectionFrame(currentKeyFrame);
+    selectMan->setSelection(vectorImage.getSelectionRect());
 
     emit mEditor->frameModified(currentFrameNumber);
 }

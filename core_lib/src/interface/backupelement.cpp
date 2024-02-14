@@ -35,6 +35,7 @@ void BackupBitmapElement::restore(Editor* editor)
 
     editor->layers()->setCurrentLayer(layer);
 
+    auto selectMan = editor->select();
     if (this->frame > 0 && layer->getKeyFrameAt(this->frame) == nullptr)
     {
         editor->restoreKey();
@@ -46,12 +47,16 @@ void BackupBitmapElement::restore(Editor* editor)
             if (layer->type() == Layer::BITMAP)
             {
                 auto bitmapLayer = static_cast<LayerBitmap*>(layer);
-                *bitmapLayer->getLastBitmapImageAtFrame(this->frame, 0) = bitmapImage;  // restore the image
+                BitmapImage* canvasKeyFrame = bitmapLayer->getLastBitmapImageAtFrame(this->frame, 0);
+                *canvasKeyFrame = bitmapImage;  // restore the image
+
+                if (somethingSelected) {
+                    selectMan->setActiveSelectionFrame(canvasKeyFrame);
+                }
             }
         }
     }
 
-    auto selectMan = editor->select();
     selectMan->setSelection(mySelection, true);
     selectMan->setTransformAnchor(selectionAnchor);
     selectMan->setRotation(rotationAngle);
@@ -59,8 +64,9 @@ void BackupBitmapElement::restore(Editor* editor)
     selectMan->setTranslation(translation);
 
     selectMan->calculateSelectionTransformation();
+    selectMan->commitChanges();
 
-    editor->frameModified(this->frame);
+    emit editor->frameModified(this->frame);
 }
 
 void BackupVectorElement::restore(Editor* editor)
@@ -85,6 +91,7 @@ void BackupVectorElement::restore(Editor* editor)
 
     editor->layers()->setCurrentLayer(layer);
 
+    auto selectMan = editor->select();
     if (this->frame > 0 && layer->getKeyFrameAt(this->frame) == nullptr)
     {
         editor->restoreKey();
@@ -95,21 +102,27 @@ void BackupVectorElement::restore(Editor* editor)
         {
             if (layer->type() == Layer::VECTOR)
             {
-                auto pVectorImage = static_cast<LayerVector*>(layer);
-                *pVectorImage->getLastVectorImageAtFrame(this->frame, 0) = this->vectorImage;  // restore the image
+                auto vectorLayer = static_cast<LayerVector*>(layer);
+                VectorImage* canvasKeyFrame = vectorLayer->getLastVectorImageAtFrame(this->frame, 0);
+                *canvasKeyFrame = vectorImage;  // restore the image
+
+                if (somethingSelected) {
+                    selectMan->setActiveSelectionFrame(canvasKeyFrame);
+                }
             }
         }
     }
 
-    auto selectMan = editor->select();
     selectMan->setSelection(mySelection, false);
     selectMan->setTransformAnchor(selectionAnchor);
     selectMan->setRotation(rotationAngle);
     selectMan->setScale(scaleX, scaleY);
     selectMan->setTranslation(translation);
-    selectMan->calculateSelectionTransformation();
 
-    editor->frameModified(this->frame);
+    selectMan->calculateSelectionTransformation();
+    selectMan->commitChanges();
+
+    emit editor->frameModified(this->frame);
 
 }
 
@@ -122,7 +135,7 @@ void BackupSoundElement::restore(Editor* editor)
     if (editor->currentFrame() != this->frame) {
         editor->scrubTo(this->frame);
     }
-    editor->frameModified(this->frame);
+    emit editor->frameModified(this->frame);
 
     // TODO: soundclip won't restore if overlapping on first frame
     if (this->frame > 0 && layer->getKeyFrameAt(this->frame) == nullptr)

@@ -28,6 +28,7 @@ GNU General Public License for more details.
 #include <QTransform>
 
 class Editor;
+class KeyFrame;
 
 class SelectionManager : public BaseManager
 {
@@ -44,6 +45,12 @@ public:
     void flipSelection(bool flipVertical);
 
     void setSelection(QRectF rect, bool roundPixels=false);
+    bool isSelectionActive() const;
+    void setActiveSelectionFrame(KeyFrame* keyframe) { mActiveKeyFrame = keyframe; }
+    const KeyFrame* activeKeyFrame() const { return mActiveKeyFrame; }
+    
+    void commitChanges();
+    void discardChanges();
 
     void translate(QPointF point);
     void rotate(qreal angle, qreal lockedAngle);
@@ -142,6 +149,10 @@ private:
     bool mLockAxis = false;
     QPolygonF mSelectionPolygon;
     QRectF mOriginalRect;
+    
+    KeyFrame* mActiveKeyFrame = nullptr;
+    Layer* mWorkingLayer = nullptr;
+    
 
     qreal mScaleX;
     qreal mScaleY;

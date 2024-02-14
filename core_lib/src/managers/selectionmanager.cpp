@@ -15,9 +15,12 @@ GNU General Public License for more details.
 
 */
 #include "selectionmanager.h"
-#include "editor.h"
 
+#include "editor.h"
 #include "vectorimage.h"
+#include "bitmapimage.h"
+#include "keyframe.h"
+#include "layer.h"
 
 #include "mathutils.h"
 
@@ -48,8 +51,94 @@ Status SelectionManager::save(Object*)
     return Status::OK;
 }
 
-void SelectionManager::workingLayerChanged(Layer *)
+void SelectionManager::workingLayerChanged(Layer* workingLayer)
 {
+    mWorkingLayer = workingLayer;
+}
+
+bool SelectionManager::isSelectionActive() const
+{
+    const KeyFrame* currentFrame = mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame());
+    return mActiveKeyFrame != nullptr && currentFrame == mActiveKeyFrame;
+}
+
+void SelectionManager::commitChanges()
+{
+    if (somethingSelected())
+    {
+        const QTransform& selectionTransform = mSelectionTransform;
+        const QRectF& selectionRect = mySelectionRect();
+        if (selectionRect.isEmpty()) { return; }
+        
+        if (!mActiveKeyFrame) { return; }
+
+        BitmapImage* currentBitmapImage = dynamic_cast<BitmapImage*>(mActiveKeyFrame);
+        VectorImage* currentVectorImage = dynamic_cast<VectorImage*>(mActiveKeyFrame);
+        if (currentBitmapImage)
+        {
+            // TODO: re-implement: handleDrawingOnEmptyFrame();
+            const QRect& alignedSelectionRect = selectionRect.toAlignedRect();
+            if (currentBitmapImage == nullptr) { return; }
+
+            const QImage& floatingImage = currentBitmapImage->temporaryImage();
+            if (!floatingImage.isNull()) {
+                const QRect& transformedSelectionRect = selectionTransform.mapRect(alignedSelectionRect);
+                const QImage& transformedFloatingImage = floatingImage.transformed(selectionTransform, Qt::SmoothTransformation);
+
+                auto floatingBitmapImage = BitmapImage(transformedSelectionRect.topLeft(), transformedFloatingImage);
+                currentBitmapImage->paste(&floatingBitmapImage, QPainter::CompositionMode_SourceOver);
+                currentBitmapImage->clearTemporaryImage();
+            } else {
+                BitmapImage transformedImage = currentBitmapImage->transformed(alignedSelectionRect, selectionTransform, true);
+                currentBitmapImage->clear(selectionRect);
+                currentBitmapImage->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
+            }
+            // When the selection has been applied, a new rect is applied based on the bounding box.
+            // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
+            setSelection(mapToSelection(QPolygonF(mySelectionRect())).boundingRect());
+        }
+        else if (currentVectorImage)
+        {
+            // Unfortunately this doesn't work right currently so vector transforms
+            // will always be applied on the previous keyframe when on an empty frame
+            // TODO: re-implement: handleDrawingOnEmptyFrame() and figure out why it does not work as intended;
+            if (currentVectorImage->temporaryImage()) {
+                currentVectorImage->paste(*currentVectorImage->temporaryImage());
+                currentVectorImage->resetTemporaryImage();
+            }
+            currentVectorImage->applySelectionTransformation();
+            currentVectorImage->deselectAll();
+        }
+
+        editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
+    }
+}
+
+
+void SelectionManager::discardChanges()
+{
+    KeyFrame* activeKeyFrame = mActiveKeyFrame;
+    if (activeKeyFrame == nullptr) { return; }
+
+    BitmapImage* activeBitmapImage = dynamic_cast<BitmapImage*>(activeKeyFrame);
+    VectorImage* activeVectorImage = dynamic_cast<VectorImage*>(activeKeyFrame);
+    if (activeBitmapImage) {
+
+        if (!activeBitmapImage->temporaryImage().isNull()) {
+            activeBitmapImage->clearTemporaryImage();
+        }
+    } else if (activeVectorImage) {
+        activeVectorImage->resetSelectionTransform();
+
+        if (activeVectorImage->temporaryImage()) {
+            activeVectorImage->resetTemporaryImage();
+        }
+    }
+
+    resetSelectionProperties();
+
+    // TODO: not current layer...
+    editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
 }
 
 void SelectionManager::resetSelectionTransformProperties()
@@ -116,6 +205,8 @@ void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)
         mMoveMode = MoveMode::NONE;
         return;
     }
+
+    if (!isSelectionActive()) { return; }
 
     QPolygonF projectedPolygon = mapToSelection(mSelectionPolygon);
 

@@ -49,7 +49,8 @@ struct CanvasPainterOptions
     OnionSkinPainterOptions mOnionSkinOptions;
 
     QTransform selectionTransform;
-    QRect     selectionRect;
+    QRect      selectionRect;
+    const KeyFrame*  activeSelectionKeyFrame = nullptr;
 };
 
 class CanvasPainter

@@ -39,10 +39,15 @@ VectorImage::VectorImage(const VectorImage& v2) : KeyFrame(v2)
     mSelectionTransformation = v2.mSelectionTransformation;
     mSelectionRect = v2.mSelectionRect;
     mSize = v2.mSize;
+
+    if (v2.mTemporaryVectorImage) {
+        mTemporaryVectorImage.reset(new VectorImage(*v2.mTemporaryVectorImage));
+    }
 }
 
 VectorImage::~VectorImage()
 {
+    resetTemporaryImage();
 }
 
 VectorImage& VectorImage::operator=(const VectorImage& a) {
@@ -60,6 +65,11 @@ VectorImage& VectorImage::operator=(const VectorImage& a) {
     mSelectionTransformation = a.mSelectionTransformation;
     mSelectionRect = a.mSelectionRect;
     mSize = a.mSize;
+
+    if (a.mTemporaryVectorImage) {
+        mTemporaryVectorImage.reset(new VectorImage(*a.mTemporaryVectorImage));
+    }
+
     modification();
     return *this;
 }

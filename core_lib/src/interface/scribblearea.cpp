@@ -1146,12 +1146,14 @@ void ScribbleArea::prepCanvas(int frame)
     o.cmBufferBlendMode = mEditor->tools()->currentTool()->type() == ToolType::ERASER ? QPainter::CompositionMode_DestinationOut : QPainter::CompositionMode_SourceOver;
     o.selectionTransform = mEditor->select()->selectionTransform();
     o.selectionRect = mEditor->select()->mySelectionRect().toAlignedRect();
+    o.activeSelectionKeyFrame = mEditor->select()->activeKeyFrame();
 
     SelectionManager* sm = mEditor->select();
     SelectionPainterOptions selectionPainterOptions;
     selectionPainterOptions.selectionRect = sm->mySelectionRect();
     selectionPainterOptions.selectionTransform = sm->selectionTransform();
     selectionPainterOptions.viewTransform = mEditor->view()->getView();
+    selectionPainterOptions.isSelectionActive = mEditor->select()->isSelectionActive();
 
     mSelectionPainter->setPainterOptions(selectionPainterOptions);
 

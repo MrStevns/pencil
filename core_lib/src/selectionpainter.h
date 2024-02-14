@@ -27,9 +27,11 @@ class BaseTool;
 
 struct SelectionPainterOptions
 {
-    QTransform viewTransform;
-    QTransform selectionTransform;
-    QRectF selectionRect;
+    QTransform  viewTransform;
+    QTransform  selectionTransform;
+    QRectF      selectionRect;
+    bool        isSelectionActive;
+
 };
 
 class SelectionPainter

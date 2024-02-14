@@ -216,6 +216,11 @@ void CanvasPainter::paintBitmapOnionSkinFrame(QPainter& painter, const QRect& bl
     initializePainter(onionSkinPainter, mOnionSkinPixmap, blitRect);
 
     onionSkinPainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
+    
+    if (bitmapImage == mOptions.activeSelectionKeyFrame) {
+        paintTransformedSelection(onionSkinPainter, bitmapImage, mOptions.selectionRect, mOptions.selectionTransform);
+    }
+    
     paintOnionSkinFrame(painter, onionSkinPainter, nFrame, colorize, bitmapImage->getOpacity());
 }
 
@@ -229,6 +234,10 @@ void CanvasPainter::paintVectorOnionSkinFrame(QPainter& painter, const QRect& bl
 
     QPainter onionSkinPainter;
     initializePainter(onionSkinPainter, mOnionSkinPixmap, blitRect);
+
+    if (vectorImage == mOptions.activeSelectionKeyFrame) {
+        paintTransformedSelection(vectorImage, mOptions.selectionTransform);
+    }
 
     vectorImage->paintImage(onionSkinPainter, *mObject, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);
     paintOnionSkinFrame(painter, onionSkinPainter, nFrame, colorize, vectorImage->getOpacity());
@@ -279,17 +288,18 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
     currentBitmapPainter.drawImage(paintedImage->topLeft(), *paintedImage->image());
 
-    if (isCurrentLayer && isDrawing)
+    bool transformActive = paintedImage == mOptions.activeSelectionKeyFrame;
+
+    if (transformActive) {
+        paintTransformedSelection(currentBitmapPainter, paintedImage, mOptions.selectionRect, mOptions.selectionTransform);
+    }
+    else if (isCurrentLayer && isDrawing)
     {
         currentBitmapPainter.setCompositionMode(mOptions.cmBufferBlendMode);
         const auto tiles = mTiledBuffer->tiles();
         for (const Tile* tile : tiles) {
             currentBitmapPainter.drawPixmap(tile->posF(), tile->pixmap());
         }
-    }
-
-    if (isCurrentLayer) {
-        paintTransformedSelection(currentBitmapPainter, paintedImage, mOptions.selectionRect, mOptions.selectionTransform);
     }
 
     painter.drawPixmap(mPointZero, mCurrentLayerPixmap);
@@ -300,15 +310,15 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bi
     if (selectionRect.width() == 0 && selectionRect.height() == 0)
         return;
 
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
     if (!bitmapImage->temporaryImage().isNull()) {
         painter.save();
         painter.setTransform(selectionTransform*mViewTransform);
         painter.drawImage(selectionRect, bitmapImage->temporaryImage());
         painter.restore();
 
-    } else if (!selectionTransform.isIdentity()) {
+    } else {
         painter.save();
-        painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
         painter.setTransform(mViewTransform);
 
         // Clear the painted area to make it look like the content has been erased
@@ -353,7 +363,10 @@ void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blit
 
     const bool isDrawing = mTiledBuffer->isValid();
 
-    paintTransformedSelection(vectorImage, mOptions.selectionTransform);
+    if (vectorImage == mOptions.activeSelectionKeyFrame) {
+        // TODO(MrStevns): finish implementing this
+        paintTransformedSelection(vectorImage, mOptions.selectionTransform);
+    }
 
     // Paint existing vector image to the painter
     vectorImage->paintImage(currentVectorPainter, *mObject, mOptions.bOutlines, mOptions.bThinLines, mOptions.bAntiAlias);

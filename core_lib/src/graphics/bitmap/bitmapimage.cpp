@@ -38,6 +38,7 @@ BitmapImage::BitmapImage(const BitmapImage& a) : KeyFrame(a)
     mEnableAutoCrop = a.mEnableAutoCrop;
     mOpacity = a.mOpacity;
     mImage = a.mImage;
+    mTemporaryImage = a.mTemporaryImage;
 }
 
 BitmapImage::BitmapImage(const QRect& rectangle, const QColor& color)
@@ -90,6 +91,7 @@ BitmapImage& BitmapImage::operator=(const BitmapImage& a)
     mMinBound = a.mMinBound;
     mOpacity = a.mOpacity;
     mImage = a.mImage;
+    mTemporaryImage = a.mTemporaryImage;
     modification();
     return *this;
 }

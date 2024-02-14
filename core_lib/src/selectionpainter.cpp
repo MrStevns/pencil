@@ -40,8 +40,9 @@ void SelectionPainter::paint(QPainter& painter,
     const QRectF& selectionRect = mOptions.selectionRect;
     const QTransform& viewTransform = mOptions.viewTransform;
     const QTransform& selectionTransform = mOptions.selectionTransform;
+    bool selectionActive = mOptions.isSelectionActive;
 
-    if (selectionRect.isEmpty()) { return; }
+    if (selectionRect.isEmpty() || !selectionActive) { return; }
 
     QTransform transform = selectionTransform * viewTransform;
     QPolygonF projectedSelectionPolygon = transform.map(selectionRect);
