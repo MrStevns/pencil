@@ -45,9 +45,9 @@ public:
     void flipSelection(bool flipVertical);
 
     void setSelection(QRectF rect, bool roundPixels=false);
-    bool isSelectionActive() const;
+    bool selectionBeganOnCurrentFrame() const;
     void setActiveSelectionFrame(KeyFrame* keyframe) { mActiveKeyFrame = keyframe; }
-    const KeyFrame* activeKeyFrame() const { return mActiveKeyFrame; }
+    KeyFrame* activeKeyFrame() const { return mActiveKeyFrame; }
     
     void commitChanges();
     void discardChanges();
@@ -85,9 +85,6 @@ public:
     bool isOutsideSelectionArea(const QPointF& point) const;
 
     qreal selectionTolerance() const;
-
-    qreal selectionWidth() const { return (mSelectionPolygon[1] - mSelectionPolygon[0]).x(); }
-    qreal selectionHeight() const { return (mSelectionPolygon[3] - mSelectionPolygon[0]).y(); }
 
     QPointF currentTransformAnchor() const { return mAnchorPoint; }
     QPointF getSelectionAnchorPoint() const;

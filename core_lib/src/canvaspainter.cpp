@@ -288,9 +288,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
     currentBitmapPainter.drawImage(paintedImage->topLeft(), *paintedImage->image());
 
-    bool transformActive = paintedImage == mOptions.activeSelectionKeyFrame;
-
-    if (transformActive) {
+    if (paintedImage == mOptions.activeSelectionKeyFrame) {
         paintTransformedSelection(currentBitmapPainter, paintedImage, mOptions.selectionRect, mOptions.selectionTransform);
     }
     else if (isCurrentLayer && isDrawing)

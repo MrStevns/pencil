@@ -39,6 +39,11 @@ public:
     QPointF translation;
     QRectF mySelection;
     QPointF selectionAnchor;
+    KeyFrame* selectionActiveKeyFrame = nullptr;
+
+    int layerId = 0;
+    int layer = 0;
+    int frame = 0;
 
     virtual int type() { return UNDEFINED; }
     virtual void restore(Editor*) { Q_ASSERT(false); }
@@ -50,10 +55,6 @@ class BackupBitmapElement : public BackupElement
 public:
     explicit BackupBitmapElement(BitmapImage* bi) { bitmapImage = *bi; }
 
-    int layerId = 0;
-
-    int layer = 0;
-    int frame = 0;
     BitmapImage bitmapImage;
     int type() override { return BackupElement::BITMAP_MODIF; }
     void restore(Editor*) override;
@@ -64,10 +65,6 @@ class BackupVectorElement : public BackupElement
     Q_OBJECT
 public:
     explicit BackupVectorElement(VectorImage* vi) { vectorImage = *vi; }
-    int layerId = 0;
-
-    int layer = 0;
-    int frame = 0;
     VectorImage vectorImage;
 
     int type() override { return BackupElement::VECTOR_MODIF; }
@@ -79,10 +76,6 @@ class BackupSoundElement : public BackupElement
     Q_OBJECT
 public:
     explicit BackupSoundElement(SoundClip* sound) { clip = *sound; }
-    int layerId = 0;
-
-    int layer = 0;
-    int frame = 0;
     SoundClip clip;
     QString fileName, originalName;
 

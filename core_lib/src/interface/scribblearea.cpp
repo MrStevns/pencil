@@ -1153,7 +1153,7 @@ void ScribbleArea::prepCanvas(int frame)
     selectionPainterOptions.selectionRect = sm->mySelectionRect();
     selectionPainterOptions.selectionTransform = sm->selectionTransform();
     selectionPainterOptions.viewTransform = mEditor->view()->getView();
-    selectionPainterOptions.isSelectionActive = mEditor->select()->isSelectionActive();
+    selectionPainterOptions.isSelectionActive = mEditor->select()->selectionBeganOnCurrentFrame();
 
     mSelectionPainter->setPainterOptions(selectionPainterOptions);
 

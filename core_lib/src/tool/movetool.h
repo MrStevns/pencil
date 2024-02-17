@@ -56,9 +56,6 @@ private:
     void paintBitmapTransformation(QPainter& painter);
     void paintVectorTransformation(QPainter& painter);
 
-    void commitChanges();
-    void discardChanges();
-
     void cancelTransformation();
     void applyTransformation();
     void updateSettings(const SETTING setting);

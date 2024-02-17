@@ -56,7 +56,7 @@ void SelectionManager::workingLayerChanged(Layer* workingLayer)
     mWorkingLayer = workingLayer;
 }
 
-bool SelectionManager::isSelectionActive() const
+bool SelectionManager::selectionBeganOnCurrentFrame() const
 {
     const KeyFrame* currentFrame = mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame());
     return mActiveKeyFrame != nullptr && currentFrame == mActiveKeyFrame;
@@ -109,6 +109,7 @@ void SelectionManager::commitChanges()
             currentVectorImage->applySelectionTransformation();
             currentVectorImage->deselectAll();
         }
+        setActiveSelectionFrame(nullptr);
 
         editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
     }
@@ -206,7 +207,7 @@ void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)
         return;
     }
 
-    if (!isSelectionActive()) { return; }
+    if (!selectionBeganOnCurrentFrame()) { return; }
 
     QPolygonF projectedPolygon = mapToSelection(mSelectionPolygon);
 

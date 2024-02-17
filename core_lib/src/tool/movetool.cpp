@@ -143,7 +143,7 @@ bool MoveTool::keyPressEvent(QKeyEvent* keyEvent)
         return true;
     case Qt::Key_Backspace:
         mScribbleArea->deleteSelection();
-        discardChanges();
+        selectMan->discardChanges();
         mEditor->deselectAll();
         return true;
     default:
@@ -364,11 +364,7 @@ void MoveTool::storeClosestVectorCurve(Layer* layer)
 void MoveTool::applyTransformation()
 {
     SelectionManager* selectMan = mEditor->select();
-    commitChanges();
-
-    // When the selection has been applied, a new rect is applied based on the bounding box.
-    // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
-    selectMan->setSelection(selectMan->mapToSelection(QPolygonF(selectMan->mySelectionRect())).boundingRect());
+    selectMan->commitChanges();
     mRotatedAngle = 0;
     mPreviousAngle = 0;
 }
@@ -381,7 +377,7 @@ void MoveTool::cancelTransformation()
         Layer* layer = mEditor->layers()->currentLayer();
         if (layer == nullptr) { return; }
 
-        discardChanges();
+        selectMan->discardChanges();
 
         mEditor->select()->setSelection(selectMan->mySelectionRect(), false);
 
@@ -398,7 +394,7 @@ void MoveTool::setFloatingImage(BitmapImage& bitmapImage)
     Q_ASSERT(layer->type() == Layer::BITMAP);
 
     SelectionManager* selectMan = mEditor->select();
-    selectMan->commitChanges();
+    applyTransformation();
 
     BitmapImage* currentKeyFrame = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(currentFrameNumber);
     currentKeyFrame->setTemporaryImage(*bitmapImage.image());
@@ -416,7 +412,7 @@ void MoveTool::setFloatingImage(VectorImage& vectorImage)
 
     vectorImage.calculateSelectionRect();
     SelectionManager* selectMan = mEditor->select();
-    selectMan->commitChanges();
+    applyTransformation();
 
     VectorImage* currentKeyFrame = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(currentFrameNumber, 0);
     currentKeyFrame->setTemporaryImage(vectorImage.clone());
@@ -426,82 +422,8 @@ void MoveTool::setFloatingImage(VectorImage& vectorImage)
     emit mEditor->frameModified(currentFrameNumber);
 }
 
-void MoveTool::discardChanges()
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer == nullptr) { return; }
-
-    int currentFrameNumber = mEditor->currentFrame();
-    if (layer->type() == Layer::BITMAP) {
-        BitmapImage* currentKeyFrame = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(currentFrameNumber);
-
-        if (!currentKeyFrame->temporaryImage().isNull()) {
-            currentKeyFrame->clearTemporaryImage();
-        }
-    } else if (layer->type() == Layer::VECTOR) {
-        VectorImage* currentFrameImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(currentFrameNumber, 0);
-        currentFrameImage->resetSelectionTransform();
-    }
-}
-
-void MoveTool::commitChanges()
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer == nullptr) { return; }
-
-    auto selectMan = mEditor->select();
-    const int currentFrameNumber = mEditor->currentFrame();
-    if (selectMan->somethingSelected())
-    {
-        const QTransform& selectionTransform = selectMan->selectionTransform();
-        const QRectF& selectionRect = selectMan->mySelectionRect();
-        if (selectionRect.isEmpty()) { return; }
-
-        if (layer->type() == Layer::BITMAP)
-        {
-            // TODO: re-implement: handleDrawingOnEmptyFrame();
-            const QRect& alignedSelectionRect = selectionRect.toAlignedRect();
-            BitmapImage* currentKeyFrame = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(currentFrameNumber);
-            if (currentKeyFrame == nullptr) { return; }
-
-            const QImage& floatingImage = currentKeyFrame->temporaryImage();
-            if (!floatingImage.isNull()) {
-                const QRect& transformedSelectionRect = selectionTransform.mapRect(alignedSelectionRect);
-                const QImage& transformedFloatingImage = floatingImage.transformed(selectionTransform, Qt::SmoothTransformation);
-
-                auto floatingBitmapImage = BitmapImage(transformedSelectionRect.topLeft(), transformedFloatingImage);
-                currentKeyFrame->paste(&floatingBitmapImage, QPainter::CompositionMode_SourceOver);
-                currentKeyFrame->clearTemporaryImage();
-            } else {
-                BitmapImage transformedImage = currentKeyFrame->transformed(alignedSelectionRect, selectionTransform, true);
-                currentKeyFrame->clear(selectionRect);
-                currentKeyFrame->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
-            }
-        }
-        else if (layer->type() == Layer::VECTOR)
-        {
-            // Unfortunately this doesn't work right currently so vector transforms
-            // will always be applied on the previous keyframe when on an empty frame
-            // TODO: re-implement: handleDrawingOnEmptyFrame() and figure out why it does not work as intended;
-            VectorImage* currentKeyFrame = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(currentFrameNumber, 0);
-
-            if (currentKeyFrame->temporaryImage()) {
-                currentKeyFrame->paste(*currentKeyFrame->temporaryImage());
-                currentKeyFrame->resetTemporaryImage();
-            }
-            currentKeyFrame->applySelectionTransformation();
-        }
-
-        mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-    }
-}
-
 bool MoveTool::leavingThisTool()
 {
-    if (currentPaintableLayer())
-    {
-        applyTransformation();
-    }
     return true;
 }
 

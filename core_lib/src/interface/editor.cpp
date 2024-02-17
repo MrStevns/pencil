@@ -256,6 +256,7 @@ bool Editor::backup(int backupLayer, int backupFrame, const QString& undoText)
                 element->scaleY = select()->myScaleY();
                 element->translation = select()->myTranslation();
                 element->selectionAnchor = select()->currentTransformAnchor();
+                element->selectionActiveKeyFrame = select()->activeKeyFrame();
 
                 mBackupList.append(element);
                 mBackupIndex++;
@@ -282,6 +283,7 @@ bool Editor::backup(int backupLayer, int backupFrame, const QString& undoText)
                 element->scaleY = select()->myScaleY();
                 element->translation = select()->myTranslation();
                 element->selectionAnchor = select()->currentTransformAnchor();
+                element->selectionActiveKeyFrame = select()->activeKeyFrame();
                 mBackupList.append(element);
                 mBackupIndex++;
             }
@@ -1115,6 +1117,7 @@ void Editor::selectAll() const
 
 void Editor::deselectAll() const
 {
+    select()->commitChanges();
     select()->resetSelectionProperties();
 
     Layer* layer = layers()->currentLayer();

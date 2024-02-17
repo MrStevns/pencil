@@ -28,6 +28,10 @@ GNU General Public License for more details.
 void BackupBitmapElement::restore(Editor* editor)
 {
     Layer* layer = editor->object()->findLayerById(this->layerId);
+    auto selectMan = editor->select();
+
+    // Commit any previous selection changes if neccesary
+    selectMan->commitChanges();
 
     if (editor->currentFrame() != this->frame) {
         editor->scrubTo(this->frame);
@@ -35,7 +39,6 @@ void BackupBitmapElement::restore(Editor* editor)
 
     editor->layers()->setCurrentLayer(layer);
 
-    auto selectMan = editor->select();
     if (this->frame > 0 && layer->getKeyFrameAt(this->frame) == nullptr)
     {
         editor->restoreKey();
@@ -50,8 +53,8 @@ void BackupBitmapElement::restore(Editor* editor)
                 BitmapImage* canvasKeyFrame = bitmapLayer->getLastBitmapImageAtFrame(this->frame, 0);
                 *canvasKeyFrame = bitmapImage;  // restore the image
 
-                if (somethingSelected) {
-                    selectMan->setActiveSelectionFrame(canvasKeyFrame);
+                if (somethingSelected && selectionActiveKeyFrame == canvasKeyFrame) {
+                    selectMan->setActiveSelectionFrame(selectionActiveKeyFrame);
                 }
             }
         }
@@ -64,13 +67,13 @@ void BackupBitmapElement::restore(Editor* editor)
     selectMan->setTranslation(translation);
 
     selectMan->calculateSelectionTransformation();
-    selectMan->commitChanges();
 
     emit editor->frameModified(this->frame);
 }
 
 void BackupVectorElement::restore(Editor* editor)
 {
+    auto selectMan = editor->select();
     Layer* layer = editor->object()->findLayerById(this->layerId);
     for (int i = 0; i < editor->object()->getLayerCount(); i++)
     {
@@ -85,13 +88,15 @@ void BackupVectorElement::restore(Editor* editor)
         }
     }
 
+    // Commit any previous selection changes if neccesary
+    selectMan->commitChanges();
+
     if (editor->currentFrame() != this->frame) {
         editor->scrubTo(this->frame);
     }
 
     editor->layers()->setCurrentLayer(layer);
 
-    auto selectMan = editor->select();
     if (this->frame > 0 && layer->getKeyFrameAt(this->frame) == nullptr)
     {
         editor->restoreKey();
@@ -106,8 +111,8 @@ void BackupVectorElement::restore(Editor* editor)
                 VectorImage* canvasKeyFrame = vectorLayer->getLastVectorImageAtFrame(this->frame, 0);
                 *canvasKeyFrame = vectorImage;  // restore the image
 
-                if (somethingSelected) {
-                    selectMan->setActiveSelectionFrame(canvasKeyFrame);
+                if (somethingSelected && selectionActiveKeyFrame == canvasKeyFrame) {
+                    selectMan->setActiveSelectionFrame(selectionActiveKeyFrame);
                 }
             }
         }
@@ -120,7 +125,6 @@ void BackupVectorElement::restore(Editor* editor)
     selectMan->setTranslation(translation);
 
     selectMan->calculateSelectionTransformation();
-    selectMan->commitChanges();
 
     emit editor->frameModified(this->frame);
 
