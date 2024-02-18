@@ -68,9 +68,6 @@ public:
 
     void deleteSelection();
 
-    void applyTransformedSelection();
-    void cancelTransformedSelection();
-
     bool isLayerPaintable() const;
 
     void setEffect(SETTING e, bool isOn);
@@ -133,7 +130,6 @@ public:
 
 signals:
     void multiLayerOnionSkinChanged(bool);
-    void selectionUpdated();
 
 public slots:
     void clearImage();

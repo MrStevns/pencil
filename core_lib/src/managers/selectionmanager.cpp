@@ -399,6 +399,7 @@ void SelectionManager::calculateSelectionTransformation()
     QTransform s;
     s.scale(mScaleX, mScaleY);
     mSelectionTransform = t * s * r * t2;
+    emit selectionChanged();
 }
 
 QPointF SelectionManager::alignPositionToAxis(QPointF currentPoint) const

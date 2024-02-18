@@ -53,7 +53,7 @@ void RepositionFramesDialog::initUI()
     connect(ui->rbSameKeyframes, &QRadioButton::clicked, this, &RepositionFramesDialog::updateLayersBox);
     connect(ui->btnReposition, &QPushButton::clicked, this, &RepositionFramesDialog::repositionFrames);
     connect(ui->btnCancel, &QPushButton::clicked, this, &RepositionFramesDialog::closeClicked);
-    connect(mEditor->getScribbleArea(), &ScribbleArea::selectionUpdated, this, &RepositionFramesDialog::updateDialogText);
+    connect(mEditor->select(), &SelectionManager::selectionChanged, this, &RepositionFramesDialog::updateDialogText);
     connect(mEditor->select(), &SelectionManager::selectionReset, this, &RepositionFramesDialog::closeClicked);
     mEndPoint = mStartPoint = QPoint(0,0);
     mOriginalPolygonF = mEditor->select()->mySelectionRect();
@@ -146,8 +146,6 @@ void RepositionFramesDialog::repositionFrames()
             layerManager->setCurrentLayer(currLayer);
         }
     }
-    mEditor->getScribbleArea()->applyTransformedSelection();
-    mEditor->select()->resetSelectionProperties();
     mEditor->scrubTo(mRepositionFrame);
     
     accept();

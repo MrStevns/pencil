@@ -697,18 +697,22 @@ void Editor::flipSelection(bool flipVertical)
     mScribbleArea->flipSelection(flipVertical);
 }
 
-void Editor::repositionImage(QPoint transform, int frame)
+void Editor::repositionImage(QPoint newPos, int frame)
 {
     if (layers()->currentLayer()->type() == Layer::BITMAP)
     {
         scrubTo(frame);
+
         LayerBitmap* layer = static_cast<LayerBitmap*>(layers()->currentLayer());
-        QRect reposRect = layer->getFrameBounds(frame);
-        select()->setSelection(reposRect);
+        backup(mCurrentLayerIndex, frame, tr("Reposition frame")); // TOOD: backup multiple reposition operations.
+        BitmapImage* keyframe = layer->getBitmapImageAtFrame(frame);
+        QRect reposRect = keyframe->bounds();
         QPoint point = reposRect.topLeft();
-        point += transform;
-        layer->repositionFrame(point, frame);
-        backup(layer->id(), frame, tr("Reposition frame")); // TOOD: backup multiple reposition operations.
+        point += newPos;
+        keyframe->moveTopLeft(point);
+
+        // Backup current state before movign to next frame
+        backup(mCurrentLayerIndex, frame, tr("Reposition frame"));
     }
 }
 

@@ -275,14 +275,7 @@ void BucketTool::paintVector(Layer* layer)
     vectorImage->applyColorToSelectedCurve(mEditor->color()->frontColorNumber());
     vectorImage->applyColorToSelectedArea(mEditor->color()->frontColorNumber());
 
-    applyChanges();
-
     mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-}
-
-void BucketTool::applyChanges()
-{
-    mScribbleArea->applyTransformedSelection();
 }
 
 void BucketTool::drawStroke()

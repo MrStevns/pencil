@@ -54,8 +54,6 @@ public:
     void paintVector(Layer* layer);
     void drawStroke();
 
-    void applyChanges();
-
 private:
 
     BitmapBucket mBitmapBucket;
