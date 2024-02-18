@@ -140,6 +140,31 @@ void SelectionManager::discardChanges()
     editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
 }
 
+void SelectionManager::deleteSelection()
+{
+    if (somethingSelected())
+    {
+        if (mWorkingLayer == nullptr) { return; }
+
+        int currentFrame = editor()->currentFrame();
+        editor()->backup(tr("Delete Selection", "Undo Step: clear the selection area."));
+        if (mWorkingLayer->type() == Layer::VECTOR)
+        {
+            clearCurves();
+            VectorImage* vectorImage = static_cast<VectorImage*>(mWorkingLayer->getLastKeyFrameAtPosition(currentFrame));
+            Q_CHECK_PTR(vectorImage);
+            vectorImage->deleteSelection();
+        }
+        else if (mWorkingLayer->type() == Layer::BITMAP)
+        {
+            BitmapImage* bitmapImage = static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(currentFrame));
+            Q_CHECK_PTR(bitmapImage);
+            bitmapImage->clear(mOriginalRect);
+        }
+        editor()->setModified(editor()->currentLayerIndex(), currentFrame);
+    }
+}
+
 void SelectionManager::resetSelectionTransformProperties()
 {
     mRotatedAngle = 0;
@@ -158,11 +183,6 @@ void SelectionManager::resetSelectionTransform()
 bool SelectionManager::isOutsideSelectionArea(const QPointF& point) const
 {
     return (!mSelectionTransform.map(mSelectionPolygon).containsPoint(point, Qt::WindingFill)) && mMoveMode == MoveMode::NONE;
-}
-
-void SelectionManager::deleteSelection()
-{
-    emit needDeleteSelection();
 }
 
 qreal SelectionManager::selectionTolerance() const

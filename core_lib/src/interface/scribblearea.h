@@ -66,8 +66,6 @@ public:
     StrokeManager* getStrokeManager() const { return mStrokeManager.get(); }
     Editor* editor() const { return mEditor; }
 
-    void deleteSelection();
-
     bool isLayerPaintable() const;
 
     void setEffect(SETTING e, bool isOn);

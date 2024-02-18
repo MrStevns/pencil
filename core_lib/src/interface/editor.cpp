@@ -560,7 +560,7 @@ void Editor::copyAndCut()
     }
 
     if (currentLayer->type() == Layer::BITMAP || currentLayer->type() == Layer::VECTOR) {
-        mScribbleArea->deleteSelection();
+        select()->deleteSelection();
         deselectAll();
     }
 }

@@ -137,7 +137,7 @@ bool MoveTool::keyPressEvent(QKeyEvent* keyEvent)
         mEditor->deselectAll();
         return true;
     case Qt::Key_Backspace:
-        mScribbleArea->deleteSelection();
+        selectMan->deleteSelection();
         selectMan->discardChanges();
         mEditor->deselectAll();
         return true;
@@ -369,16 +369,7 @@ void MoveTool::cancelTransformation()
     auto selectMan = mEditor->select();
     if (selectMan->somethingSelected())
     {
-        Layer* layer = mEditor->layers()->currentLayer();
-        if (layer == nullptr) { return; }
-
         selectMan->discardChanges();
-
-        mEditor->select()->setSelection(selectMan->mySelectionRect(), false);
-
-        selectMan->resetSelectionProperties();
-
-        mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
     }
 }
 

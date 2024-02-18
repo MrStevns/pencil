@@ -321,7 +321,7 @@ bool SelectTool::keyEventForVectorLayer(QKeyEvent* event)
         return true;
     }
     case Qt::Key_Backspace:
-        mScribbleArea->deleteSelection();
+        mEditor->select()->deleteSelection();
         mEditor->deselectAll();
         return true;
     }
@@ -361,7 +361,7 @@ bool SelectTool::keyEventForBitmapLayer(QKeyEvent* event)
         mEditor->deselectAll();
         return true;
     case Qt::Key_Backspace:
-        mScribbleArea->deleteSelection();
+        mEditor->select()->deleteSelection();
         mEditor->deselectAll();
         return true;
     }

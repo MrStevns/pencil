@@ -74,7 +74,6 @@ bool ScribbleArea::init()
     connect(mMouseFilterTimer, &QTimer::timeout, this, &ScribbleArea::tabletReleaseEventFired);
 
     connect(mEditor->select(), &SelectionManager::selectionChanged, this, &ScribbleArea::onSelectionChanged);
-    connect(mEditor->select(), &SelectionManager::needDeleteSelection, this, &ScribbleArea::deleteSelection);
 
     connect(&mTiledBuffer, &TiledBuffer::tileUpdated, this, &ScribbleArea::onTileUpdated);
     connect(&mTiledBuffer, &TiledBuffer::tileCreated, this, &ScribbleArea::onTileCreated);
@@ -1423,35 +1422,6 @@ void ScribbleArea::decreaseLayerVisibilityIndex()
 BaseTool* ScribbleArea::currentTool() const
 {
     return editor()->tools()->currentTool();
-}
-
-void ScribbleArea::deleteSelection()
-{
-    auto selectMan = mEditor->select();
-    if (selectMan->somethingSelected())      // there is something selected
-    {
-        Layer* layer = mEditor->layers()->currentLayer();
-        if (layer == nullptr) { return; }
-
-        handleDrawingOnEmptyFrame();
-
-        mEditor->backup(tr("Delete Selection", "Undo Step: clear the selection area."));
-
-        selectMan->clearCurves();
-        if (layer->type() == Layer::VECTOR)
-        {
-            VectorImage* vectorImage = currentVectorImage(layer);
-            Q_CHECK_PTR(vectorImage);
-            vectorImage->deleteSelection();
-        }
-        else if (layer->type() == Layer::BITMAP)
-        {
-            BitmapImage* bitmapImage = currentBitmapImage(layer);
-            Q_CHECK_PTR(bitmapImage);
-            bitmapImage->clear(selectMan->mySelectionRect());
-        }
-        mEditor->setModified(mEditor->currentLayerIndex(), mEditor->currentFrame());
-    }
 }
 
 void ScribbleArea::clearImage()

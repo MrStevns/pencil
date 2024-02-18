@@ -48,6 +48,8 @@ public:
     void adjustCurrentSelection(QRectF rect, bool roundPixels = false);
     bool selectionBeganOnCurrentFrame() const;
     KeyFrame* activeKeyFrame() const { return mActiveKeyFrame; }
+
+    void deleteSelection();
     
     void commitChanges();
     void discardChanges();
@@ -80,7 +82,6 @@ public:
     void resetSelectionTransformProperties();
 
     void resetSelectionProperties();
-    void deleteSelection();
 
     bool isOutsideSelectionArea(const QPointF& point) const;
 
@@ -131,7 +132,6 @@ public:
 signals:
     void selectionChanged();
     void selectionReset();
-    void needDeleteSelection();
 
 private:
     /** @brief Aligns the input position to the nearest axis.
