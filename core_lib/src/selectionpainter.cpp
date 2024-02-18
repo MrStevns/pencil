@@ -90,23 +90,22 @@ void SelectionPainter::paint(QPainter& painter,
     }
 
     if (tool->properties.showSelectionInfo) {
-        paintSelectionInfo(painter, transform, viewTransform, selectionRect, projectedSelectionPolygon);
+        paintSelectionInfo(painter, selectionTransform, selectionRect.toAlignedRect(), projectedSelectionPolygon);
     }
 }
 
-void SelectionPainter::paintSelectionInfo(QPainter& painter, const QTransform& mergedTransform, const QTransform& viewTransform, const QRectF& selectionRect, const QPolygonF& projectedPolygonF)
+void SelectionPainter::paintSelectionInfo(QPainter& painter, const QTransform& selectionTransform, const QRect& selectionRect, const QPolygonF& projectedPolygonF)
 {
-    QRect projectedSelectionRect = mergedTransform.mapRect(selectionRect).toAlignedRect();
-    QRect originalSelectionRect = viewTransform.mapRect(selectionRect).toAlignedRect();
+    QRect projectedSelectionRect = selectionTransform.mapRect(selectionRect);
     QPolygon projectedPolygon = projectedPolygonF.toPolygon();
 
     QPoint projectedCenter = projectedSelectionRect.center();
-    QPoint originalCenter = originalSelectionRect.center();
+    QPoint originalCenter = selectionRect.center();
     int diffX = static_cast<int>(projectedCenter.x() - originalCenter.x());
-    int diffY = static_cast<int>(originalCenter.y() - projectedCenter.y());
+    int diffY = static_cast<int>(projectedCenter.y() - originalCenter.y());
     painter.drawText(projectedPolygon[0] - QPoint(HANDLE_WIDTH, HANDLE_WIDTH),
-                    QString("Size: %1x%2. Diff: %3, %4.").arg(QString::number(selectionRect.width()),
-                                                      QString::number(selectionRect.height()),
+                    QString("Size: %1x%2. Diff: %3, %4.").arg(QString::number(projectedSelectionRect.width()),
+                                                      QString::number(projectedSelectionRect.height()),
                                                       QString::number(diffX),
                                                       QString::number(diffY)));
 }
