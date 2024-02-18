@@ -54,19 +54,16 @@ void BackupBitmapElement::restore(Editor* editor)
                 *canvasKeyFrame = bitmapImage;  // restore the image
 
                 if (somethingSelected && selectionActiveKeyFrame == canvasKeyFrame) {
-                    selectMan->setActiveSelectionFrame(selectionActiveKeyFrame);
+                    selectMan->setSelection(selectionActiveKeyFrame, mySelection, true);
+                    selectMan->setTransformAnchor(selectionAnchor);
+                    selectMan->setRotation(rotationAngle);
+                    selectMan->setScale(scaleX, scaleY);
+                    selectMan->setTranslation(translation);
+                    selectMan->calculateSelectionTransformation();
                 }
             }
         }
     }
-
-    selectMan->setSelection(mySelection, true);
-    selectMan->setTransformAnchor(selectionAnchor);
-    selectMan->setRotation(rotationAngle);
-    selectMan->setScale(scaleX, scaleY);
-    selectMan->setTranslation(translation);
-
-    selectMan->calculateSelectionTransformation();
 
     emit editor->frameModified(this->frame);
 }
@@ -112,19 +109,17 @@ void BackupVectorElement::restore(Editor* editor)
                 *canvasKeyFrame = vectorImage;  // restore the image
 
                 if (somethingSelected && selectionActiveKeyFrame == canvasKeyFrame) {
-                    selectMan->setActiveSelectionFrame(selectionActiveKeyFrame);
+                    selectMan->setSelection(selectionActiveKeyFrame, mySelection, false);
+                    selectMan->setTransformAnchor(selectionAnchor);
+                    selectMan->setRotation(rotationAngle);
+                    selectMan->setScale(scaleX, scaleY);
+                    selectMan->setTranslation(translation);
+
+                    selectMan->calculateSelectionTransformation();
                 }
             }
         }
     }
-
-    selectMan->setSelection(mySelection, false);
-    selectMan->setTransformAnchor(selectionAnchor);
-    selectMan->setRotation(rotationAngle);
-    selectMan->setScale(scaleX, scaleY);
-    selectMan->setTranslation(translation);
-
-    selectMan->calculateSelectionTransformation();
 
     emit editor->frameModified(this->frame);
 

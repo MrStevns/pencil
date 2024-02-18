@@ -362,7 +362,6 @@ void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blit
     const bool isDrawing = mTiledBuffer->isValid();
 
     if (vectorImage == mOptions.activeSelectionKeyFrame) {
-        // TODO(MrStevns): finish implementing this
         paintTransformedSelection(vectorImage, mOptions.selectionTransform);
     }
 

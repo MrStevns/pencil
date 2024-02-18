@@ -58,6 +58,10 @@ void SelectionManager::workingLayerChanged(Layer* workingLayer)
 
 bool SelectionManager::selectionBeganOnCurrentFrame() const
 {
+    if (!mWorkingLayer) {
+        return false;
+    }
+
     const KeyFrame* currentFrame = mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame());
     return mActiveKeyFrame != nullptr && currentFrame == mActiveKeyFrame;
 }
@@ -94,7 +98,7 @@ void SelectionManager::commitChanges()
             }
             // When the selection has been applied, a new rect is applied based on the bounding box.
             // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
-            setSelection(mapToSelection(QPolygonF(mySelectionRect())).boundingRect());
+            adjustCurrentSelection(mapToSelection(QPolygonF(mySelectionRect())).boundingRect(), true);
         }
         else if (currentVectorImage)
         {
@@ -107,7 +111,7 @@ void SelectionManager::commitChanges()
         }
         editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
     }
-    setActiveSelectionFrame(nullptr);
+    mActiveKeyFrame = nullptr;
 }
 
 
@@ -131,9 +135,8 @@ void SelectionManager::discardChanges()
         }
     }
 
+    mActiveKeyFrame = nullptr;
     resetSelectionProperties();
-
-    // TODO: not current layer...
     editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
 }
 
@@ -234,7 +237,7 @@ void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)
     }
 }
 
-void SelectionManager::adjustSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
+void SelectionManager::adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
 {
     switch (mMoveMode)
     {
@@ -357,7 +360,21 @@ qreal SelectionManager::angleFromPoint(const QPointF& point, const QPointF& anch
     return qRadiansToDegrees(MathUtils::getDifferenceAngle(mSelectionTransform.map(anchorPoint), point));
 }
 
-void SelectionManager::setSelection(QRectF rect, bool roundPixels)
+void SelectionManager::setSelection(KeyFrame* keyframe, QRectF rect, bool roundPixels)
+{
+    resetSelectionTransformProperties();
+    if (roundPixels)
+    {
+        rect = rect.toAlignedRect();
+    }
+    mActiveKeyFrame = keyframe;
+    mSelectionPolygon = rect;
+    mOriginalRect = rect;
+
+    emit selectionChanged();
+}
+
+void SelectionManager::adjustCurrentSelection(QRectF rect, bool roundPixels)
 {
     resetSelectionTransformProperties();
     if (roundPixels)
@@ -366,10 +383,6 @@ void SelectionManager::setSelection(QRectF rect, bool roundPixels)
     }
     mSelectionPolygon = rect;
     mOriginalRect = rect;
-    mScaleX = 1;
-    mScaleY = 1;
-    mRotatedAngle = 0;
-
     emit selectionChanged();
 }
 

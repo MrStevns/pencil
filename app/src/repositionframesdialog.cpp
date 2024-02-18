@@ -256,7 +256,8 @@ void RepositionFramesDialog::prepareRepositionSelectedImages(int repositionFrame
         mEditor->scrubTo(repositionFrame);
         LayerBitmap* layer = static_cast<LayerBitmap*>(layers->currentLayer());
         QRect reposRect = layer->getFrameBounds(repositionFrame);
-        select->setSelection(reposRect);
+        KeyFrame* keyframe = layer->getLastBitmapImageAtFrame(repositionFrame);
+        select->setSelection(keyframe, reposRect);
     }
 }
 

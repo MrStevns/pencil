@@ -37,11 +37,6 @@ GNU General Public License for more details.
 #include "vectorimage.h"
 #include "layerbitmap.h"
 
-// TODO list:
-// - Re-implement vector move/commit/discard behavior
-// - Figure out how to do clipboard handling
-// - Figure out how to access Scribblearea::handleDrawingOnEmptyFrame, should we move it into StrokeTool?
-// - Move ScribbleArea::selectionForKeyEvents into MoveTool and Select tool
 MoveTool::MoveTool(QObject* parent) : BaseTool(parent)
 {
 }
@@ -250,7 +245,7 @@ void MoveTool::transformSelection(Qt::KeyboardModifiers keyMod)
             mPreviousAngle = newAngle;
         }
 
-        selectMan->adjustSelection(getCurrentPoint(), mOffset, newAngle, rotationIncrement);
+        selectMan->adjustCurrentSelection(getCurrentPoint(), mOffset, newAngle, rotationIncrement);
     }
     else // there is nothing selected
     {
@@ -330,7 +325,7 @@ void MoveTool::setCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers 
             applyTransformation();
         }
         vectorImage->setSelected(selectMan->closestCurves(), true);
-        selectMan->setSelection(vectorImage->getSelectionRect(), false);
+        selectMan->setSelection(vectorImage, vectorImage->getSelectionRect(), false);
     }
 }
 
@@ -344,7 +339,7 @@ void MoveTool::setAreaSelected(VectorImage* vectorImage, Qt::KeyboardModifiers k
             applyTransformation();
         }
         vectorImage->setAreaSelected(areaNumber, true);
-        mEditor->select()->setSelection(vectorImage->getSelectionRect(), false);
+        mEditor->select()->setSelection(vectorImage, vectorImage->getSelectionRect(), false);
     }
 }
 
@@ -398,8 +393,7 @@ void MoveTool::setFloatingImage(BitmapImage& bitmapImage)
 
     BitmapImage* currentKeyFrame = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(currentFrameNumber);
     currentKeyFrame->setTemporaryImage(*bitmapImage.image());
-    selectMan->setActiveSelectionFrame(currentKeyFrame);
-    selectMan->setSelection(bitmapImage.bounds(), true);
+    selectMan->setSelection(currentKeyFrame, bitmapImage.bounds(), true);
 
     emit mEditor->frameModified(currentFrameNumber);
 }
@@ -416,8 +410,7 @@ void MoveTool::setFloatingImage(VectorImage& vectorImage)
 
     VectorImage* currentKeyFrame = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(currentFrameNumber, 0);
     currentKeyFrame->setTemporaryImage(vectorImage.clone());
-    selectMan->setActiveSelectionFrame(currentKeyFrame);
-    selectMan->setSelection(vectorImage.getSelectionRect());
+    selectMan->setSelection(currentKeyFrame, vectorImage.getSelectionRect());
 
     emit mEditor->frameModified(currentFrameNumber);
 }

@@ -48,11 +48,6 @@ PegBarAlignmentDialog::PegBarAlignmentDialog(Editor *editor, QWidget *parent) :
     mLayernames.clear();
 
     mEditor->tools()->setCurrentTool(SELECT);
-
-    if (!mEditor->select()->somethingSelected()) {
-        QPoint centralPoint = mEditor->getScribbleArea()->getCentralPoint().toPoint();
-        mEditor->select()->setSelection(QRect(centralPoint.x()-100,centralPoint.y()-50,200,100));
-    }
     updatePegRegLayers();
 }
 

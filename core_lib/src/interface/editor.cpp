@@ -950,8 +950,11 @@ Status Editor::importBitmapImage(const QString& filePath)
     tools()->setCurrentTool(MOVE);
     auto moveTool = static_cast<MoveTool*>(tools()->getTool(MOVE));
 
-    select()->setSelection(QRect(pos, img.size()), true);
-    moveTool->setFloatingImage(importedBitmapImage);
+    KeyFrame* currentKeyFrame = layers()->currentLayer()->getLastKeyFrameAtPosition(mFrame);
+    if (currentKeyFrame) {
+        select()->setSelection(currentKeyFrame, QRect(pos, img.size()), true);
+        moveTool->setFloatingImage(importedBitmapImage);
+    }
 
     return status;
 }
@@ -1103,6 +1106,7 @@ void Editor::selectAll() const
         if (bitmapImage == nullptr) { return; }
 
         rect = bitmapImage->bounds();
+        select()->setSelection(bitmapImage, rect);
     }
     else if (layer->type() == Layer::VECTOR)
     {
@@ -1112,8 +1116,8 @@ void Editor::selectAll() const
             vectorImage->selectAll();
             rect = vectorImage->getSelectionRect();
         }
+        select()->setSelection(vectorImage, rect, false);
     }
-    select()->setSelection(rect, false);
 }
 
 void Editor::deselectAll() const

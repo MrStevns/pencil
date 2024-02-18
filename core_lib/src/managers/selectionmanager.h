@@ -44,9 +44,9 @@ public:
 
     void flipSelection(bool flipVertical);
 
-    void setSelection(QRectF rect, bool roundPixels=false);
+    void setSelection(KeyFrame* keyframe, QRectF rect, bool roundPixels=false);
+    void adjustCurrentSelection(QRectF rect, bool roundPixels = false);
     bool selectionBeganOnCurrentFrame() const;
-    void setActiveSelectionFrame(KeyFrame* keyframe) { mActiveKeyFrame = keyframe; }
     KeyFrame* activeKeyFrame() const { return mActiveKeyFrame; }
     
     void commitChanges();
@@ -67,7 +67,7 @@ public:
 
     bool somethingSelected() const { return mOriginalRect.isValid(); }
 
-    void adjustSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement = 0);
+    void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement = 0);
 
     QTransform selectionTransform() const { return mSelectionTransform; }
     void setSelectionTransform(const QTransform& transform) { mSelectionTransform = transform; }

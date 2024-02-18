@@ -102,7 +102,7 @@ void SelectTool::beginSelection(Layer* currentLayer)
     if (selectMan->activeKeyFrame()) {
         selectMan->commitChanges();
     }
-    selectMan->setActiveSelectionFrame(currentLayer->getLastKeyFrameAtPosition(mEditor->currentFrame()));
+
     if (selectMan->somethingSelected() && mMoveMode != MoveMode::NONE) // there is something selected
     {
         if (currentLayer->type() == Layer::VECTOR)
@@ -116,7 +116,8 @@ void SelectTool::beginSelection(Layer* currentLayer)
     }
     else
     {
-        selectMan->setSelection(QRectF(getCurrentPoint().x(), getCurrentPoint().y(), 1, 1), mEditor->layers()->currentLayer()->type() == Layer::BITMAP);
+        KeyFrame* currentKeyFrame = currentLayer->getLastKeyFrameAtPosition(mEditor->currentFrame());
+        selectMan->setSelection(currentKeyFrame, QRectF(getCurrentPoint().x(), getCurrentPoint().y(), 1, 1), mEditor->layers()->currentLayer()->type() == Layer::BITMAP);
         mAnchorOriginPoint = getLastPoint();
     }
 
@@ -212,7 +213,7 @@ void SelectTool::keepSelection(Layer* currentLayer)
     {
         VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
         if (vectorImage == nullptr) { return; }
-        selectMan->setSelection(vectorImage->getSelectionRect(), false);
+        selectMan->setSelection(vectorImage, vectorImage->getSelectionRect(), false);
     }
 }
 
@@ -237,7 +238,7 @@ void SelectTool::controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint)
 
         rect = rect.normalized();
         if (rect.isValid()) {
-            mEditor->select()->setSelection(rect, true);
+            mEditor->select()->adjustCurrentSelection(rect, mEditor->layers()->currentLayer()->type() == Layer::BITMAP);
         }
     } else {
         manageSelectionOrigin(currentPoint, anchorPoint);
@@ -284,7 +285,7 @@ void SelectTool::manageSelectionOrigin(QPointF currentPoint, QPointF originPoint
         selectRect.setHeight(1);
     }
 
-    editor()->select()->setSelection(selectRect);
+    editor()->select()->adjustCurrentSelection(selectRect, mEditor->layers()->currentLayer()->type() == Layer::BITMAP);
 }
 
 bool SelectTool::keyPressEvent(QKeyEvent* event)
