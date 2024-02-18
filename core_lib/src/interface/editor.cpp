@@ -614,7 +614,6 @@ void Editor::pasteToCanvas(VectorImage& vectorImage, int frameNumber)
     Q_ASSERT(currentLayer->type() == Layer::VECTOR);
 
     deselectAll();
-    // mScribbleArea->handleDrawingOnEmptyFrame();
     tools()->setCurrentTool(MOVE);
     MoveTool* moveTool = static_cast<MoveTool*>(tools()->currentTool());
     moveTool->setFloatingImage(vectorImage);

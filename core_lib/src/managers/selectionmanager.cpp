@@ -76,7 +76,6 @@ void SelectionManager::commitChanges()
         VectorImage* currentVectorImage = dynamic_cast<VectorImage*>(mActiveKeyFrame);
         if (currentBitmapImage)
         {
-            // TODO: re-implement: handleDrawingOnEmptyFrame();
             const QRect& alignedSelectionRect = selectionRect.toAlignedRect();
             if (currentBitmapImage == nullptr) { return; }
 
@@ -99,9 +98,6 @@ void SelectionManager::commitChanges()
         }
         else if (currentVectorImage)
         {
-            // Unfortunately this doesn't work right currently so vector transforms
-            // will always be applied on the previous keyframe when on an empty frame
-            // TODO: re-implement: handleDrawingOnEmptyFrame() and figure out why it does not work as intended;
             if (currentVectorImage->temporaryImage()) {
                 currentVectorImage->paste(*currentVectorImage->temporaryImage());
                 currentVectorImage->resetTemporaryImage();
