@@ -109,10 +109,9 @@ void SelectionManager::commitChanges()
             currentVectorImage->applySelectionTransformation();
             currentVectorImage->deselectAll();
         }
-        setActiveSelectionFrame(nullptr);
-
         editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
     }
+    setActiveSelectionFrame(nullptr);
 }
 
 
