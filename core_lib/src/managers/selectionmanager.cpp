@@ -111,7 +111,6 @@ void SelectionManager::commitChanges()
         }
         editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
     }
-    mActiveKeyFrame = nullptr;
 }
 
 
@@ -466,6 +465,7 @@ void SelectionManager::resetSelectionProperties()
     resetSelectionTransformProperties();
     mSelectionPolygon = QPolygonF();
     mOriginalRect = QRectF();
+    mActiveKeyFrame = nullptr;
     emit selectionChanged();
 }
 

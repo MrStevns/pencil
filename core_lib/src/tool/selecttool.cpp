@@ -99,7 +99,7 @@ void SelectTool::beginSelection(Layer* currentLayer)
 {
     auto selectMan = mEditor->select();
 
-    if (selectMan->activeKeyFrame()) {
+    if (selectMan->activeKeyFrame() && !selectMan->selectionTransform().isIdentity()) {
         selectMan->commitChanges();
     }
 
