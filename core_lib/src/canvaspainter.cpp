@@ -291,7 +291,8 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     if (paintedImage == mOptions.activeSelectionKeyFrame) {
         paintTransformedSelection(currentBitmapPainter, paintedImage, mOptions.selectionRect, mOptions.selectionTransform);
     }
-    else if (isCurrentLayer && isDrawing)
+
+    if (isCurrentLayer && isDrawing)
     {
         currentBitmapPainter.setCompositionMode(mOptions.cmBufferBlendMode);
         const auto tiles = mTiledBuffer->tiles();

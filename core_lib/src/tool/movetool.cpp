@@ -221,7 +221,7 @@ void MoveTool::pointerReleaseEvent(PointerEvent*)
         return;
 
     mScribbleArea->updateToolCursor();
-    mEditor->frameModified(mEditor->currentFrame());
+    emit mEditor->frameModified(mEditor->currentFrame());
 }
 
 void MoveTool::transformSelection(Qt::KeyboardModifiers keyMod)
@@ -406,6 +406,10 @@ void MoveTool::setFloatingImage(VectorImage& vectorImage)
 
 bool MoveTool::leavingThisTool()
 {
+    if (currentPaintableLayer())
+    {
+        applyTransformation();
+    }
     return true;
 }
 
