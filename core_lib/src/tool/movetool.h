@@ -71,7 +71,6 @@ private:
     Layer* currentPaintableLayer();
 
     qreal mRotatedAngle = 0.0;
-    qreal mPreviousAngle = 0.0;
     int mRotationIncrement = 0;
     MoveMode mPerspMode;
     QPointF mOffset;

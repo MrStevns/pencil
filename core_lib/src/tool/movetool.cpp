@@ -242,7 +242,6 @@ void MoveTool::transformSelection(Qt::KeyboardModifiers keyMod)
         if (selectMan->getMoveMode() == MoveMode::ROTATION) {
             QPointF anchorPoint = selectMan->currentTransformAnchor();
             newAngle = selectMan->angleFromPoint(getCurrentPoint(), anchorPoint) - mRotatedAngle;
-            mPreviousAngle = newAngle;
         }
 
         selectMan->adjustCurrentSelection(getCurrentPoint(), mOffset, newAngle, rotationIncrement);
@@ -289,7 +288,7 @@ void MoveTool::beginInteraction(Qt::KeyboardModifiers keyMod, Layer* layer)
     mOffset = selectMan->myTranslation();
 
     if(selectMan->getMoveMode() == MoveMode::ROTATION) {
-        mRotatedAngle = selectMan->angleFromPoint(getCurrentPoint(), selectMan->currentTransformAnchor()) - mPreviousAngle;
+        mRotatedAngle = selectMan->angleFromPoint(getCurrentPoint(), selectMan->currentTransformAnchor()) - selectMan->myRotation();
     }
 }
 
@@ -361,7 +360,6 @@ void MoveTool::applyTransformation()
     SelectionManager* selectMan = mEditor->select();
     selectMan->commitChanges();
     mRotatedAngle = 0;
-    mPreviousAngle = 0;
 }
 
 void MoveTool::cancelTransformation()
