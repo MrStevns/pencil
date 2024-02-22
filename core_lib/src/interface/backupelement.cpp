@@ -53,14 +53,12 @@ void BackupBitmapElement::restore(Editor* editor)
                 BitmapImage* canvasKeyFrame = bitmapLayer->getLastBitmapImageAtFrame(this->frame, 0);
                 *canvasKeyFrame = bitmapImage;  // restore the image
 
-                if (somethingSelected && selectionActiveKeyFrame == canvasKeyFrame) {
-                    selectMan->setSelection(selectionActiveKeyFrame, mySelection, true);
-                    selectMan->setTransformAnchor(selectionAnchor);
-                    selectMan->setRotation(rotationAngle);
-                    selectMan->setScale(scaleX, scaleY);
-                    selectMan->setTranslation(translation);
-                    selectMan->calculateSelectionTransformation();
-                }
+                selectMan->setSelection(selectionActiveKeyFrame, mySelection, true);
+                selectMan->setTransformAnchor(selectionAnchor);
+                selectMan->setRotation(rotationAngle);
+                selectMan->setScale(scaleX, scaleY);
+                selectMan->setTranslation(translation);
+                selectMan->calculateSelectionTransformation();
             }
         }
     }
@@ -108,15 +106,13 @@ void BackupVectorElement::restore(Editor* editor)
                 VectorImage* canvasKeyFrame = vectorLayer->getLastVectorImageAtFrame(this->frame, 0);
                 *canvasKeyFrame = vectorImage;  // restore the image
 
-                if (somethingSelected && selectionActiveKeyFrame == canvasKeyFrame) {
-                    selectMan->setSelection(selectionActiveKeyFrame, mySelection, false);
-                    selectMan->setTransformAnchor(selectionAnchor);
-                    selectMan->setRotation(rotationAngle);
-                    selectMan->setScale(scaleX, scaleY);
-                    selectMan->setTranslation(translation);
+                selectMan->setSelection(selectionActiveKeyFrame, mySelection, false);
+                selectMan->setTransformAnchor(selectionAnchor);
+                selectMan->setRotation(rotationAngle);
+                selectMan->setScale(scaleX, scaleY);
+                selectMan->setTranslation(translation);
 
-                    selectMan->calculateSelectionTransformation();
-                }
+                selectMan->calculateSelectionTransformation();
             }
         }
     }
