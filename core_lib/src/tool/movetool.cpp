@@ -261,6 +261,7 @@ void MoveTool::beginInteraction(Qt::KeyboardModifiers keyMod, Layer* layer)
         mEditor->backup(typeName());
     }
 
+
     if (keyMod != Qt::ShiftModifier)
     {
         if (selectMan->isOutsideSelectionArea(getCurrentPoint()))
