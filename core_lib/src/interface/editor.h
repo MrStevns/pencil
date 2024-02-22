@@ -203,7 +203,6 @@ public: //slots
      */
     void sanitizeBackupElementsAfterLayerDeletion(int layerIndex);
 
-    void onCurrentLayerWillChange(int index);
     void undo();
     void redo();
 
