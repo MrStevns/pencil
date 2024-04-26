@@ -43,6 +43,8 @@ ToolType PolylineTool::type()
 
 void PolylineTool::loadSettings()
 {
+    StrokeTool::loadSettings();
+
     mPropertyEnabled[WIDTH] = true;
     mPropertyEnabled[BEZIER] = true;
     mPropertyEnabled[ANTI_ALIASING] = true;
@@ -56,7 +58,7 @@ void PolylineTool::loadSettings()
     properties.preserveAlpha = OFF;
     properties.stabilizerLevel = -1;
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, QuickPropertyType::WIDTH);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, WIDTH);
 }
 
 void PolylineTool::resetToDefault()
@@ -84,6 +86,7 @@ void PolylineTool::setFeather(const qreal feather)
 
 bool PolylineTool::leavingThisTool()
 {
+    StrokeTool::leavingThisTool();
     if (mPoints.size() > 0)
     {
         cancelPolyline();
@@ -92,7 +95,7 @@ bool PolylineTool::leavingThisTool()
     return true;
 }
 
-bool PolylineTool::isActive()
+bool PolylineTool::isActive() const
 {
     return !mPoints.isEmpty();
 }
@@ -110,6 +113,11 @@ void PolylineTool::clearToolData()
 
 void PolylineTool::pointerPressEvent(PointerEvent* event)
 {
+    mInterpolator.pointerPressEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     Layer* layer = mEditor->layers()->currentLayer();
 
     if (event->button() != Qt::LeftButton)
@@ -130,6 +138,8 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
     }
 
     emit isActiveChanged(POLYLINE, true);
+
+    StrokeTool::pointerPressEvent(event);
 }
 
 void PolylineTool::pointerPressOnVector(PointerEvent*)
@@ -170,8 +180,15 @@ void PolylineTool::pointerPressOnBitmap(PointerEvent* event)
 
 void PolylineTool::pointerMoveEvent(PointerEvent* event)
 {
+    mInterpolator.pointerMoveEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     drawPolyline(mPoints, getCurrentPoint(), event->timeStamp());
     previousPoint = getCurrentPoint();
+
+    StrokeTool::pointerMoveEvent(event);
 }
 
 double PolylineTool::calculateDeltaTime(quint64)
@@ -180,14 +197,23 @@ double PolylineTool::calculateDeltaTime(quint64)
     return 1;
 }
 
-void PolylineTool::pointerReleaseEvent(PointerEvent *)
+void PolylineTool::pointerReleaseEvent(PointerEvent* event)
 {
+    mInterpolator.pointerReleaseEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
+    StrokeTool::pointerReleaseEvent(event);
 }
 
 void PolylineTool::pointerDoubleClickEvent(PointerEvent* event)
 {
+    mInterpolator.pointerPressEvent(event);
     // include the current point before ending the line.
     mPoints << getCurrentPoint();
+
+    mEditor->backup(typeName());
 
     endPolyline(mPoints, event->timeStamp());
     clearToolData();

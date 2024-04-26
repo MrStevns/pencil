@@ -17,7 +17,6 @@ namespace MathUtils
         return qAtan2(b.y() - a.y(), b.x() - a.x());
     }
 
-
     /**
      * @brief linearMap
      * affine transformation
@@ -34,22 +33,15 @@ namespace MathUtils
         return (value-fromA)*((toD-toC)/(fromB-fromA))+toC;
     }
 
-    /**
-     * @brief mapFromNormalized
-     * maps value between 0-1 to any given range
-     * \param value The value that needs to be mapped
-     * \param newMin The new min value
-     * \param newMax The new max value
-     * \return The value in the new range
-     */
-    inline qreal mapFromNormalized(qreal value, qreal newMin, qreal newMax)
+    /** Normalize x to a value between 0 and 1;
+    *  \param x The input value
+    *  \param min The input min value
+    *  \param max The input max value
+    *  \return The value of x normalized to a range between 0 and 1
+    */
+    inline qreal normalize(qreal x, qreal min, qreal max)
     {
-        return linearMap(value, 0, 1, newMin, newMax);
-    }
-
-    inline qreal normalize(qreal value, qreal fromMin, qreal fromMax)
-    {
-        return (value-fromMin)/(fromMax-fromMin);
+        return qAbs((x - max) / (min - max));
     }
 }
 

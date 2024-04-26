@@ -112,6 +112,7 @@ void ToolManager::setCurrentTool(ToolType eToolType)
     }
 
     mCurrentTool = getTool(eToolType);
+    mCurrentTool->enteringThisTool();
     if (mTemporaryTool == nullptr && mTabletEraserTool == nullptr)
     {
         emit toolChanged(eToolType);
@@ -402,7 +403,10 @@ void ToolManager::setTemporaryTool(ToolType eToolType)
 
 void ToolManager::clearTemporaryTool()
 {
-    mTemporaryTool = nullptr;
+    if (mTemporaryTool) {
+        mTemporaryTool->leavingThisTool();
+        mTemporaryTool = nullptr;
+    }
     mTemporaryTriggerKeys = {};
     mTemporaryTriggerModifiers = Qt::NoModifier;
     mTemporaryTriggerMouseButtons = Qt::NoButton;
@@ -412,11 +416,13 @@ void ToolManager::clearTemporaryTool()
 /// Map quick property type to the appropriate widget type
 /// Currently the only usecase here is the quick-size cursor
 /// but other functionality may require it too.
-void ToolManager::mapQuickPropertyToBrushSettingValue(qreal value, QuickPropertyType setting)
+void ToolManager::mapQuickPropertyToBrushSettingValue(qreal value, ToolPropertyType setting)
 {
     switch (setting) {
-    case QuickPropertyType::WIDTH:
+    case ToolPropertyType::WIDTH:
         emit brushPropertyChanged(value, BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC);
+        break;
+    default:
         break;
     }
 }

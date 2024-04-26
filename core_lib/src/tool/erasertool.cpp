@@ -23,7 +23,6 @@ GNU General Public License for more details.
 #include "editor.h"
 #include "blitrect.h"
 #include "scribblearea.h"
-#include "strokemanager.h"
 #include "layermanager.h"
 #include "viewmanager.h"
 #include "layervector.h"
@@ -42,6 +41,8 @@ ToolType EraserTool::type()
 
 void EraserTool::loadSettings()
 {
+    StrokeTool::loadSettings();
+
     mPropertyEnabled[WIDTH] = true;
     mPropertyEnabled[FEATHER] = true;
     mPropertyEnabled[PRESSURE] = true;
@@ -56,7 +57,7 @@ void EraserTool::loadSettings()
     properties.preserveAlpha = OFF;
     properties.stabilizerLevel = settings.value("stabilizerLevel", StabilizationLevel::NONE).toInt();
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, QuickPropertyType::WIDTH);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, WIDTH);
 }
 
 void EraserTool::resetToDefault()
@@ -117,33 +118,56 @@ QCursor EraserTool::cursor()
 
 void EraserTool::pointerPressEvent(PointerEvent *event)
 {
+    mInterpolator.pointerPressEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     startStroke(event->inputType());
     mLastBrushPoint = getCurrentPoint();
     mMouseDownPoint = getCurrentPoint();
+
+    StrokeTool::pointerPressEvent(event);
 }
 
 void EraserTool::pointerMoveEvent(PointerEvent* event)
 {
+    mInterpolator.pointerMoveEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
-        mCurrentPressure = strokeManager()->getPressure();
+        mCurrentPressure = mInterpolator.getPressure();
         updateStrokes(event);
-        if (properties.stabilizerLevel != strokeManager()->getStabilizerLevel())
-            strokeManager()->setStabilizerLevel(properties.stabilizerLevel);
+        if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
+        {
+            mInterpolator.setStabilizerLevel(properties.stabilizerLevel);
+        }
     }
+
+    StrokeTool::pointerMoveEvent(event);
 }
 
 void EraserTool::pointerReleaseEvent(PointerEvent *event)
 {
+    mInterpolator.pointerReleaseEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     if (event->inputType() != mCurrentInputType) return;
     removeVectorPaint();
     endStroke();
+
+    StrokeTool::pointerReleaseEvent(event);
 }
 
 void EraserTool::drawStroke(PointerEvent* event)
 {
     StrokeTool::drawStroke(event);
-    QList<QPointF> p = strokeManager()->interpolateStroke();
+    QList<QPointF> p = mInterpolator.interpolateStroke();
 
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -152,7 +176,7 @@ void EraserTool::drawStroke(PointerEvent* event)
         mCurrentWidth = properties.width;
         if (properties.pressure)
         {
-            mCurrentWidth = (mCurrentWidth + (strokeManager()->getPressure() * mCurrentWidth)) * 0.5;
+            mCurrentWidth = (mCurrentWidth + (mInterpolator.getPressure() * mCurrentWidth)) * 0.5;
         }
         qreal brushWidth = mCurrentWidth;
 
@@ -174,11 +198,12 @@ void EraserTool::removeVectorPaint()
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer->type() == Layer::VECTOR)
     {
+        mScribbleArea->clearDrawingBuffer();
         VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+        if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
         // Clear the area containing the last point
         //vectorImage->removeArea(lastPoint);
         // Clear the temporary pixel path
-        mScribbleArea->clearDrawingBuffer();
         vectorImage->deleteSelectedPoints();
 
         mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());

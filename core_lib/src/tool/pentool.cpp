@@ -22,7 +22,6 @@ GNU General Public License for more details.
 #include "vectorimage.h"
 #include "layervector.h"
 #include "colormanager.h"
-#include "strokemanager.h"
 #include "layermanager.h"
 #include "viewmanager.h"
 #include "selectionmanager.h"
@@ -30,6 +29,7 @@ GNU General Public License for more details.
 #include "scribblearea.h"
 #include "blitrect.h"
 #include "pointerevent.h"
+#include "mphandler.h"
 
 
 PenTool::PenTool(QObject* parent) : StrokeTool(parent)
@@ -38,6 +38,8 @@ PenTool::PenTool(QObject* parent) : StrokeTool(parent)
 
 void PenTool::loadSettings()
 {
+    StrokeTool::loadSettings();
+
     mPropertyEnabled[WIDTH] = true;
     mPropertyEnabled[PRESSURE] = true;
     mPropertyEnabled[VECTORMERGE] = true;
@@ -52,7 +54,7 @@ void PenTool::loadSettings()
     properties.preserveAlpha = OFF;
     properties.stabilizerLevel = settings.value("penLineStabilization", StabilizationLevel::STRONG).toInt();
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, QuickPropertyType::WIDTH);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, WIDTH);
 }
 
 void PenTool::resetToDefault()
@@ -105,32 +107,56 @@ QCursor PenTool::cursor()
 
 void PenTool::pointerPressEvent(PointerEvent *event)
 {
+    mInterpolator.pointerPressEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     mMouseDownPoint = getCurrentPoint();
     mLastBrushPoint = getCurrentPoint();
 
     startStroke(event->inputType());
+
+    StrokeTool::pointerPressEvent(event);
 }
 
 void PenTool::pointerMoveEvent(PointerEvent* event)
 {
+    mInterpolator.pointerMoveEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
-        mCurrentPressure = strokeManager()->getPressure();
+        mCurrentPressure = mInterpolator.getPressure();
         drawStroke(event);
-        if (properties.stabilizerLevel != strokeManager()->getStabilizerLevel())
-            strokeManager()->setStabilizerLevel(properties.stabilizerLevel);
+        if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
+        {
+            mInterpolator.setStabilizerLevel(properties.stabilizerLevel);
+        }
     }
+
+    StrokeTool::pointerMoveEvent(event);
 }
 
 void PenTool::pointerReleaseEvent(PointerEvent *event)
 {
+    mInterpolator.pointerReleaseEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     if (event->inputType() != mCurrentInputType) return;
     endStroke();
+
+    StrokeTool::pointerReleaseEvent(event);
 }
 
 void PenTool::drawStroke(PointerEvent* event)
 {
     StrokeTool::drawStroke(event);
+    QList<QPointF> p = mInterpolator.interpolateStroke();
 
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -144,8 +170,6 @@ void PenTool::drawStroke(PointerEvent* event)
                  Qt::SolidLine,
                  Qt::RoundCap,
                  Qt::MiterJoin);
-
-        QList<QPointF> p = strokeManager()->interpolateStroke();
 
         if (p.size() == 4)
         {

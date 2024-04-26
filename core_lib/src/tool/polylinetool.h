@@ -20,11 +20,7 @@ GNU General Public License for more details.
 
 #include <QPointF>
 #include "stroketool.h"
-
-#include "basetool.h"
 #include "blitrect.h"
-
-class BitmapImage;
 
 class PolylineTool : public StrokeTool
 {
@@ -37,9 +33,9 @@ public:
     void resetToDefault() override;
 
     void pointerPressEvent(PointerEvent*) override;
-    void pointerReleaseEvent(PointerEvent*) override;
+    void pointerReleaseEvent(PointerEvent* event) override;
     void pointerMoveEvent(PointerEvent* event) override;
-    void pointerDoubleClickEvent(PointerEvent*) override;
+    void pointerDoubleClickEvent(PointerEvent* event) override;
 
     void pointerPressOnVector(PointerEvent*);
     void pointerPressOnBitmap(PointerEvent*);
@@ -53,7 +49,7 @@ public:
 
     bool leavingThisTool() override;
 
-    virtual bool isActive() override;
+    bool isActive() const override;
 
 protected:
     double calculateDeltaTime(quint64 time) override;

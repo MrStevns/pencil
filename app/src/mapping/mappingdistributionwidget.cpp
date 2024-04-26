@@ -116,18 +116,8 @@ QVector<QPointF> MappingDistributionWidget::mapPointsToWidget()
 
     for (QPointF point : mPoints) {
 
-        qreal pointY = point.y();
-        qreal pointX = point.x();
-
-//        qDebug() << "===========";
-//        qDebug() << "orig " << "(x: " << pointX << ",y: " << pointY << ")";
-        qreal normalizeX = MathUtils::normalize(pointX, mMinX, mMaxX);
-        qreal normalizeY = MathUtils::normalize(pointY, mMinY, mMaxY);
-
-//        qDebug() << "normalized " << "(x: " << normalizeX << ",y: " << normalizeY << ")";
-        qreal mappedX = MathUtils::linearMap(normalizeX, 0, 1, adjustedRect.left(), adjustedRect.right());
-        qreal mappedY = MathUtils::linearMap(normalizeY, 0, 1, adjustedRect.bottom(), adjustedRect.top());
-//        qDebug() << "mapped " << "(x: " << mappedX << ",y: " << mappedY << ")";
+        qreal mappedX = MathUtils::linearMap(point.x(), mMinX, mMaxX, adjustedRect.left(), adjustedRect.right());
+        qreal mappedY = MathUtils::linearMap(point.y(), mMinY, mMaxY, adjustedRect.bottom(), adjustedRect.top());
 
         mMappedPoints << QPointF(mappedX, mappedY);
     }
@@ -155,11 +145,8 @@ QVector<QPointF> MappingDistributionWidget::mapPointsFromWidget()
 {
     QVector<QPointF> mapToOrigPoints;
     for (QPointF point : mMappedPoints) {
-        qreal normalizeX = MathUtils::normalize(point.x(), adjustedRect.left(), adjustedRect.right());
-        qreal normalizeY = MathUtils::normalize(point.y(), adjustedRect.bottom(), adjustedRect.top());
-
-        qreal mappedX = MathUtils::mapFromNormalized(normalizeX, mMinX, mMaxX);
-        qreal mappedY = MathUtils::mapFromNormalized(normalizeY, mMinY, mMaxY);
+        qreal mappedX = MathUtils::linearMap(point.x(), adjustedRect.left(), adjustedRect.right(), mMinX, mMaxX);
+        qreal mappedY = MathUtils::linearMap(point.y(), adjustedRect.bottom(), adjustedRect.top(), mMinY, mMaxY);
 
         mapToOrigPoints << QPointF(mappedX, mappedY);
     }

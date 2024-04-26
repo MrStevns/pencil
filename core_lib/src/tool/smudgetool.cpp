@@ -24,7 +24,6 @@ GNU General Public License for more details.
 #include "scribblearea.h"
 
 #include "layermanager.h"
-#include "strokemanager.h"
 #include "viewmanager.h"
 #include "selectionmanager.h"
 
@@ -44,6 +43,8 @@ ToolType SmudgeTool::type()
 
 void SmudgeTool::loadSettings()
 {
+    StrokeTool::loadSettings();
+
     mPropertyEnabled[WIDTH] = true;
     mPropertyEnabled[FEATHER] = true;
 
@@ -53,7 +54,7 @@ void SmudgeTool::loadSettings()
     properties.pressure = false;
     properties.stabilizerLevel = -1;
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, QuickPropertyType::WIDTH);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, WIDTH);
 }
 
 void SmudgeTool::resetToDefault()
@@ -120,7 +121,7 @@ bool SmudgeTool::keyPressEvent(QKeyEvent *event)
         mScribbleArea->setCursor(cursor()); // update cursor
         return true;
     }
-    return BaseTool::keyPressEvent(event);
+    return StrokeTool::keyPressEvent(event);
 }
 
 bool SmudgeTool::keyReleaseEvent(QKeyEvent *event)
@@ -131,12 +132,15 @@ bool SmudgeTool::keyReleaseEvent(QKeyEvent *event)
         mScribbleArea->setCursor(cursor()); // update cursor
         return true;
     }
-    return BaseTool::keyReleaseEvent(event);
+    return StrokeTool::keyReleaseEvent(event);
 }
 
 void SmudgeTool::pointerPressEvent(PointerEvent* event)
 {
-    //qDebug() << "smudgetool: mousePressEvent";
+    mInterpolator.pointerPressEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
 
     Layer* layer = mEditor->layers()->currentLayer();
     auto selectMan = mEditor->select();
@@ -154,6 +158,7 @@ void SmudgeTool::pointerPressEvent(PointerEvent* event)
             const int currentFrame = mEditor->currentFrame();
             const float distanceFrom = selectMan->selectionTolerance();
             VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(currentFrame, 0);
+            if (vectorImage == nullptr) { return; }
             selectMan->setCurves(vectorImage->getCurvesCloseTo(getCurrentPoint(), distanceFrom));
             selectMan->setVertices(vectorImage->getVerticesCloseTo(getCurrentPoint(), distanceFrom));
 ;
@@ -184,10 +189,17 @@ void SmudgeTool::pointerPressEvent(PointerEvent* event)
             }
         }
     }
+
+    StrokeTool::pointerPressEvent(event);
 }
 
 void SmudgeTool::pointerMoveEvent(PointerEvent* event)
 {
+    mInterpolator.pointerMoveEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     if (event->inputType() != mCurrentInputType) return;
 
     Layer* layer = mEditor->layers()->currentLayer();
@@ -236,10 +248,17 @@ void SmudgeTool::pointerMoveEvent(PointerEvent* event)
             mScribbleArea->update();
         }
     }
+
+    StrokeTool::pointerMoveEvent(event);
 }
 
 void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
 {
+    mInterpolator.pointerReleaseEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     if (event->inputType() != mCurrentInputType) return;
 
     Layer* layer = mEditor->layers()->currentLayer();
@@ -264,6 +283,8 @@ void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
 
         endStroke();
     }
+
+    StrokeTool::pointerReleaseEvent(event);
 }
 
 QPointF SmudgeTool::offsetFromPressPos()

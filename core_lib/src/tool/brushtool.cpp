@@ -26,7 +26,6 @@ GNU General Public License for more details.
 #include "vectorimage.h"
 #include "editor.h"
 #include "colormanager.h"
-#include "strokemanager.h"
 #include "layermanager.h"
 #include "viewmanager.h"
 #include "selectionmanager.h"
@@ -46,6 +45,8 @@ ToolType BrushTool::type()
 
 void BrushTool::loadSettings()
 {
+    StrokeTool::loadSettings();
+
     mPropertyEnabled[WIDTH] = true;
     mPropertyEnabled[FEATHER] = true;
     mPropertyEnabled[PRESSURE] = true;
@@ -64,7 +65,7 @@ void BrushTool::loadSettings()
     if (properties.width <= 0) { setWidth(15); }
     if (std::isnan(properties.feather)) { setFeather(15); }
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, QuickPropertyType::WIDTH);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, WIDTH);
 }
 
 void BrushTool::resetToDefault()
@@ -138,33 +139,56 @@ QCursor BrushTool::cursor()
 
 void BrushTool::pointerPressEvent(PointerEvent *event)
 {
+    mInterpolator.pointerPressEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     mMouseDownPoint = getCurrentPoint();
     mLastBrushPoint = getCurrentPoint();
 
     startStroke(event->inputType());
+
+    StrokeTool::pointerPressEvent(event);
 }
 
 void BrushTool::pointerMoveEvent(PointerEvent* event)
 {
+    mInterpolator.pointerMoveEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
-        mCurrentPressure = strokeManager()->getPressure();
+        mCurrentPressure = mInterpolator.getPressure();
         drawStroke(event);
-        if (properties.stabilizerLevel != strokeManager()->getStabilizerLevel())
-            strokeManager()->setStabilizerLevel(properties.stabilizerLevel);
+        if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
+        {
+            mInterpolator.setStabilizerLevel(properties.stabilizerLevel);
+        }
     }
+
+    StrokeTool::pointerMoveEvent(event);
 }
 
 void BrushTool::pointerReleaseEvent(PointerEvent *event)
 {
+    mInterpolator.pointerReleaseEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     if (event->inputType() != mCurrentInputType) return;
 
     endStroke();
+    StrokeTool::pointerReleaseEvent(event);
 }
 
 void BrushTool::drawStroke(PointerEvent* event)
 {
     StrokeTool::drawStroke(event);
+    QList<QPointF> p = mInterpolator.interpolateStroke();
 
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -177,9 +201,7 @@ void BrushTool::drawStroke(PointerEvent* event)
                  brushWidth,
                  Qt::SolidLine,
                  Qt::RoundCap,
-                 Qt::MiterJoin);
-
-        QList<QPointF> p = strokeManager()->interpolateStroke();
+                 Qt::RoundJoin);
 
         if (p.size() == 4)
         {

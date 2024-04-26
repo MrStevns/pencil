@@ -76,9 +76,7 @@ void BrushSettingWidget::onSliderChanged(qreal value)
 
 void BrushSettingWidget::setValue(qreal value)
 {
-//    qDebug() << "value changing";
-    qreal normalize = MathUtils::normalize(value, mMin, mMax);
-    qreal mappedValue = MathUtils::mapFromNormalized(normalize, mMappedMin, mMappedMax);
+    qreal mappedValue = MathUtils::linearMap(value, mMin, mMax, mMappedMin, mMappedMax);
 
     QSignalBlocker b(mValueSlider);
     mValueSlider->setValue(mappedValue);
@@ -118,8 +116,7 @@ void BrushSettingWidget::setValueInternal(qreal value)
     QSignalBlocker b2(mValueBox);
     mValueBox->setValue(value);
 
-    qreal normalize = MathUtils::normalize(value, mMappedMin, mMappedMax);
-    qreal mappedToOrig = MathUtils::mapFromNormalized(normalize, mMin, mMax);
+    qreal mappedToOrig = MathUtils::linearMap(value, mMappedMin, mMappedMax, mMin, mMax);
 
     QSignalBlocker b3(mVisualBox);
     mVisualBox->setValue(mappedToOrig);
@@ -142,8 +139,7 @@ void BrushSettingWidget::setToolTip(QString toolTip)
 
 void BrushSettingWidget::updateSetting(qreal value)
 {
-    qreal normalize = MathUtils::normalize(value, mMappedMin, mMappedMax);
-    qreal mappedToOrig = MathUtils::mapFromNormalized(normalize, mMin, mMax);
+    qreal mappedToOrig = MathUtils::linearMap(value, mMappedMin, mMappedMax, mMin, mMax);
 
     setValueInternal(value);
 

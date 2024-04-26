@@ -22,6 +22,7 @@ GNU General Public License for more details.
 #include <QMessageBox>
 #include <QPixmapCache>
 #include <QVBoxLayout>
+#include <QTimer>
 
 #include "pointerevent.h"
 #include "beziercurve.h"
@@ -39,7 +40,6 @@ GNU General Public License for more details.
 
 #include "colormanager.h"
 #include "toolmanager.h"
-#include "strokemanager.h"
 #include "layermanager.h"
 #include "playbackmanager.h"
 #include "viewmanager.h"
@@ -51,15 +51,15 @@ GNU General Public License for more details.
 #include "mpsurface.h"
 #include "mptile.h"
 
-ScribbleArea::ScribbleArea(QWidget* parent) : QWidget(parent), mCanvasPainter(mCanvas), mCameraPainter(mCanvas)
+ScribbleArea::ScribbleArea(QWidget* parent) : QWidget(parent),
+    mCanvasPainter(mCanvas),
+    mCameraPainter(mCanvas)
 {
     setObjectName("ScribbleArea");
 
     // Qt::WA_StaticContents ensure that the widget contents are rooted to the top-left corner
     // and don't change when the widget is resized.
     setAttribute(Qt::WA_StaticContents);
-
-    mStrokeManager.reset(new StrokeManager);
 }
 
 ScribbleArea::~ScribbleArea()
@@ -96,7 +96,6 @@ bool ScribbleArea::init()
     const int curveSmoothingLevel = mPrefs->getInt(SETTING::CURVE_SMOOTHING);
     mCurveSmoothingLevel = curveSmoothingLevel / 20.0; // default value is 1.0
 
-    mQuickSizing = mPrefs->isOn(SETTING::QUICK_SIZING);
     mMakeInvisible = false;
 
     mMultiLayerOnionSkin = mPrefs->isOn(SETTING::MULTILAYER_ONION);
@@ -104,8 +103,6 @@ bool ScribbleArea::init()
     mLayerVisibility = static_cast<LayerVisibility>(mPrefs->getInt(SETTING::LAYER_VISIBILITY));
 
     mDeltaFactor = mEditor->preference()->isOn(SETTING::INVERT_SCROLL_ZOOM_DIRECTION) ? -1 : 1;
-
-    updateCanvasCursor();
 
     setMouseTracking(true); // reacts to mouse move events, even if the button is not pressed
 #if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
@@ -162,9 +159,6 @@ void ScribbleArea::settingUpdated(SETTING setting)
     case SETTING::ONION_WHILE_PLAYBACK:
         invalidateAllCache();
         break;
-    case SETTING::QUICK_SIZING:
-        mQuickSizing = mPrefs->isOn(SETTING::QUICK_SIZING);
-        break;
     case SETTING::MULTILAYER_ONION:
         mMultiLayerOnionSkin = mPrefs->isOn(SETTING::MULTILAYER_ONION);
         invalidateAllCache();
@@ -185,7 +179,6 @@ void ScribbleArea::settingUpdated(SETTING setting)
 void ScribbleArea::updateToolCursor()
 {
     setCursor(currentTool()->cursor());
-    updateCanvasCursor();
 }
 
 void ScribbleArea::setCurveSmoothing(int newSmoothingLevel)
@@ -390,11 +383,15 @@ void ScribbleArea::onObjectLoaded()
 
 bool ScribbleArea::event(QEvent *event)
 {
+    bool processed = false;
     if (event->type() == QEvent::WindowDeactivate)
     {
         editor()->tools()->clearTemporaryTool();
+        processed = true;
     }
-    return QWidget::event(event);
+
+    processed = currentTool()->event(event) || processed;
+    return QWidget::event(event) || processed;
 }
 
 /************************************************************************/
@@ -556,30 +553,28 @@ void ScribbleArea::wheelEvent(QWheelEvent* event)
 #endif
 
     const qreal currentScale = mEditor->view()->scaling();
+
     // From the pixelDelta documentation: On X11 this value is driver-specific and unreliable, use angleDelta() instead
+    int delta = 0;
     if (!isX11 && !pixels.isNull())
     {
-        // XXX: This pixel-based zooming algorithm currently has some shortcomings compared to the angle-based one:
-        //      Zooming in is faster than zooming out and scrolling twice with delta x yields different zoom than
-        //      scrolling once with delta 2x. Someone with the ability to test this code might want to "upgrade" it.
-        const int delta = pixels.y();
-        const qreal newScale = currentScale * (1 + ((delta * mDeltaFactor) * 0.01));
-        mEditor->view()->scaleAtOffset(newScale, offset);
+        delta = pixels.y();
     }
-    else if (!angle.isNull())
+    else if (!angle.isNull()) // Wheel based delta
     {
-        const int delta = angle.y();
-        // 12 rotation steps at "standard" wheel resolution (120/step) result in 100x zoom
+        delta = angle.y();
+    }
+
+    if (delta != 0) {
         const qreal newScale = currentScale * std::pow(100, (delta * mDeltaFactor) / (12.0 * 120));
         mEditor->view()->scaleAtOffset(newScale, offset);
     }
-    updateCanvasCursor();
     event->accept();
 }
 
 void ScribbleArea::tabletEvent(QTabletEvent *e)
 {
-    PointerEvent event(e);
+    PointerEvent event(e, mEditor->view()->mapScreenToCanvas(e->posF()));
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     if (event.pointerType() == QPointingDevice::PointerType::Eraser)
@@ -594,11 +589,9 @@ void ScribbleArea::tabletEvent(QTabletEvent *e)
         editor()->tools()->tabletRestorePrevTool();
     }
 
-    if (event.eventType() == QTabletEvent::TabletPress)
+    if (event.eventType() == PointerEvent::Press)
     {
         event.accept();
-        mStrokeManager->pointerPressEvent(&event);
-        mStrokeManager->setTabletInUse(true);
         if (mIsFirstClick)
         {
             mIsFirstClick = false;
@@ -607,7 +600,8 @@ void ScribbleArea::tabletEvent(QTabletEvent *e)
         }
         else
         {
-            qreal distance = QLineF(currentTool()->getCurrentPressPoint(), currentTool()->getLastPressPoint()).length();
+            qreal distance = QLineF(e->posF(), mTabletPressPos).length();
+            mTabletPressPos = e->posF();
 
             if (mDoubleClickMillis <= DOUBLE_CLICK_THRESHOLD && distance < 5.0) {
                 currentTool()->pointerDoubleClickEvent(&event);
@@ -620,23 +614,20 @@ void ScribbleArea::tabletEvent(QTabletEvent *e)
         }
         mTabletInUse = event.isAccepted();
     }
-    else if (event.eventType() == QTabletEvent::TabletMove)
+    else if (event.eventType() == PointerEvent::Move)
     {
         if (!(event.buttons() & (Qt::LeftButton | Qt::RightButton)) || mTabletInUse)
         {
-            mStrokeManager->pointerMoveEvent(&event);
             pointerMoveEvent(&event);
         }
     }
-    else if (event.eventType() == QTabletEvent::TabletRelease)
+    else if (event.eventType() == PointerEvent::Release)
     {
         mTabletReleaseMillisAgo = 0;
         mMouseFilterTimer->start();
         if (mTabletInUse)
         {
-            mStrokeManager->pointerReleaseEvent(&event);
             pointerReleaseEvent(&event);
-            mStrokeManager->setTabletInUse(false);
             mTabletInUse = false;
         }
     }
@@ -664,18 +655,7 @@ void ScribbleArea::pointerPressEvent(PointerEvent* event)
         editor()->tools()->setTemporaryTool(HAND, event->buttons()))
     {
         currentTool()->pointerPressEvent(event);
-    }
-
-    const bool isPressed = event->buttons() & Qt::LeftButton;
-    if (isPressed && mQuickSizing)
-    {
-        if (currentTool()->startAdjusting(event->modifiers(), 1))
-        {
-            return;
-        }
-    }
-
-    if (event->button() == Qt::LeftButton)
+    } else if (event->button() == Qt::LeftButton)
     {
         currentTool()->pointerPressEvent(event);
     }
@@ -683,32 +663,11 @@ void ScribbleArea::pointerPressEvent(PointerEvent* event)
 
 void ScribbleArea::pointerMoveEvent(PointerEvent* event)
 {
-
-     updateCanvasCursor();
-
-    if (event->buttons() & (Qt::LeftButton | Qt::RightButton))
-    {
-
-        // --- use SHIFT + drag to resize WIDTH / use CTRL + drag to resize FEATHER ---
-        if (currentTool()->isAdjusting())
-        {
-            currentTool()->adjustCursor(event->modifiers());
-            return;
-        }
-    }
-
     currentTool()->pointerMoveEvent(event);
 }
 
 void ScribbleArea::pointerReleaseEvent(PointerEvent* event)
 {
-    if (currentTool()->isAdjusting())
-    {
-        currentTool()->stopAdjusting();
-        updateCanvasCursor();
-        return; // [SHIFT]+drag OR [CTRL]+drag
-    }
-
     currentTool()->pointerReleaseEvent(event);
 
     editor()->tools()->tryClearTemporaryTool(event->button());
@@ -758,10 +717,7 @@ void ScribbleArea::mousePressEvent(QMouseEvent* e)
         return;
     }
 
-    PointerEvent event(e);
-
-    mStrokeManager->pointerPressEvent(&event);
-
+    PointerEvent event(e, mEditor->view()->mapScreenToCanvas(e->localPos()));
     pointerPressEvent(&event);
     mMouseInUse = event.isAccepted();
 }
@@ -769,30 +725,25 @@ void ScribbleArea::mousePressEvent(QMouseEvent* e)
 void ScribbleArea::mouseMoveEvent(QMouseEvent* e)
 {
     if (mTabletInUse || (mMouseFilterTimer->isActive() && mTabletReleaseMillisAgo < MOUSE_FILTER_THRESHOLD)) { e->ignore(); return; }
-    PointerEvent event(e);
 
-    mStrokeManager->pointerMoveEvent(&event);
-
+    PointerEvent event(e, mEditor->view()->mapScreenToCanvas(e->localPos()));
     pointerMoveEvent(&event);
 }
 
 void ScribbleArea::mouseReleaseEvent(QMouseEvent* e)
 {
     if (mTabletInUse || (mMouseFilterTimer->isActive() && mTabletReleaseMillisAgo < MOUSE_FILTER_THRESHOLD)) { e->ignore(); return; }
-    PointerEvent event(e);
 
-    mStrokeManager->pointerReleaseEvent(&event);
-
+    PointerEvent event(e, mEditor->view()->mapScreenToCanvas(e->localPos()));
     pointerReleaseEvent(&event);
     mMouseInUse = (e->buttons() & Qt::RightButton) || (e->buttons() & Qt::LeftButton);
 }
 
 void ScribbleArea::mouseDoubleClickEvent(QMouseEvent* e)
 {
-    if (mStrokeManager->isTabletInUse()) { e->ignore(); return; }
-    PointerEvent event(e);
-    mStrokeManager->pointerPressEvent(&event);
+    if (mTabletInUse) { e->ignore(); return; }
 
+    PointerEvent event(e, mEditor->view()->mapScreenToCanvas(e->localPos()));
     currentTool()->pointerDoubleClickEvent(&event);
 }
 
@@ -858,52 +809,6 @@ void ScribbleArea::clearDrawingBuffer()
     mBufferTiles.clear();
     mTilesBlitRect = BlitRect();
     mTiledBuffer.clear();
-}
-
-void ScribbleArea::paintCanvasCursor(QPainter& painter)
-{
-    QTransform view = mEditor->view()->getView();
-    QPointF mousePos = currentTool()->isAdjusting() ? currentTool()->getCurrentPressPoint() : currentTool()->getCurrentPoint();
-    int centerCal = mCursorImg.width() / 2;
-
-    mTransformedCursorPos = view.map(mousePos);
-
-    // reset matrix
-    view.reset();
-
-    painter.setTransform(view);
-    mCursorCenterPos.setX(centerCal);
-    mCursorCenterPos.setY(centerCal);
-
-    painter.drawPixmap(QPoint(static_cast<int>(mTransformedCursorPos.x() - mCursorCenterPos.x()),
-                              static_cast<int>(mTransformedCursorPos.y() - mCursorCenterPos.y())),
-                       mCursorImg);
-
-    mCursorCenterPos.setX(centerCal);
-    mCursorCenterPos.setY(centerCal);
-}
-
-void ScribbleArea::updateCanvasCursor()
-{
-    qreal scalingFac = static_cast<qreal>(mEditor->view()->scaling());
-    float brushWidth = mMyPaint->getBrushState(MyPaintBrushState::MYPAINT_BRUSH_STATE_ACTUAL_RADIUS);
-
-    if (currentTool()->isAdjusting())
-    {
-        mCursorImg = currentTool()->quickSizeCursor(scalingFac, brushWidth);
-    }
-    else if (mEditor->preference()->isOn(SETTING::DOTTED_CURSOR))
-    {
-        mCursorImg = currentTool()->canvasCursor(static_cast<float>(brushWidth), scalingFac, width());
-    }
-    else
-    {
-        mCursorImg = QPixmap(); // if the above does not comply, deallocate image
-    }
-
-    QPoint translatedPos(static_cast<int>(mTransformedCursorPos.x() - mCursorCenterPos.x()),
-                         static_cast<int>(mTransformedCursorPos.y() - mCursorCenterPos.y()));
-    update(mCursorImg.rect().adjusted(-1, -1, 1, 1).translated(translatedPos));
 }
 
 void ScribbleArea::handleDrawingOnEmptyFrame()
@@ -1018,7 +923,7 @@ void ScribbleArea::paintEvent(QPaintEvent* event)
     painter.setClipRect(event->rect());
     painter.drawPixmap(QPointF(), mCanvas);
 
-    currentTool()->paint(painter);
+    currentTool()->paint(painter, event->rect());
 
     if (!editor()->playback()->isPlaying())    // we don't need to display the following when the animation is playing
     {
@@ -1094,8 +999,6 @@ void ScribbleArea::paintEvent(QPaintEvent* event)
                 } // end switch
             }
         }
-
-        paintCanvasCursor(painter);
 
         mOverlayPainter.paint(painter, rect());
 
@@ -1255,7 +1158,6 @@ void ScribbleArea::loadMPBrush(const QByteArray &content)
     mMyPaint->loadBrush(content);
 
     forceUpdateMyPaintStates();
-    updateCanvasCursor();
 }
 
 void ScribbleArea::onTileUpdated(TiledBuffer* tiledBuffer, Tile* tile)
@@ -1372,7 +1274,7 @@ void ScribbleArea::flipSelection(bool flipVertical)
 
 void ScribbleArea::drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm)
 {
-    mTiledBuffer.drawPath(mEditor->view()->mapScreenToCanvas(path), mEditor->view()->mapScreenToCanvas(mCursorImg.rect()).width(), pen, brush, cm, mPrefs->isOn(SETTING::ANTIALIAS));
+    mTiledBuffer.drawPath(mEditor->view()->mapScreenToCanvas(path), pen, brush, cm, mPrefs->isOn(SETTING::ANTIALIAS));
 }
 
 void ScribbleArea::drawPolyline(QPainterPath path, QPen pen, bool useAA)
@@ -1388,7 +1290,7 @@ void ScribbleArea::drawPolyline(QPainterPath path, QPen pen, bool useAA)
     blitRect.extend(updateRect);
 
     mTiledBuffer.clear();
-    mTiledBuffer.drawPath(path, mEditor->view()->mapScreenToCanvas(mCursorImg.rect()).width(), pen, Qt::NoBrush, QPainter::CompositionMode_SourceOver, useAA);
+    mTiledBuffer.drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_SourceOver, useAA);
 
     // And update only the affected area
     update(blitRect.adjusted(-1, -1, 1, 1));
@@ -1596,7 +1498,6 @@ void ScribbleArea::brushSettingChanged(BrushSettingType settingType, float value
 
     mMyPaint->setBrushBaseValue(static_cast<MyPaintBrushSetting>(settingType), value);
     forceUpdateMyPaintStates();
-    updateCanvasCursor();
 }
 
 float ScribbleArea::getBrushSettingBaseValue(BrushSettingType settingType)

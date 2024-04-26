@@ -18,21 +18,11 @@ GNU General Public License for more details.
 #include "basetool.h"
 
 #include <array>
-#include <QtMath>
-#include <QPixmap>
 #include "editor.h"
 #include "viewmanager.h"
-#include "toolmanager.h"
 #include "scribblearea.h"
-#include "strokemanager.h"
+#include "strokeinterpolator.h"
 #include "pointerevent.h"
-
-#include "brushsetting.h"
-
-// ---- shared static variables ---- ( only one instance for all the tools )
-qreal BaseTool::msOriginalPropertyValue;  // start value (width, feather ..)
-bool BaseTool::msIsAdjusting = false;
-
 
 QString BaseTool::TypeName(ToolType type)
 {
@@ -40,17 +30,17 @@ QString BaseTool::TypeName(ToolType type)
 
     if (map[0].isEmpty())
     {
-        map[PENCIL] = "Pencil";
-        map[ERASER] = "Eraser";
-        map[SELECT] = "Select";
-        map[MOVE] = "Move";
-        map[HAND] = "Hand";
-        map[SMUDGE] = "Smudge";
-        map[PEN] = "Pen";
-        map[POLYLINE] = "Polyline";
-        map[BUCKET] = "Bucket";
-        map[EYEDROPPER] = "Eyedropper";
-        map[BRUSH] = "Brush";
+        map[PENCIL] = tr("Pencil");
+        map[ERASER] = tr("Eraser");
+        map[SELECT] = tr("Select");
+        map[MOVE] = tr("Move");
+        map[HAND] = tr("Hand");
+        map[SMUDGE] = tr("Smudge");
+        map[PEN] = tr("Pen");
+        map[POLYLINE] = tr("Polyline");
+        map[BUCKET] = tr("Bucket");
+        map[EYEDROPPER] = tr("Eyedropper");
+        map[BRUSH] = tr("Brush");
     }
     return map.at(type);
 }
@@ -75,6 +65,15 @@ QCursor BaseTool::cursor()
     return Qt::ArrowCursor;
 }
 
+bool BaseTool::leavingThisTool()
+{
+   for (auto& connection : mActiveConnections) {
+       disconnect(connection);
+       mActiveConnections.removeOne(connection);
+   }
+   return true;
+}
+
 void BaseTool::initialize(Editor* editor)
 {
     Q_ASSERT(editor);
@@ -82,7 +81,6 @@ void BaseTool::initialize(Editor* editor)
     mScribbleArea = editor->getScribbleArea();
     Q_ASSERT(mScribbleArea);
 
-    mStrokeManager = mEditor->getScribbleArea()->getStrokeManager();
     loadSettings();
 }
 
@@ -120,186 +118,9 @@ bool BaseTool::isDrawingTool()
     return true;
 }
 
-/**
- * @brief precision circular cursor: used for drawing a cursor within scribble area.
- * @return QPixmap
- */
-QPixmap BaseTool::canvasCursor(float width, float scalingFac, int windowWidth)
+bool BaseTool::isActive() const
 {
-    qreal propWidth = static_cast<qreal>(width * scalingFac);
-
-    qreal cursorWidth = propWidth*2.0;
-    qreal whA = 0.0;
-    qreal whB = 0.0;
-
-    qreal radius = cursorWidth / 2.0;
-
-    whA = qMax<qreal>(0, cursorWidth);
-    whB = qMax<qreal>(0, cursorWidth);
-
-    // deallocate when cursor width gets some value larger than the widget
-    if (cursorWidth > windowWidth * 2)
-    {
-        return QPixmap(0, 0);
-    }
-
-    if (cursorWidth <= 0) { cursorWidth = 0.1; }
-
-    int extraSpace = 2;
-    QPixmap cursorPixmap = QPixmap(static_cast<int>(cursorWidth)+extraSpace,
-                                   static_cast<int>(cursorWidth)+extraSpace);
-    if (!cursorPixmap.isNull())
-    {
-        cursorPixmap.fill(QColor(255, 255, 255, 0));
-        QPainter cursorPainter(&cursorPixmap);
-        QPen cursorPen = cursorPainter.pen();
-        cursorPainter.setRenderHint(QPainter::Antialiasing);
-
-        // Draw cross in center
-        cursorPen.setStyle(Qt::SolidLine);
-        cursorPen.setColor(QColor(0, 0, 0, 127));
-        cursorPainter.setPen(cursorPen);
-        cursorPainter.drawLine(QPointF(radius - 2.0, radius), QPointF(radius + 2.0, radius));
-        cursorPainter.drawLine(QPointF(radius, radius - 2.0), QPointF(radius, radius + 2.0));
-
-        // Draw inner circle
-        cursorPen.setStyle(Qt::DotLine);
-        cursorPen.setDashOffset(4);
-        cursorPen.setColor(QColor(0, 0, 0, 255));
-        cursorPainter.setPen(cursorPen);
-        cursorPainter.drawEllipse(QRectF(0, 0, whA, whA));
-        cursorPen.setDashOffset(3);
-        cursorPen.setColor(QColor(255, 255, 255, 255));
-        cursorPainter.setPen(cursorPen);
-        cursorPainter.drawEllipse(QRectF(0, 0, whA, whA));
-
-        cursorPainter.end();
-    }
-    return cursorPixmap;
-}
-
-bool BaseTool::isActive()
-{
-    return strokeManager()->isActive();
-}
-
-/**
- * @brief precision circular cursor: used for drawing stroke size while adjusting
- * @return QPixmap
- */
-QPixmap BaseTool::quickSizeCursor(qreal scalingFac, qreal width)
-{
-    qreal propSize = qMax(0., width*scalingFac);
-
-    qreal cursorWidth = propSize*2.0;
-    QRectF cursorRect(0, 0, cursorWidth+2, cursorWidth+2);
-
-    QRectF sizeRect = cursorRect.adjusted(1, 1, -1, -1);
-
-    QPixmap cursorPixmap = QPixmap(cursorRect.size().toSize());
-    if (!cursorPixmap.isNull())
-    {
-        cursorPixmap.fill(QColor(255, 255, 255, 0));
-        QPainter cursorPainter(&cursorPixmap);
-        cursorPainter.setRenderHints(QPainter::Antialiasing, true);
-
-        cursorPainter.setPen(QColor(255, 127, 127, 127));
-        cursorPainter.setBrush(QColor(0, 255, 127, 127));
-        cursorPainter.drawEllipse(sizeRect);
-
-        // Draw cursor in center
-        cursorPainter.setRenderHints(QPainter::Antialiasing, false);
-        cursorPainter.setPen(QColor(0, 0, 0, 255));
-        cursorPainter.drawLine(cursorRect.center() - QPoint(2, 0), cursorRect.center() + QPoint(2, 0));
-        cursorPainter.drawLine(cursorRect.center() - QPoint(0, 2), cursorRect.center() + QPoint(0, 2));
-
-
-        cursorPainter.end();
-    }
-    return cursorPixmap;
-}
-
-bool BaseTool::startAdjusting(Qt::KeyboardModifiers modifiers, qreal step)
-{
-    if (mQuickSizingProperties.contains(modifiers))
-    {
-        switch (mQuickSizingProperties.value(modifiers)) {
-        case QuickPropertyType::WIDTH:
-            msOriginalPropertyValue = properties.width;
-            break;
-        }
-
-        msIsAdjusting = true;
-        mAdjustmentStep = step;
-        return true;
-    }
     return false;
-}
-
-void BaseTool::stopAdjusting()
-{
-    msIsAdjusting = false;
-    mAdjustmentStep = 0;
-    msOriginalPropertyValue = 0;
-}
-
-void BaseTool::adjustCursor(Qt::KeyboardModifiers modifiers)
-{
-    qreal inc = qPow(msOriginalPropertyValue * 100, 0.5);
-    qreal newValue = inc + getCurrentPoint().x();
-
-    if (newValue < 0)
-    {
-        newValue = 0;
-    }
-
-    if (mAdjustmentStep > 0)
-    {
-        int tempValue = static_cast<int>(newValue / mAdjustmentStep); // + 0.5 ?
-        newValue = tempValue * mAdjustmentStep;
-    }
-
-    mEditor->tools()->mapQuickPropertyToBrushSettingValue(newValue, mQuickSizingProperties.value(modifiers));
-}
-
-QPointF BaseTool::getCurrentPressPixel() const
-{
-    return strokeManager()->getCurrentPressPixel();
-}
-
-QPointF BaseTool::getCurrentPressPoint() const
-{
-    return mEditor->view()->mapScreenToCanvas(strokeManager()->getCurrentPressPixel());
-}
-
-QPointF BaseTool::getCurrentPixel() const
-{
-    return strokeManager()->getCurrentPixel();
-}
-
-QPointF BaseTool::getCurrentPoint() const
-{
-    return mEditor->view()->mapScreenToCanvas(getCurrentPixel());
-}
-
-QPointF BaseTool::getLastPixel() const
-{
-    return strokeManager()->getLastPixel();
-}
-
-QPointF BaseTool::getLastPoint() const
-{
-    return mEditor->view()->mapScreenToCanvas(getLastPixel());
-}
-
-QPointF BaseTool::getLastPressPixel() const
-{
-    return strokeManager()->getLastPressPixel();
-}
-
-QPointF BaseTool::getLastPressPoint() const
-{
-    return mEditor->view()->mapScreenToCanvas(getLastPressPixel());
 }
 
 void BaseTool::setWidth(const qreal width)
