@@ -76,6 +76,7 @@ HEADERS += \
     src/layeropacitydialog.h \
     src/mainwindow2.h \
     src/onionskinwidget.h \
+    src/pencildocktitlebarwidget.h \
     src/predefinedsetmodel.h \
     src/pegbaralignmentdialog.h \
     src/shortcutfilter.h \
@@ -128,6 +129,7 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow2.cpp \
     src/onionskinwidget.cpp \
+    src/pencildocktitlebarwidget.cpp \
     src/predefinedsetmodel.cpp \
     src/pegbaralignmentdialog.cpp \
     src/shortcutfilter.cpp \

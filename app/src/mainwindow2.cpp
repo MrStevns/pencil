@@ -67,6 +67,7 @@ GNU General Public License for more details.
 #include "onionskinwidget.h"
 #include "pegbaralignmentdialog.h"
 #include "repositionframesdialog.h"
+#include "pencildocktitlebarwidget.h"
 
 //#include "preview.h"
 #include "errordialog.h"
@@ -974,7 +975,7 @@ void MainWindow2::lockWidgets(bool shouldLock)
         // https://doc.qt.io/qt-5/qdockwidget.html#setTitleBarWidget
         // A empty QWidget looks like the tittle bar is hidden.
         // nullptr means removing the custom title bar and restoring the default one
-        QWidget* customTitleBarWidget = shouldLock ? (new QWidget) : nullptr;
+        QWidget* customTitleBarWidget = shouldLock ? new QWidget : new PencilDockTitleBarWidget(d);
         d->setTitleBarWidget(customTitleBarWidget);
     }
 }
