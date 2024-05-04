@@ -35,10 +35,27 @@ BaseDockWidget::BaseDockWidget(QWidget* pParent)
     }
 #endif
 
+    mTitleBarWidget = new PencilDockTitleBarWidget(this);
+    mNoTitleBarWidget = new QWidget(this);
+    setTitleBarWidget(mTitleBarWidget);
 }
 
 BaseDockWidget::~BaseDockWidget()
 {
+}
+
+void BaseDockWidget::lock(bool state)
+{
+    if (state) {
+        setTitleBarWidget(mNoTitleBarWidget);
+    } else {
+        setTitleBarWidget(mTitleBarWidget);
+    }
+}
+
+void BaseDockWidget::setTitle(const QString& title)
+{
+    mTitleBarWidget->setWindowTitle(title);
 }
 
 void BaseDockWidget::resizeEvent(QResizeEvent *event)

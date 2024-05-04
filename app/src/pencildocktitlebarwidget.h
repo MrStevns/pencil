@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+
+class QLabel;
 class QHBoxLayout;
 class QPropertyAnimation;
 
@@ -15,6 +17,7 @@ public:
     QSize minimumSizeHint() const override;
 
     void resizeEvent(QResizeEvent* resizeEvent) override;
+    void setWindowTitle(const QString& title);
 
 signals:
 
@@ -25,9 +28,8 @@ private:
     QWidget* mNormalTitleBarWidget = nullptr;
     QWidget* mCompactTitleBarWidget = nullptr;
 
+    QLabel* mTitleLabel = nullptr;
     QPropertyAnimation* animation = nullptr;
-    // QHBoxLayout* mHCompactLayout = nullptr;
-    // QHBoxLayout* mHorizontalButtonLayout = nullptr;
 };
 
 #endif // PENCILDOCKTITLEBARWIDGET_H

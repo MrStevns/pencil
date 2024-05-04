@@ -21,11 +21,13 @@ GNU General Public License for more details.
 #include <QDockWidget>
 
 class Editor;
+class PencilDockTitleBarWidget;
 
 
 class BaseDockWidget : public QDockWidget
 {
     Q_OBJECT
+
 protected:
     explicit BaseDockWidget(QWidget* pParent);
     virtual  ~BaseDockWidget();
@@ -36,6 +38,9 @@ public:
     virtual void initUI() = 0;
     virtual void updateUI() = 0;
 
+    void lock(bool state);
+    void setTitle(const QString& title);
+
     Editor* editor() const { return mEditor; }
     void setEditor( Editor* e ) { mEditor = e; }
 
@@ -44,6 +49,9 @@ protected:
 
 private:
     Editor* mEditor = nullptr;
+
+    QWidget* mNoTitleBarWidget = nullptr;
+    PencilDockTitleBarWidget* mTitleBarWidget = nullptr;
 };
 
 #endif // BASEDOCKWIDGET_H

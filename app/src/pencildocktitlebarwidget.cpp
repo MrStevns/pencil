@@ -53,22 +53,26 @@ QWidget* PencilDockTitleBarWidget::createNormalTitleBarWidget()
     undockButton->setFixedSize(QSize(16,16));
     undockButton->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
-    QLabel* titleLabel = new QLabel(this);
+    mTitleLabel = new QLabel(this);
     QFont font;
     font.setPointSize(11);
-    titleLabel->setFont(font);
-    titleLabel->setAlignment(Qt::AlignVCenter);
-    titleLabel->setText(parentWidget()->windowTitle());
+    mTitleLabel->setFont(font);
+    mTitleLabel->setAlignment(Qt::AlignVCenter);
 
     layout->addWidget(closeButton);
     layout->addWidget(undockButton);
-    layout->addWidget(titleLabel);
+    layout->addWidget(mTitleLabel);
     layout->setSpacing(3);
     layout->setContentsMargins(3,0,3,2);
 
     containerWidget->setLayout(layout);
 
     return containerWidget;
+}
+
+void PencilDockTitleBarWidget::setWindowTitle(const QString &title)
+{
+    mTitleLabel->setText(title);
 }
 
 QWidget* PencilDockTitleBarWidget::createCompactTitleBarWidget()
@@ -82,8 +86,8 @@ QWidget* PencilDockTitleBarWidget::createCompactTitleBarWidget()
     handleLabel->setPixmap(QPixmap("://icons/themes/playful/window/window-drag-handle.svg"));
 
     layout->addWidget(handleLabel);
-    layout->setContentsMargins(3,0,3,2);
-    layout->setSpacing(3);
+    layout->setContentsMargins(3,0,2,2);
+    layout->setSpacing(0);
 
     containerWidget->setLayout(layout);
     return containerWidget;
