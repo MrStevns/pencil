@@ -139,11 +139,24 @@ MainWindow2::MainWindow2(QWidget* parent) :
     ui->background->init(mEditor->preference());
 
     setWindowTitle(PENCIL_WINDOW_TITLE);
+    styleMainWindow();
 }
 
 MainWindow2::~MainWindow2()
 {
     delete ui;
+}
+
+void MainWindow2::styleMainWindow()
+{
+    // The default separators are sometimes drawn behind other widgets, making the line
+    // seem thinner on certain widgets.
+    // Setting the separator ourselves fixes the problem.
+    setStyleSheet("QMainWindow::separator"
+                  "{"
+                      "background-color: palette(mid);"
+                      "width: 1px;"
+                  "});");
 }
 
 void MainWindow2::createDockWidgets()
