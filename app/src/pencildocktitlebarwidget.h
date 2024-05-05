@@ -20,6 +20,7 @@ public:
 
     void resizeEvent(QResizeEvent* resizeEvent) override;
     void setWindowTitle(const QString& title);
+    void paintEvent(QPaintEvent*) override;
 
 signals:
     void closeButtonPressed();
@@ -27,14 +28,15 @@ signals:
 
 private:
 
+    void hideButtons(bool hide);
+
     QWidget* createNormalTitleBarWidget(QWidget* parent);
-    QWidget* createCompactTitleBarWidget(QWidget* parent);
 
     QWidget* mNormalTitleBarWidget = nullptr;
-    QWidget* mCompactTitleBarWidget = nullptr;
 
     QLabel* mTitleLabel = nullptr;
-    QPushButton* mCloseButton = nullptr;
+    QAbstractButton* mCloseButton = nullptr;
+    QAbstractButton* mDockButton = nullptr;
 };
 
 

@@ -41,6 +41,8 @@ public:
     void lock(bool state);
     void setTitle(const QString& title);
 
+    bool isLocked() const { return mLocked; }
+
     Editor* editor() const { return mEditor; }
     void setEditor( Editor* e ) { mEditor = e; }
 
@@ -52,6 +54,8 @@ private:
 
     QWidget* mNoTitleBarWidget = nullptr;
     PencilDockTitleBarWidget* mTitleBarWidget = nullptr;
+
+    bool mLocked = false;
 };
 
 #endif // BASEDOCKWIDGET_H

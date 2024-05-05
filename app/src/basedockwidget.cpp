@@ -73,10 +73,13 @@ void BaseDockWidget::lock(bool state)
     } else {
         setTitleBarWidget(mTitleBarWidget);
     }
+
+    mLocked = state;
 }
 
 void BaseDockWidget::setTitle(const QString& title)
 {
+    if (!mTitleBarWidget) { return; }
     mTitleBarWidget->setWindowTitle(title);
 }
 
@@ -84,6 +87,9 @@ void BaseDockWidget::resizeEvent(QResizeEvent *event)
 {
     QDockWidget::resizeEvent(event);
 
+    if (mTitleBarWidget) {
+        mTitleBarWidget->resizeEvent(event);
+    }
     // Not sure where the -2 comes from, but the event width is always 2 more than what is passed to FlowLayout::setGeometry
     int minHeight = getMinHeightForWidth(event->size().width() - 2);
 

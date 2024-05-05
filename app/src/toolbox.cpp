@@ -266,11 +266,6 @@ void ToolBoxWidget::smudgeOn()
     toolOn(SMUDGE, ui->smudgeButton);
 }
 
-int ToolBoxWidget::getMinHeightForWidth(int width)
-{
-    return ui->toolGroup->layout()->heightForWidth(width);
-}
-
 void ToolBoxWidget::deselectAllTools()
 {
     ui->pencilButton->setChecked(false);
