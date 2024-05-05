@@ -94,6 +94,12 @@
         <file>icons/themes/playful/window/window-undock-button.svg</file>
         <file>icons/themes/playful/window/window-close-button.svg</file>
         <file>icons/themes/playful/window/window-drag-handle.svg</file>
+        <file>icons/themes/playful/window/window-close-button-hollow.svg</file>
+        <file>icons/themes/playful/window/window-float-button-hollow.svg</file>
+        <file>icons/themes/playful/window/window-close-button-12.svg</file>
+        <file>icons/themes/playful/window/window-float-button-12.svg</file>
+        <file>icons/themes/playful/window/window-float-button-14.svg</file>
+        <file>icons/themes/playful/window/window-close-button-14.svg</file>
     </qresource>
     <qresource prefix="/app">
         <file>pencil2d_quick_guide.pdf</file>

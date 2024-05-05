@@ -20,6 +20,7 @@ GNU General Public License for more details.
 
 #include "basedockwidget.h"
 #include "platformhandler.h"
+#include "pencildocktitlebarwidget.h"
 
 BaseDockWidget::BaseDockWidget(QWidget* pParent)
 : QDockWidget(pParent, Qt::Tool)
@@ -35,9 +36,26 @@ BaseDockWidget::BaseDockWidget(QWidget* pParent)
     }
 #endif
 
-    mTitleBarWidget = new PencilDockTitleBarWidget(this);
-    mNoTitleBarWidget = new QWidget(this);
+    mTitleBarWidget = new PencilDockTitleBarWidget();
+    mNoTitleBarWidget = new QWidget();
     setTitleBarWidget(mTitleBarWidget);
+
+    connect(mTitleBarWidget, &PencilDockTitleBarWidget::closeButtonPressed, this, [this] {
+       close();
+    });
+
+    connect(mTitleBarWidget, &PencilDockTitleBarWidget::undockButtonPressed, this, [this] {
+       setFloating(!isFloating());
+    });
+
+    connect(this, &BaseDockWidget::topLevelChanged, this, [this](bool topLevel) {
+        if (!topLevel) {
+            setTitleBarWidget(mTitleBarWidget);
+        } else {
+            // When undocked, we display the native window
+            setTitleBarWidget(nullptr);
+        }
+    });
 }
 
 BaseDockWidget::~BaseDockWidget()
@@ -46,6 +64,10 @@ BaseDockWidget::~BaseDockWidget()
 
 void BaseDockWidget::lock(bool state)
 {
+    // https://doc.qt.io/qt-5/qdockwidget.html#setTitleBarWidget
+    // A empty QWidget looks like the tittle bar is hidden.
+    // nullptr means removing the custom title bar and restoring the default one
+
     if (state) {
         setTitleBarWidget(mNoTitleBarWidget);
     } else {

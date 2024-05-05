@@ -972,10 +972,6 @@ void MainWindow2::lockWidgets(bool shouldLock)
     for (BaseDockWidget* d : mDockWidgets)
     {
         d->setFeatures(feat);
-
-        // https://doc.qt.io/qt-5/qdockwidget.html#setTitleBarWidget
-        // A empty QWidget looks like the tittle bar is hidden.
-        // nullptr means removing the custom title bar and restoring the default one
         d->lock(shouldLock);
     }
 }
