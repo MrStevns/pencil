@@ -152,11 +152,7 @@ void MainWindow2::styleMainWindow()
     // The default separators are sometimes drawn behind other widgets, making the line
     // seem thinner on certain widgets.
     // Setting the separator ourselves fixes the problem.
-    setStyleSheet("QMainWindow::separator"
-                  "{"
-                      "background-color: palette(mid);"
-                      "width: 1px;"
-                  "});");
+    setStyleSheet("QMainWindow::separator { background-color: palette(mid); width: 1px; };");
 }
 
 void MainWindow2::createDockWidgets()
