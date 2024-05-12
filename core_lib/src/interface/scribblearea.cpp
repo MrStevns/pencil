@@ -1244,10 +1244,7 @@ void ScribbleArea::forceUpdateMyPaintStates()
 {
     // Simulate stroke to force states to update
     // this doesn't draw on canvas, because the cursor doesn't move
-    mMyPaint->strokeTo(mMyPaint->getBrushState(MYPAINT_BRUSH_STATE_X),
-                       mMyPaint->getBrushState(MYPAINT_BRUSH_STATE_Y),
-                       mMyPaint->getBrushState(MyPaintBrushState::MYPAINT_BRUSH_STATE_PRESSURE),
-                       0,0, 1.0);
+    mMyPaint->strokeTo();
     // TODO: deltatime should maybe not be fixed here?
 }
 

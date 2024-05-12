@@ -105,6 +105,13 @@ strokeTo(float x, float y, float pressure, float xtilt, float ytilt, double dtim
                             dtime/*, 1.0, 1.0, .0*/);
 
 
+    this->x = x;
+    this->y = y;
+    this->pressure = pressure;
+    this->tiltX = xtilt;
+    this->tiltY = ytilt;
+    this->dTime = dtime;
+
     MyPaintRectangle roi;
     mypaint_surface_end_atomic(surface, &roi);
 }
@@ -142,6 +149,18 @@ MPHandler::strokeTo(float x, float y)
     float ytilt = 0.0;
 
     strokeTo(x, y, pressure, xtilt, ytilt, 1.0);
+
+    this->x = x;
+    this->y = y;
+    this->pressure = pressure;
+    this->tiltX = xtilt;
+    this->tiltY = ytilt;
+    this->dTime = 1.0;
+}
+
+void MPHandler::strokeTo()
+{
+    strokeTo(this->x, this->y, this->pressure, this->tiltX, this->tiltY, this->dTime);
 }
 
 void

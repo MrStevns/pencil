@@ -60,6 +60,7 @@ public:
     void startStroke();
     void strokeTo(float x, float y, float pressure, float xtilt, float ytilt, double dtime);
     void strokeTo(float x, float y);
+    void strokeTo();
     void endStroke();
 
     float getBrushSettingBaseValue(MyPaintBrushSetting setting);
@@ -103,6 +104,13 @@ public slots:
 private:
     MPBrush*   mBrush;
     MPSurface* mSurface;
+
+    float x;
+    float y;
+    float pressure;
+    float tiltX;
+    float tiltY;
+    float dTime;
 
 };
 
