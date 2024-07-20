@@ -57,8 +57,7 @@ xcshareddata
 *.deps
 *.gir
 *.typelib
-3rdlib/paint_lib/json-c/config.h
-
+/3rdlib/paint_lib/src/json-c/config.h
 
 # Visual Studio
 
@@ -88,6 +87,5 @@ ipch
 
 # Build directory
 build
-
-# Configs
-/3rdlib/paint_lib/src/json-c/config.h
+.qtc_clangd
+app/resources.pri

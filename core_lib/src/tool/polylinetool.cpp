@@ -90,7 +90,6 @@ bool PolylineTool::leavingThisTool()
     if (mPoints.size() > 0)
     {
         cancelPolyline();
-        clearToolData();
     }
     return true;
 }
@@ -107,8 +106,16 @@ QCursor PolylineTool::cursor()
 
 void PolylineTool::clearToolData()
 {
+    if (mPoints.empty()) {
+        return;
+    }
+
     mPoints.clear();
     emit isActiveChanged(POLYLINE, false);
+
+    // Clear the in-progress polyline from the bitmap buffer.
+    mScribbleArea->clearDrawingBuffer();
+    mScribbleArea->updateFrame();
 }
 
 void PolylineTool::pointerPressEvent(PointerEvent* event)
@@ -216,7 +223,6 @@ void PolylineTool::pointerDoubleClickEvent(PointerEvent* event)
     mEditor->backup(typeName());
 
     endPolyline(mPoints, event->timeStamp());
-    clearToolData();
 }
 
 
@@ -227,8 +233,8 @@ bool PolylineTool::keyPressEvent(QKeyEvent* event)
     case Qt::Key_Return:
         if (mPoints.size() > 0)
         {
+            mEditor->backup(typeName());
             endPolyline(mPoints, calculateDeltaTime(event->timestamp()));
-            clearToolData();
             return true;
         }
         break;
@@ -237,7 +243,6 @@ bool PolylineTool::keyPressEvent(QKeyEvent* event)
         if (mPoints.size() > 0)
         {
             cancelPolyline();
-            clearToolData();
             return true;
         }
         break;
@@ -332,9 +337,7 @@ void PolylineTool::updateDirtyRect(QList<QPointF> linePoints, BlitRect dirtyRect
 
 void PolylineTool::cancelPolyline()
 {
-    // Clear the in-progress polyline from the bitmap buffer.
-    mScribbleArea->clearDrawingBuffer();
-    mScribbleArea->updateFrame();
+    clearToolData();
 }
 
 void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
@@ -367,4 +370,6 @@ void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
     
     endStroke();
     mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+
+    clearToolData();
 }

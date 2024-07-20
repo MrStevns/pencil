@@ -28,6 +28,7 @@ class Camera;
 
 class LayerCamera : public Layer
 {
+    Q_DECLARE_TR_FUNCTIONS(LayerCamera)
 public:
     explicit LayerCamera(int id);
     ~LayerCamera() override;
