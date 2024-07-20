@@ -142,7 +142,3 @@ const MyPaintBrushInputInfo* MPBrush::getBrushInputInfo(MyPaintBrushInput input)
 {
     return mypaint_brush_input_info(input);
 }
-
-
-
-
