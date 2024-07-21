@@ -114,35 +114,46 @@ exists($$jsonlibpath/config.h) {
 INCLUDEPATH += src/json-c
 DEPENDPATH += src/json-c
 
-HEADERS += src/json-c/arraylist.h \
-           src/json-c/bits.h \
-           src/json-c/debug.h \
-           src/json-c/json.h \
-           src/json-c/json_c_version.h \
-           src/json-c/json_inttypes.h \
-           src/json-c/json_object.h \
-           src/json-c/json_object_iterator.h \
-           src/json-c/json_object_private.h \
-           src/json-c/json_tokener.h \
-           src/json-c/json_util.h \
-           src/json-c/linkhash.h \
-           src/json-c/math_compat.h \
-           src/json-c/printbuf.h \
-           src/json-c/random_seed.h \
-           src/json-c/config.h \
-           src/json-c/json_config.h
+HEADERS +=  \
+            src/json-c/arraylist.h \
+            src/json-c/debug.h \
+            src/json-c/json_c_version.h \
+            src/json-c/json_inttypes.h \
+            src/json-c/json_object_iterator.h \
+            src/json-c/json_object_private.h \
+            src/json-c/json_object.h \
+            src/json-c/json_patch.h \
+            src/json-c/json_pointer_private.h \
+            src/json-c/json_pointer.h \
+            src/json-c/json_tokener.h \
+            src/json-c/json_types.h \
+            src/json-c/json_util.h \
+            src/json-c/json_visit.h \
+            src/json-c/linkhash.h \
+            src/json-c/math_compat.h \
+            src/json-c/printbuf.h \
+            src/json-c/random_seed.h \
+            src/json-c/snprintf_compat.h \
+            src/json-c/strdup_compat.h \
+            src/json-c/strerror_override.h \
+            src/json-c/vasprintf_compat.h \
 
-SOURCES += src/json-c/arraylist.c \
-           src/json-c/debug.c \
-           src/json-c/json_c_version.c \
-           src/json-c/json_object.c \
-           src/json-c/json_object_iterator.c \
-           src/json-c/json_tokener.c \
-           src/json-c/json_util.c \
-           src/json-c/libjson.c \
-           src/json-c/linkhash.c \
-           src/json-c/printbuf.c \
-           src/json-c/random_seed.c
+SOURCES +=  \
+            src/json-c/arraylist.c \
+            src/json-c/debug.c \
+            src/json-c/json_c_version.c \
+            src/json-c/json_object_iterator.c \
+            src/json-c/json_object.c \
+            src/json-c/json_patch.c \
+            src/json-c/json_pointer.c \
+            src/json-c/json_tokener.c \
+            src/json-c/json_util.c \
+            src/json-c/json_visit.c \
+            src/json-c/libjson.c \
+            src/json-c/linkhash.c \
+            src/json-c/printbuf.c \
+            src/json-c/random_seed.c \
+            src/json-c/strerror_override.c \
 
 
 # qtmypaint
