@@ -51,6 +51,7 @@
 #include <QWidget>
 #include <QLayout>
 #include <QtMath>
+#include <QDebug>
 
 #include "flowlayout.h"
 
@@ -126,14 +127,13 @@ bool FlowLayout::hasHeightForWidth() const
 
 int FlowLayout::heightForWidth(int width) const
 {
-    int height = doLayout(QRect(0, 0, width, 0), true);
-    return height;
+    return doLayout(QRect(0, 0, width, 0), true).height;
 }
 
 void FlowLayout::setGeometry(const QRect &rect)
 {
     QLayout::setGeometry(rect);
-    doLayout(rect, false);
+    mState = doLayout(rect, false);
 }
 
 QSize FlowLayout::sizeHint() const
@@ -153,7 +153,7 @@ QSize FlowLayout::minimumSize() const
     return size;
 }
 
-int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
+FlowLayoutState FlowLayout::doLayout(const QRect &rect, bool testOnly) const
 {
     int left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
@@ -165,6 +165,8 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
 
     QLayoutItem *item;
     int spaceX = 0;
+    int numberOfRows = 0;
+
     for (int i = 0; i < itemList.length(); i++) {
         item = itemList.at(i);
         QWidget *wid = item->widget();
@@ -181,11 +183,32 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
         if (nextX - spaceX > effectiveRect.right() && lineHeight > 0) {
             if(!testOnly && alignment() & Qt::AlignHCenter) {
                 int offset = qFloor((effectiveRect.right() + spaceX - x) / 2);
+
+                for(int j = i-1; j > i-1-rowCount; j--) {
+                    auto rowItem = itemList.at(j);
+                    rowItem->setGeometry(rowItem->geometry().adjusted(offset, 0, offset, 0));
+                }
+            } else if (!testOnly && alignment() & Qt::AlignJustify) {
+                int offset = qFloor((effectiveRect.right() + spaceX - x) / 2);
+
+                int totalWidth = 0;
+                for (int j = i - rowCount; j < i; j++) {
+                    totalWidth += itemList.at(j)->sizeHint().width();
+                }
+                totalWidth += (rowCount - 1) * spaceX; // Add spacing between items
+                int extraSpace = effectiveRect.width() - totalWidth;
+
+                // qDebug() << extraSpace;
+                    // Calculate the spacing between items for justification
+                int spacing = (rowCount > 1) ? extraSpace / (rowCount - 1) : 0;
+                // qDebug() << spacing;
                 for(int j = i-1; j > i-1-rowCount; j--) {
                     auto rowItem = itemList.at(j);
                     rowItem->setGeometry(rowItem->geometry().adjusted(offset, 0, offset, 0));
                 }
             }
+
+            numberOfRows = rowCount;
 
             x = effectiveRect.x();
             y = y + lineHeight + spaceY;
@@ -193,7 +216,6 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
             lineHeight = 0;
             rowCount = 0;
         }
-        rowCount++;
 
         if (!testOnly) {
             item->setGeometry(QRect(QPoint(x, y), item->sizeHint()));
@@ -201,6 +223,7 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
 
         x = nextX;
         lineHeight = qMax(lineHeight, item->sizeHint().height());
+        rowCount++;
     }
 
     if (!testOnly && alignment() & Qt::AlignHCenter) {
@@ -209,9 +232,20 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
             auto rowItem = itemList.at(j);
             rowItem->setGeometry(rowItem->geometry().adjusted(offset, 0, offset, 0));
         }
+    } else if (!testOnly && alignment() & Qt::AlignJustify) {
+        int offset = qFloor((effectiveRect.right() + spaceX - x) / 2);
+        for (int j = itemList.length()-1; j > itemList.length()-1-rowCount; j--) {
+            auto rowItem = itemList.at(j);
+            rowItem->setGeometry(rowItem->geometry().adjusted(offset, 0, offset, 0));
+        }
     }
 
-    return y + lineHeight - rect.y() + bottom;
+    FlowLayoutState state;
+    state.rowCount = numberOfRows;
+    state.height = bottom + y + lineHeight - rect.y();
+    // qDebug() << "state.height" << state.height;
+    // qDebug() << "bottom top: " << bottom << " " << top;
+    return state;
 }
 
 int FlowLayout::smartSpacing(QStyle::PixelMetric pm) const

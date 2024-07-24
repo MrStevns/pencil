@@ -17,6 +17,9 @@ GNU General Public License for more details.
 
 #include <QLayout>
 #include <QResizeEvent>
+#include <QDebug>
+
+#include <QPushButton>
 
 #include "basedockwidget.h"
 #include "platformhandler.h"
@@ -105,7 +108,7 @@ void BaseDockWidget::resizeEvent(QResizeEvent *event)
     setMinimumSize(QSize(layout()->minimumSize().width(), minHeight));
 }
 
-int BaseDockWidget::getMinHeightForWidth(int width)
+int BaseDockWidget::getMinHeightForWidth(int width) const
 {
     Q_UNUSED(width)
     return -1;

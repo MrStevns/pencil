@@ -47,7 +47,7 @@ public:
     void setEditor( Editor* e ) { mEditor = e; }
 
 protected:
-    virtual int getMinHeightForWidth(int width);
+    virtual int getMinHeightForWidth(int width) const;
 
 private:
     Editor* mEditor = nullptr;

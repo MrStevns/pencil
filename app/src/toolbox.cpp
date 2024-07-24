@@ -24,6 +24,7 @@ GNU General Public License for more details.
 #include <QGridLayout>
 #include <QKeySequence>
 #include <QResizeEvent>
+#include <QDebug>
 
 #include "flowlayout.h"
 #include "spinslider.h"
@@ -138,26 +139,60 @@ void ToolBoxWidget::initUI()
     connect(editor()->layers(), &LayerManager::currentLayerChanged, this, &ToolBoxWidget::onLayerDidChange);
 
 
-    FlowLayout* flowlayout = new FlowLayout(0,3,3);
+    mFlowlayout = new FlowLayout(3,3,3);
 
-    flowlayout->addWidget(ui->pencilButton);
-    flowlayout->addWidget(ui->eraserButton);
-    flowlayout->addWidget(ui->selectButton);
-    flowlayout->addWidget(ui->moveButton);
-    flowlayout->addWidget(ui->penButton);
-    flowlayout->addWidget(ui->handButton);
-    flowlayout->addWidget(ui->polylineButton);
-    flowlayout->addWidget(ui->bucketButton);
-    flowlayout->addWidget(ui->eyedropperButton);
-    flowlayout->addWidget(ui->brushButton);
-    flowlayout->addWidget(ui->smudgeButton);
+    mFlowlayout->addWidget(ui->pencilButton);
+    mFlowlayout->addWidget(ui->eraserButton);
+    mFlowlayout->addWidget(ui->selectButton);
+    mFlowlayout->addWidget(ui->moveButton);
+    mFlowlayout->addWidget(ui->penButton);
+    mFlowlayout->addWidget(ui->handButton);
+    mFlowlayout->addWidget(ui->polylineButton);
+    mFlowlayout->addWidget(ui->bucketButton);
+    mFlowlayout->addWidget(ui->eyedropperButton);
+    mFlowlayout->addWidget(ui->brushButton);
+    mFlowlayout->addWidget(ui->smudgeButton);
+
+    mFlowlayout->setSizeConstraint(QLayout::SetMinimumSize);
+
+    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
 
     delete ui->scrollAreaWidgetContents_2->layout();
-    ui->scrollAreaWidgetContents_2->setLayout(flowlayout);
-    ui->scrollAreaWidgetContents_2->setContentsMargins(3,3,3,3);
+    ui->scrollAreaWidgetContents_2->setLayout(mFlowlayout);
+    ui->scrollAreaWidgetContents_2->setContentsMargins(0,0,0,0);
 
     QSettings settings(PENCIL2D, PENCIL2D);
     restoreGeometry(settings.value("ToolBoxGeom").toByteArray());
+
+    // ui->scrollArea->setMinimumSize(minimumSizeHint());
+    // ui->scrollAreaWidgetContents_2->setMinimumSize(minimumSizeHint());
+    // setMinimumSize(minimumSizeHint());
+    setMinimumHeight(1);
+    ui->scrollArea->setMinimumHeight(1);
+    ui->scrollAreaWidgetContents_2->setMinimumHeight(1);
+}
+
+int ToolBoxWidget::getMinHeightForWidth(int width) const
+{
+    return mFlowlayout->heightForWidth(width);
+}
+
+QSize ToolBoxWidget::minimumSizeHint() const
+{
+    return QSize(42, getMinHeightForWidth(width()));
+}
+
+void ToolBoxWidget::resizeEvent(QResizeEvent *event)
+{
+    BaseDockWidget::resizeEvent(event);
+
+    setMinimumHeight(getMinHeightForWidth(event->size().width()));
+
+    if (mFlowlayout->rows() == 1) {
+        mFlowlayout->setAlignment(Qt::AlignHCenter);
+    } else {
+        mFlowlayout->setAlignment(Qt::AlignJustify);
+    }
 }
 
 void ToolBoxWidget::updateUI()

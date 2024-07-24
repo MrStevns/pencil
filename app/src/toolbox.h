@@ -27,6 +27,7 @@ class SpinSlider;
 class DisplayOptionWidget;
 class ToolOptionWidget;
 class Editor;
+class FlowLayout;
 
 namespace Ui {
 class ToolBoxWidget;
@@ -42,6 +43,9 @@ public:
 
     void initUI() override;
     void updateUI() override;
+
+    QSize minimumSizeHint() const override;
+    void resizeEvent(QResizeEvent* event) override;
 
 public slots:
     void onToolSetActive(ToolType toolType);
@@ -59,13 +63,15 @@ public slots:
     void smudgeOn();
 
 protected:
-    int getMinHeightForWidth(int width) override;
+    int getMinHeightForWidth(int width) const override;
 
 private:
     void deselectAllTools();
     bool toolOn(ToolType toolType, QToolButton* toolButton);
 
     Ui::ToolBoxWidget* ui = nullptr;
+
+    FlowLayout* mFlowlayout = nullptr;
 };
 
 #endif

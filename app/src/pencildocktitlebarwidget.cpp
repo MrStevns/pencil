@@ -18,7 +18,7 @@ PencilDockTitleBarWidget::PencilDockTitleBarWidget()
     : QWidget()
 {
 
-    QVBoxLayout* vLayout = new QVBoxLayout(this);
+    QVBoxLayout* vLayout = new QVBoxLayout();
 
     vLayout->setContentsMargins(0,3,0,0);
     vLayout->setSpacing(3);

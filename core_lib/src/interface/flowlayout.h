@@ -55,6 +55,12 @@
 #include <QRect>
 #include <QStyle>
 
+struct FlowLayoutState
+{
+    int rowCount = 0;
+    int height = 0;
+};
+
 class FlowLayout : public QLayout
 {
 public:
@@ -75,13 +81,20 @@ public:
     QSize sizeHint() const override;
     QLayoutItem *takeAt(int index) override;
 
+    int rows() const { return mState.rowCount; }
+    // int rowWidth() const { return mState.rowWidth; }
+
 private:
-    int doLayout(const QRect &rect, bool testOnly) const;
+    void layoutWithAlignment(int i, bool testOnly, const QRect& effectiveRect, int spaceX, int x) const;
+
+    FlowLayoutState doLayout(const QRect &rect, bool testOnly) const;
     int smartSpacing(QStyle::PixelMetric pm) const;
 
     QList<QLayoutItem *> itemList;
     int m_hSpace;
     int m_vSpace;
+
+    FlowLayoutState mState;
 };
 
 #endif // FLOWLAYOUT_H
