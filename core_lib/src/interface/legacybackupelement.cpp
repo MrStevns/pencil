@@ -15,7 +15,7 @@ GNU General Public License for more details.
 
 */
 
-#include "backupelement.h"
+#include "legacybackupelement.h"
 
 #include "editor.h"
 #include "layer.h"
@@ -24,8 +24,9 @@ GNU General Public License for more details.
 #include "object.h"
 #include "selectionmanager.h"
 #include "layermanager.h"
+#include "undoredomanager.h"
 
-void BackupBitmapElement::restore(Editor* editor)
+void BackupLegacyBitmapElement::restore(Editor* editor)
 {
     Layer* layer = editor->object()->findLayerById(this->layerId);
     auto selectMan = editor->select();
@@ -41,7 +42,7 @@ void BackupBitmapElement::restore(Editor* editor)
 
     if (this->frame > 0 && layer->getKeyFrameAt(this->frame) == nullptr)
     {
-        editor->restoreKey();
+        editor->undoRedo()->restoreLegacyKey();
     }
     else
     {
@@ -66,7 +67,7 @@ void BackupBitmapElement::restore(Editor* editor)
     emit editor->frameModified(this->frame);
 }
 
-void BackupVectorElement::restore(Editor* editor)
+void BackupLegacyVectorElement::restore(Editor* editor)
 {
     auto selectMan = editor->select();
     Layer* layer = editor->object()->findLayerById(this->layerId);
@@ -94,7 +95,7 @@ void BackupVectorElement::restore(Editor* editor)
 
     if (this->frame > 0 && layer->getKeyFrameAt(this->frame) == nullptr)
     {
-        editor->restoreKey();
+        editor->undoRedo()->restoreLegacyKey();
     }
     else
     {
@@ -116,12 +117,12 @@ void BackupVectorElement::restore(Editor* editor)
             }
         }
     }
-
+    
     emit editor->frameModified(this->frame);
 
 }
 
-void BackupSoundElement::restore(Editor* editor)
+void BackupLegacySoundElement::restore(Editor* editor)
 {
     Layer* layer = editor->object()->findLayerById(this->layerId);
 
@@ -135,6 +136,6 @@ void BackupSoundElement::restore(Editor* editor)
     // TODO: soundclip won't restore if overlapping on first frame
     if (this->frame > 0 && layer->getKeyFrameAt(this->frame) == nullptr)
     {
-        editor->restoreKey();
+        editor->undoRedo()->restoreLegacyKey();
     }
 }

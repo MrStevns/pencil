@@ -32,6 +32,7 @@ GNU General Public License for more details.
 #include "object.h"
 #include "playbackmanager.h"
 #include "preferencemanager.h"
+#include "undoredomanager.h"
 #include "timeline.h"
 
 #include "cameracontextmenu.h"
@@ -747,7 +748,10 @@ void TimeLineCells::paintEvent(QPaintEvent*)
             {
                 paintHighlightedFrame(painter, mHighlightedFrame, recTop, standardWidth, recHeight);
             }
-            paintFrameCursorOnCurrentLayer(painter, recTop, standardWidth, recHeight);
+            if (currentLayer->visible())
+            {
+                paintFrameCursorOnCurrentLayer(painter, recTop, standardWidth, recHeight);
+            }
         }
 
         // --- draw the position of the current frame
@@ -1032,6 +1036,7 @@ void TimeLineCells::mouseMoveEvent(QMouseEvent* event)
                             currentLayer->deselectAll();
                             currentLayer->setFrameSelected(mStartFrameNumber, true);
                             currentLayer->extendSelectionTo(mFramePosMoveX);
+                            emit mEditor->selectedFramesChanged();
                         }
                         mLastFrameNumber = mFramePosMoveX;
                         updateContent();
@@ -1062,8 +1067,13 @@ void TimeLineCells::mouseReleaseEvent(QMouseEvent* event)
             int posUnderCursor = getFrameNumber(mMousePressX);
             int offset = frameNumber - posUnderCursor;
 
-            currentLayer->moveSelectedFrames(offset);
+            if (currentLayer->canMoveSelectedFramesToOffset(offset)) {
+                UndoSaveState* state = mEditor->undoRedo()->createState(UndoRedoRecordType::KEYFRAME_MOVE);
+                state->moveFramesState = MoveFramesSaveState(offset, currentLayer->selectedKeyFramesPositions());
 
+                currentLayer->moveSelectedFrames(offset);
+                mEditor->undoRedo()->record(state, tr("Move Frames"));
+            }
             mEditor->layers()->notifyAnimationLengthChanged();
             emit mEditor->framesModified();
             updateContent();
@@ -1079,7 +1089,7 @@ void TimeLineCells::mouseReleaseEvent(QMouseEvent* event)
             updateContent();
         }
     }
-    if (mType == TIMELINE_CELL_TYPE::Layers && layerNumber != mStartLayerNumber && mStartLayerNumber != -1 && layerNumber != -1)
+    if (mType == TIMELINE_CELL_TYPE::Layers && !mScrollingVertically && layerNumber != mStartLayerNumber && mStartLayerNumber != -1 && layerNumber != -1)
     {
         mToLayer = getInbetweenLayerNumber(event->pos().y());
         if (mToLayer != mFromLayer && mToLayer > -1 && mToLayer < mEditor->layers()->count())
@@ -1126,8 +1136,11 @@ void TimeLineCells::mouseDoubleClickEvent(QMouseEvent* event)
     {
         if (mType == TIMELINE_CELL_TYPE::Tracks && (layerNumber != -1) && (frameNumber > 0) && layerNumber < mEditor->object()->getLayerCount())
         {
-            mEditor->scrubTo(frameNumber);
-            emit insertNewKeyFrame();
+            if (!layer->keyExistsWhichCovers(frameNumber))
+            {
+                mEditor->scrubTo(frameNumber);
+                emit insertNewKeyFrame();
+            }
 
             // The release event will toggle the frame on again, so we make sure it gets
             // deselected now instead.
@@ -1203,7 +1216,13 @@ void TimeLineCells::hScrollChange(int x)
 void TimeLineCells::vScrollChange(int x)
 {
     mLayerOffset = x;
+    mScrollingVertically = true;
     updateContent();
+}
+
+void TimeLineCells::onScrollingVerticallyStopped()
+{
+    mScrollingVertically = false;
 }
 
 void TimeLineCells::setMouseMoveY(int x)

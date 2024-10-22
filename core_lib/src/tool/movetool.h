@@ -21,6 +21,7 @@ GNU General Public License for more details.
 #include "basetool.h"
 #include "movemode.h"
 #include "preferencemanager.h"
+#include "undoredomanager.h"
 #include "bitmapimage.h"
 
 class Layer;
@@ -45,6 +46,7 @@ public:
     bool keyPressEvent(QKeyEvent* keyEvent) override;
 
     bool leavingThisTool() override;
+    bool isActive() const override;
 
     void resetToDefault() override;
     void setShowSelectionInfo(const bool b) override;
@@ -60,20 +62,23 @@ private:
     void applyTransformation();
     void updateSettings(const SETTING setting);
 
-    void beginInteraction(Qt::KeyboardModifiers keyMod, Layer* layer);
-    void createVectorSelection(Qt::KeyboardModifiers keyMod, Layer* layer);
-    void transformSelection(Qt::KeyboardModifiers keyMod);
-    void storeClosestVectorCurve(Layer* layer);
+    void beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
+    void createVectorSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
+    void transformSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod);
+    void storeClosestVectorCurve(const QPointF& pos, Layer* layer);
 
     void setCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
-    void setAreaSelected(VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
+    void setAreaSelected(const QPointF& pos, VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
 
     Layer* currentPaintableLayer();
 
+    QPointF mCurrentPoint;
     qreal mRotatedAngle = 0.0;
     int mRotationIncrement = 0;
     MoveMode mPerspMode;
     QPointF mOffset;
+
+    UndoSaveState* mUndoSaveState = nullptr;
 };
 
 #endif

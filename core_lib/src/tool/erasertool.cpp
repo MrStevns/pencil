@@ -23,9 +23,9 @@ GNU General Public License for more details.
 #include "editor.h"
 #include "blitrect.h"
 #include "scribblearea.h"
-#include "strokemanager.h"
 #include "layermanager.h"
 #include "viewmanager.h"
+#include "undoredomanager.h"
 #include "layervector.h"
 #include "vectorimage.h"
 #include "pointerevent.h"
@@ -42,6 +42,8 @@ ToolType EraserTool::type()
 
 void EraserTool::loadSettings()
 {
+    StrokeTool::loadSettings();
+
     mPropertyEnabled[WIDTH] = true;
     mPropertyEnabled[USEFEATHER] = true;
     mPropertyEnabled[FEATHER] = true;
@@ -149,24 +151,45 @@ QCursor EraserTool::cursor()
 
 void EraserTool::pointerPressEvent(PointerEvent *event)
 {
+    mInterpolator.pointerPressEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     startStroke(event->inputType());
     mLastBrushPoint = getCurrentPoint();
     mMouseDownPoint = getCurrentPoint();
+
+    StrokeTool::pointerPressEvent(event);
 }
 
 void EraserTool::pointerMoveEvent(PointerEvent* event)
 {
+    mInterpolator.pointerMoveEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
-        mCurrentPressure = strokeManager()->getPressure();
+        mCurrentPressure = mInterpolator.getPressure();
         updateStrokes();
-        if (properties.stabilizerLevel != strokeManager()->getStabilizerLevel())
-            strokeManager()->setStabilizerLevel(properties.stabilizerLevel);
+        if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
+        {
+            mInterpolator.setStabilizerLevel(properties.stabilizerLevel);
+        }
     }
+
+    StrokeTool::pointerMoveEvent(event);
 }
 
 void EraserTool::pointerReleaseEvent(PointerEvent *event)
 {
+    mInterpolator.pointerReleaseEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
     if (event->inputType() != mCurrentInputType) return;
 
     mEditor->backup(typeName());
@@ -183,6 +206,8 @@ void EraserTool::pointerReleaseEvent(PointerEvent *event)
 
     removeVectorPaint();
     endStroke();
+
+    StrokeTool::pointerReleaseEvent(event);
 }
 
 // draw a single paint dab at the given location
@@ -210,7 +235,7 @@ void EraserTool::paintAt(QPointF point)
 void EraserTool::drawStroke()
 {
     StrokeTool::drawStroke();
-    QList<QPointF> p = strokeManager()->interpolateStroke();
+    QList<QPointF> p = mInterpolator.interpolateStroke();
 
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -255,7 +280,7 @@ void EraserTool::drawStroke()
         mCurrentWidth = properties.width;
         if (properties.pressure)
         {
-            mCurrentWidth = (mCurrentWidth + (strokeManager()->getPressure() * mCurrentWidth)) * 0.5;
+            mCurrentWidth = (mCurrentWidth + (mInterpolator.getPressure() * mCurrentWidth)) * 0.5;
         }
         qreal brushWidth = mCurrentWidth;
 
