@@ -22,7 +22,7 @@ GNU General Public License for more details.
 #include "editor.h"
 #include "pointerevent.h"
 #include "layermanager.h"
-#include "selectionmanager.h"
+#include "selectioneditor.h"
 #include "playbackmanager.h"
 #include "viewmanager.h"
 #include "layercamera.h"
@@ -171,7 +171,7 @@ void CameraTool::updateMoveMode(const QPointF& pos)
 
     Layer* layer = mEditor->layers()->currentLayer();
     mCamMoveMode = CameraMoveType::NONE;
-    qreal selectionTolerance = mEditor->select()->selectionTolerance();
+    qreal selectionTolerance = 1; /*mEditor->select()->selectionTolerance();*/
 
     Q_ASSERT(layer->type() == Layer::CAMERA);
     LayerCamera* cam = static_cast<LayerCamera*>(layer);

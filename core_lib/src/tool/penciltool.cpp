@@ -24,7 +24,7 @@ GNU General Public License for more details.
 #include "colormanager.h"
 #include "viewmanager.h"
 #include "preferencemanager.h"
-#include "selectionmanager.h"
+#include "selectioneditor.h"
 #include "undoredomanager.h"
 
 #include "editor.h"
@@ -319,10 +319,10 @@ void PencilTool::paintVectorStroke(Layer* layer)
                                  mEditor->color()->frontColorNumber());
     }
 
-    if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
-    {
-        mEditor->deselectAll();
-    }
+    // if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
+    // {
+    //     mEditor->deselectAll();
+    // }
 
     // select last/newest curve
     vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);

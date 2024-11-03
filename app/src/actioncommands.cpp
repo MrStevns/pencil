@@ -34,7 +34,7 @@ GNU General Public License for more details.
 #include "playbackmanager.h"
 #include "colormanager.h"
 #include "preferencemanager.h"
-#include "selectionmanager.h"
+#include "selectioneditor.h"
 #include "util.h"
 #include "app_util.h"
 

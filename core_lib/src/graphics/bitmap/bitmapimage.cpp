@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include "blitrect.h"
 #include "tile.h"
 #include "tiledbuffer.h"
+#include "selectioneditor.h"
 
 BitmapImage::BitmapImage()
 {
@@ -66,8 +67,14 @@ BitmapImage::BitmapImage(const QPoint& topLeft, const QString& path)
     setModified(false);
 }
 
+void BitmapImage::attachSelectionEditor(SelectionEditor* selectionEditor)
+{
+    mSelectionEditor.reset(selectionEditor);
+}
+
 BitmapImage::~BitmapImage()
 {
+    mSelectionEditor.reset();
 }
 
 void BitmapImage::setImage(QImage* img)
@@ -92,6 +99,7 @@ BitmapImage& BitmapImage::operator=(const BitmapImage& a)
     mOpacity = a.mOpacity;
     mImage = a.mImage;
     mTemporaryImage = a.mTemporaryImage;
+    mSelectionEditor = a.mSelectionEditor;
     modification();
     return *this;
 }
@@ -154,6 +162,15 @@ quint64 BitmapImage::memoryUsage()
         return imageSize(mImage);
     }
     return 0;
+}
+
+void BitmapImage::setTemporaryImage(BitmapImage *image)
+{
+    if (mTemporaryImage) {
+        delete mTemporaryImage;
+        mTemporaryImage = nullptr;
+    }
+    mTemporaryImage = image;
 }
 
 void BitmapImage::paintImage(QPainter& painter)

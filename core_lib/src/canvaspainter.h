@@ -96,7 +96,7 @@ private:
     void paintCurrentBitmapFrame(QPainter& painter, const QRect& blitRect, Layer* layer, bool isCurrentLayer);
     void paintCurrentVectorFrame(QPainter& painter, const QRect& blitRect, Layer* layer, bool isCurrentLayer);
 
-    void paintTransformedSelection(QPainter& painter, BitmapImage* bitmapImage, const QRect& selectionRect, const QTransform& selectionTransform);
+    void paintTransformedSelection(QPainter& painter, BitmapImage* bitmapImage);
     void paintTransformedSelection(VectorImage* vectorImage, const QTransform& selectionTransform);
 
     CanvasPainterOptions mOptions;

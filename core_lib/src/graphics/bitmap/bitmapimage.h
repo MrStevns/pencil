@@ -23,7 +23,7 @@ GNU General Public License for more details.
 #include <QHash>
 
 class TiledBuffer;
-
+class SelectionEditor;
 
 class BitmapImage : public KeyFrame
 {
@@ -43,6 +43,8 @@ public:
     bool isLoaded() const override;
     quint64 memoryUsage() override;
 
+    void attachSelectionEditor(SelectionEditor* selectionEditor);
+
     void paintImage(QPainter& painter);
     void paintImage(QPainter &painter, QImage &image, QRect sourceRect, QRect destRect);
 
@@ -59,9 +61,9 @@ public:
     ///
     /// Note(MrStevns): We have no concept of sub layers for a keyframe currently, this could be the start of that.
     /// Consider reworking this into a list of images in the future for more flexible compositing.
-    void setTemporaryImage(QImage& image) { mTemporaryImage = image; }
-    void clearTemporaryImage() { mTemporaryImage = QImage(); }
-    const QImage& temporaryImage() const { return mTemporaryImage; }
+    void setTemporaryImage(BitmapImage* image);
+    void clearTemporaryImage() { delete mTemporaryImage; mTemporaryImage = nullptr; }
+    BitmapImage* temporaryImage() const { return mTemporaryImage; }
 
     void moveTopLeft(QPoint point);
     void moveTopLeft(QPointF point) { moveTopLeft(point.toPoint()); }
@@ -174,6 +176,8 @@ public:
         return isSimilar;
     }
 
+    SelectionEditor* selectionEditor() { return mSelectionEditor.get(); }
+
 protected:
     void updateBounds(QRect rectangle);
     void extend(const QPoint& p);
@@ -191,7 +195,8 @@ private:
     bool mEnableAutoCrop = false;
     qreal mOpacity = 1.0;
 
-    QImage mTemporaryImage;
+    BitmapImage* mTemporaryImage = nullptr;
+    std::shared_ptr<SelectionEditor> mSelectionEditor;
 };
 
 #endif

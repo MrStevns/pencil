@@ -28,7 +28,7 @@ class Layer;
 class LayerVector;
 class LayerBitmap;
 
-class SelectionManager;
+class SelectionEditor;
 
 class SelectTool : public BaseTool
 {

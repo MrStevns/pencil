@@ -25,6 +25,7 @@ GNU General Public License for more details.
 #include "tile.h"
 #include "tiledbuffer.h"
 #include "vectorimage.h"
+#include "selectioneditor.h"
 
 #include "painterutils.h"
 
@@ -217,8 +218,8 @@ void CanvasPainter::paintBitmapOnionSkinFrame(QPainter& painter, const QRect& bl
 
     onionSkinPainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
     
-    if (bitmapImage == mOptions.activeSelectionKeyFrame) {
-        paintTransformedSelection(onionSkinPainter, bitmapImage, mOptions.selectionRect, mOptions.selectionTransform);
+    if (bitmapImage->selectionEditor()->somethingSelected()) {
+        paintTransformedSelection(onionSkinPainter, bitmapImage);
     }
     
     paintOnionSkinFrame(painter, onionSkinPainter, nFrame, colorize, bitmapImage->getOpacity());
@@ -288,9 +289,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
     currentBitmapPainter.drawImage(paintedImage->topLeft(), *paintedImage->image());
 
-    if (paintedImage == mOptions.activeSelectionKeyFrame) {
-        paintTransformedSelection(currentBitmapPainter, paintedImage, mOptions.selectionRect, mOptions.selectionTransform);
-    }
+    paintTransformedSelection(currentBitmapPainter, paintedImage);
 
     if (isCurrentLayer && isDrawing)
     {
@@ -304,19 +303,27 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     painter.drawPixmap(mPointZero, mCurrentLayerPixmap);
 }
 
-void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bitmapImage, const QRect& selectionRect, const QTransform& selectionTransform)
+void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bitmapImage)
 {
-    if (selectionRect.width() == 0 && selectionRect.height() == 0)
-        return;
+    SelectionEditor* selectionEditor = bitmapImage->selectionEditor();
+    if (bitmapImage->temporaryImage()) {
+        selectionEditor = bitmapImage->temporaryImage()->selectionEditor();
+    }
+
+    if (!selectionEditor || !selectionEditor->somethingSelected()) { return; }
 
     painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-    if (!bitmapImage->temporaryImage().isNull()) {
+    if (bitmapImage->temporaryImage()) {
         painter.save();
-        painter.setTransform(selectionTransform*mViewTransform);
-        painter.drawImage(selectionRect, bitmapImage->temporaryImage());
+        painter.setTransform(selectionEditor->selectionTransform()*mViewTransform);
+        painter.drawImage(selectionEditor->mySelectionRect(), *bitmapImage->temporaryImage()->image());
         painter.restore();
 
     } else {
+
+        const QRectF& selectionRect = selectionEditor->mySelectionRect();
+        const QTransform& selectionTransform = selectionEditor->selectionTransform();
+
         painter.save();
         painter.setTransform(mViewTransform);
 

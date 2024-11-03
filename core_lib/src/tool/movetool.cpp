@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include "toolmanager.h"
 #include "strokeinterpolator.h"
 #include "selectionmanager.h"
+#include "selectioneditor.h"
 #include "overlaymanager.h"
 #include "undoredomanager.h"
 #include "clipboardmanager.h"
@@ -107,23 +108,15 @@ bool MoveTool::keyPressEvent(QKeyEvent* keyEvent)
     {
     case Qt::Key_Right:
         selectMan->translate(QPointF(1, 0));
-        selectMan->calculateSelectionTransformation();
-        emit mEditor->frameModified(mEditor->currentFrame());
         return true;
     case Qt::Key_Left:
         selectMan->translate(QPointF(-1, 0));
-        selectMan->calculateSelectionTransformation();
-        emit mEditor->frameModified(mEditor->currentFrame());
         return true;
     case Qt::Key_Up:
         selectMan->translate(QPointF(0, -1));
-        selectMan->calculateSelectionTransformation();
-        emit mEditor->frameModified(mEditor->currentFrame());
         return true;
     case Qt::Key_Down:
         selectMan->translate(QPointF(0, 1));
-        selectMan->calculateSelectionTransformation();
-        emit mEditor->frameModified(mEditor->currentFrame());
         return true;
     case Qt::Key_Return:
         applyTransformation();
@@ -185,16 +178,17 @@ void MoveTool::pointerMoveEvent(PointerEvent* event)
             Q_ASSERT(layerCam);
             mEditor->overlays()->updatePerspective(layerCam->getViewAtFrame(mEditor->currentFrame()).map(event->canvasPos()));
         }
-        if (mEditor->select()->somethingSelected())
-        {
-            transformSelection(event->canvasPos(), event->modifiers());
-        }
+        // if (mEditor->select()->somethingSelected())
+        // {
+        //     transformSelection(event->canvasPos(), event->modifiers());
+        // }
     }
     else
     {
         // the user is moving the mouse without pressing it
         // update cursor to reflect selection corner interaction
         mEditor->select()->setMoveModeForAnchorInRange(event->canvasPos());
+
         if (mEditor->overlays()->anyOverlayEnabled())
         {
             LayerCamera *layerCam = mEditor->layers()->getCameraLayerBelow(mEditor->currentLayerIndex());
@@ -241,11 +235,11 @@ void MoveTool::transformSelection(const QPointF& pos, Qt::KeyboardModifiers keyM
         }
 
         selectMan->maintainAspectRatio(keyMod == Qt::ShiftModifier);
-        selectMan->alignPositionToAxis(keyMod == Qt::ShiftModifier);
+        selectMan->alignToAxis(keyMod == Qt::ShiftModifier);
 
         qreal newAngle = 0;
         if (selectMan->getMoveMode() == MoveMode::ROTATION) {
-            QPointF anchorPoint = selectMan->currentTransformAnchor();
+            QPointF anchorPoint = selectMan->currentTransformAnchorPoint();
             newAngle = selectMan->angleFromPoint(pos, anchorPoint) - mRotatedAngle;
         }
 
@@ -295,7 +289,7 @@ void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod
     mOffset = selectMan->myTranslation();
 
     if(selectMan->getMoveMode() == MoveMode::ROTATION) {
-        mRotatedAngle = selectMan->angleFromPoint(pos, selectMan->currentTransformAnchor()) - selectMan->myRotation();
+        mRotatedAngle = selectMan->angleFromPoint(pos, selectMan->currentTransformAnchorPoint()) - selectMan->myRotation();
     }
 }
 
@@ -311,42 +305,42 @@ void MoveTool::createVectorSelection(const QPointF& pos, Qt::KeyboardModifiers k
     VectorImage* vectorImage = vecLayer->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
     if (vectorImage == nullptr) { return; }
 
-    if (!mEditor->select()->closestCurves().empty()) // the user clicks near a curve
-    {
-        setCurveSelected(vectorImage, keyMod);
-    }
-    else if (vectorImage->getLastAreaNumber(pos) > -1)
-    {
-        setAreaSelected(pos, vectorImage, keyMod);
-    }
+    // if (!mEditor->select()->closestCurves().empty()) // the user clicks near a curve
+    // {
+    //     setCurveSelected(vectorImage, keyMod);
+    // }
+    // else if (vectorImage->getLastAreaNumber(pos) > -1)
+    // {
+    //     setAreaSelected(pos, vectorImage, keyMod);
+    // }
 }
 
 void MoveTool::setCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers keyMod)
 {
-    auto selectMan = mEditor->select();
-    if (!vectorImage->isSelected(selectMan->closestCurves()))
-    {
-        if (keyMod != Qt::ShiftModifier)
-        {
-            applyTransformation();
-        }
-        vectorImage->setSelected(selectMan->closestCurves(), true);
-        selectMan->setSelection(vectorImage, vectorImage->getSelectionRect(), false);
-    }
+    // auto selectMan = mEditor->select();
+    // if (!vectorImage->isSelected(selectMan->closestCurves()))
+    // {
+    //     if (keyMod != Qt::ShiftModifier)
+    //     {
+    //         applyTransformation();
+    //     }
+    //     vectorImage->setSelected(selectMan->closestCurves(), true);
+    //     selectMan->setSelection(vectorImage, vectorImage->getSelectionRect(), false);
+    // }
 }
 
 void MoveTool::setAreaSelected(const QPointF& pos, VectorImage* vectorImage, Qt::KeyboardModifiers keyMod)
 {
-    int areaNumber = vectorImage->getLastAreaNumber(pos);
-    if (!vectorImage->isAreaSelected(areaNumber))
-    {
-        if (keyMod != Qt::ShiftModifier)
-        {
-            applyTransformation();
-        }
-        vectorImage->setAreaSelected(areaNumber, true);
-        mEditor->select()->setSelection(vectorImage, vectorImage->getSelectionRect(), false);
-    }
+    // int areaNumber = vectorImage->getLastAreaNumber(pos);
+    // if (!vectorImage->isAreaSelected(areaNumber))
+    // {
+    //     if (keyMod != Qt::ShiftModifier)
+    //     {
+    //         applyTransformation();
+    //     }
+    //     vectorImage->setAreaSelected(areaNumber, true);
+    //     mEditor->select()->setSelection(vectorImage, vectorImage->getSelectionRect(), false);
+    // }
 }
 
 /**
@@ -355,11 +349,11 @@ void MoveTool::setAreaSelected(const QPointF& pos, VectorImage* vectorImage, Qt:
  */
 void MoveTool::storeClosestVectorCurve(const QPointF& pos, Layer* layer)
 {
-    auto selectMan = mEditor->select();
-    auto layerVector = static_cast<LayerVector*>(layer);
-    VectorImage* pVecImg = layerVector->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-    if (pVecImg == nullptr) { return; }
-    selectMan->setCurves(pVecImg->getCurvesCloseTo(pos, selectMan->selectionTolerance()));
+    // auto selectMan = mEditor->select();
+    // auto layerVector = static_cast<LayerVector*>(layer);
+    // VectorImage* pVecImg = layerVector->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+    // if (pVecImg == nullptr) { return; }
+    // selectMan->setCurves(pVecImg->getCurvesCloseTo(pos, selectMan->selectionTolerance()));
 }
 
 void MoveTool::applyTransformation()
@@ -385,11 +379,16 @@ void MoveTool::setFloatingImage(BitmapImage& bitmapImage)
     Q_ASSERT(layer->type() == Layer::BITMAP);
 
     SelectionManager* selectMan = mEditor->select();
+
     applyTransformation();
 
+    BitmapImage* clipboardClone = bitmapImage.clone();
+
+    selectMan->createEditor(clipboardClone);
+    clipboardClone->selectionEditor()->setSelection(clipboardClone->bounds());
+
     BitmapImage* currentKeyFrame = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(currentFrameNumber);
-    currentKeyFrame->setTemporaryImage(*bitmapImage.image());
-    selectMan->setSelection(currentKeyFrame, bitmapImage.bounds(), true);
+    currentKeyFrame->setTemporaryImage(clipboardClone);
 
     emit mEditor->frameModified(currentFrameNumber);
 }
@@ -401,12 +400,12 @@ void MoveTool::setFloatingImage(VectorImage& vectorImage)
     if (layer == nullptr) { return; }
 
     vectorImage.calculateSelectionRect();
-    SelectionManager* selectMan = mEditor->select();
+    // SelectionManager* selectMan = mEditor->select();
     applyTransformation();
 
     VectorImage* currentKeyFrame = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(currentFrameNumber, 0);
     currentKeyFrame->setTemporaryImage(vectorImage.clone());
-    selectMan->setSelection(currentKeyFrame, vectorImage.getSelectionRect());
+    // selectMan->setSelection(currentKeyFrame, vectorImage.getSelectionRect());
 
     emit mEditor->frameModified(currentFrameNumber);
 }

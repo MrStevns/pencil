@@ -30,11 +30,13 @@ HEADERS +=  \
     src/corelib-pch.h \
     src/graphics/bitmap/bitmapbucket.h \
     src/graphics/bitmap/bitmapimage.h \
+    src/graphics/bitmap/selectionbitmapeditor.h \
     src/graphics/bitmap/tile.h \
     src/graphics/bitmap/tiledbuffer.h \
     src/graphics/vector/bezierarea.h \
     src/graphics/vector/beziercurve.h \
     src/graphics/vector/colorref.h \
+    src/graphics/vector/selectionvectoreditor.h \
     src/graphics/vector/vectorimage.h \
     src/graphics/vector/vectorselection.h \
     src/graphics/vector/vertexref.h \
@@ -48,9 +50,10 @@ HEADERS +=  \
     src/managers/basemanager.h \
     src/managers/overlaymanager.h \
     src/managers/clipboardmanager.h \
-    src/managers/selectionmanager.h \
     src/managers/colormanager.h \
     src/managers/layermanager.h \
+    src/managers/selectioneditor.h \
+    src/managers/selectionmanager.h \
     src/managers/toolmanager.h \
     src/managers/playbackmanager.h \
     src/managers/undoredomanager.h \
@@ -120,11 +123,13 @@ HEADERS +=  \
 SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/canvascursorpainter.cpp \
     src/graphics/bitmap/bitmapbucket.cpp \
+    src/graphics/bitmap/selectionbitmapeditor.cpp \
     src/graphics/bitmap/tile.cpp \
     src/graphics/bitmap/tiledbuffer.cpp \
     src/graphics/vector/bezierarea.cpp \
     src/graphics/vector/beziercurve.cpp \
     src/graphics/vector/colorref.cpp \
+    src/graphics/vector/selectionvectoreditor.cpp \
     src/graphics/vector/vectorimage.cpp \
     src/graphics/vector/vectorselection.cpp \
     src/graphics/vector/vertexref.cpp \
@@ -138,9 +143,10 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/managers/basemanager.cpp \
     src/managers/overlaymanager.cpp \
     src/managers/clipboardmanager.cpp \
-    src/managers/selectionmanager.cpp \
     src/managers/colormanager.cpp \
     src/managers/layermanager.cpp \
+    src/managers/selectioneditor.cpp \
+    src/managers/selectionmanager.cpp \
     src/managers/toolmanager.cpp \
     src/managers/preferencemanager.cpp \
     src/managers/playbackmanager.cpp \

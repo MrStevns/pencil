@@ -28,7 +28,7 @@ GNU General Public License for more details.
 #include "layermanager.h"
 #include "soundmanager.h"
 #include "undoredomanager.h"
-#include "selectionmanager.h"
+#include "selectioneditor.h"
 
 #include "undoredocommand.h"
 #include "legacybackupelement.h"
@@ -263,14 +263,14 @@ void UndoRedoManager::initCommonKeyFrameState(UndoSaveState* undoSaveState) cons
     undoSaveState->currentFrameIndex = editor()->currentFrame();
 
     if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR) {
-        auto selectMan = editor()->select();
-        undoSaveState->selectionState = SelectionSaveState(
-            selectMan->mySelectionRect(),
-            selectMan->myRotation(),
-            selectMan->myScaleX(),
-            selectMan->myScaleY(),
-            selectMan->myTranslation(),
-            selectMan->currentTransformAnchor());
+        // auto selectMan = editor()->select();
+        // undoSaveState->selectionState = SelectionSaveState(
+        //     selectMan->mySelectionRect(),
+        //     selectMan->myRotation(),
+        //     selectMan->myScaleX(),
+        //     selectMan->myScaleY(),
+        //     selectMan->myTranslation(),
+        //     selectMan->currentTransformAnchor());
     }
 
     const int frameIndex = editor()->currentFrame();
@@ -465,13 +465,13 @@ bool UndoRedoManager::legacyBackup(int backupLayer, int backupFrame, const QStri
                 element->layer = backupLayer;
                 element->frame = bitmapImage->pos();
                 element->undoText = undoText;
-                element->somethingSelected = editor()->select()->somethingSelected();
-                element->mySelection = editor()->select()->mySelectionRect();
-                element->rotationAngle = editor()->select()->myRotation();
-                element->scaleX = editor()->select()->myScaleX();
-                element->scaleY = editor()->select()->myScaleY();
-                element->translation = editor()->select()->myTranslation();
-                element->selectionAnchor = editor()->select()->currentTransformAnchor();
+                // element->somethingSelected = editor()->select()->somethingSelected();
+                // element->mySelection = editor()->select()->mySelectionRect();
+                // element->rotationAngle = editor()->select()->myRotation();
+                // element->scaleX = editor()->select()->myScaleX();
+                // element->scaleY = editor()->select()->myScaleY();
+                // element->translation = editor()->select()->myTranslation();
+                // element->selectionAnchor = editor()->select()->currentTransformAnchor();
 
                 mLegacyBackupList.append(element);
                 mLegacyBackupIndex++;
@@ -491,13 +491,13 @@ bool UndoRedoManager::legacyBackup(int backupLayer, int backupFrame, const QStri
                 element->layer = backupLayer;
                 element->frame = vectorImage->pos();
                 element->undoText = undoText;
-                element->somethingSelected = editor()->select()->somethingSelected();
-                element->mySelection = editor()->select()->mySelectionRect();
-                element->rotationAngle = editor()->select()->myRotation();
-                element->scaleX = editor()->select()->myScaleX();
-                element->scaleY = editor()->select()->myScaleY();
-                element->translation = editor()->select()->myTranslation();
-                element->selectionAnchor = editor()->select()->currentTransformAnchor();
+                // element->somethingSelected = editor()->select()->somethingSelected();
+                // element->mySelection = editor()->select()->mySelectionRect();
+                // element->rotationAngle = editor()->select()->myRotation();
+                // element->scaleX = editor()->select()->myScaleX();
+                // element->scaleY = editor()->select()->myScaleY();
+                // element->translation = editor()->select()->myTranslation();
+                // element->selectionAnchor = editor()->select()->currentTransformAnchor();
                 mLegacyBackupList.append(element);
                 mLegacyBackupIndex++;
             }

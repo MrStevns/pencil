@@ -50,7 +50,6 @@ GNU General Public License for more details.
 #include "selectionmanager.h"
 #include "soundmanager.h"
 #include "viewmanager.h"
-#include "selectionmanager.h"
 #include "undoredomanager.h"
 
 #include "actioncommands.h"
@@ -583,7 +582,7 @@ void MainWindow2::currentLayerChanged()
 void MainWindow2::selectionChanged()
 {
     bool somethingSelected = mEditor->select()->somethingSelected();
-    ui->menuSelection->setEnabled(somethingSelected);
+    ui->menuSelection->setEnabled(false);
 }
 
 void MainWindow2::viewFlipped()

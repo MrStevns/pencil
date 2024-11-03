@@ -25,7 +25,7 @@ GNU General Public License for more details.
 #include "layermanager.h"
 #include "viewmanager.h"
 #include "undoredomanager.h"
-#include "selectionmanager.h"
+#include "selectioneditor.h"
 #include "editor.h"
 #include "scribblearea.h"
 #include "blitrect.h"
@@ -281,10 +281,10 @@ void PenTool::paintVectorStroke(Layer* layer)
     if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
     vectorImage->addCurve(curve, mEditor->view()->scaling(), false);
 
-    if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
-    {
-        mEditor->deselectAll();
-    }
+    // if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
+    // {
+    //     mEditor->deselectAll();
+    // }
 
     vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
 

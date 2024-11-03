@@ -23,7 +23,7 @@ GNU General Public License for more details.
 
 #include "keyframe.h"
 #include "layermanager.h"
-#include "selectionmanager.h"
+#include "selectioneditor.h"
 #include "toolmanager.h"
 #include "scribblearea.h"
 
@@ -39,7 +39,7 @@ PegBarAlignmentDialog::PegBarAlignmentDialog(Editor *editor, QWidget *parent) :
     connect(ui->lwLayers, &QListWidget::clicked, this, &PegBarAlignmentDialog::updatePegRegDialog);
 
     connect(mEditor->layers(), &LayerManager::layerCountChanged, this, &PegBarAlignmentDialog::updatePegRegLayers);
-    connect(mEditor->select(), &SelectionManager::selectionChanged, this, &PegBarAlignmentDialog::updatePegRegDialog);
+    // connect(mEditor->select(), &SelectionManager::selectionChanged, this, &PegBarAlignmentDialog::updatePegRegDialog);
     connect(mEditor, &Editor::scrubbed, this, &PegBarAlignmentDialog::updatePegRegDialog);
     connect(mEditor, &Editor::framesModified, this, &PegBarAlignmentDialog::updatePegRegDialog);
     connect(mEditor->layers(), &LayerManager::currentLayerChanged, this, &PegBarAlignmentDialog::updatePegRegDialog);
@@ -124,29 +124,29 @@ void PegBarAlignmentDialog::updatePegRegLayers()
 
 void PegBarAlignmentDialog::updatePegRegDialog()
 {
-    // is something selected in scribblearea?
-    setAreaSelected(mEditor->select()->somethingSelected());
+    // // is something selected in scribblearea?
+    // setAreaSelected(mEditor->select()->somethingSelected());
 
-    const Layer* currentLayer = mEditor->layers()->currentLayer();
-    // is the reference key valid?
-    KeyFrame* key = currentLayer->getLastKeyFrameAtPosition(mEditor->currentFrame());
+    // const Layer* currentLayer = mEditor->layers()->currentLayer();
+    // // is the reference key valid?
+    // KeyFrame* key = currentLayer->getLastKeyFrameAtPosition(mEditor->currentFrame());
 
-    if (key == nullptr) {
-        updateRefKeyLabel("-");
-        setReferenceSelected(false);
-        return;
-    }
+    // if (key == nullptr) {
+    //     updateRefKeyLabel("-");
+    //     setReferenceSelected(false);
+    //     return;
+    // }
 
-    bool isReferenceSelected = (currentLayer->type() == Layer::BITMAP &&
-                                key->pos());
-    setReferenceSelected(isReferenceSelected);
+    // bool isReferenceSelected = (currentLayer->type() == Layer::BITMAP &&
+    //                             key->pos());
+    // setReferenceSelected(isReferenceSelected);
 
-    // has minimum one layer been selected?
-    const QStringList bitmaplayers = getLayerList();
+    // // has minimum one layer been selected?
+    // const QStringList bitmaplayers = getLayerList();
 
-    setLayerSelected(!bitmaplayers.isEmpty());
-    updateRefKeyLabel(QString::number(key->pos()));
-    updateAlignButton();
+    // setLayerSelected(!bitmaplayers.isEmpty());
+    // updateRefKeyLabel(QString::number(key->pos()));
+    // updateAlignButton();
 }
 
 void PegBarAlignmentDialog::alignPegs()
@@ -161,16 +161,16 @@ void PegBarAlignmentDialog::alignPegs()
     }
 
 
-    Status result = PegBarAligner(mEditor, mEditor->select()->mySelectionRect().toAlignedRect()).align(bitmaplayers);
-    if (!result.ok())
-    {
-        QMessageBox::information(this, "Pencil2D",
-                                 result.description(),
-                                 QMessageBox::Ok);
-        return;
-    }
+    // Status result = PegBarAligner(mEditor, mEditor->select()->mySelectionRect().toAlignedRect()).align(bitmaplayers);
+    // if (!result.ok())
+    // {
+    //     QMessageBox::information(this, "Pencil2D",
+    //                              result.description(),
+    //                              QMessageBox::Ok);
+    //     return;
+    // }
 
-    mEditor->deselectAll();
+    // mEditor->deselectAll();
     done(QDialog::Accepted);
 }
 

@@ -196,19 +196,19 @@ void Editor::copyAndCut()
 
     Layer* currentLayer = layers()->currentLayer();
 
-    if (currentLayer->hasAnySelectedFrames() && !select()->somethingSelected()) {
-        for (int pos : currentLayer->selectedKeyFramesPositions()) {
-            currentLayer->removeKeyFrame(pos);
-        }
-        emit layers()->currentLayerChanged(currentLayerIndex());
-        emit updateTimeLine();
-        return;
-    }
+    // if (currentLayer->hasAnySelectedFrames() && !select()->somethingSelected()) {
+    //     for (int pos : currentLayer->selectedKeyFramesPositions()) {
+    //         currentLayer->removeKeyFrame(pos);
+    //     }
+    //     emit layers()->currentLayerChanged(currentLayerIndex());
+    //     emit updateTimeLine();
+    //     return;
+    // }
 
-    if (currentLayer->type() == Layer::BITMAP || currentLayer->type() == Layer::VECTOR) {
-        select()->deleteSelection();
-        deselectAll();
-    }
+    // if (currentLayer->type() == Layer::BITMAP || currentLayer->type() == Layer::VECTOR) {
+    //     select()->deleteSelection();
+    //     deselectAll();
+    // }
 }
 
 void Editor::pasteFromPreviousFrame()
@@ -223,16 +223,16 @@ void Editor::pasteFromPreviousFrame()
     if (currentLayer->type() == Layer::BITMAP)
     {
         backup(tr("Paste from Previous Keyframe"));
-        BitmapImage* bitmapImage = static_cast<BitmapImage*>(currentLayer->getKeyFrameAt(prevFrame));
-        if (select()->somethingSelected())
-        {
-            BitmapImage copy = bitmapImage->copy(select()->mySelectionRect().toRect());
-            pasteToCanvas(&copy, mFrame);
-        }
-        else
-        {
-            pasteToCanvas(bitmapImage, mFrame);
-        }
+        // BitmapImage* bitmapImage = static_cast<BitmapImage*>(currentLayer->getKeyFrameAt(prevFrame));
+        // if (select()->somethingSelected())
+        // {
+        //     BitmapImage copy = bitmapImage->copy(select()->mySelectionRect().toRect());
+        //     pasteToCanvas(&copy, mFrame);
+        // }
+        // else
+        // {
+        //     pasteToCanvas(bitmapImage, mFrame);
+        // }
     }
     else if (currentLayer->type() == Layer::VECTOR)
     {
@@ -600,11 +600,11 @@ Status Editor::importBitmapImage(const QString& filePath)
     tools()->setCurrentTool(MOVE);
     auto moveTool = static_cast<MoveTool*>(tools()->getTool(MOVE));
 
-    KeyFrame* currentKeyFrame = layers()->currentLayer()->getLastKeyFrameAtPosition(mFrame);
-    if (currentKeyFrame) {
-        select()->setSelection(currentKeyFrame, QRect(pos, img.size()), true);
-        moveTool->setFloatingImage(importedBitmapImage);
-    }
+    // KeyFrame* currentKeyFrame = layers()->currentLayer()->getLastKeyFrameAtPosition(mFrame);
+    // if (currentKeyFrame) {
+    //     select()->setSelection(currentKeyFrame, QRect(pos, img.size()), true);
+    //     moveTool->setFloatingImage(importedBitmapImage);
+    // }
 
     return status;
 }
@@ -756,7 +756,7 @@ void Editor::selectAll() const
         if (bitmapImage == nullptr) { return; }
 
         rect = bitmapImage->bounds();
-        select()->setSelection(bitmapImage, rect);
+        // select()->setSelection(bitmapImage, rect);
     }
     else if (layer->type() == Layer::VECTOR)
     {
@@ -766,14 +766,13 @@ void Editor::selectAll() const
             vectorImage->selectAll();
             rect = vectorImage->getSelectionRect();
         }
-        select()->setSelection(vectorImage, rect, false);
+        // select()->setSelection(vectorImage, rect, false);
     }
 }
 
 void Editor::deselectAll() const
 {
-    select()->commitChanges();
-    select()->resetSelectionProperties();
+    select()->deselect();
 
     Layer* layer = layers()->currentLayer();
     if (layer == nullptr) { return; }

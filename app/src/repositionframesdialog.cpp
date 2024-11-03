@@ -5,7 +5,7 @@
 #include <QListWidgetItem>
 #include <QMessageBox>
 
-#include "selectionmanager.h"
+#include "selectioneditor.h"
 #include "selectionpainter.h"
 #include "viewmanager.h"
 #include "toolmanager.h"
@@ -53,21 +53,21 @@ void RepositionFramesDialog::initUI()
     connect(ui->rbSameKeyframes, &QRadioButton::clicked, this, &RepositionFramesDialog::updateLayersBox);
     connect(ui->btnReposition, &QPushButton::clicked, this, &RepositionFramesDialog::repositionFrames);
     connect(ui->btnCancel, &QPushButton::clicked, this, &RepositionFramesDialog::closeClicked);
-    connect(mEditor->select(), &SelectionManager::selectionChanged, this, &RepositionFramesDialog::updateDialogText);
-    connect(mEditor->select(), &SelectionManager::selectionReset, this, &RepositionFramesDialog::closeClicked);
+    // connect(mEditor->select(), &SelectionManager::selectionChanged, this, &RepositionFramesDialog::updateDialogText);
+    // connect(mEditor->select(), &SelectionManager::selectionReset, this, &RepositionFramesDialog::closeClicked);
     mEndPoint = mStartPoint = QPoint(0,0);
-    mOriginalPolygonF = mEditor->select()->mySelectionRect();
+    // mOriginalPolygonF = mEditor->select()->mySelectionRect();
     updateDialogSelectedFrames();
     updateDialogText();
 }
 
 void RepositionFramesDialog::updateDialogText()
 {
-    if (mOriginalPolygonF.boundingRect().isEmpty())
-    {
-        mOriginalPolygonF = mEditor->select()->mySelectionRect();
-    }
-    mCurrentPolygonF = mEditor->select()->selectionTransform().map(mEditor->select()->mySelectionRect());
+    // if (mOriginalPolygonF.boundingRect().isEmpty())
+    // {
+    //     mOriginalPolygonF = mEditor->select()->mySelectionRect();
+    // }
+    // mCurrentPolygonF = mEditor->select()->selectionTransform().map(mEditor->select()->mySelectionRect());
     QPoint point = getRepositionPoint();
     ui->labRepositioned->setText(tr("Repositioned: ( %1, %2 )").arg(point.x()).arg(point.y()));
 }
@@ -246,10 +246,10 @@ QPoint RepositionFramesDialog::getRepositionPoint()
 
 void RepositionFramesDialog::prepareRepositionSelectedImages(int repositionFrame)
 {
-    auto select = mEditor->select();
+    // auto select = mEditor->select();
     auto layers = mEditor->layers();
 
-    if (select->somethingSelected()) { return; }
+    // if (select->somethingSelected()) { return; }
 
     if (layers->currentLayer()->type() == Layer::BITMAP)
     {
@@ -257,7 +257,7 @@ void RepositionFramesDialog::prepareRepositionSelectedImages(int repositionFrame
         LayerBitmap* layer = static_cast<LayerBitmap*>(layers->currentLayer());
         QRect reposRect = layer->getFrameBounds(repositionFrame);
         KeyFrame* keyframe = layer->getLastBitmapImageAtFrame(repositionFrame);
-        select->setSelection(keyframe, reposRect);
+        // select->setSelection(keyframe, reposRect);
     }
 }
 

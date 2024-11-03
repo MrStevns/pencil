@@ -1,31 +1,12 @@
-/*
-
-Pencil2D - Traditional Animation Software
-Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
-Copyright (C) 2012-2020 Matthew Chiawen Chang
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; version 2 of the License.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-*/
 #include "selectionmanager.h"
 
-#include "editor.h"
-#include "vectorimage.h"
+#include "object.h"
+#include "selectionbitmapeditor.h"
+#include "selectionvectoreditor.h"
 #include "bitmapimage.h"
-#include "keyframe.h"
-#include "layer.h"
 
-#include "mathutils.h"
-
-#include <QVector2D>
-
+#include "layerbitmap.h"
+#include "editor.h"
 
 SelectionManager::SelectionManager(Editor* editor) : BaseManager(editor, __FUNCTION__)
 {
@@ -40,9 +21,29 @@ bool SelectionManager::init()
     return true;
 }
 
-Status SelectionManager::load(Object*)
+Status SelectionManager::load(Object* obj)
 {
-    resetSelectionProperties();
+    int count = obj->getLayerCount();
+    for (int i = 0; i < count; ++i)
+    {
+        Layer* layer = obj->getLayer(i);
+        if (!layer->isPaintable())
+        {
+            continue;
+        }
+
+        if (layer->type() == Layer::BITMAP) {
+            layer->foreachKeyFrame([this](KeyFrame* key)
+            {
+                createEditor(static_cast<BitmapImage*>(key));
+            });
+        } else {
+            layer->foreachKeyFrame([this](KeyFrame* key)
+            {
+                // TODO: implement for vector
+            });
+        }
+    }
     return Status::OK;
 }
 
@@ -51,421 +52,237 @@ Status SelectionManager::save(Object*)
     return Status::OK;
 }
 
-void SelectionManager::workingLayerChanged(Layer* workingLayer)
+void SelectionManager::workingLayerChanged(Layer* layer)
 {
-    mWorkingLayer = workingLayer;
+    mWorkingLayer = layer;
 }
 
-bool SelectionManager::selectionBeganOnCurrentFrame() const
+void SelectionManager::createEditor(BitmapImage* bitmapImage)
 {
-    if (!mWorkingLayer) {
-        return false;
+    SelectionBitmapEditor* selectionEditor = new SelectionBitmapEditor();
+    bitmapImage->attachSelectionEditor(selectionEditor);
+
+    connect(selectionEditor, &SelectionBitmapEditor::selectionChanged, this, &SelectionManager::selectionChanged);
+    connect(selectionEditor, &SelectionBitmapEditor::selectionReset, this, &SelectionManager::selectionReset);
+}
+
+KeyFrame* SelectionManager::getCurrentKeyFrame()
+{
+    if (!editor()) { return nullptr; }
+
+    if (mWorkingLayer->type() == Layer::BITMAP) {
+        return static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame()));
+    } else if (mWorkingLayer->type() == Layer::VECTOR) {
+        // return static_cast<VectorImage*>(mWorkingLayer->getLastKeyFrameAtPosition(keyPos))->selectionEditor();
+        // TODO:
+        return nullptr;
     }
 
-    const KeyFrame* currentFrame = mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame());
-    return mActiveKeyFrame != nullptr && currentFrame == mActiveKeyFrame;
+    return nullptr;
+}
+
+SelectionEditor* SelectionManager::getSelectionEditor(KeyFrame* keyframe)
+{
+    if (!editor()) { return nullptr; }
+
+    if (mWorkingLayer->type() == Layer::BITMAP) {
+        BitmapImage* bitmapImage = static_cast<BitmapImage*>(keyframe);
+        if (keyframe == nullptr) {
+            bitmapImage = static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame()));
+        }
+
+        if (bitmapImage->temporaryImage()) {
+            return bitmapImage->temporaryImage()->selectionEditor();
+        } else {
+            return bitmapImage->selectionEditor();
+        }
+    } else if (mWorkingLayer->type() == Layer::VECTOR) {
+        // return static_cast<VectorImage*>(mWorkingLayer->getLastKeyFrameAtPosition(keyPos))->selectionEditor();
+        // TODO:
+        return nullptr;
+    }
+    return nullptr;
+}
+
+void SelectionManager::setSelection(const QRectF& rect)
+{
+    if (!getSelectionEditor()) { return; }
+
+    getSelectionEditor()->setSelection(rect);
+}
+
+void SelectionManager::deselect()
+{
+    if (!getSelectionEditor()) { return; }
+
+    getSelectionEditor()->deselect();
+}
+
+QRectF SelectionManager::mySelectionRect()
+{
+    if (!getSelectionEditor()) { return QRectF(); }
+
+    return getSelectionEditor()->mySelectionRect();
+}
+
+QTransform SelectionManager::selectionTransform()
+{
+    if (!getSelectionEditor()) { return QTransform(); }
+
+    return getSelectionEditor()->selectionTransform();
+}
+
+bool SelectionManager::somethingSelected()
+{
+    if (!getSelectionEditor()) { return false; }
+
+    return getSelectionEditor()->somethingSelected();
+}
+
+bool SelectionManager::isOutsideSelectionArea(const QPointF& point)
+{
+    if (!getSelectionEditor()) { return false; }
+
+    return getSelectionEditor()->isOutsideSelectionArea(point);
 }
 
 void SelectionManager::commitChanges()
 {
-    if (somethingSelected())
-    {
-        const QTransform& selectionTransform = mSelectionTransform;
-        const QRectF& selectionRect = mySelectionRect();
-        if (selectionRect.isEmpty()) { return; }
-        
-        if (!mActiveKeyFrame) { return; }
-
-        BitmapImage* currentBitmapImage = dynamic_cast<BitmapImage*>(mActiveKeyFrame);
-        VectorImage* currentVectorImage = dynamic_cast<VectorImage*>(mActiveKeyFrame);
-        if (currentBitmapImage)
-        {
-            const QRect& alignedSelectionRect = selectionRect.toAlignedRect();
-            if (currentBitmapImage == nullptr) { return; }
-
-            const QImage& floatingImage = currentBitmapImage->temporaryImage();
-            if (!floatingImage.isNull()) {
-                const QRect& transformedSelectionRect = selectionTransform.mapRect(alignedSelectionRect);
-                const QImage& transformedFloatingImage = floatingImage.transformed(selectionTransform, Qt::SmoothTransformation);
-
-                auto floatingBitmapImage = BitmapImage(transformedSelectionRect.topLeft(), transformedFloatingImage);
-                currentBitmapImage->paste(&floatingBitmapImage, QPainter::CompositionMode_SourceOver);
-                currentBitmapImage->clearTemporaryImage();
-            } else {
-                BitmapImage transformedImage = currentBitmapImage->transformed(alignedSelectionRect, selectionTransform, true);
-                currentBitmapImage->clear(selectionRect);
-                currentBitmapImage->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
-            }
-            // When the selection has been applied, a new rect is applied based on the bounding box.
-            // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
-            adjustCurrentSelection(mapToSelection(QPolygonF(mySelectionRect())).boundingRect(), true);
-        }
-        else if (currentVectorImage)
-        {
-            if (currentVectorImage->temporaryImage()) {
-                currentVectorImage->paste(*currentVectorImage->temporaryImage());
-                currentVectorImage->resetTemporaryImage();
-            }
-            currentVectorImage->applySelectionTransformation();
-            currentVectorImage->deselectAll();
-        }
+    if (!getSelectionEditor()) { return; }
+    // We should probably run through all keyframes here, so we can commit all selection changes.
+    // Technically there's currently only going to be one keyframe being selected
+    // when commiting
+    KeyFrame* keyframe = getCurrentKeyFrame();
+    if (keyframe) {
+        getSelectionEditor()->commitChanges(keyframe);
         editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
     }
 }
 
-
 void SelectionManager::discardChanges()
 {
-    KeyFrame* activeKeyFrame = mActiveKeyFrame;
-    if (activeKeyFrame == nullptr) { return; }
+    if (!getSelectionEditor()) { return; }
 
-    BitmapImage* activeBitmapImage = dynamic_cast<BitmapImage*>(activeKeyFrame);
-    VectorImage* activeVectorImage = dynamic_cast<VectorImage*>(activeKeyFrame);
-    if (activeBitmapImage) {
-
-        if (!activeBitmapImage->temporaryImage().isNull()) {
-            activeBitmapImage->clearTemporaryImage();
-        }
-    } else if (activeVectorImage) {
-        activeVectorImage->resetSelectionTransform();
-
-        if (activeVectorImage->temporaryImage()) {
-            activeVectorImage->resetTemporaryImage();
-        }
+    KeyFrame* keyframe = getCurrentKeyFrame();
+    if (keyframe) {
+        getSelectionEditor()->discardChanges(keyframe);
+        editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
     }
-
-    mActiveKeyFrame = nullptr;
-    resetSelectionProperties();
-    editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
 }
 
 void SelectionManager::deleteSelection()
 {
-    if (somethingSelected())
-    {
-        if (mWorkingLayer == nullptr) { return; }
+    if (!getSelectionEditor()) { return; }
 
-        int currentFrame = editor()->currentFrame();
-        editor()->backup(tr("Delete Selection", "Undo Step: clear the selection area."));
-        if (mWorkingLayer->type() == Layer::VECTOR)
-        {
-            clearCurves();
-            VectorImage* vectorImage = static_cast<VectorImage*>(mWorkingLayer->getLastKeyFrameAtPosition(currentFrame));
-            Q_CHECK_PTR(vectorImage);
-            vectorImage->deleteSelection();
-        }
-        else if (mWorkingLayer->type() == Layer::BITMAP)
-        {
-            BitmapImage* bitmapImage = static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(currentFrame));
-            Q_CHECK_PTR(bitmapImage);
-            bitmapImage->clear(mOriginalRect);
-        }
-        editor()->setModified(editor()->currentLayerIndex(), currentFrame);
-    }
+    getSelectionEditor()->deleteSelection();
+    editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
 }
 
-void SelectionManager::resetSelectionTransformProperties()
+void SelectionManager::translate(const QPointF& point)
 {
-    mRotatedAngle = 0;
-    mTranslation = QPointF(0, 0);
-    mScaleX = 1;
-    mScaleY = 1;
-    mAnchorPoint = QPoint();
-    mSelectionTransform.reset();
+    if (!getSelectionEditor()) { return; }
+
+    getSelectionEditor()->translate(point);
+    getSelectionEditor()->calculateSelectionTransformation();
+
+    emit editor()->frameModified(editor()->currentFrame());
 }
 
-void SelectionManager::resetSelectionTransform()
+void SelectionManager::maintainAspectRatio(bool maintainAspectRatio)
 {
-    mSelectionTransform.reset();
+    if (!getSelectionEditor()) { return; }
+
+    getSelectionEditor()->maintainAspectRatio(maintainAspectRatio);
 }
 
-bool SelectionManager::isOutsideSelectionArea(const QPointF& point) const
+void SelectionManager::alignToAxis(bool alignToAxis)
 {
-    return (!mSelectionTransform.map(mSelectionPolygon).containsPoint(point, Qt::WindingFill)) && mMoveMode == MoveMode::NONE;
+    if (!getSelectionEditor()) { return; }
+
+    getSelectionEditor()->alignPositionToAxis(alignToAxis);
 }
 
-qreal SelectionManager::selectionTolerance() const
+QPointF SelectionManager::currentTransformAnchorPoint()
 {
-    return qAbs(mSelectionTolerance * editor()->viewScaleInversed());
+    if (!getSelectionEditor()) { return QPointF(); }
+
+    return getSelectionEditor()->currentTransformAnchor();
 }
 
-QPointF SelectionManager::getSelectionAnchorPoint() const
+qreal SelectionManager::angleFromPoint(const QPointF& pos, const QPointF& anchorPoint)
 {
-    QPointF anchorPoint;
-    if (mSelectionPolygon.count() < 3) { return anchorPoint; }
+    if (!getSelectionEditor()) { return 0; }
 
-    if (mMoveMode == MoveMode::BOTTOMRIGHT)
-    {
-        anchorPoint = mSelectionPolygon[0];
-    }
-    else if (mMoveMode == MoveMode::BOTTOMLEFT)
-    {
-        anchorPoint = mSelectionPolygon[1];
-    }
-    else if (mMoveMode == MoveMode::TOPLEFT)
-    {
-        anchorPoint = mSelectionPolygon[2];
-    }
-    else if (mMoveMode == MoveMode::TOPRIGHT)
-    {
-        anchorPoint = mSelectionPolygon[3];
-    } else {
-        anchorPoint = QLineF(mSelectionPolygon[0], mSelectionPolygon[2]).pointAt(.5);
-    }
-    return anchorPoint;
+    return getSelectionEditor()->angleFromPoint(pos, anchorPoint);
 }
 
+void SelectionManager::adjustCurrentSelection(const QPointF& pos, const QPointF& offsetPoint, qreal angle, qreal rotationIncrement)
+{
+    if (!getSelectionEditor()) { return; }
+
+    getSelectionEditor()->adjustCurrentSelection(pos, offsetPoint, angle, rotationIncrement);
+}
+
+QRectF SelectionManager::mappedSelectionRect()
+{
+    SelectionEditor* selectionEditor = getSelectionEditor();
+    if (!selectionEditor) { return QRectF(); }
+
+    return selectionEditor->mapToSelection(selectionEditor->mySelectionRect()).boundingRect();
+}
 
 void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)
 {
-    if (mSelectionPolygon.count() < 4)
-    {
-        mMoveMode = MoveMode::NONE;
-        return;
-    }
+    if (!getSelectionEditor()) { return; }
 
-    if (!selectionBeganOnCurrentFrame()) { return; }
-
-    QPolygonF projectedPolygon = mapToSelection(mSelectionPolygon);
-
-    const double calculatedSelectionTol = selectionTolerance();
-
-    if (QLineF(point, projectedPolygon[0]).length() < calculatedSelectionTol)
-    {
-        mMoveMode = MoveMode::TOPLEFT;
-    }
-    else if (QLineF(point, projectedPolygon[1]).length() < calculatedSelectionTol)
-    {
-        mMoveMode = MoveMode::TOPRIGHT;
-    }
-    else if (QLineF(point, projectedPolygon[2]).length() < calculatedSelectionTol)
-    {
-        mMoveMode = MoveMode::BOTTOMRIGHT;
-    }
-    else if (QLineF(point, projectedPolygon[3]).length() < calculatedSelectionTol)
-    {
-        mMoveMode = MoveMode::BOTTOMLEFT;
-    }
-    else if (projectedPolygon.containsPoint(point, Qt::WindingFill))
-    {
-        mMoveMode = MoveMode::MIDDLE;
-    }
-    else
-    {
-        mMoveMode = MoveMode::NONE;
-    }
+    getSelectionEditor()->setMoveModeForAnchorInRange(point);
 }
 
-void SelectionManager::adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
+MoveMode SelectionManager::getMoveMode()
 {
-    switch (mMoveMode)
-    {
-    case MoveMode::MIDDLE: {
-        QPointF newOffset = currentPoint - mDragOrigin;
+    if (!getSelectionEditor()) { return MoveMode::NONE; }
 
-        if (mLockAxis) {
-            mTranslation = offset + alignPositionToAxis(newOffset);
-        } else {
-            mTranslation = offset + newOffset;
-        }
-        break;
-    }
-    case MoveMode::TOPLEFT:
-    case MoveMode::TOPRIGHT:
-    case MoveMode::BOTTOMRIGHT:
-    case MoveMode::BOTTOMLEFT: {
-
-        QPolygonF projectedPolygon = mapToSelection(mSelectionPolygon);
-        QVector2D currentPVec = QVector2D(currentPoint);
-
-        qreal originWidth = mSelectionPolygon[1].x() - mSelectionPolygon[0].x();
-        qreal originHeight = mSelectionPolygon[3].y() - mSelectionPolygon[0].y();
-
-        QVector2D staticXAnchor;
-        QVector2D staticYAnchor;
-        QVector2D movingAnchor;
-        if (mMoveMode == MoveMode::TOPLEFT) {
-            movingAnchor = QVector2D(projectedPolygon[0]);
-            staticXAnchor = QVector2D(projectedPolygon[1]);
-            staticYAnchor = QVector2D(projectedPolygon[3]);
-        } else if (mMoveMode == MoveMode::TOPRIGHT) {
-            movingAnchor = QVector2D(projectedPolygon[1]);
-            staticXAnchor = QVector2D(projectedPolygon[0]);
-            staticYAnchor = QVector2D(projectedPolygon[2]);
-        } else if (mMoveMode == MoveMode::BOTTOMRIGHT) {
-            movingAnchor = QVector2D(projectedPolygon[2]);
-            staticXAnchor = QVector2D(projectedPolygon[3]);
-            staticYAnchor = QVector2D(projectedPolygon[1]);
-        } else {
-            movingAnchor = QVector2D(projectedPolygon[3]);
-            staticXAnchor = QVector2D(projectedPolygon[2]);
-            staticYAnchor = QVector2D(projectedPolygon[0]);
-        }
-
-        QVector2D directionVecX = staticXAnchor - currentPVec;
-        QVector2D directionVecY = staticYAnchor - currentPVec;
-
-        // Calculates the signed distance
-        qreal distanceX = QVector2D::dotProduct(directionVecX, (staticXAnchor - movingAnchor).normalized());
-        qreal distanceY = QVector2D::dotProduct(directionVecY, (staticYAnchor - movingAnchor).normalized());
-
-        qreal scaleX = distanceX / originWidth;
-        qreal scaleY = distanceY / originHeight;
-        if (mAspectRatioFixed) {
-            scaleY = scaleX;
-        }
-
-        scale(scaleX, scaleY);
-
-        break;
-    }
-    case MoveMode::ROTATION: {
-        rotate(rotationOffset, rotationIncrement);
-        break;
-    }
-    default:
-        break;
-    }
-    calculateSelectionTransformation();
+    return getSelectionEditor()->getMoveMode();
 }
 
-void SelectionManager::translate(QPointF newPos)
+void SelectionManager::setMoveMode(MoveMode mode)
 {
-    mTranslation += newPos;
-}
+    if (!getSelectionEditor()) { return; }
 
-void SelectionManager::rotate(qreal angle, qreal lockedAngle)
-{
-    if (lockedAngle > 0) {
-        mRotatedAngle = constrainRotationToAngle(angle, lockedAngle);
-    } else {
-        mRotatedAngle = angle;
-    }
-}
-
-void SelectionManager::scale(qreal sX, qreal sY)
-{
-    // Enforce negative scaling when
-    // deliberately trying to transform in negative space
-    if (mScaleX < 0) {
-        sX = -sX;
-    }
-    if (qFuzzyIsNull(sX)) {
-        // Scale must not become 0
-        sX = 0.0001;
-    }
-
-    // Enforce negative scaling when
-    // deliberately trying to transform in negative space
-    if (mScaleY < 0) {
-        sY = -sY;
-    }
-    if (qFuzzyIsNull(sY)) {
-        // Scale must not become 0
-        sY = 0.0001;
-    }
-
-    mScaleX = sX;
-    mScaleY = sY;
-}
-
-int SelectionManager::constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const
-{
-    return qRound(rotatedAngle / rotationIncrement) * rotationIncrement;
-}
-
-qreal SelectionManager::angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const
-{
-    return qRadiansToDegrees(MathUtils::getDifferenceAngle(mSelectionTransform.map(anchorPoint), point));
-}
-
-void SelectionManager::setSelection(KeyFrame* keyframe, QRectF rect, bool roundPixels)
-{
-    resetSelectionTransformProperties();
-    if (roundPixels)
-    {
-        rect = rect.toAlignedRect();
-    }
-    mActiveKeyFrame = keyframe;
-    mSelectionPolygon = rect;
-    mOriginalRect = rect;
-
-    emit selectionChanged();
-}
-
-void SelectionManager::adjustCurrentSelection(QRectF rect, bool roundPixels)
-{
-    resetSelectionTransformProperties();
-    if (roundPixels)
-    {
-        rect = rect.toAlignedRect();
-    }
-    mSelectionPolygon = rect;
-    mOriginalRect = rect;
-    emit selectionChanged();
+    getSelectionEditor()->setMoveMode(mode);
 }
 
 void SelectionManager::setTransformAnchor(const QPointF& point)
 {
-    QPointF newPos = mapToSelection(point);
-    QPointF oldPos = mapToSelection(mAnchorPoint);
+    if (!getSelectionEditor()) { return; }
 
-    // Adjust translation based on anchor point to avoid moving the selection
-    mTranslation = mTranslation - oldPos + newPos;
-    mAnchorPoint = point;
+    getSelectionEditor()->setTransformAnchor(point);
 }
 
-void SelectionManager::calculateSelectionTransformation()
+void SelectionManager::setDragOrigin(const QPointF& point)
 {
-    QTransform t;
-    t.translate(-mAnchorPoint.x(), -mAnchorPoint.y());
-    QTransform t2;
-    t2.translate(mTranslation.x(), mTranslation.y());
+    if (!getSelectionEditor()) { return; }
 
-    QTransform r;
-    r.rotate(mRotatedAngle);
-    QTransform s;
-    s.scale(mScaleX, mScaleY);
-    mSelectionTransform = t * s * r * t2;
-    emit selectionChanged();
+    getSelectionEditor()->setDragOrigin(point);
 }
 
-QPointF SelectionManager::alignPositionToAxis(QPointF currentPoint) const
+QPointF SelectionManager::getSelectionAnchorPoint()
 {
-    if (qAbs(currentPoint.y()) > qAbs(currentPoint.x())) {
-        // Align to y axis
-        return QPointF(0, currentPoint.y());
-    }
+    if (!getSelectionEditor()) { return QPointF(); }
 
-    // Align to x axis
-    return QPointF(currentPoint.x(), 0);
+    return getSelectionEditor()->getSelectionAnchorPoint();
 }
 
-/**
- * @brief ScribbleArea::flipSelection
- * flip selection along the X or Y axis
-*/
-void SelectionManager::flipSelection(bool flipVertical)
+QPointF SelectionManager::myTranslation()
 {
-    if (flipVertical)
-    {
-        mScaleY = -mScaleY;
-    }
-    else
-    {
-        mScaleX = -mScaleX;
-    }
-    setTransformAnchor(mOriginalRect.center());
-    calculateSelectionTransformation();
-    emit selectionChanged();
+    if (!getSelectionEditor()) { return QPointF(); }
+
+    return getSelectionEditor()->myTranslation();
 }
 
-void SelectionManager::resetSelectionProperties()
+qreal SelectionManager::myRotation()
 {
-    resetSelectionTransformProperties();
-    mSelectionPolygon = QPolygonF();
-    mOriginalRect = QRectF();
-    mActiveKeyFrame = nullptr;
-    emit selectionChanged();
-}
+    if (!getSelectionEditor()) { return -1; }
 
+    return getSelectionEditor()->myRotation();
+}

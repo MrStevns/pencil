@@ -23,8 +23,8 @@ GNU General Public License for more details.
 #include <memory>
 #include <QString>
 #include "pencilerror.h"
-class KeyFrameEventListener;
 
+class KeyFrameEventListener;
 
 class KeyFrame
 {

@@ -889,77 +889,77 @@ void ScribbleArea::paintEvent(QPaintEvent* event)
     if (!editor()->playback()->isPlaying())    // we don't need to display the following when the animation is playing
     {
         Layer* layer = mEditor->layers()->currentLayer();
-        if (layer->type() == Layer::VECTOR)
-        {
-            VectorImage* vectorImage = currentVectorImage(layer);
-            if (vectorImage != nullptr)
-            {
-                switch (currentTool()->type())
-                {
-                case SMUDGE:
-                case HAND:
-                {
-                    auto selectMan = mEditor->select();
-                    painter.save();
-                    painter.setWorldMatrixEnabled(false);
-                    painter.setRenderHint(QPainter::Antialiasing, false);
-                    // ----- paints the edited elements
-                    QPen pen2(Qt::black, 0.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-                    painter.setPen(pen2);
-                    QColor color;
-                    // ------------ vertices of the edited curves
-                    color = QColor(200, 200, 200);
-                    painter.setBrush(color);
-                    VectorSelection vectorSelection = selectMan->vectorSelection;
-                    for (int k = 0; k < vectorSelection.curve.size(); k++)
-                    {
-                        int curveNumber = vectorSelection.curve.at(k);
+        // if (layer->type() == Layer::VECTOR)
+        // {
+        //     VectorImage* vectorImage = currentVectorImage(layer);
+        //     if (vectorImage != nullptr)
+        //     {
+        //         switch (currentTool()->type())
+        //         {
+        //         case SMUDGE:
+        //         case HAND:
+        //         {
+        //             // auto selectMan = mEditor->select();
+        //             painter.save();
+        //             painter.setWorldMatrixEnabled(false);
+        //             painter.setRenderHint(QPainter::Antialiasing, false);
+        //             // ----- paints the edited elements
+        //             QPen pen2(Qt::black, 0.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        //             painter.setPen(pen2);
+        //             QColor color;
+        //             // ------------ vertices of the edited curves
+        //             color = QColor(200, 200, 200);
+        //             painter.setBrush(color);
+        //             VectorSelection vectorSelection = selectMan->vectorSelection;
+        //             for (int k = 0; k < vectorSelection.curve.size(); k++)
+        //             {
+        //                 int curveNumber = vectorSelection.curve.at(k);
 
-                        for (int vertexNumber = -1; vertexNumber < vectorImage->getCurveSize(curveNumber); vertexNumber++)
-                        {
-                            QPointF vertexPoint = vectorImage->getVertex(curveNumber, vertexNumber);
-                            QRectF rectangle(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
-                            if (rect().contains(mEditor->view()->mapCanvasToScreen(vertexPoint).toPoint()))
-                            {
-                                painter.drawRect(rectangle);
-                            }
-                        }
-                    }
-                    // ------------ selected vertices of the edited curves
-                    color = QColor(100, 100, 255);
-                    painter.setBrush(color);
-                    for (int k = 0; k < vectorSelection.vertex.size(); k++)
-                    {
-                        VertexRef vertexRef = vectorSelection.vertex.at(k);
-                        QPointF vertexPoint = vectorImage->getVertex(vertexRef);
-                        QRectF rectangle0 = QRectF(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
-                        painter.drawRect(rectangle0);
-                    }
-                    // ----- paints the closest vertices
-                    color = QColor(255, 0, 0);
-                    painter.setBrush(color);
-                    QList<VertexRef> closestVertices = selectMan->closestVertices();
-                    if (vectorSelection.curve.size() > 0)
-                    {
-                        for (int k = 0; k < closestVertices.size(); k++)
-                        {
-                            VertexRef vertexRef = closestVertices.at(k);
-                            QPointF vertexPoint = vectorImage->getVertex(vertexRef);
+        //                 for (int vertexNumber = -1; vertexNumber < vectorImage->getCurveSize(curveNumber); vertexNumber++)
+        //                 {
+        //                     QPointF vertexPoint = vectorImage->getVertex(curveNumber, vertexNumber);
+        //                     QRectF rectangle(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
+        //                     if (rect().contains(mEditor->view()->mapCanvasToScreen(vertexPoint).toPoint()))
+        //                     {
+        //                         painter.drawRect(rectangle);
+        //                     }
+        //                 }
+        //             }
+        //             // ------------ selected vertices of the edited curves
+        //             color = QColor(100, 100, 255);
+        //             painter.setBrush(color);
+        //             for (int k = 0; k < vectorSelection.vertex.size(); k++)
+        //             {
+        //                 VertexRef vertexRef = vectorSelection.vertex.at(k);
+        //                 QPointF vertexPoint = vectorImage->getVertex(vertexRef);
+        //                 QRectF rectangle0 = QRectF(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
+        //                 painter.drawRect(rectangle0);
+        //             }
+        //             // ----- paints the closest vertices
+        //             color = QColor(255, 0, 0);
+        //             painter.setBrush(color);
+        //             QList<VertexRef> closestVertices = selectMan->closestVertices();
+        //             if (vectorSelection.curve.size() > 0)
+        //             {
+        //                 for (int k = 0; k < closestVertices.size(); k++)
+        //                 {
+        //                     VertexRef vertexRef = closestVertices.at(k);
+        //                     QPointF vertexPoint = vectorImage->getVertex(vertexRef);
 
-                            QRectF rectangle = QRectF(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
-                            painter.drawRect(rectangle);
-                        }
-                    }
-                    painter.restore();
-                    break;
-                }
-                default:
-                {
-                    break;
-                }
-                } // end switch
-            }
-        }
+        //                     QRectF rectangle = QRectF(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
+        //                     painter.drawRect(rectangle);
+        //                 }
+        //             }
+        //             painter.restore();
+        //             break;
+        //         }
+        //         default:
+        //         {
+        //             break;
+        //         }
+        //         } // end switch
+        //     }
+        // }
 
         mOverlayPainter.paint(painter, rect());
 
@@ -1038,16 +1038,15 @@ void ScribbleArea::prepCanvas(int frame)
     o.fLayerVisibilityThreshold = mPrefs->getFloat(SETTING::LAYER_VISIBILITY_THRESHOLD);
     o.scaling = mEditor->view()->scaling();
     o.cmBufferBlendMode = mEditor->tools()->currentTool()->type() == ToolType::ERASER ? QPainter::CompositionMode_DestinationOut : QPainter::CompositionMode_SourceOver;
-    o.selectionTransform = mEditor->select()->selectionTransform();
-    o.selectionRect = mEditor->select()->mySelectionRect().toAlignedRect();
-    o.activeSelectionKeyFrame = mEditor->select()->activeKeyFrame();
+    // o.selectionTransform = mEditor->select()->selectionTransform();
+    // o.selectionRect = mEditor->select()->mySelectionRect().toAlignedRect();
 
     SelectionManager* sm = mEditor->select();
     SelectionPainterOptions selectionPainterOptions;
     selectionPainterOptions.selectionRect = sm->mySelectionRect();
     selectionPainterOptions.selectionTransform = sm->selectionTransform();
     selectionPainterOptions.viewTransform = mEditor->view()->getView();
-    selectionPainterOptions.isSelectionActive = mEditor->select()->selectionBeganOnCurrentFrame();
+    selectionPainterOptions.isSelectionActive = mEditor->select()->somethingSelected();
 
     mSelectionPainter->setPainterOptions(selectionPainterOptions);
 
@@ -1164,7 +1163,7 @@ void ScribbleArea::endStroke()
 
 void ScribbleArea::flipSelection(bool flipVertical)
 {
-    mEditor->select()->flipSelection(flipVertical);
+    // mEditor->select()->flipSelection(flipVertical);
 }
 
 void ScribbleArea::prepOverlays(int frame)
@@ -1333,8 +1332,8 @@ void ScribbleArea::clearImage()
         {
             vectorImage->clear();
         }
-        mEditor->select()->clearCurves();
-        mEditor->select()->clearVertices();
+        // mEditor->select()->clearCurves();
+        // mEditor->select()->clearVertices();
     }
     else if (layer->type() == Layer::BITMAP)
     {
