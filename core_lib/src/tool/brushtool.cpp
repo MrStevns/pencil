@@ -29,6 +29,7 @@ GNU General Public License for more details.
 #include "layermanager.h"
 #include "viewmanager.h"
 #include "selectionmanager.h"
+#include "undoredomanager.h"
 #include "scribblearea.h"
 #include "pointerevent.h"
 #include "brushsetting.h"
@@ -182,6 +183,7 @@ void BrushTool::pointerReleaseEvent(PointerEvent *event)
     if (event->inputType() != mCurrentInputType) return;
 
     endStroke();
+
     StrokeTool::pointerReleaseEvent(event);
 }
 

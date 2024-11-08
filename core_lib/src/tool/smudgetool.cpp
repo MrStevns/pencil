@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include "layermanager.h"
 #include "viewmanager.h"
 #include "selectionmanager.h"
+#include "undoredomanager.h"
 
 #include "layerbitmap.h"
 #include "layervector.h"
@@ -181,7 +182,7 @@ void SmudgeTool::pointerPressEvent(PointerEvent* event)
                 selectMan->vectorSelection.add(selectMan->closestCurves());
                 selectMan->vectorSelection.add(selectMan->closestVertices());
 
-                mEditor->frameModified(mEditor->currentFrame());
+                emit mEditor->frameModified(mEditor->currentFrame());
             }
             else
             {

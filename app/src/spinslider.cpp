@@ -109,6 +109,8 @@ void SpinSlider::setRange(qreal min, qreal max)
 
 void SpinSlider::setValue(qreal v)
 {
+    Q_ASSERT(mMin <= v && v <= mMax);
+
     int value2 = 0;
     if (mGrowthType == LINEAR)
     {

@@ -47,6 +47,7 @@ public:
     int   preserveAlpha = 0;
     bool  vectorMergeEnabled = false;
     bool  bezier_state = false;
+    bool  closedPolylinePath = false;
     bool  useFeather = true;
     int   fillMode = 0;
     int   stabilizerLevel = 0;
@@ -108,8 +109,10 @@ public:
 
     virtual void setWidth(const qreal width);
     virtual void setFeather(const qreal feather);
+
     virtual void setInvisibility(const bool invisibility);
     virtual void setBezier(const bool bezier_state);
+    virtual void setClosedPath(const bool closed);
     virtual void setPressure(const bool pressure);
     virtual void setUseFeather(const bool usingFeather);
     virtual void setPreserveAlpha(const bool preserveAlpha);

@@ -41,11 +41,15 @@ public:
     void pointerPressOnBitmap(PointerEvent*);
 
     bool keyPressEvent(QKeyEvent* event) override;
+    bool keyReleaseEvent(QKeyEvent* event) override;
 
     void clearToolData() override;
 
     void setWidth(const qreal width) override;
     void setFeather(const qreal feather) override;
+    void setClosedPath(const bool closed) override;
+
+    void removeLastPolylineSegment();
 
     bool leavingThisTool() override;
 
@@ -57,6 +61,7 @@ protected:
 private:
     QList<QPointF> mPoints;
     QPointF previousPoint;
+    bool mClosedPathOverrideEnabled = false;
 
     void updateDirtyRect(QList<QPointF> linePoints, BlitRect dirtyRect);
     void drawPolyline(QList<QPointF> points, QPointF endPoint, quint64 timeStamp);

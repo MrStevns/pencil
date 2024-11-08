@@ -153,7 +153,6 @@ void ToolManager::setWidth(float newWidth)
     }
 
     currentTool()->setWidth(static_cast<qreal>(newWidth));
-    emit penWidthValueChanged(newWidth);
     emit toolPropertyChanged(currentTool()->type(), WIDTH);
 }
 
@@ -165,7 +164,6 @@ void ToolManager::setFeather(float newFeather)
     }
 
     currentTool()->setFeather(static_cast<qreal>(newFeather));
-    emit penFeatherValueChanged(newFeather);
     emit toolPropertyChanged(currentTool()->type(), FEATHER);
 }
 
@@ -200,6 +198,12 @@ void ToolManager::setBezier(bool isBezierOn)
     emit toolPropertyChanged(currentTool()->type(), BEZIER);
 }
 
+void ToolManager::setClosedPath(bool isPathClosed)
+{
+    currentTool()->setClosedPath(isPathClosed);
+    emit toolPropertyChanged(currentTool()->type(), CLOSEDPATH);
+}
+
 void ToolManager::setPressure(bool isPressureOn)
 {
     currentTool()->setPressure(isPressureOn);
@@ -223,7 +227,6 @@ void ToolManager::setTolerance(int newTolerance)
     newTolerance = qMax(0, newTolerance);
 
     currentTool()->setTolerance(newTolerance);
-    emit toleranceValueChanged(newTolerance);
     emit toolPropertyChanged(currentTool()->type(), TOLERANCE);
 }
 

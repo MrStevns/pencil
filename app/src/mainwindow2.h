@@ -43,7 +43,7 @@ class ColorInspector;
 class RecentFileMenu;
 class ActionCommands;
 class ImportImageSeqDialog;
-class BackupElement;
+class UndoRedoCommand;
 class LayerOpacityDialog;
 class PegBarAlignmentDialog;
 class RepositionFramesDialog;
@@ -73,7 +73,7 @@ public:
     Editor* mEditor = nullptr;
 
 public slots:
-    void undoActSetText();
+    void updateBackupActionState();
     void updateSaveState();
     void openPegAlignDialog();
     void openRepositionDialog();
@@ -139,6 +139,7 @@ private:
 
     void createDockWidgets();
     void createMenus();
+    void replaceUndoRedoActions();
     void setupKeyboardShortcuts();
     void clearKeyboardShortcuts();
     bool loadMostRecent();
@@ -184,9 +185,6 @@ private:
     QToolBar*             mOverlayToolbar = nullptr;
     
     MPBrushSelector* mBrushSelectorWidget = nullptr;
-
-    // backup
-    BackupElement* mBackupAtSave = nullptr;
 
     PegBarAlignmentDialog* mPegAlign = nullptr;
     RepositionFramesDialog* mReposDialog = nullptr;

@@ -22,6 +22,7 @@ GNU General Public License for more details.
 //#include "transformproxytool.h"
 #include "movemode.h"
 #include "preferencemanager.h"
+#include "undoredomanager.h"
 
 class Layer;
 class VectorImage;
@@ -66,6 +67,8 @@ private:
     int mRotationIncrement = 0;
     MoveMode mPerspMode;
     QPointF mOffset;
+
+    const UndoSaveState* mUndoSaveState = nullptr;
 };
 
 #endif

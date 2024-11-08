@@ -22,6 +22,7 @@ GNU General Public License for more details.
 #include "pointerevent.h"
 #include "preferencesdef.h"
 #include "strokeinterpolator.h"
+#include "undoredomanager.h"
 
 #include "canvascursorpainter.h"
 
@@ -126,6 +127,14 @@ protected:
     CanvasCursorPainter mCanvasCursorPainter;
     StrokeInterpolator mInterpolator;
     quint64 mPrevTimeStamp = 0;
+
+    const UndoSaveState* mUndoSaveState = nullptr;
+
+private:
+    /// Sets the width value without calling settings to store the state
+    void setTemporaryWidth(qreal width);
+    /// Sets the feather value, without calling settings to store the state
+    void setTemporaryFeather(qreal feather);
 };
 
 #endif // STROKETOOL_H

@@ -96,6 +96,28 @@ void StrokeTool::onViewUpdated()
     updateCanvasCursor();
 }
 
+void StrokeTool::setTemporaryWidth(qreal width)
+{
+    if (std::isnan(width) || width < 0)
+    {
+        width = 1.f;
+    }
+
+    properties.width = width;
+    emit mEditor->tools()->toolPropertyChanged(this->type(), WIDTH);
+}
+
+void StrokeTool::setTemporaryFeather(qreal feather)
+{
+    if (std::isnan(feather) || feather < 0)
+    {
+        feather = 0.f;
+    }
+
+    properties.feather = feather;
+    emit mEditor->tools()->toolPropertyChanged(this->type(), FEATHER);
+}
+
 QPointF StrokeTool::getCurrentPressPixel() const
 {
     return mInterpolator.getCurrentPressPixel();
@@ -152,6 +174,7 @@ void StrokeTool::startStroke(PointerEvent::InputType inputType)
     mStrokePressures << mInterpolator.getPressure();
 
     mCurrentInputType = inputType;
+    mUndoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
 
     disableCoalescing();
 }
@@ -197,6 +220,8 @@ void StrokeTool::endStroke()
     enableCoalescing();
 
     mScribbleArea->endStroke();
+
+    mEditor->undoRedo()->record(mUndoSaveState, typeName());
 }
 
 void StrokeTool::drawStroke(PointerEvent* event)
@@ -378,6 +403,10 @@ void StrokeTool::stopAdjusting()
 {
     msIsAdjusting = false;
     mAdjustPosition = QPointF();
+
+    mEditor->tools()->setWidth(properties.width);
+    mEditor->tools()->setFeather(properties.feather);
+
     updateCanvasCursor();
 }
 
@@ -393,7 +422,7 @@ void StrokeTool::adjustCursor(Qt::KeyboardModifiers modifiers)
         // qDebug() << "newValue: " << newValue;
         // TODO: We need to figure out how to map this logical size to a value that works for mypaint, so it still
         // scales based on the actual cursor position.
-        mEditor->tools()->setWidth(qBound(WIDTH_MIN, newValue, WIDTH_MAX));
+        setTemporaryWidth(qBound(WIDTH_MIN, newValue, WIDTH_MAX));
         mEditor->tools()->mapQuickPropertyToBrushSettingValue(qBound(WIDTH_MIN, newValue, WIDTH_MAX), ToolPropertyType::WIDTH);
         break;
     }
@@ -408,7 +437,7 @@ void StrokeTool::adjustCursor(Qt::KeyboardModifiers modifiers)
         // We flip min and max here in order to get the inverted value for the UI
         const qreal mappedValue = MathUtils::linearMap(distance, inputMin, inputMax, outputMax, outputMin);
 
-        mEditor->tools()->setFeather(qBound(FEATHER_MIN, mappedValue, FEATHER_MAX));
+        setTemporaryFeather(qBound(FEATHER_MIN, mappedValue, FEATHER_MAX));
         break;
     }
     default:
