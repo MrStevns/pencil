@@ -16,7 +16,7 @@
 
 #include "lineeditwidget.h"
 
-InlineSlider::InlineSlider(QWidget* parent, QString label, qreal min, qreal max, SliderOriginType type) : QWidget(parent)
+InlineSlider::InlineSlider(QWidget* parent, QString label, qreal min, qreal max, SliderStartPosType type) : QWidget(parent)
 {
     mMin = min;
     mMax = max;
@@ -135,7 +135,7 @@ void InlineSlider::drawSlider()
 
     // // Draw the filled part of the slider
     switch (mSliderOrigin) {
-        case SliderOriginType::LEFT:
+        case SliderStartPosType::LEFT:
         {
             painter.fillRect(borderRect,
                                    brush);
@@ -148,7 +148,7 @@ void InlineSlider::drawSlider()
                                     option.palette.base());
             break;
         }
-        case SliderOriginType::MIDDLE:
+        case SliderStartPosType::MIDDLE:
         {
             // Now fill the with the brush
             painter.fillRect(QRectF(mSliderPos,
@@ -252,7 +252,7 @@ void InlineSlider::setSliderValueFromPos(int pos)
 {
     const QRect& borderRect = this->borderRect().toAlignedRect();
 
-    if (mSliderOrigin == SliderOriginType::MIDDLE) {
+    if (mSliderOrigin == SliderStartPosType::MIDDLE) {
         if (qAbs(pos - borderRect.center().x()) <= 0.5) {
             mSliderValue = 0;
             return;

@@ -22,7 +22,12 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
     mHBoxLayout = new QHBoxLayout(this);
     setLayout(mHBoxLayout);
 
-    mValueSlider = new InlineSlider(this, name, min, max, SliderOriginType::LEFT);
+    SliderStartPosType startPos = SliderStartPosType::LEFT;
+    if (min < 0) {
+        startPos = SliderStartPosType::MIDDLE;
+    }
+
+    mValueSlider = new InlineSlider(this, name, min, max, startPos);
 
     mMappedMin = min;
     mMappedMax = max;

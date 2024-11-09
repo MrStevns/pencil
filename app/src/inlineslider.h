@@ -23,7 +23,7 @@ GNU General Public License for more details.
 
 class LineEditWidget;
 
-enum class SliderOriginType {
+enum class SliderStartPosType {
     LEFT,
     MIDDLE
 };
@@ -34,7 +34,7 @@ class InlineSlider : public QWidget
     Q_OBJECT
 public:
 
-    explicit InlineSlider(QWidget* parent, QString label, qreal min, qreal max, SliderOriginType type);
+    explicit InlineSlider(QWidget* parent, QString label, qreal min, qreal max, SliderStartPosType type);
     ~InlineSlider() override;
 
     void setRange(qreal min, qreal max) { mMin = min; mMax = max; }
@@ -91,7 +91,7 @@ private:
     qreal mCaretWidth = 1.0;
     qreal mTextPadding = 6;
 
-    SliderOriginType mSliderOrigin = SliderOriginType::MIDDLE;
+    SliderStartPosType mSliderOrigin = SliderStartPosType::MIDDLE;
 
     LineEditWidget* mValueLineEditWidget = nullptr;
 };
