@@ -39,14 +39,9 @@ Q_SIGNALS:
     void brushSettingChanged(qreal value, BrushSettingType setting);
 
 private:
-
-    void onSliderChanged(qreal value);
-    void setValueInternal(qreal value);
-
     void updateSetting(qreal value);
 
     QDoubleSpinBox* mValueBox = nullptr;
-    QDoubleSpinBox* mVisualBox = nullptr;
     SpinSlider* mValueSlider = nullptr;
     BrushSettingType mSettingType;
 

@@ -32,8 +32,6 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
 
     mValueBox->setDecimals(2);
 
-    mVisualBox = new QDoubleSpinBox(this);
-
     mMappedMin = min;
     mMappedMax = max;
 
@@ -41,10 +39,6 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
     mHBoxLayout->setContentsMargins(0,0,0,0);
     mHBoxLayout->addWidget(mValueSlider);
     mHBoxLayout->addWidget(mValueBox);
-    mHBoxLayout->addWidget(mVisualBox);
-
-    mVisualBox->setGeometry(mValueBox->geometry());
-    mVisualBox->setHidden(true);
 
     mValueSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -69,23 +63,15 @@ void BrushSettingWidget::updateUI()
     setValue(baseValue);
 }
 
-void BrushSettingWidget::onSliderChanged(qreal value)
-{
-    setValueInternal(value);
-}
-
 void BrushSettingWidget::setValue(qreal value)
 {
-    qreal mappedValue = MathUtils::linearMap(value, mMin, mMax, mMappedMin, mMappedMax);
+    qreal mappedValue = qBound(mMappedMin, MathUtils::linearMap(value, mMin, mMax, mMappedMin, mMappedMax), mMappedMax);
 
     QSignalBlocker b(mValueSlider);
     mValueSlider->setValue(mappedValue);
 
     QSignalBlocker b2(mValueBox);
     mValueBox->setValue(mappedValue);
-
-    QSignalBlocker b3(mVisualBox);
-    mVisualBox->setValue(value);
 
     mCurrentValue = value;
 
@@ -97,38 +83,16 @@ void BrushSettingWidget::setValue(qreal value)
 #endif
 }
 
-void BrushSettingWidget::changeText()
-{
-    bool shouldHide = !mVisualBox->isHidden();
-    mVisualBox->setHidden(shouldHide);
-    mValueBox->setHidden(!shouldHide);
-}
-
 void BrushSettingWidget::setValueFromUnmapped(qreal value)
 {
     updateSetting(value);
-}
-
-void BrushSettingWidget::setValueInternal(qreal value)
-{
-    QSignalBlocker b(mValueSlider);
-    mValueSlider->setValue(value);
-    QSignalBlocker b2(mValueBox);
-    mValueBox->setValue(value);
-
-    qreal mappedToOrig = MathUtils::linearMap(value, mMappedMin, mMappedMax, mMin, mMax);
-
-    QSignalBlocker b3(mVisualBox);
-    mVisualBox->setValue(mappedToOrig);
-
-    mCurrentValue = value;
 }
 
 void BrushSettingWidget::setRange(qreal min, qreal max)
 {
     mMin = min;
     mMax = max;
-    mValueSlider->setRange(mMin, mMax);
+    mValueSlider->setRange(mMappedMin, mMappedMax);
 }
 
 void BrushSettingWidget::setToolTip(QString toolTip)
@@ -141,7 +105,7 @@ void BrushSettingWidget::updateSetting(qreal value)
 {
     qreal mappedToOrig = MathUtils::linearMap(value, mMappedMin, mMappedMax, mMin, mMax);
 
-    setValueInternal(value);
+    setValue(value);
 
     emit brushSettingChanged(mappedToOrig, this->mSettingType);
 }
