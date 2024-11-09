@@ -132,19 +132,20 @@ void InlineSlider::drawSlider()
 
     painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
 
+    // Fill out the remaining part with some background color
+    painter.fillRect(borderRect,
+                     option.palette.base());
+
     // // Draw the filled part of the slider
     switch (mSliderOrigin) {
         case SliderStartPosType::LEFT:
         {
-            painter.fillRect(borderRect,
-                                   brush);
 
-            // Fill out the remaining part with nothing
-            painter.fillRect(QRectF(mSliderPos,
+            painter.fillRect(QRectF(borderRect.left(),
                                     borderRect.top(),
-                                    borderRect.right(),
+                                    mSliderPos,
                                     borderRect.bottom()),
-                                    option.palette.base());
+                                   brush);
             break;
         }
         case SliderStartPosType::MIDDLE:
@@ -155,8 +156,11 @@ void InlineSlider::drawSlider()
                                     borderRect.center().x() - mSliderPos - mCaretWidth,
                                     borderRect.height()),
                                     brush);
+
             painter.save();
             painter.setPen(option.palette.text().color());
+
+            // Draw center line
             painter.drawLine(QPointF(borderRect.center().x() - mCaretWidth, borderRect.top()),
                              QPointF(borderRect.center().x() - mCaretWidth, borderRect.bottom()));
             painter.restore();
