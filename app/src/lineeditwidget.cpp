@@ -100,6 +100,8 @@ void LineEditWidget::keyPressEvent(QKeyEvent* event)
         setReadOnly(true);
     }
     reloadStylesheet();
+
+    event->accept();
 }
 
 void LineEditWidget::deselect()

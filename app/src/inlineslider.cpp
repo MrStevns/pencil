@@ -54,6 +54,7 @@ void InlineSlider::onLineEditChanged()
     float value = mValueLineEditWidget->text().toFloat();
     if (value != 0.0) {
         setValue(value);
+        emit valueChanged(value);
     }
     updateLineEditStylesheet();
 }
