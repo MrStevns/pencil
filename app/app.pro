@@ -83,6 +83,8 @@ PRECOMPILED_HEADER = src/app-pch.h
 HEADERS += \
     src/app-pch.h \
     src/brushsettingeditwidget.h \
+    src/inlineslider.h \
+    src/lineeditwidget.h \
     src/mainwindow2.h \
     src/brushsettingitem.h \
     src/brushsettingwidget.h \
@@ -148,6 +150,8 @@ HEADERS += \
 SOURCES += \
     src/main.cpp \
     src/mainwindow2.cpp \
+    src/inlineslider.cpp \
+    src/lineeditwidget.cpp \
     src/layeropacitydialog.cpp \
     src/brushsettingeditwidget.cpp \
     src/brushsettingitem.cpp \

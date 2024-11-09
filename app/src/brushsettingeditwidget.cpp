@@ -10,7 +10,6 @@
 #include <QCheckBox>
 #include <QSettings>
 
-#include "spinslider.h"
 #include "mpmappingwidget.h"
 #include "mappingdistributionwidget.h"
 #include "mpmappingoptionswidget.h"

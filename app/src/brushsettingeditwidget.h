@@ -6,7 +6,6 @@
 #include "mpbrushsettingcategories.h"
 
 class QToolButton;
-class SpinSlider;
 class QDoubleSpinBox;
 class Editor;
 class MPMappingOptionsWidget;

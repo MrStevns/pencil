@@ -8,6 +8,8 @@
 #include <QToolButton>
 #include <QVector>
 
+#include "inlineslider.h"
+
 #include "mpbrushmanager.h"
 
 #include "editor.h"
@@ -20,17 +22,7 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
     mHBoxLayout = new QHBoxLayout(this);
     setLayout(mHBoxLayout);
 
-    mValueSlider = new SpinSlider(this);
-    mValueSlider->init(name, SpinSlider::GROWTH_TYPE::LINEAR, SpinSlider::VALUE_TYPE::FLOAT, min, max);
-    mValueBox = new QDoubleSpinBox(this);
-
-    mValueBox->setRange(min, max);
-
-    #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-        mValueBox->setStepType(QDoubleSpinBox::StepType::AdaptiveDecimalStepType);
-    #endif
-
-    mValueBox->setDecimals(2);
+    mValueSlider = new InlineSlider(this, name, min, max, SliderOriginType::LEFT);
 
     mMappedMin = min;
     mMappedMax = max;
@@ -38,13 +30,10 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     mHBoxLayout->setContentsMargins(0,0,0,0);
     mHBoxLayout->addWidget(mValueSlider);
-    mHBoxLayout->addWidget(mValueBox);
 
-    mValueSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    mValueSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    connect(mValueSlider, &SpinSlider::valueChanged, this, &BrushSettingWidget::updateSetting);
-    connect(mValueSlider, &SpinSlider::valueOnRelease, this, &BrushSettingWidget::updateSetting);
-    connect(mValueBox, static_cast<void(QDoubleSpinBox::*)(qreal)>(&QDoubleSpinBox::valueChanged), this, &BrushSettingWidget::updateSetting);
+    connect(mValueSlider, &InlineSlider::valueChanged, this, &BrushSettingWidget::updateSetting);
 }
 
 void BrushSettingWidget::initUI()
@@ -70,9 +59,6 @@ void BrushSettingWidget::setValue(qreal value)
     QSignalBlocker b(mValueSlider);
     mValueSlider->setValue(mappedValue);
 
-    QSignalBlocker b2(mValueBox);
-    mValueBox->setValue(mappedValue);
-
     mCurrentValue = value;
 
 #ifdef Q_OS_MAC
@@ -97,7 +83,6 @@ void BrushSettingWidget::setRange(qreal min, qreal max)
 
 void BrushSettingWidget::setToolTip(QString toolTip)
 {
-    mValueBox->setToolTip(toolTip);
     mValueSlider->setToolTip(toolTip);
 }
 

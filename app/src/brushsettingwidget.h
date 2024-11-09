@@ -4,10 +4,9 @@
 #include <QWidget>
 
 #include "brushsetting.h"
-#include "spinslider.h"
 
 class QToolButton;
-class SpinSlider;
+class InlineSlider;
 class QDoubleSpinBox;
 class Editor;
 class MPMappingOptionsWidget;
@@ -41,8 +40,7 @@ Q_SIGNALS:
 private:
     void updateSetting(qreal value);
 
-    QDoubleSpinBox* mValueBox = nullptr;
-    SpinSlider* mValueSlider = nullptr;
+    InlineSlider* mValueSlider = nullptr;
     BrushSettingType mSettingType;
 
     Editor* mEditor = nullptr;
