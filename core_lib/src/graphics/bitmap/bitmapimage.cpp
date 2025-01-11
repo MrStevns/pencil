@@ -26,7 +26,7 @@ GNU General Public License for more details.
 #include "blitrect.h"
 #include "tile.h"
 #include "tiledbuffer.h"
-#include "selectioneditor.h"
+#include "selectionbitmapeditor.h"
 
 BitmapImage::BitmapImage()
 {
@@ -67,14 +67,16 @@ BitmapImage::BitmapImage(const QPoint& topLeft, const QString& path)
     setModified(false);
 }
 
-void BitmapImage::attachSelectionEditor(SelectionEditor* selectionEditor)
+void BitmapImage::attachSelectionEditor(SelectionBitmapEditor* selectionEditor)
 {
+    qDebug() << "attaching editor to " << pos();
+    qDebug() << "editor is" << selectionEditor;
     mSelectionEditor.reset(selectionEditor);
 }
 
 BitmapImage::~BitmapImage()
 {
-    mSelectionEditor.reset();
+    qDebug() << "BitmapImage::deinit";
 }
 
 void BitmapImage::setImage(QImage* img)
@@ -99,7 +101,14 @@ BitmapImage& BitmapImage::operator=(const BitmapImage& a)
     mOpacity = a.mOpacity;
     mImage = a.mImage;
     mTemporaryImage = a.mTemporaryImage;
-    mSelectionEditor = a.mSelectionEditor;
+    // qDebug() << "mSelectionEditor is: " << mSelectionEditor.get();
+    // qDebug() << "a.mSelectionEditor is: " << a.mSelectionEditor.get();
+    if (a.mSelectionEditor.get()) {
+        SelectionBitmapEditor* editor = static_cast<SelectionBitmapEditor*>(a.mSelectionEditor.get());
+        mSelectionEditor.reset(new SelectionBitmapEditor(*editor));
+    } else {
+        mSelectionEditor.reset();
+    }
     modification();
     return *this;
 }

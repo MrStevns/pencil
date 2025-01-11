@@ -86,7 +86,12 @@ signals:
     void animationLengthChanged(int length);
     void layerDeleted(int index);
 
+    void layerEventFired(Layer* layer, KeyFrameEvent event, KeyFrame* KeyFrame);
+
 private:
+    void createDefaultLayers();
+    void setupEventCallback(Layer* layer);
+
     int getIndex(Layer*) const;
 
     int mLastCameraLayerIdx = 0;

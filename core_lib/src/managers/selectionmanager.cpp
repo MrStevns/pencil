@@ -62,8 +62,13 @@ void SelectionManager::createEditor(BitmapImage* bitmapImage)
     SelectionBitmapEditor* selectionEditor = new SelectionBitmapEditor();
     bitmapImage->attachSelectionEditor(selectionEditor);
 
-    connect(selectionEditor, &SelectionBitmapEditor::selectionChanged, this, &SelectionManager::selectionChanged);
-    connect(selectionEditor, &SelectionBitmapEditor::selectionReset, this, &SelectionManager::selectionReset);
+    selectionEditor->selectionReset = [this] (void) {
+        emit selectionReset();
+    };
+
+    selectionEditor->selectionChanged = [this] (void) {
+        emit selectionChanged();
+    };
 }
 
 KeyFrame* SelectionManager::getCurrentKeyFrame()

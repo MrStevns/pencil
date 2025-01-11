@@ -23,6 +23,7 @@ GNU General Public License for more details.
 #include <QHash>
 
 class TiledBuffer;
+class SelectionBitmapEditor;
 class SelectionEditor;
 
 class BitmapImage : public KeyFrame
@@ -43,7 +44,8 @@ public:
     bool isLoaded() const override;
     quint64 memoryUsage() override;
 
-    void attachSelectionEditor(SelectionEditor* selectionEditor);
+    void attachSelectionEditor(SelectionBitmapEditor* selectionEditor);
+    void detachSelectionEditor(SelectionBitmapEditor* selectionEditor);
 
     void paintImage(QPainter& painter);
     void paintImage(QPainter &painter, QImage &image, QRect sourceRect, QRect destRect);
@@ -196,7 +198,7 @@ private:
     qreal mOpacity = 1.0;
 
     BitmapImage* mTemporaryImage = nullptr;
-    std::shared_ptr<SelectionEditor> mSelectionEditor;
+    std::unique_ptr<SelectionEditor> mSelectionEditor;
 };
 
 #endif

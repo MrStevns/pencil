@@ -30,13 +30,31 @@ GNU General Public License for more details.
 #include <QPolygon>
 
 
-SelectionEditor::SelectionEditor() : QObject()
+SelectionEditor::SelectionEditor()
 {
+}
+
+SelectionEditor::SelectionEditor(SelectionEditor& editor)
+{
+    mScaleX = editor.mScaleX;
+    mScaleY = editor.mScaleY;
+    mAnchorPoint = editor.mAnchorPoint;
+    mAspectRatioFixed = editor.mAspectRatioFixed;
+    mLockAxis = editor.mLockAxis;
+    mMoveMode = editor.mMoveMode;
+    mTranslation = editor.mTranslation;
+    mRotatedAngle = editor.mRotatedAngle;
 }
 
 SelectionEditor::~SelectionEditor()
 {
     qDebug() << "SelectionEditor destroyed";
+}
+
+void SelectionEditor::cleanupCallbacks()
+{
+    selectionChanged = nullptr;
+    selectionReset = nullptr;
 }
 
 void SelectionEditor::resetSelectionTransformProperties()
@@ -250,14 +268,14 @@ qreal SelectionEditor::angleFromPoint(const QPointF& point, const QPointF& ancho
 void SelectionEditor::setSelection(const QRectF& rect)
 {
     Q_UNUSED(rect)
-    emit selectionChanged();
+    selectionChanged();
 }
 
 void SelectionEditor::deselect()
 {
     resetSelectionProperties();
     mMoveMode = MoveMode::NONE;
-    emit selectionChanged();
+    selectionChanged();
 }
 
 void SelectionEditor::setTransformAnchor(const QPointF& point)
@@ -282,7 +300,7 @@ void SelectionEditor::calculateSelectionTransformation()
     QTransform s;
     s.scale(mScaleX, mScaleY);
     mSelectionTransform = t * s * r * t2;
-    emit selectionChanged();
+    selectionChanged();
 }
 
 QPointF SelectionEditor::alignPositionToAxis(QPointF currentPoint) const
@@ -313,7 +331,7 @@ void SelectionEditor::flipSelection(bool flipVertical)
     // TODO (MrStevns): Why is this needed, The transform anchor shouldn't be any different?
     // setTransformAnchor(mOriginalRect.center());
     calculateSelectionTransformation();
-    emit selectionChanged();
+    selectionChanged();
 }
 
 void SelectionEditor::resetSelectionProperties()
@@ -321,7 +339,7 @@ void SelectionEditor::resetSelectionProperties()
     // resetSelectionTransformProperties();
     // mSelectionPolygon = QPolygonF();
     // mOriginalRect = QRectF();
-    emit selectionChanged();
+    selectionChanged();
 }
 
 

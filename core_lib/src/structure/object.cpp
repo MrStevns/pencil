@@ -97,21 +97,20 @@ bool Object::loadXML(const QDomElement& docElem, ProgressCallback progressForwar
         switch (element.attribute("type").toInt())
         {
         case Layer::BITMAP:
-            newLayer = new LayerBitmap(getUniqueLayerID());
+            newLayer = addNewBitmapLayer();
             break;
         case Layer::VECTOR:
-            newLayer = new LayerVector(getUniqueLayerID());
+            newLayer = addNewVectorLayer();
             break;
         case Layer::SOUND:
-            newLayer = new LayerSound(getUniqueLayerID());
+            newLayer = addNewSoundLayer();
             break;
         case Layer::CAMERA:
-            newLayer = new LayerCamera(getUniqueLayerID());
+            newLayer = addNewCameraLayer();
             break;
         default:
             Q_UNREACHABLE();
         }
-        mLayers.append(newLayer);
         newLayer->loadDomElement(element, dataDirPath, progressForward);
     }
     return true;
@@ -121,9 +120,6 @@ LayerBitmap* Object::addNewBitmapLayer()
 {
     LayerBitmap* layerBitmap = new LayerBitmap(getUniqueLayerID());
     mLayers.append(layerBitmap);
-
-    layerBitmap->addNewKeyFrameAt(1);
-
     return layerBitmap;
 }
 
@@ -132,8 +128,6 @@ LayerVector* Object::addNewVectorLayer()
     LayerVector* layerVector = new LayerVector(getUniqueLayerID());
     mLayers.append(layerVector);
 
-    layerVector->addNewKeyFrameAt(1);
-
     return layerVector;
 }
 
@@ -141,9 +135,6 @@ LayerSound* Object::addNewSoundLayer()
 {
     LayerSound* layerSound = new LayerSound(getUniqueLayerID());
     mLayers.append(layerSound);
-
-    // No default keyFrame at position 1 for Sound layer.
-
     return layerSound;
 }
 
@@ -151,9 +142,6 @@ LayerCamera* Object::addNewCameraLayer()
 {
     LayerCamera* layerCamera = new LayerCamera(getUniqueLayerID());
     mLayers.append(layerCamera);
-
-    layerCamera->addNewKeyFrameAt(1);
-
     return layerCamera;
 }
 

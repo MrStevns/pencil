@@ -7,6 +7,7 @@ class SelectionBitmapEditor : public SelectionEditor
 {
 public:
     explicit SelectionBitmapEditor();
+    SelectionBitmapEditor(SelectionBitmapEditor& editor);
     ~SelectionBitmapEditor() override;
 
     void setSelection(const QRectF& rect) override;

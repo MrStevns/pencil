@@ -3,13 +3,21 @@
 #include "bitmapimage.h"
 
 #include <QRectF>
+#include <QDebug>
 
 SelectionBitmapEditor::SelectionBitmapEditor() : SelectionEditor()
 {
 }
 
+SelectionBitmapEditor::SelectionBitmapEditor(SelectionBitmapEditor &editor) : SelectionEditor(editor)
+{
+    mSelectionPolygon = editor.mSelectionPolygon;
+    mOriginalRect = editor.mOriginalRect;
+}
+
 SelectionBitmapEditor::~SelectionBitmapEditor()
 {
+    qDebug() << "deinit SelectionBitmapEditor";
 }
 
 void SelectionBitmapEditor::setSelection(const QRectF& rect)
@@ -44,7 +52,7 @@ void SelectionBitmapEditor::commitChanges(KeyFrame* keyframe)
 
         auto floatingBitmapImage = BitmapImage(transformedSelectionRect.topLeft(), transformedFloatingImage);
         currentBitmapImage->paste(&floatingBitmapImage, QPainter::CompositionMode_SourceOver);
-        currentBitmapImage->clearTemporaryImage();
+        // currentBitmapImage->clearTemporaryImage();
     } else {
         BitmapImage transformedImage = currentBitmapImage->transformed(alignedSelectionRect, mSelectionTransform, true);
         currentBitmapImage->clear(alignedSelectionRect);

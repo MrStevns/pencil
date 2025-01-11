@@ -30,12 +30,13 @@ GNU General Public License for more details.
 class Editor;
 class KeyFrame;
 
-class SelectionEditor : public QObject
+class SelectionEditor
 {
-    Q_OBJECT
 public:
+
     explicit SelectionEditor();
-    ~SelectionEditor() override;
+    SelectionEditor(SelectionEditor& editor);
+    virtual ~SelectionEditor();
 
     void flipSelection(bool flipVertical);
 
@@ -121,9 +122,13 @@ public:
     /// This should be called to update the selection transform
     void calculateSelectionTransformation();
 
-signals:
-    void selectionChanged();
-    void selectionReset();
+    void cleanupCallbacks();
+
+    typedef std::function<void()> SelectionChangedCallback;
+    SelectionChangedCallback selectionChanged;
+
+    typedef std::function<void()> SelectionResetCallback;
+    SelectionResetCallback selectionReset;
 
 protected:
     void setMoveModeForAnchorInRange(const QPolygonF& selectionPolygon, const QPointF& point);
