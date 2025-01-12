@@ -31,6 +31,9 @@ public:
     ~SoundClip() override;
     SoundClip& operator=(const SoundClip& a);
 
+    KeyFrameEditor* createEditor() const;
+    KeyFrameEditor* createEditor(KeyFrameEditor* editor) const;
+
     SoundClip* clone() const override;
 
     Status init(const QString& strSoundFile);

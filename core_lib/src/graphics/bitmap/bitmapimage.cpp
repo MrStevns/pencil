@@ -28,64 +28,44 @@ GNU General Public License for more details.
 #include "tiledbuffer.h"
 #include "selectionbitmapeditor.h"
 
+#include "bitmapeditor.h"
+
 BitmapImage::BitmapImage()
 {
+    // Do we need to create the key editor here as well?
+    mKeyEditor = new BitmapEditor();
 }
 
 BitmapImage::BitmapImage(const BitmapImage& a) : KeyFrame(a)
 {
-    mBounds = a.mBounds;
-    mMinBound = a.mMinBound;
-    mEnableAutoCrop = a.mEnableAutoCrop;
-    mOpacity = a.mOpacity;
-    mImage = a.mImage;
-    mTemporaryImage = a.mTemporaryImage;
+    mKeyEditor = new BitmapEditor(*a.editor());
 }
 
 BitmapImage::BitmapImage(const QRect& rectangle, const QColor& color)
 {
-    mBounds = rectangle;
-    mImage = QImage(mBounds.size(), QImage::Format_ARGB32_Premultiplied);
-    mImage.fill(color.rgba());
-    mMinBound = false;
+    mKeyEditor = new BitmapEditor(rectangle, color);
 }
 
 BitmapImage::BitmapImage(const QPoint& topLeft, const QImage& image)
 {
-    mBounds = QRect(topLeft, image.size());
-    mMinBound = true;
-    mImage = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    mKeyEditor = new BitmapEditor(topLeft, image);
 }
 
 BitmapImage::BitmapImage(const QPoint& topLeft, const QString& path)
 {
-    setFileName(path);
-    mImage = QImage();
-
-    mBounds = QRect(topLeft, QSize(-1, 0));
-    mMinBound = true;
-    setModified(false);
+    mKeyEditor = new BitmapEditor(topLeft, path);
 }
 
 void BitmapImage::attachSelectionEditor(SelectionBitmapEditor* selectionEditor)
 {
     qDebug() << "attaching editor to " << pos();
     qDebug() << "editor is" << selectionEditor;
-    mSelectionEditor.reset(selectionEditor);
+    // mSelectionEditor.reset(selectionEditor);
 }
 
 BitmapImage::~BitmapImage()
 {
     qDebug() << "BitmapImage::deinit";
-}
-
-void BitmapImage::setImage(QImage* img)
-{
-    Q_ASSERT(img && img->format() == QImage::Format_ARGB32_Premultiplied);
-    mImage = *img;
-    mMinBound = false;
-
-    modification();
 }
 
 BitmapImage& BitmapImage::operator=(const BitmapImage& a)
@@ -96,19 +76,15 @@ BitmapImage& BitmapImage::operator=(const BitmapImage& a)
     }
 
     KeyFrame::operator=(a);
-    mBounds = a.mBounds;
-    mMinBound = a.mMinBound;
-    mOpacity = a.mOpacity;
-    mImage = a.mImage;
-    mTemporaryImage = a.mTemporaryImage;
-    // qDebug() << "mSelectionEditor is: " << mSelectionEditor.get();
-    // qDebug() << "a.mSelectionEditor is: " << a.mSelectionEditor.get();
-    if (a.mSelectionEditor.get()) {
-        SelectionBitmapEditor* editor = static_cast<SelectionBitmapEditor*>(a.mSelectionEditor.get());
-        mSelectionEditor.reset(new SelectionBitmapEditor(*editor));
-    } else {
-        mSelectionEditor.reset();
-    }
+    mKeyEditor = new BitmapEditor(*a.editor());
+
+    // TODO: do we reimplement this here?
+    // if (a.mSelectionEditor.get()) {
+    //     SelectionBitmapEditor* editor = static_cast<SelectionBitmapEditor*>(a.mSelectionEditor.get());
+    //     mSelectionEditor.reset(new SelectionBitmapEditor(*editor));
+    // } else {
+    //     mSelectionEditor.reset();
+    // }
     modification();
     return *this;
 }
@@ -145,9 +121,7 @@ void BitmapImage::loadFile()
 {
     if (!fileName().isEmpty() && !isLoaded())
     {
-        mImage = QImage(fileName()).convertToFormat(QImage::Format_ARGB32_Premultiplied);
-        mBounds.setSize(mImage.size());
-        mMinBound = false;
+        editor()->loadFile();
     }
 }
 
@@ -155,160 +129,109 @@ void BitmapImage::unloadFile()
 {
     if (isModified() == false)
     {
-        mImage = QImage();
+        editor()->unloadFile();
     }
 }
 
 bool BitmapImage::isLoaded() const
 {
-    return mImage.width() == mBounds.width();
+    return editor()->isLoaded();
 }
 
 quint64 BitmapImage::memoryUsage()
 {
-    if (!mImage.isNull())
-    {
-        return imageSize(mImage);
-    }
-    return 0;
-}
-
-void BitmapImage::setTemporaryImage(BitmapImage *image)
-{
-    if (mTemporaryImage) {
-        delete mTemporaryImage;
-        mTemporaryImage = nullptr;
-    }
-    mTemporaryImage = image;
+    return editor()->memoryUsage();
 }
 
 void BitmapImage::paintImage(QPainter& painter)
 {
-    painter.drawImage(mBounds.topLeft(), *image());
+    editor()->paintImage(painter);
 }
 
 void BitmapImage::paintImage(QPainter& painter, QImage& image, QRect sourceRect, QRect destRect)
 {
-    painter.drawImage(QRect(mBounds.topLeft(), destRect.size()),
-                      image,
-                      sourceRect);
+    editor()->paintImage(painter, image, sourceRect, destRect);
 }
 
 QImage* BitmapImage::image()
 {
-    loadFile();
-    return &mImage;
+    return editor()->image();
 }
 
 BitmapImage BitmapImage::copy()
 {
-    return BitmapImage(mBounds.topLeft(), *image());
+    return BitmapImage(editor()->topLeft(), *editor()->image());
 }
 
 BitmapImage BitmapImage::copy(QRect rectangle)
 {
-    if (rectangle.isEmpty() || mBounds.isEmpty()) return BitmapImage();
+    if (rectangle.isEmpty() || editor()->bounds().isEmpty()) return BitmapImage();
 
-    QRect intersection2 = rectangle.translated(-mBounds.topLeft());
+    QRect intersection2 = rectangle.translated(-editor()->bounds().topLeft());
 
-    BitmapImage result(rectangle.topLeft(), image()->copy(intersection2));
+    BitmapImage result(rectangle.topLeft(), editor()->image()->copy(intersection2));
     return result;
 }
 
 void BitmapImage::paste(BitmapImage* bitmapImage, QPainter::CompositionMode cm)
 {
-    if(bitmapImage->width() <= 0 || bitmapImage->height() <= 0)
-    {
-        return;
-    }
-
-    setCompositionModeBounds(bitmapImage, cm);
-
-    QImage* image2 = bitmapImage->image();
-
-    QPainter painter(image());
-    painter.setCompositionMode(cm);
-    painter.drawImage(bitmapImage->mBounds.topLeft() - mBounds.topLeft(), *image2);
-    painter.end();
+    editor()->paste(*bitmapImage->editor(), cm);
 
     modification();
 }
 
 void BitmapImage::paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMode cm)
 {
-    if(tiledBuffer->bounds().width() <= 0 || tiledBuffer->bounds().height() <= 0)
-    {
-        return;
-    }
-    extend(tiledBuffer->bounds());
-
-    QPainter painter(image());
-
-    painter.setCompositionMode(cm);
-    auto const tiles = tiledBuffer->tiles();
-    for (const Tile* item : tiles) {
-        const QPixmap& tilePixmap = item->pixmap();
-        const QPoint& tilePos = item->pos();
-        painter.drawPixmap(tilePos-mBounds.topLeft(), tilePixmap);
-    }
-    painter.end();
+    editor()->paste(tiledBuffer, cm);
 
     modification();
 }
 
 void BitmapImage::moveTopLeft(QPoint point)
 {
-    mBounds.moveTopLeft(point);
+    editor()->moveTopLeft(point);
     // Size is unchanged so there is no need to update mBounds
     modification();
 }
 
 void BitmapImage::transform(QRect newBoundaries, bool smoothTransform)
 {
-    mBounds = newBoundaries;
-    newBoundaries.moveTopLeft(QPoint(0, 0));
-    QImage newImage(mBounds.size(), QImage::Format_ARGB32_Premultiplied);
-
-    QPainter painter(&newImage);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, smoothTransform);
-    painter.setCompositionMode(QPainter::CompositionMode_Source);
-    painter.fillRect(newImage.rect(), QColor(0, 0, 0, 0));
-    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-    painter.drawImage(newBoundaries, *image());
-    painter.end();
-    mImage = newImage;
+    editor()->transform(newBoundaries, smoothTransform);
 
     modification();
 }
 
 BitmapImage BitmapImage::transformed(QRect selection, QTransform transform, bool smoothTransform)
 {
-    Q_ASSERT(!selection.isEmpty());
 
-    BitmapImage selectedPart = copy(selection);
+    // TODO: Maybe we can move these into the selection editor?
+    // Q_ASSERT(!selection.isEmpty());
 
-    // Get the transformed image
-    QImage transformedImage;
-    if (smoothTransform)
-    {
-        transformedImage = selectedPart.image()->transformed(transform, Qt::SmoothTransformation);
-    }
-    else
-    {
-        transformedImage = selectedPart.image()->transformed(transform);
-    }
-    return BitmapImage(transform.mapRect(selection).normalized().topLeft(), transformedImage);
+    // BitmapImage selectedPart = copy(selection);
+
+    // // Get the transformed image
+    // QImage transformedImage;
+    // if (smoothTransform)
+    // {
+    //     transformedImage = selectedPart.image()->transformed(transform, Qt::SmoothTransformation);
+    // }
+    // else
+    // {
+    //     transformedImage = selectedPart.image()->transformed(transform);
+    // }
+    // return BitmapImage(transform.mapRect(selection).normalized().topLeft(), transformedImage);
 }
 
 BitmapImage BitmapImage::transformed(QRect newBoundaries, bool smoothTransform)
 {
-    BitmapImage transformedImage(newBoundaries, QColor(0, 0, 0, 0));
-    QPainter painter(transformedImage.image());
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, smoothTransform);
-    newBoundaries.moveTopLeft(QPoint(0, 0));
-    painter.drawImage(newBoundaries, *image());
-    painter.end();
-    return transformedImage;
+    // TODO: Maybe we can move these into the selection editor?
+    // BitmapImage transformedImage(newBoundaries, QColor(0, 0, 0, 0));
+    // QPainter painter(transformedImage.image());
+    // painter.setRenderHint(QPainter::SmoothPixmapTransform, smoothTransform);
+    // newBoundaries.moveTopLeft(QPoint(0, 0));
+    // painter.drawImage(newBoundaries, *image());
+    // painter.end();
+    // return transformedImage;
 }
 
 /** Update image bounds.
@@ -320,27 +243,14 @@ BitmapImage BitmapImage::transformed(QRect newBoundaries, bool smoothTransform)
  */
 void BitmapImage::updateBounds(QRect newBoundaries)
 {
-    // Check to make sure changes actually need to be made
-    if (mBounds == newBoundaries) return;
-
-    QImage newImage(newBoundaries.size(), QImage::Format_ARGB32_Premultiplied);
-    newImage.fill(Qt::transparent);
-    if (!newImage.isNull())
-    {
-        QPainter painter(&newImage);
-        painter.drawImage(mBounds.topLeft() - newBoundaries.topLeft(), mImage);
-        painter.end();
+    if (editor()->updateBounds(newBoundaries)) {
+        modification();
     }
-    mImage = newImage;
-    mBounds = newBoundaries;
-    mMinBound = false;
-
-    modification();
 }
 
 void BitmapImage::extend(const QPoint &p)
 {
-    if (!mBounds.contains(p))
+    if (!editor()->bounds().contains(p))
     {
         extend(QRect(p, QSize(1, 1)));
     }
@@ -348,26 +258,7 @@ void BitmapImage::extend(const QPoint &p)
 
 void BitmapImage::extend(QRect rectangle)
 {
-    if (rectangle.width() <= 0) rectangle.setWidth(1);
-    if (rectangle.height() <= 0) rectangle.setHeight(1);
-    if (mBounds.contains(rectangle))
-    {
-        // Do nothing
-    }
-    else
-    {
-        QRect newBoundaries = mBounds.united(rectangle).normalized();
-        QImage newImage(newBoundaries.size(), QImage::Format_ARGB32_Premultiplied);
-        newImage.fill(Qt::transparent);
-        if (!newImage.isNull())
-        {
-            QPainter painter(&newImage);
-            painter.drawImage(mBounds.topLeft() - newBoundaries.topLeft(), *image());
-            painter.end();
-        }
-        mImage = newImage;
-        mBounds = newBoundaries;
-
+    if (editor()->extend(rectangle)) {
         modification();
     }
 }
@@ -383,7 +274,7 @@ void BitmapImage::setCompositionModeBounds(BitmapImage *source, QPainter::Compos
 {
     if (source)
     {
-        setCompositionModeBounds(source->mBounds, source->mMinBound, cm);
+        editor()->setCompositionModeBounds(source->editor()->bounds(), source->isMinimallyBounded(), cm);
     }
 }
 
@@ -408,34 +299,9 @@ void BitmapImage::setCompositionModeBounds(BitmapImage *source, QPainter::Compos
  */
 void BitmapImage::setCompositionModeBounds(QRect sourceBounds, bool isSourceMinBounds, QPainter::CompositionMode cm)
 {
-    QRect newBoundaries;
-    switch(cm)
-    {
-    case QPainter::CompositionMode_Destination:
-    case QPainter::CompositionMode_SourceAtop:
-        // The Destination and SourceAtop modes
-        // do not change the bounds from destination.
-        newBoundaries = mBounds;
-        // mMinBound remains the same
-        break;
-    case QPainter::CompositionMode_SourceIn:
-    case QPainter::CompositionMode_DestinationIn:
-    case QPainter::CompositionMode_Clear:
-    case QPainter::CompositionMode_DestinationOut:
-        // The bounds of the result of SourceIn, DestinationIn, Clear, and DestinationOut
-        // modes are no larger than the destination bounds
-        newBoundaries = mBounds;
-        mMinBound = false;
-        break;
-    default:
-        // If it's not one of the above cases, create a union of the two bounds.
-        // This contains the minimum bounds, if both the destination and source
-        // use their respective minimum bounds.
-        newBoundaries = mBounds.united(sourceBounds);
-        mMinBound = mMinBound && isSourceMinBounds;
-    }
+    editor()->setCompositionModeBounds(sourceBounds, isSourceMinBounds, cm);
 
-    updateBounds(newBoundaries);
+    modification();
 }
 
 /** Removes any transparent borders by reducing the boundaries.
@@ -453,158 +319,9 @@ void BitmapImage::setCompositionModeBounds(QRect sourceBounds, bool isSourceMinB
  */
 void BitmapImage::autoCrop()
 {
-    if (!mEnableAutoCrop) return;
-    if (mBounds.isEmpty()) return; // Exit if current bounds are null
-    if (mImage.isNull()) return;
+    editor()->autoCrop();
 
-    Q_ASSERT(mBounds.size() == mImage.size());
-
-    // Exit if already min bounded
-    if (mMinBound) return;
-
-    // Get image properties
-    const int width = mImage.width();
-
-    // Relative top and bottom row indices (inclusive)
-    int relTop = 0;
-    int relBottom = mBounds.height() - 1;
-
-    // Check top row
-    bool isEmpty = true; // Used to track if a non-transparent pixel has been found
-    while (isEmpty && relTop <= relBottom) // Loop through rows
-    {
-        // Point cursor to the first pixel in the current top row
-        const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(relTop));
-        for (int col = 0; col < width; col++) // Loop through pixels in row
-        {
-            // If the pixel is not transparent
-            // (i.e. alpha channel > 0)
-            if (qAlpha(*cursor) != 0)
-            {
-                // We've found a non-transparent pixel in row relTop,
-                // so we can stop looking for one
-                isEmpty = false;
-                break;
-            }
-            // Move cursor to point to the next pixel in the row
-            cursor++;
-        }
-        if (isEmpty)
-        {
-            // If the row we just checked was empty, increase relTop
-            // to remove the empty row from the top of the bounding box
-            ++relTop;
-        }
-    }
-
-    // Check bottom row
-    isEmpty = true; // Reset isEmpty
-    while (isEmpty && relBottom >= relTop) // Loop through rows
-    {
-        // Point cursor to the first pixel in the current bottom row
-        const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(relBottom));
-        for (int col = 0; col < width; col++) // Loop through pixels in row
-        {
-            // If the pixel is not transparent
-            // (i.e. alpha channel > 0)
-            if(qAlpha(*cursor) != 0)
-            {
-                // We've found a non-transparent pixel in row relBottom,
-                // so we can stop looking for one
-                isEmpty = false;
-                break;
-            }
-            // Move cursor to point to the next pixel in the row
-            ++cursor;
-        }
-        if (isEmpty)
-        {
-            // If the row we just checked was empty, decrease relBottom
-            // to remove the empty row from the bottom of the bounding box
-            --relBottom;
-        }
-    }
-
-    // Relative left and right column indices (inclusive)
-    int relLeft = 0;
-    int relRight = mBounds.width()-1;
-
-    // Check left row
-    isEmpty = (relBottom >= relTop); // Check left only when
-    while (isEmpty && relBottom >= relTop && relLeft <= relRight) // Loop through columns
-    {
-        // Point cursor to the pixel at row relTop and column relLeft
-        const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(relTop)) + relLeft;
-        // Loop through pixels in column
-        // Note: we only need to loop from relTop to relBottom (inclusive)
-        //       not the full image height, because rows 0 to relTop-1 and
-        //       relBottom+1 to mBounds.height() have already been
-        //       confirmed to contain only transparent pixels
-        for (int row = relTop; row <= relBottom; row++)
-        {
-            // If the pixel is not transparent
-            // (i.e. alpha channel > 0)
-            if(qAlpha(*cursor) != 0)
-            {
-                // We've found a non-transparent pixel in column relLeft,
-                // so we can stop looking for one
-                isEmpty = false;
-                break;
-            }
-            // Move cursor to point to next pixel in the column
-            // Increment by width because the data is in row-major order
-            cursor += width;
-        }
-        if (isEmpty)
-        {
-            // If the column we just checked was empty, increase relLeft
-            // to remove the empty column from the left of the bounding box
-            ++relLeft;
-        }
-    }
-
-    // Check right row
-    isEmpty = (relBottom >= relTop); // Reset isEmpty
-    while (isEmpty && relRight >= relLeft) // Loop through columns
-    {
-        // Point cursor to the pixel at row relTop and column relRight
-        const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(relTop)) + relRight;
-        // Loop through pixels in column
-        // Note: we only need to loop from relTop to relBottom (inclusive)
-        //       not the full image height, because rows 0 to relTop-1 and
-        //       relBottom+1 to mBounds.height()-1 have already been
-        //       confirmed to contain only transparent pixels
-        for (int row = relTop; row <= relBottom; row++)
-        {
-            // If the pixel is not transparent
-            // (i.e. alpha channel > 0)
-            if(qAlpha(*cursor) != 0)
-            {
-                // We've found a non-transparent pixel in column relRight,
-                // so we can stop looking for one
-                isEmpty = false;
-                break;
-            }
-            // Move cursor to point to next pixel in the column
-            // Increment by width because the data is in row-major order
-            cursor += width;
-        }
-        if (isEmpty)
-        {
-            // If the column we just checked was empty, increase relRight
-            // to remove the empty column from the left of the bounding box
-            --relRight;
-        }
-    }
-
-    //qDebug() << "Original" << mBounds;
-    //qDebug() << "Autocrop" << relLeft << relTop << relRight - mBounds.width() + 1 << relBottom - mBounds.height() + 1;
-    // Update mBounds and mImage if necessary
-    updateBounds(mBounds.adjusted(relLeft, relTop, relRight - mBounds.width() + 1, relBottom - mBounds.height() + 1));
-
-    //qDebug() << "New bounds" << mBounds;
-
-    mMinBound = true;
+    modification();
 }
 
 QRgb BitmapImage::pixel(int x, int y)
@@ -614,10 +331,7 @@ QRgb BitmapImage::pixel(int x, int y)
 
 QRgb BitmapImage::pixel(QPoint p)
 {
-    QRgb result = qRgba(0, 0, 0, 0); // black
-    if (mBounds.contains(p))
-        result = image()->pixel(p - mBounds.topLeft());
-    return result;
+    return editor()->pixel(p);
 }
 
 void BitmapImage::setPixel(int x, int y, QRgb color)
@@ -627,144 +341,52 @@ void BitmapImage::setPixel(int x, int y, QRgb color)
 
 void BitmapImage::setPixel(QPoint p, QRgb color)
 {
-    setCompositionModeBounds(QRect(p, QSize(1,1)), true, QPainter::CompositionMode_SourceOver);
-    if (mBounds.contains(p))
-    {
-        image()->setPixel(p - mBounds.topLeft(), color);
-    }
+    editor()->setPixel(p, color);
     modification();
 }
 
 void BitmapImage::fillNonAlphaPixels(const QRgb color)
 {
-    if (mBounds.isEmpty()) { return; }
+    if (editor()->bounds().isEmpty()) { return; }
 
-    BitmapImage fill(bounds(), color);
+    BitmapImage fill(editor()->bounds(), color);
     paste(&fill, QPainter::CompositionMode_SourceIn);
 }
 
 void BitmapImage::drawLine(QPointF P1, QPointF P2, QPen pen, QPainter::CompositionMode cm, bool antialiasing)
 {
-    int width = 2 + pen.width();
-    setCompositionModeBounds(QRect(P1.toPoint(), P2.toPoint()).normalized().adjusted(-width, -width, width, width), true, cm);
-    if (!image()->isNull())
-    {
-        QPainter painter(image());
-        painter.setCompositionMode(cm);
-        painter.setRenderHint(QPainter::Antialiasing, antialiasing);
-        painter.setPen(pen);
-        painter.drawLine(P1 - mBounds.topLeft(), P2 - mBounds.topLeft());
-        painter.end();
-    }
+    editor()->drawLine(P1, P2, pen, cm, antialiasing);
     modification();
 }
 
 void BitmapImage::drawRect(QRectF rectangle, QPen pen, QBrush brush, QPainter::CompositionMode cm, bool antialiasing)
 {
-    int width = pen.width();
-    setCompositionModeBounds(rectangle.adjusted(-width, -width, width, width).toRect(), true, cm);
-    if (brush.style() == Qt::RadialGradientPattern)
-    {
-        QRadialGradient* gradient = (QRadialGradient*)brush.gradient();
-        gradient->setCenter(gradient->center() - mBounds.topLeft());
-        gradient->setFocalPoint(gradient->focalPoint() - mBounds.topLeft());
-    }
-    if (!image()->isNull())
-    {
-        QPainter painter(image());
-        painter.setCompositionMode(cm);
-        painter.setRenderHint(QPainter::Antialiasing, antialiasing);
-        painter.setPen(pen);
-        painter.setBrush(brush);
-
-        // Adjust the brush rectangle to be bigger than the bounds itself,
-        // otherwise there will be artifacts shown in some cases when smudging
-        painter.drawRect(rectangle.translated(-mBounds.topLeft()).adjusted(-1, -1, 1, 1));
-        painter.end();
-    }
+    editor()->drawRect(rectangle, pen, brush, cm, antialiasing);
     modification();
 }
 
 void BitmapImage::drawEllipse(QRectF rectangle, QPen pen, QBrush brush, QPainter::CompositionMode cm, bool antialiasing)
 {
-    int width = pen.width();
-    setCompositionModeBounds(rectangle.adjusted(-width, -width, width, width).toRect(), true, cm);
-    if (brush.style() == Qt::RadialGradientPattern)
-    {
-        QRadialGradient* gradient = (QRadialGradient*)brush.gradient();
-        gradient->setCenter(gradient->center() - mBounds.topLeft());
-        gradient->setFocalPoint(gradient->focalPoint() - mBounds.topLeft());
-    }
-    if (!image()->isNull())
-    {
-        QPainter painter(image());
-
-        painter.setRenderHint(QPainter::Antialiasing, antialiasing);
-        painter.setPen(pen);
-        painter.setBrush(brush);
-        painter.setCompositionMode(cm);
-        painter.drawEllipse(rectangle.translated(-mBounds.topLeft()));
-        painter.end();
-    }
+    editor()->drawEllipse(rectangle, pen, brush, cm, antialiasing);
     modification();
 }
 
 void BitmapImage::drawPath(QPainterPath path, QPen pen, QBrush brush,
                            QPainter::CompositionMode cm, bool antialiasing)
 {
-    int width = pen.width();
-    // qreal inc = 1.0 + width / 20.0;
-
-    setCompositionModeBounds(path.controlPointRect().adjusted(-width, -width, width, width).toRect(), true, cm);
-
-    if (!image()->isNull())
-    {
-        QPainter painter(image());
-        painter.setCompositionMode(cm);
-        painter.setRenderHint(QPainter::Antialiasing, antialiasing);
-        painter.setPen(pen);
-        painter.setBrush(brush);
-        painter.setTransform(QTransform().translate(-mBounds.left(), -mBounds.top()));
-        painter.setWorldMatrixEnabled(true);
-        if (path.length() > 0)
-        {
-            /*
-            for (int pt = 0; pt < path.elementCount() - 1; pt++)
-            {
-                qreal dx = path.elementAt(pt + 1).x - path.elementAt(pt).x;
-                qreal dy = path.elementAt(pt + 1).y - path.elementAt(pt).y;
-                qreal m = sqrt(dx*dx + dy*dy);
-                qreal factorx = dx / m;
-                qreal factory = dy / m;
-                for (float h = 0.f; h < m; h += inc)
-                {
-                    qreal x = path.elementAt(pt).x + factorx * h;
-                    qreal y = path.elementAt(pt).y + factory * h;
-                    painter.drawPoint(QPointF(x, y));
-                }
-            }
-            */
-            painter.drawPath( path );
-        }
-        else
-        {
-            // forces drawing when points are coincident (mousedown)
-            painter.drawPoint(static_cast<int>(path.elementAt(0).x), static_cast<int>(path.elementAt(0).y));
-        }
-        painter.end();
-    }
+    editor()->drawPath(path, pen, brush, cm, antialiasing);
     modification();
 }
 
 Status BitmapImage::writeFile(const QString& filename)
 {
-    if (!mImage.isNull())
+    if (!editor()->isLoaded())
     {
-        bool b = mImage.save(filename);
+        bool b = editor()->image()->save(filename);
         return (b) ? Status::OK : Status::FAIL;
     }
 
-    if (bounds().isEmpty())
+    if (editor()->bounds().isEmpty())
     {
         QFile f(filename);
         if(f.exists())
@@ -779,275 +401,22 @@ Status BitmapImage::writeFile(const QString& filename)
 
 void BitmapImage::clear()
 {
-    mImage = QImage(); // null image
-    mBounds = QRect(0, 0, 0, 0);
-    mMinBound = true;
+    editor()->clear();
     modification();
 }
 
 QRgb BitmapImage::constScanLine(int x, int y) const
 {
-    QRgb result = QRgb();
-    if (mBounds.contains(x, y)) {
-        result = *(reinterpret_cast<const QRgb*>(mImage.constScanLine(y - mBounds.top())) + x - mBounds.left());
-    }
-    return result;
+    editor()->constScanLine(x, y);
 }
 
 void BitmapImage::scanLine(int x, int y, QRgb color)
 {
-    if (!mBounds.contains(x, y)) {
-        return;
-    }
-    // Make sure color is premultiplied before calling
-    *(reinterpret_cast<QRgb*>(image()->scanLine(y - mBounds.top())) + x - mBounds.left()) = color;
+    editor()->scanLine(x, y, color);
 }
 
 void BitmapImage::clear(QRect rectangle)
 {
-    QRect clearRectangle = mBounds.intersected(rectangle);
-    clearRectangle.moveTopLeft(clearRectangle.topLeft() - mBounds.topLeft());
-
-    setCompositionModeBounds(clearRectangle, true, QPainter::CompositionMode_Clear);
-
-    QPainter painter(image());
-    painter.setCompositionMode(QPainter::CompositionMode_Clear);
-    painter.fillRect(clearRectangle, QColor(0, 0, 0, 0));
-    painter.end();
-
+    editor()->clear(rectangle);
     modification();
 }
-
-bool BitmapImage::floodFill(BitmapImage** replaceImage,
-                            const BitmapImage* targetImage,
-                            const QRect& cameraRect,
-                            const QPoint& point,
-                            const QRgb& fillColor,
-                            int tolerance,
-                            const int expandValue)
-{
-    // Fill region must be 1 pixel larger than the target image to fill regions on the edge connected only by transparent pixels
-    const QRect& fillBounds = targetImage->mBounds.adjusted(-1, -1, 1, 1);
-    QRect maxBounds = cameraRect.united(fillBounds).adjusted(-expandValue, -expandValue, expandValue, expandValue);
-    const int maxWidth = maxBounds.width(), left = maxBounds.left(), top = maxBounds.top();
-
-    // Square tolerance for use with compareColor
-    tolerance = static_cast<int>(qPow(tolerance, 2));
-
-    QRect newBounds;
-    bool *filledPixels = floodFillPoints(targetImage, maxBounds, point, tolerance, newBounds);
-
-    QRect translatedSearchBounds = newBounds.translated(-maxBounds.topLeft());
-
-    // The scanned bounds should take the expansion into account
-    const QRect& expandRect = newBounds.adjusted(-expandValue, -expandValue, expandValue, expandValue);
-    if (expandValue > 0) {
-        newBounds = expandRect;
-    }
-    if (!maxBounds.contains(newBounds)) {
-        newBounds = maxBounds;
-    }
-    translatedSearchBounds = newBounds.translated(-maxBounds.topLeft());
-
-    if (expandValue > 0) {
-        expandFill(filledPixels, translatedSearchBounds, maxBounds, expandValue);
-    }
-
-    *replaceImage = new BitmapImage(newBounds, Qt::transparent);
-
-    // Fill all the found pixels
-    for (int y = translatedSearchBounds.top(); y <= translatedSearchBounds.bottom(); y++)
-    {
-        for (int x = translatedSearchBounds.left(); x <= translatedSearchBounds.right(); x++)
-        {
-            const int index = y * maxWidth + x;
-            if (!filledPixels[index])
-            {
-                continue;
-            }
-            (*replaceImage)->scanLine(x + left, y + top, fillColor);
-        }
-    }
-
-    delete[] filledPixels;
-
-    return true;
-}
-
-// Flood filling based on this scanline algorithm
-// ----- http://lodev.org/cgtutor/floodfill.html
-bool* BitmapImage::floodFillPoints(const BitmapImage* targetImage,
-                                   const QRect& searchBounds,
-                                   QPoint point,
-                                   const int tolerance,
-                                   QRect& newBounds)
-{
-    QRgb oldColor = targetImage->constScanLine(point.x(), point.y());
-    oldColor = qRgba(qRed(oldColor), qGreen(oldColor), qBlue(oldColor), qAlpha(oldColor));
-
-    // Preparations
-    QList<QPoint> queue; // queue all the pixels of the filled area (as they are found)
-
-    QPoint tempPoint;
-    QScopedPointer< QHash<QRgb, bool> > cache(new QHash<QRgb, bool>());
-
-    int xTemp = 0;
-    bool spanLeft = false;
-    bool spanRight = false;
-
-    queue.append(point);
-    // Preparations END
-
-    bool *filledPixels = new bool[searchBounds.height()*searchBounds.width()]{};
-
-    BlitRect blitBounds(point);
-    while (!queue.empty())
-    {
-        tempPoint = queue.takeFirst();
-
-        point.setX(tempPoint.x());
-        point.setY(tempPoint.y());
-
-        xTemp = point.x();
-
-        int xCoord = xTemp - searchBounds.left();
-        int yCoord = point.y() - searchBounds.top();
-
-        if (filledPixels[yCoord*searchBounds.width()+xCoord]) continue;
-
-        while (xTemp >= searchBounds.left() &&
-               compareColor(targetImage->constScanLine(xTemp, point.y()), oldColor, tolerance, cache.data())) xTemp--;
-        xTemp++;
-
-        spanLeft = spanRight = false;
-        while (xTemp <= searchBounds.right() &&
-               compareColor(targetImage->constScanLine(xTemp, point.y()), oldColor, tolerance, cache.data()))
-        {
-
-            QPoint floodPoint = QPoint(xTemp, point.y());
-            if (!blitBounds.contains(floodPoint)) {
-                blitBounds.extend(floodPoint);
-            }
-
-            xCoord = xTemp - searchBounds.left();
-            // This pixel is what we're going to fill later
-            filledPixels[yCoord*searchBounds.width()+xCoord] = true;
-
-            if (!spanLeft && (point.y() > searchBounds.top()) &&
-                compareColor(targetImage->constScanLine(xTemp, point.y() - 1), oldColor, tolerance, cache.data())) {
-                queue.append(QPoint(xTemp, point.y() - 1));
-                spanLeft = true;
-            }
-            else if (spanLeft && (point.y() > searchBounds.top()) &&
-                     !compareColor(targetImage->constScanLine(xTemp, point.y() - 1), oldColor, tolerance, cache.data())) {
-                spanLeft = false;
-            }
-
-            if (!spanRight && point.y() < searchBounds.bottom() &&
-                compareColor(targetImage->constScanLine(xTemp, point.y() + 1), oldColor, tolerance, cache.data())) {
-                queue.append(QPoint(xTemp, point.y() + 1));
-                spanRight = true;
-            }
-            else if (spanRight && point.y() < searchBounds.bottom() &&
-                     !compareColor(targetImage->constScanLine(xTemp, point.y() + 1), oldColor, tolerance, cache.data())) {
-                spanRight = false;
-            }
-
-            Q_ASSERT(queue.count() < (searchBounds.width() * searchBounds.height()));
-            xTemp++;
-        }
-    }
-
-    newBounds = blitBounds;
-
-    return filledPixels;
-}
-
-/** Finds all pixels closest to the input color and applies the input color to the image
- *
- * An example:
- *
- * 0 is where the color was found
- * 1 is the distance from the nearest pixel of that color
- *
- * 211112
- * 100001
- * 100001
- * 211112
- *
- * @param bitmapImage: Image to search
- * @param searchColor: Color to find
- */
-void BitmapImage::expandFill(bool* fillPixels, const QRect& searchBounds, const QRect& maxBounds, int expand) {
-
-    const int maxWidth = maxBounds.width();
-    const int length = maxBounds.height() * maxBounds.width();
-
-    int* manhattanPoints = new int[length]{};
-
-    // Fill points with max length, this is important because otherwise the filled pixels will include a border of the expanded area
-    std::fill_n(manhattanPoints, length, searchBounds.width()+searchBounds.height());
-
-    for (int y = searchBounds.top(); y <= searchBounds.bottom(); y++)
-    {
-        for (int x = searchBounds.left(); x <= searchBounds.right(); x++)
-        {
-            const int index = y*maxWidth+x;
-
-            if (fillPixels[index]) {
-                manhattanPoints[index] = 0;
-                continue;
-            }
-
-            if (y > searchBounds.top()) {
-                // the value will be the num of pixels away from y - 1 of the next position
-                manhattanPoints[index] = qMin(manhattanPoints[index],
-                                             manhattanPoints[(y - 1) * maxWidth+x] + 1);
-
-                int distance = manhattanPoints[index];
-                if (distance <= expand) {
-                    fillPixels[index] = true;
-                }
-            }
-            if (x > searchBounds.left()) {
-                // the value will be the num of pixels away from x - 1 of the next position
-                manhattanPoints[index] = qMin(manhattanPoints[index],
-                                             manhattanPoints[y*maxWidth+(x - 1)] + 1);
-
-                int distance = manhattanPoints[index];
-                if (distance <= expand) {
-                    fillPixels[index] = true;
-                }
-            }
-        }
-    }
-
-    // traverse from bottom right to top left
-    for (int y = searchBounds.bottom(); y >= searchBounds.top(); y--)
-    {
-        for (int x = searchBounds.right(); x >= searchBounds.left(); x--)
-        {
-            const int index = y*maxWidth+x;
-
-            if (y + 1 < searchBounds.bottom()) {
-                manhattanPoints[index] = qMin(manhattanPoints[index], manhattanPoints[(y + 1)*maxWidth+x] + 1);
-
-                int distance = manhattanPoints[index];
-                if (distance <= expand) {
-                    fillPixels[index] = true;
-                }
-            }
-            if (x + 1 < searchBounds.right()) {
-                manhattanPoints[index] = qMin(manhattanPoints[index], manhattanPoints[y*maxWidth+(x + 1)] + 1);
-
-                int distance = manhattanPoints[index];
-                if (distance <= expand) {
-                    fillPixels[index] = true;
-                }
-            }
-        }
-    }
-
-    delete[] manhattanPoints;
-}
-

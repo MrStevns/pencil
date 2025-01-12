@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include "tiledbuffer.h"
 #include "vectorimage.h"
 #include "selectioneditor.h"
+#include "selectionbitmapeditor.h"
 
 #include "painterutils.h"
 
@@ -305,45 +306,46 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
 void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bitmapImage)
 {
-    SelectionEditor* selectionEditor = bitmapImage->selectionEditor();
-    if (bitmapImage->temporaryImage()) {
-        selectionEditor = bitmapImage->temporaryImage()->selectionEditor();
-    }
+    SelectionBitmapEditor* selectionEditor = static_cast<SelectionBitmapEditor*>(bitmapImage->selectionEditor());
+    // if (!selectionEditor->floatingImage().isNull()) {
+    //     selectionEditor = bitmapImage->temporaryImage()->selectionEditor();
+    // }
 
-    if (!selectionEditor || !selectionEditor->somethingSelected()) { return; }
+    // if (!selectionEditor || !selectionEditor->somethingSelected()) { return; }
 
     painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-    if (bitmapImage->temporaryImage()) {
-        painter.save();
-        painter.setTransform(selectionEditor->selectionTransform()*mViewTransform);
-        painter.drawImage(selectionEditor->mySelectionRect(), *bitmapImage->temporaryImage()->image());
-        painter.restore();
+    // const SelectionBitmapImage& floatingImage = selectionEditor->floatingImage();
+    // if (floatingImage.selection.isValid()) {
+    //     painter.save();
+    //     painter.setTransform(floatingImage.transform * mViewTransform);
+    //     painter.drawImage(floatingImage.selection, floatingImage.image);
+    //     painter.restore();
 
-    } else {
+    // } else {
 
-        const QRectF& selectionRect = selectionEditor->mySelectionRect();
-        const QTransform& selectionTransform = selectionEditor->selectionTransform();
+        // const QRectF& selectionRect = selectionEditor->mySelectionRect();
+        // const QTransform& selectionTransform = selectionEditor->selectionTransform();
 
-        painter.save();
-        painter.setTransform(mViewTransform);
+        // painter.save();
+        // painter.setTransform(mViewTransform);
 
-        // Clear the painted area to make it look like the content has been erased
-        painter.save();
-        painter.setCompositionMode(QPainter::CompositionMode_Clear);
-        painter.fillRect(selectionRect, QColor(255,255,255,255));
-        painter.restore();
+        // // Clear the painted area to make it look like the content has been erased
+        // painter.save();
+        // painter.setCompositionMode(QPainter::CompositionMode_Clear);
+        // painter.fillRect(selectionRect, QColor(255,255,255,255));
+        // painter.restore();
 
-        // Multiply the selection and view matrix to get proper rotation and scale values
-        // Now the image origin will be topleft
-        painter.setTransform(selectionTransform*mViewTransform);
+        // // Multiply the selection and view matrix to get proper rotation and scale values
+        // // Now the image origin will be topleft
+        // painter.setTransform(selectionTransform*mViewTransform);
 
-        // Draw the selection image separately and on top
-        painter.save();
-        painter.setClipRect(selectionRect);
-        painter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
-        painter.restore();
-        painter.restore();
-    }
+        // // Draw the selection image separately and on top
+        // painter.save();
+        // painter.setClipRect(selectionRect);
+        // painter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
+        // painter.restore();
+        // painter.restore();
+    // }
 }
 
 void CanvasPainter::paintTransformedSelection(VectorImage *vectorImage, const QTransform& selectionTransform)

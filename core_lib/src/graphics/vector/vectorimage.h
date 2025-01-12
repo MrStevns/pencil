@@ -36,6 +36,9 @@ public:
     ~VectorImage() override;
     VectorImage& operator=(const VectorImage& a);
 
+    KeyFrameEditor* createEditor() const;
+    KeyFrameEditor* createEditor(KeyFrameEditor* editor) const;
+
     VectorImage* clone() const override;
 
     bool read(QString filePath);

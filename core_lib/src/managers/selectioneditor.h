@@ -65,7 +65,7 @@ public:
 
     virtual void deleteSelection() = 0;
 
-    virtual void commitChanges(KeyFrame* Keyframe) = 0;
+    virtual void commitChanges(KeyFrame* keyframe) = 0;
     virtual void discardChanges(KeyFrame* keyframe) = 0;
 
     QPointF currentTransformAnchor() const { return mAnchorPoint; }

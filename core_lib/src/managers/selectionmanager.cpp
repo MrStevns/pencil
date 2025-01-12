@@ -96,11 +96,12 @@ SelectionEditor* SelectionManager::getSelectionEditor(KeyFrame* keyframe)
             bitmapImage = static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame()));
         }
 
-        if (bitmapImage->temporaryImage()) {
-            return bitmapImage->temporaryImage()->selectionEditor();
-        } else {
+        // auto bitmapSelectionEditor = static_cast<SelectionBitmapEditor*>(bitmapImage->selectionEditor());
+        // if (!bitmapSelectionEditor->floatingImage().isNull()) {
+        //     return bitmapImage->temporaryImage()->selectionEditor();
+        // } else {
             return bitmapImage->selectionEditor();
-        }
+        // }
     } else if (mWorkingLayer->type() == Layer::VECTOR) {
         // return static_cast<VectorImage*>(mWorkingLayer->getLastKeyFrameAtPosition(keyPos))->selectionEditor();
         // TODO:

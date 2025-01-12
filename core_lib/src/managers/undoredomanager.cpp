@@ -49,6 +49,7 @@ UndoRedoManager::UndoRedoManager(Editor* editor) : BaseManager(editor, "UndoRedo
 
 UndoRedoManager::~UndoRedoManager()
 {
+    qDebug() << "UndoRedoManager deinit";
     if (!mNewBackupSystemEnabled)
     {
         clearStack();

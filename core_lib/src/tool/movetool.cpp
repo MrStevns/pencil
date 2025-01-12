@@ -27,6 +27,7 @@ GNU General Public License for more details.
 #include "strokeinterpolator.h"
 #include "selectionmanager.h"
 #include "selectioneditor.h"
+#include "selectionbitmapeditor.h"
 #include "overlaymanager.h"
 #include "undoredomanager.h"
 #include "clipboardmanager.h"
@@ -382,13 +383,15 @@ void MoveTool::setFloatingImage(BitmapImage& bitmapImage)
 
     applyTransformation();
 
-    BitmapImage* clipboardClone = bitmapImage.clone();
+    // BitmapImage* clipboardClone = bitmapImage.clone();
 
-    selectMan->createEditor(clipboardClone);
-    clipboardClone->selectionEditor()->setSelection(clipboardClone->bounds());
+    // selectMan->createEditor(clipboardClone);
+    // clipboardClone->selectionEditor()->setSelection(clipboardClone->bounds());
 
     BitmapImage* currentKeyFrame = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(currentFrameNumber);
-    currentKeyFrame->setTemporaryImage(clipboardClone);
+    static_cast<SelectionBitmapEditor*>(currentKeyFrame->selectionEditor())->setFloatingImage(*bitmapImage.image(), bitmapImage.bounds());
+    // currentKeyFrame->setTemporaryImage(clipboardClone);
+    // static_cast<SelectionBitmapEditor*>(currentKeyFrame->selectionEditor())->setFloatingImage(*clipboardClone->image());
 
     emit mEditor->frameModified(currentFrameNumber);
 }

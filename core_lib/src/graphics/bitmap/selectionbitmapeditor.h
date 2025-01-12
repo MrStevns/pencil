@@ -3,6 +3,15 @@
 
 #include "selectioneditor.h"
 
+#include <QImage>
+
+struct SelectionBitmapImage
+{
+    QImage image;
+    QTransform transform;
+    QRect selection;
+};
+
 class SelectionBitmapEditor : public SelectionEditor
 {
 public:
@@ -31,9 +40,15 @@ public:
     bool somethingSelected() const override { return mOriginalRect.isValid(); }
     bool isOutsideSelectionArea(const QPointF& point) const override;
 
+    SelectionBitmapImage floatingImage() const { return mFloatingImage; }
+    void setFloatingImage(const QImage& floatingImage, const QRect& bounds);
+    void clearFloatingImage() { mFloatingImage = SelectionBitmapImage(); }
+
 private:
     QPolygon mSelectionPolygon;
     QRect mOriginalRect;
+    SelectionBitmapImage mKeyFrameImage;
+    SelectionBitmapImage mFloatingImage;
 };
 
 #endif // SELECTIONBITMAPEDITOR_H

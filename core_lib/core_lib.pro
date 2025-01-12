@@ -29,6 +29,7 @@ HEADERS +=  \
     src/canvascursorpainter.h \
     src/corelib-pch.h \
     src/graphics/bitmap/bitmapbucket.h \
+    src/graphics/bitmap/bitmapeditor.h \
     src/graphics/bitmap/bitmapimage.h \
     src/graphics/bitmap/selectionbitmapeditor.h \
     src/graphics/bitmap/tile.h \
@@ -124,6 +125,7 @@ HEADERS +=  \
 SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/canvascursorpainter.cpp \
     src/graphics/bitmap/bitmapbucket.cpp \
+    src/graphics/bitmap/bitmapeditor.cpp \
     src/graphics/bitmap/selectionbitmapeditor.cpp \
     src/graphics/bitmap/tile.cpp \
     src/graphics/bitmap/tiledbuffer.cpp \

@@ -28,21 +28,19 @@ GNU General Public License for more details.
 VectorImage::VectorImage()
 {
     deselectAll();
+    mKeyEditor = new KeyFrameEditor();
 }
 
 VectorImage::VectorImage(const VectorImage& v2) : KeyFrame(v2)
 {
     deselectAll();
+    mKeyEditor = new KeyFrameEditor(*v2.mKeyEditor);
     mCurves = v2.mCurves;
     mArea = v2.mArea;
     mOpacity = v2.mOpacity;
     mSelectionTransformation = v2.mSelectionTransformation;
     mSelectionRect = v2.mSelectionRect;
     mSize = v2.mSize;
-
-    if (v2.mTemporaryVectorImage) {
-        mTemporaryVectorImage.reset(new VectorImage(*v2.mTemporaryVectorImage));
-    }
 }
 
 VectorImage::~VectorImage()
@@ -59,6 +57,7 @@ VectorImage& VectorImage::operator=(const VectorImage& a) {
 
     deselectAll();
     KeyFrame::operator=(a);
+    mKeyEditor = new KeyFrameEditor(*a.mKeyEditor);
     mCurves = a.mCurves;
     mArea = a.mArea;
     mOpacity = a.mOpacity;

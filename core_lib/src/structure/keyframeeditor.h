@@ -9,6 +9,8 @@ public:
     explicit KeyFrameEditor();
     explicit KeyFrameEditor(KeyFrameEditor& editor);
 
+    virtual ~KeyFrameEditor();
+
     int pos() const { return mFrame; }
     void setPos(int position) { mFrame = position; }
     int length() const { return mLength; }
@@ -23,6 +25,8 @@ public:
 
     QString fileName() const { return mAttachedFileName; }
     void    setFileName(QString strFileName) { mAttachedFileName = strFileName; }
+
+    virtual quint64 memoryUsage() const { return 0; }
 
 private:
     int mFrame = -1;

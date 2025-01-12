@@ -5,6 +5,8 @@
 #include <QRectF>
 #include <QDebug>
 
+#include <QImage>
+
 SelectionBitmapEditor::SelectionBitmapEditor() : SelectionEditor()
 {
 }
@@ -40,39 +42,47 @@ void SelectionBitmapEditor::commitChanges(KeyFrame* keyframe)
 {
 
     if (!somethingSelected()) { return; }
-    BitmapImage* currentBitmapImage = static_cast<BitmapImage*>(keyframe);
+    // BitmapImage* currentBitmapImage = static_cast<BitmapImage*>(keyframe);
 
     const QRect& alignedSelectionRect = mOriginalRect;
-    if (currentBitmapImage == nullptr) { return; }
+    // if (currentBitmapImage == nullptr) { return; }
 
-    BitmapImage* floatingImage = currentBitmapImage->temporaryImage();
-    if (floatingImage) {
-        const QRect& transformedSelectionRect = mSelectionTransform.mapRect(alignedSelectionRect);
-        const QImage& transformedFloatingImage = floatingImage->image()->transformed(mSelectionTransform, Qt::SmoothTransformation);
+    // BitmapImage* floatingImage = static_cast<SelectionBitmapEditor*>(currentBitmapImage->selectionEditor())->floatingImage();
+    // if (mFloatingImage.selection.isValid()) {
+    //     const QRect& transformedSelectionRect = mSelectionTransform.mapRect(alignedSelectionRect);
+    //     const QImage& transformedFloatingImage = mFloatingImage.image.transformed(mSelectionTransform, Qt::SmoothTransformation);
 
-        auto floatingBitmapImage = BitmapImage(transformedSelectionRect.topLeft(), transformedFloatingImage);
-        currentBitmapImage->paste(&floatingBitmapImage, QPainter::CompositionMode_SourceOver);
-        // currentBitmapImage->clearTemporaryImage();
-    } else {
-        BitmapImage transformedImage = currentBitmapImage->transformed(alignedSelectionRect, mSelectionTransform, true);
-        currentBitmapImage->clear(alignedSelectionRect);
-        currentBitmapImage->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
-    }
-    // When the selection has been applied, a new rect is applied based on the bounding box.
-    // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
-    setSelection(mapToSelection(QPolygonF(mySelectionRect())).boundingRect());
+    // //     auto floatingBitmapImage = BitmapImage(transformedSelectionRect.topLeft(), transformedFloatingImage);
+    // //     currentBitmapImage->paste(&floatingBitmapImage, QPainter::CompositionMode_SourceOver);
+    // //     // TODO: figure out how we clear the temporary image without destroying the editor as well
+    // //     // currentBitmapImage->clearTemporaryImage();
+    // } else {
+    //     BitmapImage transformedImage = currentBitmapImage->transformed(alignedSelectionRect, mSelectionTransform, true);
+    // //     currentBitmapImage->clear(alignedSelectionRect);
+    // //     currentBitmapImage->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
+    // }
+    // // When the selection has been applied, a new rect is applied based on the bounding box.
+    // // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
+    // setSelection(mapToSelection(QPolygonF(mySelectionRect())).boundingRect());
 }
 void SelectionBitmapEditor::discardChanges(KeyFrame* keyframe)
 {
-    if (!keyframe) { return; }
+    // if (!keyframe) { return; }
 
-    BitmapImage* bitmapImage = static_cast<BitmapImage*>(keyframe);
+    // BitmapImage* bitmapImage = static_cast<BitmapImage*>(keyframe);
 
-    if (bitmapImage->temporaryImage()) {
-        bitmapImage->clearTemporaryImage();
-    }
+    // if (bitmapImage->temporaryImage()) {
+    //     bitmapImage->clearTemporaryImage();
+    // }
 
-    resetSelectionProperties();
+    // resetSelectionProperties();
+}
+
+void SelectionBitmapEditor::setFloatingImage(const QImage &floatingImage, const QRect &bounds)
+{
+    mFloatingImage = SelectionBitmapImage();
+    mFloatingImage.selection = bounds;
+    mFloatingImage.image = floatingImage;
 }
 
 void SelectionBitmapEditor::deleteSelection()

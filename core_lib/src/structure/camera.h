@@ -30,6 +30,9 @@ public:
     explicit Camera(const Camera&);
     ~Camera() override;
 
+    KeyFrameEditor* createEditor() const;
+    KeyFrameEditor* createEditor(KeyFrameEditor* editor) const;
+
     Camera* clone() const override;
 
     QTransform getView();

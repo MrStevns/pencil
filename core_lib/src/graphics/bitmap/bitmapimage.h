@@ -22,6 +22,8 @@ GNU General Public License for more details.
 #include <QtMath>
 #include <QHash>
 
+#include "bitmapeditor.h"
+
 class TiledBuffer;
 class SelectionBitmapEditor;
 class SelectionEditor;
@@ -51,7 +53,6 @@ public:
     void paintImage(QPainter &painter, QImage &image, QRect sourceRect, QRect destRect);
 
     QImage* image();
-    void    setImage(QImage* pImg);
 
     BitmapImage copy();
     BitmapImage copy(QRect rectangle);
@@ -63,9 +64,9 @@ public:
     ///
     /// Note(MrStevns): We have no concept of sub layers for a keyframe currently, this could be the start of that.
     /// Consider reworking this into a list of images in the future for more flexible compositing.
-    void setTemporaryImage(BitmapImage* image);
-    void clearTemporaryImage() { delete mTemporaryImage; mTemporaryImage = nullptr; }
-    BitmapImage* temporaryImage() const { return mTemporaryImage; }
+    // void setTemporaryImage(BitmapImage* image);
+    // void clearTemporaryImage() { delete mTemporaryImage; mTemporaryImage = nullptr; }
+    // BitmapImage* temporaryImage() const { return mTemporaryImage; }
 
     void moveTopLeft(QPoint point);
     void moveTopLeft(QPointF point) { moveTopLeft(point.toPoint()); }
@@ -75,8 +76,9 @@ public:
     BitmapImage transformed(QRect rectangle, bool smoothTransform);
     BitmapImage transformed(QRectF rectangle, bool smoothTransform) { return transformed(rectangle.toRect(), smoothTransform); }
 
-    bool contains(QPoint P) { return mBounds.contains(P); }
+    bool contains(QPoint P) { return editor()->contains(P); }
     bool contains(QPointF P) { return contains(P.toPoint()); }
+
     void autoCrop();
 
     QRgb pixel(int x, int y);
@@ -91,33 +93,24 @@ public:
     void clear(QRect rectangle);
     void clear(QRectF rectangle) { clear(rectangle.toRect()); }
 
-    static bool floodFill(BitmapImage** replaceImage, const BitmapImage* targetImage, const QRect& cameraRect, const QPoint& point, const QRgb& fillColor, int tolerance, const int expandValue);
-    static bool* floodFillPoints(const BitmapImage* targetImage,
-                                const QRect& searchBounds,
-                                QPoint point,
-                                const int tolerance,
-                                QRect& newBounds);
-    static void expandFill(bool* fillPixels, const QRect& searchBounds, const QRect& maxBounds, int expand);
-
     void drawLine(QPointF P1, QPointF P2, QPen pen, QPainter::CompositionMode cm, bool antialiasing);
     void drawRect(QRectF rectangle, QPen pen, QBrush brush, QPainter::CompositionMode cm, bool antialiasing);
     void drawEllipse(QRectF rectangle, QPen pen, QBrush brush, QPainter::CompositionMode cm, bool antialiasing);
     void drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm, bool antialiasing);
 
-    QPoint topLeft() { autoCrop(); return mBounds.topLeft(); }
-    QPoint topRight() { autoCrop(); return mBounds.topRight(); }
-    QPoint bottomLeft() { autoCrop(); return mBounds.bottomLeft(); }
-    QPoint bottomRight() { autoCrop(); return mBounds.bottomRight(); }
-    int left() { autoCrop(); return mBounds.left(); }
-    int right() { autoCrop(); return mBounds.right(); }
-    int top() { autoCrop(); return mBounds.top(); }
-    int bottom() { autoCrop(); return mBounds.bottom(); }
-    int width() { autoCrop(); return mBounds.width(); }
-    int height() { autoCrop(); return mBounds.height(); }
-    QSize size() { autoCrop(); return mBounds.size(); }
+    QRect bounds() { return editor()->bounds(); }
 
-
-    QRect& bounds() { autoCrop(); return mBounds; }
+    QPoint topLeft() { return editor()->topLeft(); }
+    QPoint topRight() { return editor()->topRight(); }
+    QPoint bottomLeft() { return editor()->bottomLeft(); }
+    QPoint bottomRight() { return editor()->bottomRight(); }
+    int left() { return editor()->left(); }
+    int right() { return editor()->right(); }
+    int top() { return editor()->top(); }
+    int bottom() { return editor()->bottom(); }
+    int width() { return editor()->width(); }
+    int height() { return editor()->height(); }
+    QSize size() { return editor()->size(); }
 
     /** Determines if the BitmapImage is minimally bounded.
      *
@@ -129,56 +122,15 @@ public:
      *  @return True only if bounds() is the minimal bounding box
      *          for the contained image.
      */
-    bool isMinimallyBounded() const { return mMinBound; }
-    void enableAutoCrop(bool b) { mEnableAutoCrop = b; }
-    void setOpacity(qreal opacity) { mOpacity = opacity; }
-    qreal getOpacity() const { return mOpacity; }
+    bool isMinimallyBounded() const { return editor()->isMinimallyBounded(); }
+    void enableAutoCrop(bool b) { editor()->enableAutoCrop(b); }
+    void setOpacity(qreal opacity) { editor()->setOpacity(opacity); }
+    qreal getOpacity() const { return editor()->getOpacity(); }
 
     Status writeFile(const QString& filename);
 
-    /** Compare colors for the purposes of flood filling
-     *
-     *  Calculates the Eulcidian difference of the RGB channels
-     *  of the image and compares it to the tolerance
-     *
-     *  @param[in] newColor The first color to compare
-     *  @param[in] oldColor The second color to compare
-     *  @param[in] tolerance The threshold limit between a matching and non-matching color
-     *  @param[in,out] cache Contains a mapping of previous results of compareColor with rule that
-     *                 cache[someColor] = compareColor(someColor, oldColor, tolerance)
-     *
-     *  @return Returns true if the colors have a similarity below the tolerance level
-     *          (i.e. if Eulcidian distance squared is <= tolerance)
-     */
-    static inline bool compareColor(QRgb newColor, QRgb oldColor, int tolerance, QHash<QRgb, bool> *cache)
-    {
-        // Handle trivial case
-        if (newColor == oldColor) return true;
-
-        if(cache && cache->contains(newColor)) return cache->value(newColor);
-
-        // Get Eulcidian distance between colors
-        // Not an accurate representation of human perception,
-        // but it's the best any image editing program ever does
-        int diffRed = static_cast<int>(qPow(qRed(oldColor) - qRed(newColor), 2));
-        int diffGreen = static_cast<int>(qPow(qGreen(oldColor) - qGreen(newColor), 2));
-        int diffBlue = static_cast<int>(qPow(qBlue(oldColor) - qBlue(newColor), 2));
-        // This may not be the best way to handle alpha since the other channels become less relevant as
-        // the alpha is reduces (ex. QColor(0,0,0,0) is the same as QColor(255,255,255,0))
-        int diffAlpha = static_cast<int>(qPow(qAlpha(oldColor) - qAlpha(newColor), 2));
-
-        bool isSimilar = (diffRed + diffGreen + diffBlue + diffAlpha) <= tolerance;
-
-        if(cache)
-        {
-            Q_ASSERT(cache->contains(isSimilar) ? isSimilar == (*cache)[newColor] : true);
-            (*cache)[newColor] = isSimilar;
-        }
-
-        return isSimilar;
-    }
-
-    SelectionEditor* selectionEditor() { return mSelectionEditor.get(); }
+    SelectionEditor* selectionEditor() { return mSelectionEditor; }
+    BitmapEditor* editor() const { return static_cast<BitmapEditor*>(mKeyEditor); }
 
 protected:
     void updateBounds(QRect rectangle);
@@ -188,17 +140,19 @@ protected:
     void setCompositionModeBounds(BitmapImage *source, QPainter::CompositionMode cm);
     void setCompositionModeBounds(QRect sourceBounds, bool isSourceMinBounds, QPainter::CompositionMode cm);
 
+    SelectionEditor* mSelectionEditor = nullptr;
+
 private:
-    QImage mImage;
-    QRect mBounds{0, 0, 0, 0};
+    // QImage mImage;
+    // QRect mBounds{0, 0, 0, 0};
 
-    /** @see isMinimallyBounded() */
-    bool mMinBound = true;
-    bool mEnableAutoCrop = false;
-    qreal mOpacity = 1.0;
+    // /** @see isMinimallyBounded() */
+    // bool mMinBound = true;
+    // bool mEnableAutoCrop = false;
+    // qreal mOpacity = 1.0;
 
-    BitmapImage* mTemporaryImage = nullptr;
-    std::unique_ptr<SelectionEditor> mSelectionEditor;
+    // // BitmapImage* mTemporaryImage = nullptr;
+    // std::unique_ptr<SelectionEditor> mSelectionEditor;
 };
 
 #endif

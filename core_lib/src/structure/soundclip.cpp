@@ -24,16 +24,30 @@ GNU General Public License for more details.
 
 SoundClip::SoundClip()
 {
+    mKeyEditor = createEditor();
 }
 
 SoundClip::SoundClip(const SoundClip& s2) : KeyFrame(s2)
 {
     mOriginalSoundClipName = s2.mOriginalSoundClipName;
+    mKeyEditor = createEditor(s2.mKeyEditor);
 }
 
 SoundClip::~SoundClip()
 {
     //QFile::remove( fileName() );
+}
+
+KeyFrameEditor* SoundClip::createEditor() const
+{
+    // TODO: create vector editor
+    return new KeyFrameEditor();
+}
+
+KeyFrameEditor* SoundClip::createEditor(KeyFrameEditor* editor) const
+{
+    // TODO: create vector editor
+    return new KeyFrameEditor(*editor);
 }
 
 SoundClip& SoundClip::operator=(const SoundClip& a)

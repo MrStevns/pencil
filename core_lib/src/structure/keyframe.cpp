@@ -19,12 +19,10 @@ GNU General Public License for more details.
 
 KeyFrame::KeyFrame()
 {
-    mKeyEditor = new KeyFrameEditor();
 }
 
 KeyFrame::KeyFrame(const KeyFrame& k2)
 {
-    mKeyEditor = new KeyFrameEditor(*k2.mKeyEditor);
     // intentionally not copying event listeners
 }
 
@@ -46,7 +44,6 @@ KeyFrame& KeyFrame::operator=(const KeyFrame& k2)
 		return *this; // a self-assignment
 	}
 
-    mKeyEditor = new KeyFrameEditor(*k2.mKeyEditor);
     // intentionally not copying event listeners
     return *this;
 }

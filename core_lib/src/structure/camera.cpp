@@ -18,6 +18,7 @@ GNU General Public License for more details.
 
 Camera::Camera()
 {
+    mKeyEditor = createEditor();
 }
 
 Camera::Camera(QPointF translation, qreal rotation, qreal scaling)
@@ -27,6 +28,7 @@ Camera::Camera(QPointF translation, qreal rotation, qreal scaling)
     mRotate = rotation;
     mScale = scaling;
     updateViewTransform();
+    mKeyEditor = createEditor();
 }
 
 Camera::Camera(QPointF translation, qreal rotation, qreal scaling, CameraEasingType type)
@@ -43,10 +45,23 @@ Camera::Camera(const Camera& c2) : KeyFrame(c2)
     mPathControlPoint = c2.mPathControlPoint;
     mEasingType = c2.mEasingType;
     mNeedUpdateView = true;
+    mKeyEditor = createEditor(c2.mKeyEditor);
 }
 
 Camera::~Camera()
 {
+}
+
+KeyFrameEditor* Camera::createEditor() const
+{
+    // TODO: create vector editor
+    return new KeyFrameEditor();
+}
+
+KeyFrameEditor* Camera::createEditor(KeyFrameEditor* editor) const
+{
+    // TODO: create vector editor
+    return new KeyFrameEditor(*editor);
 }
 
 Camera* Camera::clone() const
