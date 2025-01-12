@@ -17,18 +17,14 @@ GNU General Public License for more details.
 
 #include "keyframe.h"
 
-
 KeyFrame::KeyFrame()
 {
+    mKeyEditor = new KeyFrameEditor();
 }
 
 KeyFrame::KeyFrame(const KeyFrame& k2)
 {
-    mFrame = k2.mFrame;
-    mLength = k2.mLength;
-    mIsModified = k2.mIsModified;
-    mIsSelected = k2.mIsSelected;
-    mAttachedFileName = k2.mAttachedFileName;
+    mKeyEditor = new KeyFrameEditor(*k2.mKeyEditor);
     // intentionally not copying event listeners
 }
 
@@ -50,17 +46,13 @@ KeyFrame& KeyFrame::operator=(const KeyFrame& k2)
 		return *this; // a self-assignment
 	}
 
-	mFrame = k2.mFrame;
-	mLength = k2.mLength;
-	mIsModified = k2.mIsModified;
-	mIsSelected = k2.mIsSelected;
-	mAttachedFileName = k2.mAttachedFileName;
+    mKeyEditor = new KeyFrameEditor(*k2.mKeyEditor);
     // intentionally not copying event listeners
     return *this;
 }
 
 void KeyFrame::modification() {
-    mIsModified = true;
+    mKeyEditor->modification();
 
     if (eventCallback) {
         eventCallback(KeyFrameEvent::MODIFY, this);
@@ -69,7 +61,7 @@ void KeyFrame::modification() {
 
 void KeyFrame::setModified(bool b)
 {
-    mIsModified = b;
+    mKeyEditor->setModified(b);
 
     if (b && eventCallback) {
         eventCallback(KeyFrameEvent::MODIFY, this);

@@ -24,35 +24,36 @@ GNU General Public License for more details.
 #include <QString>
 #include "pencilerror.h"
 #include "pencildef.h"
+#include "keyframeeditor.h"
 
 class KeyFrameEventListener;
 
 class KeyFrame
 {
+    typedef std::function<void(KeyFrameEvent event, KeyFrame*)> KeyFrameEventCallback;
 public:
     explicit KeyFrame();
 
-    typedef std::function<void(KeyFrameEvent event, KeyFrame*)> KeyFrameEventCallback;
     explicit KeyFrame(const KeyFrame& k2);
     virtual ~KeyFrame();
 
     KeyFrame& operator=(const KeyFrame& k2);
 
-    int  pos() const { return mFrame; }
-    void setPos(int position) { mFrame = position; }
+    int  pos() const { return mKeyEditor->pos(); }
+    void setPos(int position) { mKeyEditor->setPos(position); }
 
-    int length() const { return mLength; }
-    void setLength(int len) { mLength = len; }
+    int length() const { return mKeyEditor->length(); }
+    void setLength(int len) { mKeyEditor->setLength(len); }
 
     void modification();
     void setModified(bool b);
-    bool isModified() const { return mIsModified; }
+    bool isModified() const { return mKeyEditor->isModified(); }
 
-    void setSelected(bool b) { mIsSelected = b; }
-    bool isSelected() const { return mIsSelected; }
+    void setSelected(bool b) { mKeyEditor->setSelected(b); }
+    bool isSelected() const { return mKeyEditor->isSelected(); }
 
-    QString fileName() const { return mAttachedFileName; }
-    void    setFileName(QString strFileName) { mAttachedFileName = strFileName; }
+    QString fileName() const { return mKeyEditor->fileName(); }
+    void    setFileName(QString strFileName) { mKeyEditor->setFileName(strFileName); }
 
     void setupEventCallback(KeyFrameEventCallback eventCallback);
 
@@ -66,13 +67,10 @@ public:
 
     virtual quint64 memoryUsage() { return 0; }
 
-private:
-    int mFrame = -1;
-    int mLength = 1;
-    bool mIsModified = true;
-    bool mIsSelected = false;
-    QString mAttachedFileName;
+protected:
+    KeyFrameEditor* mKeyEditor = nullptr;
 
+private:
     // Contrary to KeyFrameEventListener, this callback is meant to be
     // setup and triggered for all keyframe types
     KeyFrameEventCallback eventCallback;

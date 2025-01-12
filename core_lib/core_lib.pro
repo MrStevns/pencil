@@ -66,6 +66,7 @@ HEADERS +=  \
     src/camerapainter.h \
     src/structure/camera.h \
     src/structure/keyframe.h \
+    src/structure/keyframeeditor.h \
     src/structure/layer.h \
     src/structure/layerbitmap.h \
     src/structure/layercamera.h \
@@ -156,6 +157,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/movieimporter.cpp \
     src/structure/camera.cpp \
     src/structure/keyframe.cpp \
+    src/structure/keyframeeditor.cpp \
     src/structure/layer.cpp \
     src/structure/layerbitmap.cpp \
     src/structure/layercamera.cpp \
