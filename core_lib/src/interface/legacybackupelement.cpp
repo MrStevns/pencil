@@ -25,14 +25,13 @@ GNU General Public License for more details.
 #include "selectioneditor.h"
 #include "layermanager.h"
 #include "undoredomanager.h"
+#include "selectionmanager.h"
+
+#include <QDebug>
 
 void BackupLegacyBitmapElement::restore(Editor* editor)
 {
     Layer* layer = editor->object()->findLayerById(this->layerId);
-    // auto selectMan = editor->select();
-
-    // Commit any previous selection changes if neccesary
-    // selectMan->commitChanges();
 
     if (editor->currentFrame() != this->frame) {
         editor->scrubTo(this->frame);
@@ -48,19 +47,12 @@ void BackupLegacyBitmapElement::restore(Editor* editor)
     {
         if (layer != nullptr)
         {
-            // if (layer->type() == Layer::BITMAP)
-            // {
-            //     auto bitmapLayer = static_cast<LayerBitmap*>(layer);
-            //     BitmapImage* canvasKeyFrame = bitmapLayer->getLastBitmapImageAtFrame(this->frame, 0);
-            //     *canvasKeyFrame = bitmapImage;  // restore the image
-
-            //     selectMan->setSelection(selectionActiveKeyFrame, mySelection, true);
-            //     selectMan->setTransformAnchor(selectionAnchor);
-            //     selectMan->setRotation(rotationAngle);
-            //     selectMan->setScale(scaleX, scaleY);
-            //     selectMan->setTranslation(translation);
-            //     selectMan->calculateSelectionTransformation();
-            // }
+            if (layer->type() == Layer::BITMAP)
+            {
+                auto bitmapLayer = static_cast<LayerBitmap*>(layer);
+                BitmapImage* canvasKeyFrame = bitmapLayer->getLastBitmapImageAtFrame(this->frame, 0);
+                *canvasKeyFrame = bitmapImage;  // restore the image
+            }
         }
     }
 
@@ -69,7 +61,6 @@ void BackupLegacyBitmapElement::restore(Editor* editor)
 
 void BackupLegacyVectorElement::restore(Editor* editor)
 {
-    // auto selectMan = editor->select();
     Layer* layer = editor->object()->findLayerById(this->layerId);
     for (int i = 0; i < editor->object()->getLayerCount(); i++)
     {
@@ -84,9 +75,6 @@ void BackupLegacyVectorElement::restore(Editor* editor)
         }
     }
 
-    // Commit any previous selection changes if neccesary
-    // selectMan->commitChanges();
-
     if (editor->currentFrame() != this->frame) {
         editor->scrubTo(this->frame);
     }
@@ -101,11 +89,11 @@ void BackupLegacyVectorElement::restore(Editor* editor)
     {
         if (layer != nullptr)
         {
-            // if (layer->type() == Layer::VECTOR)
-            // {
-            //     auto vectorLayer = static_cast<LayerVector*>(layer);
-            //     VectorImage* canvasKeyFrame = vectorLayer->getLastVectorImageAtFrame(this->frame, 0);
-            //     *canvasKeyFrame = vectorImage;  // restore the image
+            if (layer->type() == Layer::VECTOR)
+            {
+                auto vectorLayer = static_cast<LayerVector*>(layer);
+                VectorImage* canvasKeyFrame = vectorLayer->getLastVectorImageAtFrame(this->frame, 0);
+                *canvasKeyFrame = vectorImage;  // restore the image
 
             //     selectMan->setSelection(selectionActiveKeyFrame, mySelection, false);
             //     selectMan->setTransformAnchor(selectionAnchor);
@@ -114,7 +102,7 @@ void BackupLegacyVectorElement::restore(Editor* editor)
             //     selectMan->setTranslation(translation);
 
             //     selectMan->calculateSelectionTransformation();
-            // }
+            }
         }
     }
     

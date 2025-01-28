@@ -1,20 +1,22 @@
 #include "selectionbitmapeditor.h"
 
 #include "bitmapimage.h"
+#include "bitmapeditor.h"
 
 #include <QRectF>
 #include <QDebug>
-
 #include <QImage>
 
-SelectionBitmapEditor::SelectionBitmapEditor() : SelectionEditor()
+SelectionBitmapEditor::SelectionBitmapEditor(BitmapEditor* bitmapEditor) : SelectionEditor()
 {
+    mBitmapEditor = bitmapEditor;
 }
 
-SelectionBitmapEditor::SelectionBitmapEditor(SelectionBitmapEditor &editor) : SelectionEditor(editor)
+SelectionBitmapEditor::SelectionBitmapEditor(SelectionBitmapEditor& editor, BitmapEditor* bitmapEditor) : SelectionEditor(editor)
 {
     mSelectionPolygon = editor.mSelectionPolygon;
     mOriginalRect = editor.mOriginalRect;
+    mBitmapEditor = bitmapEditor;
 }
 
 SelectionBitmapEditor::~SelectionBitmapEditor()
@@ -38,7 +40,7 @@ void SelectionBitmapEditor::resetSelectionProperties()
     SelectionEditor::resetSelectionProperties();
 }
 
-void SelectionBitmapEditor::commitChanges(KeyFrame* keyframe)
+void SelectionBitmapEditor::commitChanges()
 {
 
     if (!somethingSelected()) { return; }
@@ -57,15 +59,15 @@ void SelectionBitmapEditor::commitChanges(KeyFrame* keyframe)
     // //     // TODO: figure out how we clear the temporary image without destroying the editor as well
     // //     // currentBitmapImage->clearTemporaryImage();
     // } else {
-    //     BitmapImage transformedImage = currentBitmapImage->transformed(alignedSelectionRect, mSelectionTransform, true);
-    // //     currentBitmapImage->clear(alignedSelectionRect);
-    // //     currentBitmapImage->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
+        BitmapEditor transformedImage = mBitmapEditor->transformed(alignedSelectionRect, mSelectionTransform, true);
+        mBitmapEditor->clear(alignedSelectionRect);
+        mBitmapEditor->paste(transformedImage, QPainter::CompositionMode_SourceOver);
     // }
     // // When the selection has been applied, a new rect is applied based on the bounding box.
     // // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
-    // setSelection(mapToSelection(QPolygonF(mySelectionRect())).boundingRect());
+    setSelection(mapToSelection(QPolygonF(QRectF(mOriginalRect))).boundingRect());
 }
-void SelectionBitmapEditor::discardChanges(KeyFrame* keyframe)
+void SelectionBitmapEditor::discardChanges()
 {
     // if (!keyframe) { return; }
 
@@ -78,12 +80,12 @@ void SelectionBitmapEditor::discardChanges(KeyFrame* keyframe)
     // resetSelectionProperties();
 }
 
-void SelectionBitmapEditor::setFloatingImage(const QImage &floatingImage, const QRect &bounds)
-{
-    mFloatingImage = SelectionBitmapImage();
-    mFloatingImage.selection = bounds;
-    mFloatingImage.image = floatingImage;
-}
+// void SelectionBitmapEditor::setFloatingImage(const QImage &floatingImage, const QRect &bounds)
+// {
+//     // mFloatingImage = SelectionBitmapImage();
+//     // mFloatingImage.selection = bounds;
+//     // mFloatingImage.image = floatingImage;
+// }
 
 void SelectionBitmapEditor::deleteSelection()
 {

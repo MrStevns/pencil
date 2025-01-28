@@ -59,14 +59,19 @@ void SelectionManager::workingLayerChanged(Layer* layer)
 
 void SelectionManager::createEditor(BitmapImage* bitmapImage)
 {
-    SelectionBitmapEditor* selectionEditor = new SelectionBitmapEditor();
+    SelectionBitmapEditor* selectionEditor = new SelectionBitmapEditor(bitmapImage->editor());
     bitmapImage->attachSelectionEditor(selectionEditor);
 
-    selectionEditor->selectionReset = [this] (void) {
+    setEditorCallbacks(selectionEditor);
+}
+
+void SelectionManager::setEditorCallbacks(SelectionEditor* selectionEditor)
+{
+    selectionEditor->onSelectionReset = [this] (void) {
         emit selectionReset();
     };
 
-    selectionEditor->selectionChanged = [this] (void) {
+    selectionEditor->onSelectionChanged = [this] (void) {
         emit selectionChanged();
     };
 }
@@ -160,8 +165,9 @@ void SelectionManager::commitChanges()
     // when commiting
     KeyFrame* keyframe = getCurrentKeyFrame();
     if (keyframe) {
-        getSelectionEditor()->commitChanges(keyframe);
+        getSelectionEditor()->commitChanges();
         editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
+        getSelectionEditor()->resetSelectionProperties();
     }
 }
 
@@ -171,7 +177,7 @@ void SelectionManager::discardChanges()
 
     KeyFrame* keyframe = getCurrentKeyFrame();
     if (keyframe) {
-        getSelectionEditor()->discardChanges(keyframe);
+        getSelectionEditor()->discardChanges();
         editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
     }
 }

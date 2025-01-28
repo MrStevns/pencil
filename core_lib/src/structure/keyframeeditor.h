@@ -7,7 +7,7 @@ class KeyFrameEditor
 
 public:
     explicit KeyFrameEditor();
-    explicit KeyFrameEditor(KeyFrameEditor& editor);
+    explicit KeyFrameEditor(const KeyFrameEditor& editor);
 
     virtual ~KeyFrameEditor();
 

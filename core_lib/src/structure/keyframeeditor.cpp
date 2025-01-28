@@ -7,7 +7,7 @@ KeyFrameEditor::KeyFrameEditor()
     qDebug() << "created empty KeyFrameEditor";
 }
 
-KeyFrameEditor::KeyFrameEditor(KeyFrameEditor &editor)
+KeyFrameEditor::KeyFrameEditor(const KeyFrameEditor& editor)
 {
     qDebug() << "created copy of KeyFrameEditor";
     mFrame = editor.mFrame;

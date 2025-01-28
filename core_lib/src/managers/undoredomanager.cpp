@@ -210,17 +210,6 @@ void UndoRedoManager::replaceBitmap(const UndoSaveState& undoState, const QStrin
                                                description,
                                                editor());
 
-    const SelectionSaveState& selectionState = undoState.selectionState;
-    new TransformCommand(selectionState.bounds,
-                         selectionState.translation,
-                         selectionState.rotationAngle,
-                         selectionState.scaleX,
-                         selectionState.scaleY,
-                         selectionState.anchor,
-                         true, // roundPixels
-                         description,
-                         editor(), element);
-
     pushCommand(element);
 }
 
@@ -232,16 +221,10 @@ void UndoRedoManager::replaceVector(const UndoSaveState& undoState, const QStrin
                                                  description,
                                                  editor());
 
-    const SelectionSaveState& selectionState = undoState.selectionState;
-    new TransformCommand(selectionState.bounds,
-                         selectionState.translation,
-                         selectionState.rotationAngle,
-                         selectionState.scaleX,
-                         selectionState.scaleY,
-                         selectionState.anchor,
-                         false, // Round pixels
-                         description,
-                         editor(), element);
+    // const SelectionSaveState& selectionState = undoState.selectionState;
+    // new TransformCommand(element->undoVector
+    //                      description,
+    //                      editor(), element);
     pushCommand(element);
 }
 
@@ -466,13 +449,6 @@ bool UndoRedoManager::legacyBackup(int backupLayer, int backupFrame, const QStri
                 element->layer = backupLayer;
                 element->frame = bitmapImage->pos();
                 element->undoText = undoText;
-                // element->somethingSelected = editor()->select()->somethingSelected();
-                // element->mySelection = editor()->select()->mySelectionRect();
-                // element->rotationAngle = editor()->select()->myRotation();
-                // element->scaleX = editor()->select()->myScaleX();
-                // element->scaleY = editor()->select()->myScaleY();
-                // element->translation = editor()->select()->myTranslation();
-                // element->selectionAnchor = editor()->select()->currentTransformAnchor();
 
                 mLegacyBackupList.append(element);
                 mLegacyBackupIndex++;

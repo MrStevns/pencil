@@ -65,8 +65,8 @@ public:
 
     virtual void deleteSelection() = 0;
 
-    virtual void commitChanges(KeyFrame* keyframe) = 0;
-    virtual void discardChanges(KeyFrame* keyframe) = 0;
+    virtual void commitChanges() = 0;
+    virtual void discardChanges() = 0;
 
     QPointF currentTransformAnchor() const { return mAnchorPoint; }
 
@@ -125,10 +125,10 @@ public:
     void cleanupCallbacks();
 
     typedef std::function<void()> SelectionChangedCallback;
-    SelectionChangedCallback selectionChanged;
+    SelectionChangedCallback onSelectionChanged;
 
     typedef std::function<void()> SelectionResetCallback;
-    SelectionResetCallback selectionReset;
+    SelectionResetCallback onSelectionReset;
 
 protected:
     void setMoveModeForAnchorInRange(const QPolygonF& selectionPolygon, const QPointF& point);

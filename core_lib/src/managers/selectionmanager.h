@@ -68,6 +68,8 @@ public:
     bool isOutsideSelectionArea(const QPointF& point);
     bool somethingSelected();
 
+    void setEditorCallbacks(SelectionEditor* selectionEditor);
+
 signals:
     void selectionChanged();
     void selectionReset();

@@ -164,13 +164,8 @@ class TransformCommand : public UndoRedoCommand
 
 {
 public:
-    TransformCommand(const QRectF& undoSelectionRect,
-                     const QPointF& undoTranslation,
-                     const qreal undoRotationAngle,
-                     const qreal undoScaleX,
-                     const qreal undoScaleY,
-                     const QPointF& undoTransformAnchor,
-                     const bool roundPixels,
+    TransformCommand(SelectionEditor* undoSelectionEditor,
+                     SelectionEditor* redoSelectionEditor,
                      const QString& description,
                      Editor* editor,
                      QUndoCommand* parent = nullptr);
@@ -187,25 +182,8 @@ private:
                const QPointF& selectionAnchor,
                const bool roundPixels);
 
-    QRectF undoSelectionRect;
-    QRectF redoSelectionRect;
-
-    QPointF undoAnchor;
-    QPointF redoAnchor;
-
-    QPointF undoTranslation;
-    QPointF redoTranslation;
-
-    qreal undoScaleX;
-    qreal undoScaleY;
-
-    qreal redoScaleX;
-    qreal redoScaleY;
-
-    qreal undoRotationAngle;
-    qreal redoRotationAngle;
-
-    bool roundPixels;
+    SelectionEditor* undoSelectionEditor = nullptr;
+    SelectionEditor* redoSelectionEditor = nullptr;
 };
 
 #endif // UNDOREDOCOMMAND_H

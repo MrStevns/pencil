@@ -15,8 +15,8 @@ class TiledBuffer;
 class BitmapEditor: public KeyFrameEditor
 {
 public:
-    explicit BitmapEditor();
-    BitmapEditor(BitmapEditor& editor);
+    BitmapEditor();
+    BitmapEditor(const BitmapEditor& editor);
     BitmapEditor(const QRect& rectangle, const QColor& color);
     BitmapEditor(const QPoint& topLeft, const QImage& image);
     BitmapEditor(const QPoint& topLeft, const QString& path);
@@ -28,6 +28,7 @@ public:
     void moveTopLeft(QPointF& point) { mBounds.moveTopLeft(point.toPoint()); }
 
     void transform(QRect newBoundaries, bool smoothTransform);
+    BitmapEditor transformed(const QRect& newBoundaries, const QTransform& transform, bool smoothTransform) const;
     // const QImage& transformed(const QImage& image, const QRect& selection, const QTransform& transform, bool smoothTransform);
     // const QImage& transformed(const QImage& image, const QRect& newBoundaries, bool smoothTransform);
 
@@ -60,6 +61,8 @@ public:
     QRgb pixel(const QPoint& p) const;
     void setPixel(const QPoint& p, QRgb color);
 
+    BitmapEditor copyArea(const QRect& rect) const;
+
     void autoCrop();
 
     void loadFile();
@@ -67,6 +70,7 @@ public:
     bool isLoaded();
 
     QImage* image();
+    const QImage* constImage() const;
 
     void paintImage(QPainter& painter);
     void paintImage(QPainter& painter, QImage& image, QRect sourceRect, QRect destRect);
@@ -78,7 +82,7 @@ public:
 
     void clear();
     void clear(const QRect& rectangle);
-    void paste(BitmapEditor& bitmapEditor, QPainter::CompositionMode mode = QPainter::CompositionMode::CompositionMode_SourceOver);
+    void paste(const BitmapEditor& bitmapEditor, QPainter::CompositionMode mode = QPainter::CompositionMode::CompositionMode_SourceOver);
     void paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMode cm);
 
     quint64 memoryUsage() const override;

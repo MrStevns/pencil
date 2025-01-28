@@ -32,14 +32,6 @@ public:
     enum types { UNDEFINED, BITMAP_MODIF, VECTOR_MODIF, SOUND_MODIF };
 
     QString undoText;
-    bool somethingSelected = false;
-    qreal rotationAngle = 0.0;
-    qreal scaleX = 1.0;
-    qreal scaleY = 1.0;
-    QPointF translation;
-    QRectF mySelection;
-    QPointF selectionAnchor;
-    KeyFrame* selectionActiveKeyFrame = nullptr;
 
     int layerId = 0;
     int layer = 0;

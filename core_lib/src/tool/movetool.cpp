@@ -388,8 +388,8 @@ void MoveTool::setFloatingImage(BitmapImage& bitmapImage)
     // selectMan->createEditor(clipboardClone);
     // clipboardClone->selectionEditor()->setSelection(clipboardClone->bounds());
 
-    BitmapImage* currentKeyFrame = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(currentFrameNumber);
-    static_cast<SelectionBitmapEditor*>(currentKeyFrame->selectionEditor())->setFloatingImage(*bitmapImage.image(), bitmapImage.bounds());
+    // BitmapImage* currentKeyFrame = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(currentFrameNumber);
+    // static_cast<SelectionBitmapEditor*>(currentKeyFrame->selectionEditor())->setFloatingImage(*bitmapImage.image(), bitmapImage.bounds());
     // currentKeyFrame->setTemporaryImage(clipboardClone);
     // static_cast<SelectionBitmapEditor*>(currentKeyFrame->selectionEditor())->setFloatingImage(*clipboardClone->image());
 

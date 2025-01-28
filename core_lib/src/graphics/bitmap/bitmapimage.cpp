@@ -60,7 +60,12 @@ void BitmapImage::attachSelectionEditor(SelectionBitmapEditor* selectionEditor)
 {
     qDebug() << "attaching editor to " << pos();
     qDebug() << "editor is" << selectionEditor;
-    // mSelectionEditor.reset(selectionEditor);
+    mSelectionEditor.reset(selectionEditor);
+}
+
+void BitmapImage::detatchSelectionEditor()
+{
+    mSelectionEditor.reset();
 }
 
 BitmapImage::~BitmapImage()
@@ -78,13 +83,12 @@ BitmapImage& BitmapImage::operator=(const BitmapImage& a)
     KeyFrame::operator=(a);
     mKeyEditor = new BitmapEditor(*a.editor());
 
-    // TODO: do we reimplement this here?
-    // if (a.mSelectionEditor.get()) {
-    //     SelectionBitmapEditor* editor = static_cast<SelectionBitmapEditor*>(a.mSelectionEditor.get());
-    //     mSelectionEditor.reset(new SelectionBitmapEditor(*editor));
-    // } else {
-    //     mSelectionEditor.reset();
-    // }
+    if (a.mSelectionEditor.get()) {
+        SelectionBitmapEditor* editor = static_cast<SelectionBitmapEditor*>(a.mSelectionEditor.get());
+        mSelectionEditor.reset(new SelectionBitmapEditor(*editor, static_cast<BitmapEditor*>(mKeyEditor)));
+    } else {
+        mSelectionEditor.reset();
+    }
     modification();
     return *this;
 }
@@ -93,6 +97,11 @@ BitmapImage* BitmapImage::clone() const
 {
     BitmapImage* b = new BitmapImage(*this);
     b->setFileName(""); // don't link to the file of the source bitmap image
+
+    if (mSelectionEditor.get()) {
+        SelectionBitmapEditor* selectionEditor = static_cast<SelectionBitmapEditor*>(mSelectionEditor.get());
+        b->mSelectionEditor.reset(new SelectionBitmapEditor(*selectionEditor, b->editor()));
+    }
 
     const bool validKeyFrame = !fileName().isEmpty();
     if (validKeyFrame && !isLoaded())
@@ -380,7 +389,7 @@ void BitmapImage::drawPath(QPainterPath path, QPen pen, QBrush brush,
 
 Status BitmapImage::writeFile(const QString& filename)
 {
-    if (!editor()->isLoaded())
+    if (editor()->isLoaded())
     {
         bool b = editor()->image()->save(filename);
         return (b) ? Status::OK : Status::FAIL;

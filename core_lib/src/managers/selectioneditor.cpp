@@ -44,6 +44,12 @@ SelectionEditor::SelectionEditor(SelectionEditor& editor)
     mMoveMode = editor.mMoveMode;
     mTranslation = editor.mTranslation;
     mRotatedAngle = editor.mRotatedAngle;
+    mSelectionTransform = editor.mSelectionTransform;
+    mMoveMode = editor.mMoveMode;
+    mDragOrigin = editor.mDragOrigin;
+
+    onSelectionChanged = editor.onSelectionChanged;
+    onSelectionReset = editor.onSelectionReset;
 }
 
 SelectionEditor::~SelectionEditor()
@@ -53,8 +59,8 @@ SelectionEditor::~SelectionEditor()
 
 void SelectionEditor::cleanupCallbacks()
 {
-    selectionChanged = nullptr;
-    selectionReset = nullptr;
+    onSelectionChanged = nullptr;
+    onSelectionReset = nullptr;
 }
 
 void SelectionEditor::resetSelectionTransformProperties()
@@ -268,14 +274,14 @@ qreal SelectionEditor::angleFromPoint(const QPointF& point, const QPointF& ancho
 void SelectionEditor::setSelection(const QRectF& rect)
 {
     Q_UNUSED(rect)
-    selectionChanged();
+    onSelectionChanged();
 }
 
 void SelectionEditor::deselect()
 {
     resetSelectionProperties();
     mMoveMode = MoveMode::NONE;
-    selectionChanged();
+    onSelectionChanged();
 }
 
 void SelectionEditor::setTransformAnchor(const QPointF& point)
@@ -300,7 +306,7 @@ void SelectionEditor::calculateSelectionTransformation()
     QTransform s;
     s.scale(mScaleX, mScaleY);
     mSelectionTransform = t * s * r * t2;
-    selectionChanged();
+    onSelectionChanged();
 }
 
 QPointF SelectionEditor::alignPositionToAxis(QPointF currentPoint) const
@@ -331,7 +337,7 @@ void SelectionEditor::flipSelection(bool flipVertical)
     // TODO (MrStevns): Why is this needed, The transform anchor shouldn't be any different?
     // setTransformAnchor(mOriginalRect.center());
     calculateSelectionTransformation();
-    selectionChanged();
+    onSelectionChanged();
 }
 
 void SelectionEditor::resetSelectionProperties()
@@ -339,7 +345,7 @@ void SelectionEditor::resetSelectionProperties()
     // resetSelectionTransformProperties();
     // mSelectionPolygon = QPolygonF();
     // mOriginalRect = QRectF();
-    selectionChanged();
+    onSelectionChanged();
 }
 
 

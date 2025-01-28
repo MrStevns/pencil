@@ -5,24 +5,19 @@
 
 #include <QImage>
 
-struct SelectionBitmapImage
-{
-    QImage image;
-    QTransform transform;
-    QRect selection;
-};
+class BitmapEditor;
 
 class SelectionBitmapEditor : public SelectionEditor
 {
 public:
-    explicit SelectionBitmapEditor();
-    SelectionBitmapEditor(SelectionBitmapEditor& editor);
+    explicit SelectionBitmapEditor(BitmapEditor* bitmapEditor);
+    SelectionBitmapEditor(SelectionBitmapEditor& editor, BitmapEditor* bitmapEditor);
     ~SelectionBitmapEditor() override;
 
     void setSelection(const QRectF& rect) override;
 
-    void commitChanges(KeyFrame* keyframe) override;
-    void discardChanges(KeyFrame* keyframe) override;
+    void commitChanges() override;
+    void discardChanges() override;
     void deleteSelection() override;
 
     void setDragOrigin(const QPointF& point) override { mDragOrigin = point.toPoint(); }
@@ -40,15 +35,16 @@ public:
     bool somethingSelected() const override { return mOriginalRect.isValid(); }
     bool isOutsideSelectionArea(const QPointF& point) const override;
 
-    SelectionBitmapImage floatingImage() const { return mFloatingImage; }
-    void setFloatingImage(const QImage& floatingImage, const QRect& bounds);
-    void clearFloatingImage() { mFloatingImage = SelectionBitmapImage(); }
+    // void setFloatingEditor(BitmapEditor* bitmapEditor);
+    // SelectionBitmapImage floatingImage() const { return mFloatingImage; }
+    // void setFloatingImage(const QImage& floatingImage, const QRect& bounds);
+    // void clearFloatingImage() { mFloatingImage = SelectionBitmapImage(); }
 
 private:
     QPolygon mSelectionPolygon;
     QRect mOriginalRect;
-    SelectionBitmapImage mKeyFrameImage;
-    SelectionBitmapImage mFloatingImage;
+
+    BitmapEditor* mBitmapEditor = nullptr;
 };
 
 #endif // SELECTIONBITMAPEDITOR_H

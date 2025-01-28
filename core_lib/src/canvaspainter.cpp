@@ -311,9 +311,9 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bi
     //     selectionEditor = bitmapImage->temporaryImage()->selectionEditor();
     // }
 
-    // if (!selectionEditor || !selectionEditor->somethingSelected()) { return; }
+    if (!selectionEditor || !selectionEditor->somethingSelected()) { return; }
 
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    // painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
     // const SelectionBitmapImage& floatingImage = selectionEditor->floatingImage();
     // if (floatingImage.selection.isValid()) {
     //     painter.save();
@@ -323,28 +323,35 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bi
 
     // } else {
 
-        // const QRectF& selectionRect = selectionEditor->mySelectionRect();
-        // const QTransform& selectionTransform = selectionEditor->selectionTransform();
+        const QRectF& selectionRect = selectionEditor->mySelectionRect();
+        const QTransform& selectionTransform = selectionEditor->selectionTransform();
 
-        // painter.save();
-        // painter.setTransform(mViewTransform);
+        painter.save();
+        painter.setTransform(mViewTransform);
 
-        // // Clear the painted area to make it look like the content has been erased
-        // painter.save();
-        // painter.setCompositionMode(QPainter::CompositionMode_Clear);
-        // painter.fillRect(selectionRect, QColor(255,255,255,255));
-        // painter.restore();
+        // Clear the painted area to make it look like the content has been erased
+        painter.save();
+        painter.setCompositionMode(QPainter::CompositionMode_Clear);
+        painter.fillRect(selectionRect, QColor(255,255,255,255));
+        painter.restore();
 
-        // // Multiply the selection and view matrix to get proper rotation and scale values
-        // // Now the image origin will be topleft
-        // painter.setTransform(selectionTransform*mViewTransform);
+        // Multiply the selection and view matrix to get proper rotation and scale values
+        // Now the image origin will be topleft
+        painter.setTransform(selectionTransform*mViewTransform);
 
-        // // Draw the selection image separately and on top
-        // painter.save();
-        // painter.setClipRect(selectionRect);
-        // painter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
-        // painter.restore();
-        // painter.restore();
+        // Draw the selection image separately and on top
+        painter.save();
+        painter.setClipRect(selectionRect);
+        painter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
+        painter.restore();
+        painter.restore();
+
+        // Debugging
+        painter.save();
+        painter.setTransform(mViewTransform);
+        BitmapEditor transformedEditor = bitmapImage->editor()->transformed(selectionRect.toRect(), selectionTransform, true);
+        painter.drawImage(QPoint(), *transformedEditor.image());
+        painter.restore();
     // }
 }
 

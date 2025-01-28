@@ -11,7 +11,7 @@ BitmapEditor::BitmapEditor() : KeyFrameEditor()
 
 }
 
-BitmapEditor::BitmapEditor(BitmapEditor& editor) : KeyFrameEditor(editor)
+BitmapEditor::BitmapEditor(const BitmapEditor& editor) : KeyFrameEditor(editor)
 {
     mBounds = editor.mBounds;
     mMinBound = editor.mMinBound;
@@ -32,7 +32,11 @@ BitmapEditor::BitmapEditor(const QPoint& topLeft, const QImage& image)
 {
     mBounds = QRect(topLeft, image.size());
     mMinBound = true;
-    mImage = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    if (image.format() != QImage::Format_ARGB32_Premultiplied) {
+        mImage = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    } else {
+        mImage = image;
+    }
 }
 
 BitmapEditor::BitmapEditor(const QPoint& topLeft, const QString& path)
@@ -127,21 +131,25 @@ bool BitmapEditor::extend(QRect rectangle)
     return false;
 }
 
-// const QImage& BitmapEditor::transformed(const QImage& image, const QRect& selection, const QTransform& transform, bool smoothTransform)
-// {
-//     return image->transformed(transform, smoothTransform ? Qt::SmoothTransformation : Qt::FastTransformation);
-// }
+BitmapEditor BitmapEditor::copyArea(const QRect& rect) const
+{
+    BitmapEditor copyEditor = BitmapEditor(rect.normalized(), Qt::transparent);
 
-// const QImage& BitmapEditor::transformed(const QImage& image, const QRect& newBoundaries, bool smoothTransform)
-// {
-//     BitmapImage transformedImage(newBoundaries, QColor(0, 0, 0, 0));
-//     QPainter painter(transformedImage.image());
-//     painter.setRenderHint(QPainter::SmoothPixmapTransform, smoothTransform);
-//     newBoundaries.moveTopLeft(QPoint(0, 0));
-//     painter.drawImage(newBoundaries, *image());
-//     painter.end();
-//     return transformedImage;
-// }
+    // // This creates a copy of the current image and adds it to copyEditor
+    QPainter painter(copyEditor.image());
+    painter.drawImage(mBounds.topLeft() - rect.topLeft(), mImage);
+    painter.end();
+
+    return copyEditor;
+}
+
+BitmapEditor BitmapEditor::transformed(const QRect& selection, const QTransform& transform, bool smoothTransform) const
+{
+    const BitmapEditor& selectedEditor = copyArea(selection);
+
+    const QImage& transformedImage = selectedEditor.constImage()->transformed(transform, smoothTransform ? Qt::SmoothTransformation : Qt::FastTransformation);
+    return BitmapEditor(transform.mapRect(selection).normalized().topLeft(), transformedImage);
+}
 
 void BitmapEditor::paintImage(QPainter& painter)
 {
@@ -504,7 +512,7 @@ void BitmapEditor::setPixel(const QPoint& p, QRgb color)
     }
 }
 
-void BitmapEditor::paste(BitmapEditor& bitmapEditor, QPainter::CompositionMode mode)
+void BitmapEditor::paste(const BitmapEditor& bitmapEditor, QPainter::CompositionMode mode)
 {
     if(!bitmapEditor.bounds().isValid())
     {
@@ -513,9 +521,10 @@ void BitmapEditor::paste(BitmapEditor& bitmapEditor, QPainter::CompositionMode m
 
     setCompositionModeBounds(bitmapEditor.bounds(), bitmapEditor.isMinimallyBounded(), mode);
 
-    QImage* imageToPaste = bitmapEditor.image();
+    const QImage* imageToPaste = bitmapEditor.constImage();
 
     QPainter painter(&mImage);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
     painter.setCompositionMode(mode);
     painter.drawImage(bitmapEditor.bounds().topLeft() - mBounds.topLeft(), *imageToPaste);
     painter.end();
@@ -546,6 +555,11 @@ QImage* BitmapEditor::image()
     if (!isLoaded()) {
         loadFile();
     }
+    return &mImage;
+}
+
+const QImage* BitmapEditor::constImage() const
+{
     return &mImage;
 }
 

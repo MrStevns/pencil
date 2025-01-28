@@ -47,7 +47,7 @@ public:
     quint64 memoryUsage() override;
 
     void attachSelectionEditor(SelectionBitmapEditor* selectionEditor);
-    void detachSelectionEditor(SelectionBitmapEditor* selectionEditor);
+    void detatchSelectionEditor();
 
     void paintImage(QPainter& painter);
     void paintImage(QPainter &painter, QImage &image, QRect sourceRect, QRect destRect);
@@ -129,7 +129,7 @@ public:
 
     Status writeFile(const QString& filename);
 
-    SelectionEditor* selectionEditor() { return mSelectionEditor; }
+    SelectionEditor* selectionEditor() const { return mSelectionEditor.get(); }
     BitmapEditor* editor() const { return static_cast<BitmapEditor*>(mKeyEditor); }
 
 protected:
@@ -140,7 +140,7 @@ protected:
     void setCompositionModeBounds(BitmapImage *source, QPainter::CompositionMode cm);
     void setCompositionModeBounds(QRect sourceBounds, bool isSourceMinBounds, QPainter::CompositionMode cm);
 
-    SelectionEditor* mSelectionEditor = nullptr;
+    std::unique_ptr<SelectionEditor> mSelectionEditor;
 
 private:
     // QImage mImage;

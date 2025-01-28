@@ -10,8 +10,8 @@ class SelectionVectorEditor : public SelectionEditor
 
     void setSelection(const QRectF& rect) override;
 
-    void commitChanges(KeyFrame* keyframe) override;
-    void discardChanges(KeyFrame* keyframe) override;
+    void commitChanges() override;
+    void discardChanges() override;
     void deleteSelection() override;
 
     void setDragOrigin(const QPointF& point) override { mDragOrigin = point; }

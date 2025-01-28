@@ -20,6 +20,7 @@ GNU General Public License for more details.
 
 #include "layermanager.h"
 #include "selectioneditor.h"
+#include "selectionmanager.h"
 
 #include "layersound.h"
 #include "layerbitmap.h"
@@ -298,33 +299,14 @@ void VectorReplaceCommand::redo()
     editor()->scrubTo(redoVector.pos());
 }
 
-TransformCommand::TransformCommand(const QRectF& undoSelectionRect,
-                                   const QPointF& undoTranslation,
-                                   const qreal undoRotationAngle,
-                                   const qreal undoScaleX,
-                                   const qreal undoScaleY,
-                                   const QPointF& undoTransformAnchor,
-                                   const bool roundPixels,
+TransformCommand::TransformCommand(SelectionEditor* undoSelectionEditor,
+                                   SelectionEditor* redoSelectionEditor,
                                    const QString& description,
                                    Editor* editor,
                                    QUndoCommand *parent) : UndoRedoCommand(editor, parent)
 {
-    this->roundPixels = roundPixels;
-
-    this->undoSelectionRect = undoSelectionRect;
-    this->undoAnchor = undoTransformAnchor;
-    this->undoTranslation = undoTranslation;
-    this->undoRotationAngle = undoRotationAngle;
-    this->undoScaleX = undoScaleX;
-    this->undoScaleY = undoScaleY;
-
-    // auto selectMan = editor->select();
-    // redoSelectionRect = selectMan->mySelectionRect();
-    // redoAnchor = selectMan->currentTransformAnchor();
-    // redoTranslation = selectMan->myTranslation();
-    // redoRotationAngle = selectMan->myRotation();
-    // redoScaleX = selectMan->myScaleX();
-    // redoScaleY = selectMan->myScaleY();
+    this->undoSelectionEditor = undoSelectionEditor;
+    this->redoSelectionEditor = redoSelectionEditor;
 
     setText(description);
 }
@@ -332,29 +314,22 @@ TransformCommand::TransformCommand(const QRectF& undoSelectionRect,
 void TransformCommand::undo()
 {
     UndoRedoCommand::undo();
-    apply(undoSelectionRect,
-          undoTranslation,
-          undoRotationAngle,
-          undoScaleX,
-          undoScaleY,
-          undoAnchor,
-          roundPixels);
+
+    // if (undoSelectionEditor) {
+    //     editor()->select()->setEditorCallbacks(undoSelectionEditor);
+    // }
 }
 
 void TransformCommand::redo()
 {
     UndoRedoCommand::redo();
 
-    // Ignore automatic redo when added to undo stack
-    if (isFirstRedo()) { setFirstRedo(false); return; }
+    // // Ignore automatic redo when added to undo stack
+    // if (isFirstRedo()) { setFirstRedo(false); return; }
 
-    apply(redoSelectionRect,
-          redoTranslation,
-          redoRotationAngle,
-          redoScaleX,
-          redoScaleY,
-          redoAnchor,
-          roundPixels);
+    // if (redoSelectionEditor) {
+    //     editor()->select()->setEditorCallbacks(redoSelectionEditor);
+    // }
 }
 
 void TransformCommand::apply(const QRectF& selectionRect,
