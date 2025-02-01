@@ -15,7 +15,7 @@ SelectionBitmapEditor::SelectionBitmapEditor(BitmapEditor* bitmapEditor) : Selec
 SelectionBitmapEditor::SelectionBitmapEditor(SelectionBitmapEditor& editor, BitmapEditor* bitmapEditor) : SelectionEditor(editor)
 {
     mSelectionPolygon = editor.mSelectionPolygon;
-    mOriginalRect = editor.mOriginalRect;
+    // mOriginalRect = editor.mOriginalRect;
     mBitmapEditor = bitmapEditor;
 }
 
@@ -26,17 +26,22 @@ SelectionBitmapEditor::~SelectionBitmapEditor()
 
 void SelectionBitmapEditor::setSelection(const QRectF& rect)
 {
+    setSelection(QPolygonF(rect));
+}
+
+void SelectionBitmapEditor::setSelection(const QPolygonF& polygon)
+{
     resetSelectionTransformProperties();
-    mSelectionPolygon = rect.toAlignedRect();
-    mOriginalRect = rect.toAlignedRect();
-    SelectionEditor::setSelection(rect.toAlignedRect());
+    mSelectionPolygon = polygon.toPolygon();
+    // mOriginalRect = rect.toAlignedRect();
+    SelectionEditor::setSelection(polygon);
 }
 
 void SelectionBitmapEditor::resetSelectionProperties()
 {
     resetSelectionTransformProperties();
     mSelectionPolygon = QPolygon();
-    mOriginalRect = QRect();
+    // mOriginalRect = QRect();
     SelectionEditor::resetSelectionProperties();
 }
 
@@ -46,7 +51,8 @@ void SelectionBitmapEditor::commitChanges()
     if (!somethingSelected()) { return; }
     // BitmapImage* currentBitmapImage = static_cast<BitmapImage*>(keyframe);
 
-    const QRect& alignedSelectionRect = mOriginalRect;
+    // TODO: replace with qpolygon
+    const QPolygon& alignedSelection = mSelectionPolygon;
     // if (currentBitmapImage == nullptr) { return; }
 
     // BitmapImage* floatingImage = static_cast<SelectionBitmapEditor*>(currentBitmapImage->selectionEditor())->floatingImage();
@@ -59,13 +65,13 @@ void SelectionBitmapEditor::commitChanges()
     // //     // TODO: figure out how we clear the temporary image without destroying the editor as well
     // //     // currentBitmapImage->clearTemporaryImage();
     // } else {
-        BitmapEditor transformedImage = mBitmapEditor->transformed(alignedSelectionRect, mSelectionTransform, true);
-        mBitmapEditor->clear(alignedSelectionRect);
+        BitmapEditor transformedImage = mBitmapEditor->transformed(alignedSelection, mSelectionTransform, true);
+        mBitmapEditor->clear(alignedSelection);
         mBitmapEditor->paste(transformedImage, QPainter::CompositionMode_SourceOver);
     // }
     // // When the selection has been applied, a new rect is applied based on the bounding box.
     // // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
-    setSelection(mapToSelection(QPolygonF(QRectF(mOriginalRect))).boundingRect());
+    setSelection(mapToSelection(QPolygonF(alignedSelection)).boundingRect());
 }
 void SelectionBitmapEditor::discardChanges()
 {

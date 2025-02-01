@@ -129,11 +129,11 @@ void SelectionManager::deselect()
     getSelectionEditor()->deselect();
 }
 
-QRectF SelectionManager::mySelectionRect()
+QPolygonF SelectionManager::mySelectionPolygon()
 {
-    if (!getSelectionEditor()) { return QRectF(); }
+    if (!getSelectionEditor()) { return QPolygonF(); }
 
-    return getSelectionEditor()->mySelectionRect();
+    return getSelectionEditor()->getSelectionPolygon();
 }
 
 QTransform SelectionManager::selectionTransform()
@@ -235,12 +235,12 @@ void SelectionManager::adjustCurrentSelection(const QPointF& pos, const QPointF&
     getSelectionEditor()->adjustCurrentSelection(pos, offsetPoint, angle, rotationIncrement);
 }
 
-QRectF SelectionManager::mappedSelectionRect()
+QPolygonF SelectionManager::mappedSelectionPolygon()
 {
     SelectionEditor* selectionEditor = getSelectionEditor();
     if (!selectionEditor) { return QRectF(); }
 
-    return selectionEditor->mapToSelection(selectionEditor->mySelectionRect()).boundingRect();
+    return selectionEditor->mapToSelection(selectionEditor->getSelectionPolygon());
 }
 
 void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)

@@ -29,7 +29,7 @@ struct SelectionPainterOptions
 {
     QTransform  viewTransform;
     QTransform  selectionTransform;
-    QRectF      selectionRect;
+    QPolygonF   selectionPolygon;
     bool        isSelectionActive;
 
 };
@@ -44,7 +44,7 @@ public:
     void setPainterOptions(const SelectionPainterOptions& options) { mOptions = options; }
 
 private:
-    void paintSelectionInfo(QPainter& painter, const QTransform& mergedTransform, const QRect& selectionRect, const QPolygonF& projectedPolygonF);
+    void paintSelectionInfo(QPainter& painter, const QTransform& mergedTransform, const QPolygon& selectionPolygon, const QPolygonF& projectedPolygonF);
 
     SelectionPainterOptions mOptions;
     const static int HANDLE_WIDTH = 6;

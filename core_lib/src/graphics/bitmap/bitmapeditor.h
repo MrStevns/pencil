@@ -29,6 +29,7 @@ public:
 
     void transform(QRect newBoundaries, bool smoothTransform);
     BitmapEditor transformed(const QRect& newBoundaries, const QTransform& transform, bool smoothTransform) const;
+    BitmapEditor transformed(const QPolygon& polygon, const QTransform& transform, bool smoothTransform) const;
     // const QImage& transformed(const QImage& image, const QRect& selection, const QTransform& transform, bool smoothTransform);
     // const QImage& transformed(const QImage& image, const QRect& newBoundaries, bool smoothTransform);
 
@@ -61,7 +62,7 @@ public:
     QRgb pixel(const QPoint& p) const;
     void setPixel(const QPoint& p, QRgb color);
 
-    BitmapEditor copyArea(const QRect& rect) const;
+    BitmapEditor copyArea(const QRect& rect, const QPolygon& clipToPolygon = QPolygon()) const;
 
     void autoCrop();
 
@@ -81,9 +82,9 @@ public:
     void drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm, bool antialiasing);
 
     void clear();
-    void clear(const QRect& rectangle);
+    void clear(const QPolygon& polygon);
     void paste(const BitmapEditor& bitmapEditor, QPainter::CompositionMode mode = QPainter::CompositionMode::CompositionMode_SourceOver);
-    void paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMode cm);
+    void paste(const TiledBuffer* tiledBuffer, const QPolygon& clipPolygon, const QTransform& transform, QPainter::CompositionMode cm);
 
     quint64 memoryUsage() const override;
 

@@ -131,13 +131,21 @@ bool BitmapEditor::extend(QRect rectangle)
     return false;
 }
 
-BitmapEditor BitmapEditor::copyArea(const QRect& rect) const
+BitmapEditor BitmapEditor::copyArea(const QRect& rect, const QPolygon& clipToPolygon) const
 {
-    BitmapEditor copyEditor = BitmapEditor(rect.normalized(), Qt::transparent);
+    QRect newRect = rect.normalized();
+    BitmapEditor copyEditor = BitmapEditor(newRect, Qt::transparent);
 
     // // This creates a copy of the current image and adds it to copyEditor
     QPainter painter(copyEditor.image());
-    painter.drawImage(mBounds.topLeft() - rect.topLeft(), mImage);
+    painter.translate(-newRect.topLeft());
+    if (clipToPolygon.count() > 0) {
+        QPainterPath clipPath;
+        clipPath.addPolygon(clipToPolygon);
+        painter.setClipPath(clipPath);
+        painter.setClipping(true);
+    }
+    painter.drawImage(mBounds.topLeft(), mImage);
     painter.end();
 
     return copyEditor;
@@ -145,10 +153,17 @@ BitmapEditor BitmapEditor::copyArea(const QRect& rect) const
 
 BitmapEditor BitmapEditor::transformed(const QRect& selection, const QTransform& transform, bool smoothTransform) const
 {
-    const BitmapEditor& selectedEditor = copyArea(selection);
+    const BitmapEditor& selectedEditor = copyArea(selection, QPolygon());
 
     const QImage& transformedImage = selectedEditor.constImage()->transformed(transform, smoothTransform ? Qt::SmoothTransformation : Qt::FastTransformation);
     return BitmapEditor(transform.mapRect(selection).normalized().topLeft(), transformedImage);
+}
+
+BitmapEditor BitmapEditor::transformed(const QPolygon& selection, const QTransform& transform, bool smoothTransform) const
+{
+    const BitmapEditor& selectedEditor = copyArea(selection.boundingRect(), selection);
+    const QImage& transformedImage = selectedEditor.constImage()->transformed(transform, smoothTransform ? Qt::SmoothTransformation : Qt::FastTransformation);
+    return BitmapEditor(transform.mapRect(selection.boundingRect()).normalized().topLeft(), transformedImage);
 }
 
 void BitmapEditor::paintImage(QPainter& painter)
@@ -278,16 +293,21 @@ void BitmapEditor::clear()
     mMinBound = true;
 }
 
-void BitmapEditor::clear(const QRect& rectangle)
+void BitmapEditor::clear(const QPolygon& polygon)
 {
-    QRect clearRectangle = mBounds.intersected(rectangle);
-    clearRectangle.moveTopLeft(clearRectangle.topLeft() - mBounds.topLeft());
+    // QRect boundingBox = polygon.boundingRect();
+    // QRect clearRectangle = mBounds.intersected(boundingBox);
+    // clearRectangle.moveTopLeft(clearRectangle.topLeft() - mBounds.topLeft());
 
-    setCompositionModeBounds(clearRectangle, true, QPainter::CompositionMode_Clear);
+    // setCompositionModeBounds(clearRectangle, true, QPainter::CompositionMode_Clear);
 
     QPainter painter(image());
+    painter.translate(-mBounds.topLeft());
     painter.setCompositionMode(QPainter::CompositionMode_Clear);
-    painter.fillRect(clearRectangle, QColor(0, 0, 0, 0));
+    QPainterPath fillPath;
+    fillPath.addPolygon(polygon);
+    painter.setBrush(Qt::white);
+    painter.drawPath(fillPath);
     painter.end();
 }
 
@@ -306,12 +326,13 @@ void BitmapEditor::setCompositionModeBounds(const QRect& sourceBounds, bool isSo
     case QPainter::CompositionMode_SourceIn:
     case QPainter::CompositionMode_DestinationIn:
     case QPainter::CompositionMode_Clear:
-    case QPainter::CompositionMode_DestinationOut:
+    case QPainter::CompositionMode_DestinationOut: {
         // The bounds of the result of SourceIn, DestinationIn, Clear, and DestinationOut
         // modes are no larger than the destination bounds
         newBoundaries = mBounds;
         mMinBound = false;
         break;
+    }
     default:
         // If it's not one of the above cases, create a union of the two bounds.
         // This contains the minimum bounds, if both the destination and source
@@ -530,7 +551,7 @@ void BitmapEditor::paste(const BitmapEditor& bitmapEditor, QPainter::Composition
     painter.end();
 }
 
-void BitmapEditor::paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMode cm)
+void BitmapEditor::paste(const TiledBuffer* tiledBuffer, const QPolygon& clipPolygon, const QTransform& transform, QPainter::CompositionMode cm)
 {
     if(tiledBuffer->bounds().width() <= 0 || tiledBuffer->bounds().height() <= 0)
     {
@@ -541,11 +562,24 @@ void BitmapEditor::paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMo
     QPainter painter(image());
 
     painter.setCompositionMode(cm);
+    QTransform t = QTransform::fromTranslate(-mBounds.topLeft().x(), -mBounds.topLeft().y());
+    if (clipPolygon.count() > 0) {
+        // When clipping is enabled, the clipping shape needs to be transformed
+        painter.setTransform(t);
+        QPainterPath clipPath;
+        clipPath.addPolygon(clipPolygon);
+        painter.setClipPath(clipPath);
+        painter.setClipping(true);
+    }
+
+    // The buffered image is never transformed, as such we need to invert the transform to avoid it being
+    // placed incorrectly on the image
+    painter.setTransform(transform.inverted() * t);
     auto const tiles = tiledBuffer->tiles();
     for (const Tile* item : tiles) {
         const QPixmap& tilePixmap = item->pixmap();
         const QPoint& tilePos = item->pos();
-        painter.drawPixmap(tilePos-mBounds.topLeft(), tilePixmap);
+        painter.drawPixmap(tilePos, tilePixmap);
     }
     painter.end();
 }

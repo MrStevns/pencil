@@ -24,6 +24,8 @@ public:
     Status load(Object* obj) override;
     Status save(Object* obj) override;
 
+    SelectionEditor* getSelectionEditor(KeyFrame* keyframe = nullptr);
+
     void workingLayerChanged(Layer*) override;
 
     void createEditor(BitmapImage* bitmapImage);
@@ -56,14 +58,14 @@ public:
     QPointF currentTransformAnchorPoint();
     QPointF myTranslation();
 
-    QRectF mySelectionRect();
+    QPolygonF mySelectionPolygon();
 
     QTransform selectionTransform();
 
     void setMoveMode(MoveMode mode);
     MoveMode getMoveMode();
 
-    QRectF mappedSelectionRect();
+    QPolygonF mappedSelectionPolygon();
 
     bool isOutsideSelectionArea(const QPointF& point);
     bool somethingSelected();
@@ -75,8 +77,6 @@ signals:
     void selectionReset();
 
 private:
-    SelectionEditor* getSelectionEditor(KeyFrame* keyframe = nullptr);
-
     Layer* mWorkingLayer = nullptr;
 
 };

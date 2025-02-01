@@ -70,7 +70,7 @@ private:
     QPointF mPressPoint;
     MoveMode mMoveMode;
     MoveMode mStartMoveMode = MoveMode::NONE;
-    QRectF mSelectionRect;
+    QPolygonF mSelectionPolygon;
 
     QPixmap mCursorPixmap = QPixmap(24, 24);
 

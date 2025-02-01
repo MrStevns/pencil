@@ -37,15 +37,15 @@ void SelectionPainter::paint(QPainter& painter,
 
     if (layer == nullptr) { return; }
 
-    const QRectF& selectionRect = mOptions.selectionRect;
+    const QPolygonF& selectionPolygon = mOptions.selectionPolygon;
     const QTransform& viewTransform = mOptions.viewTransform;
     const QTransform& selectionTransform = mOptions.selectionTransform;
     bool selectionActive = mOptions.isSelectionActive;
 
-    if (selectionRect.isEmpty() || !selectionActive) { return; }
+    if (selectionPolygon.isEmpty() || !selectionActive) { return; }
 
     QTransform transform = selectionTransform * viewTransform;
-    QPolygonF projectedSelectionPolygon = transform.map(selectionRect);
+    QPolygonF projectedSelectionPolygon = transform.map(selectionPolygon);
 
     if (layer->type() == Layer::BITMAP)
     {
@@ -91,17 +91,18 @@ void SelectionPainter::paint(QPainter& painter,
     }
 
     if (tool->properties.showSelectionInfo) {
-        paintSelectionInfo(painter, selectionTransform, selectionRect.toAlignedRect(), projectedSelectionPolygon);
+        paintSelectionInfo(painter, selectionTransform, selectionPolygon.toPolygon(), projectedSelectionPolygon);
     }
 }
 
-void SelectionPainter::paintSelectionInfo(QPainter& painter, const QTransform& selectionTransform, const QRect& selectionRect, const QPolygonF& projectedPolygonF)
+void SelectionPainter::paintSelectionInfo(QPainter& painter, const QTransform& selectionTransform, const QPolygon& selectionPolygon, const QPolygonF& projectedPolygonF)
 {
-    QRect projectedSelectionRect = selectionTransform.mapRect(selectionRect);
+    QRect boundingBox = selectionPolygon.boundingRect();
+    QRect projectedSelectionRect = selectionTransform.mapRect(boundingBox);
     QPolygon projectedPolygon = projectedPolygonF.toPolygon();
 
     QPoint projectedCenter = projectedSelectionRect.center();
-    QPoint originalCenter = selectionRect.center();
+    QPoint originalCenter = boundingBox.center();
     int diffX = static_cast<int>(projectedCenter.x() - originalCenter.x());
     int diffY = static_cast<int>(projectedCenter.y() - originalCenter.y());
     painter.drawText(projectedPolygon[0] - QPoint(HANDLE_WIDTH, HANDLE_WIDTH),

@@ -29,6 +29,7 @@ GNU General Public License for more details.
 #include "soundmanager.h"
 #include "undoredomanager.h"
 #include "selectioneditor.h"
+#include "selectionmanager.h"
 
 #include "undoredocommand.h"
 #include "legacybackupelement.h"
@@ -106,20 +107,12 @@ void UndoRedoManager::record(const UndoSaveState* undoState, const QString& desc
 
     switch (undoState->recordType)
     {
-        case UndoRedoRecordType::KEYFRAME_MODIFY: {
-            replaceKeyFrame(*undoState, description);
+        case UndoRedoRecordType::KEYFRAME: {
+            recordKeyFrame(undoState, description);
             break;
         }
-        case UndoRedoRecordType::KEYFRAME_REMOVE: {
-            removeKeyFrame(*undoState, description);
-            break;
-        }
-        case UndoRedoRecordType::KEYFRAME_ADD: {
-            addKeyFrame(*undoState, description);
-            break;
-        }
-        case UndoRedoRecordType::KEYFRAME_MOVE: {
-            moveKeyFrames(*undoState, description);
+        case UndoRedoRecordType::SELECTION: {
+            recordSelection(undoState, description);
             break;
         }
         default: {
@@ -133,6 +126,47 @@ void UndoRedoManager::record(const UndoSaveState* undoState, const QString& desc
 
     // The save state has now been used and should be invalidated so we can't use it again.
     clearCurrentState();
+}
+
+void UndoRedoManager::recordKeyFrame(const UndoSaveState* undoState, const QString& description)
+{
+    switch (undoState->recordAction)
+    {
+        case UndoRedoRecordActionType::MODIFY: {
+            replaceKeyFrame(*undoState, description);
+            break;
+        }
+        case UndoRedoRecordActionType::REMOVE: {
+            removeKeyFrame(*undoState, description);
+            break;
+        }
+        case UndoRedoRecordActionType::ADD: {
+            addKeyFrame(*undoState, description);
+            break;
+        }
+        case UndoRedoRecordActionType::MOVE: {
+            moveKeyFrames(*undoState, description);
+            break;
+        }
+        default: {
+            QString reason("Unhandled case for: ");
+            reason.append(description);
+            Q_ASSERT_X(false, "UndoRedoManager::record", qPrintable(reason));
+            break;
+        }
+    }
+}
+
+void UndoRedoManager::recordSelection(const UndoSaveState* undoState, const QString& description)
+{
+    // const SelectionSaveState& selectionState = undoState->selectionState;
+    auto element = new TransformCommand(undoState->layerId,
+                         undoState->currentFrameIndex,
+                         undoState->selectionEditor,
+                         description,
+                         editor());
+
+    pushCommand(element);
 }
 
 void UndoRedoManager::clearCurrentState()
@@ -228,35 +262,57 @@ void UndoRedoManager::replaceVector(const UndoSaveState& undoState, const QStrin
     pushCommand(element);
 }
 
-UndoSaveState* UndoRedoManager::createState(UndoRedoRecordType recordType)
+UndoSaveState* UndoRedoManager::createState(UndoRedoRecordType recordType, UndoRedoRecordActionType recordAction)
 {
     clearCurrentState();
 
     mCurrentState = new UndoSaveState();
     mCurrentState->recordType = recordType;
-    initCommonKeyFrameState(mCurrentState);
+    mCurrentState->recordAction = recordAction;
+
+    initCommonState(mCurrentState);
+
+    switch (recordType) {
+        case UndoRedoRecordType::KEYFRAME: {
+            initCommonKeyFrameState(mCurrentState);
+            break;
+        }
+        case UndoRedoRecordType::SELECTION: {
+            initSelectionState(mCurrentState);
+            break;
+        }
+        case UndoRedoRecordType::INVALID: {
+            Q_ASSERT_X(false, "UndoRedoManager::createState", "recorded an INVALID state");
+            break;
+        }
+    }
 
     return mCurrentState;
 }
 
-void UndoRedoManager::initCommonKeyFrameState(UndoSaveState* undoSaveState) const
+void UndoRedoManager::initCommonState(UndoSaveState* undoSaveState) const
 {
     const Layer* layer = editor()->layers()->currentLayer();
     undoSaveState->layerType = layer->type();
     undoSaveState->layerId = layer->id();
     undoSaveState->currentFrameIndex = editor()->currentFrame();
+}
 
-    if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR) {
-        // auto selectMan = editor()->select();
-        // undoSaveState->selectionState = SelectionSaveState(
-        //     selectMan->mySelectionRect(),
-        //     selectMan->myRotation(),
-        //     selectMan->myScaleX(),
-        //     selectMan->myScaleY(),
-        //     selectMan->myTranslation(),
-        //     selectMan->currentTransformAnchor());
+void UndoRedoManager::initSelectionState(UndoSaveState* undoSaveState) const
+{
+
+    if (undoSaveState->layerType == Layer::BITMAP || undoSaveState->layerType == Layer::VECTOR) {
+        SelectionEditor* selectionEditor = editor()->select()->getSelectionEditor();
+
+        if (selectionEditor) {
+            undoSaveState->selectionEditor = selectionEditor;
+        }
     }
+}
 
+void UndoRedoManager::initCommonKeyFrameState(UndoSaveState* undoSaveState) const
+{
+    const Layer* layer = editor()->layers()->currentLayer();
     const int frameIndex = editor()->currentFrame();
     if (layer->keyExists(frameIndex))
     {

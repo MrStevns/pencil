@@ -299,14 +299,53 @@ void VectorReplaceCommand::redo()
     editor()->scrubTo(redoVector.pos());
 }
 
-TransformCommand::TransformCommand(SelectionEditor* undoSelectionEditor,
-                                   SelectionEditor* redoSelectionEditor,
+TransformCommand::TransformCommand(int undoLayerId,
+                                   int undoKeyPos,
+                                   SelectionEditor* undoSelectionEditor,
                                    const QString& description,
                                    Editor* editor,
                                    QUndoCommand *parent) : UndoRedoCommand(editor, parent)
 {
-    this->undoSelectionEditor = undoSelectionEditor;
-    this->redoSelectionEditor = redoSelectionEditor;
+    this->undoLayerId = undoLayerId;
+    this->undoKeyPos = undoKeyPos;
+
+    this->redoLayerId = editor->layers()->currentLayer()->id();
+    this->redoKeyPos = editor->currentFrame();
+
+    // this->undoAnchor = undoSelectionEditor->currentTransformAnchor();
+    // this->undoRotationAngle = undoSelectionEditor->myRotation();
+    // this->undoScaleX = undoSelectionEditor->myScaleX();
+    // this->undoScaleY = undoSelectionEditor->myScaleY();
+    // this->undoTranslation = undoSelectionEditor->myTranslation();
+
+    Layer* layer = editor->layers()->findLayerById(redoLayerId);
+    SelectionEditor* currentSelectionEditor = nullptr;
+    if (layer->type() == Layer::BITMAP) {
+        currentSelectionEditor = static_cast<BitmapImage*>(layer->getKeyFrameAt(redoKeyPos))->selectionEditor();
+        // selectionEditor->setSelection();
+    }
+    else
+    {
+        // TODO: implement for vector
+        // selectionEditor = static_cast<VectorImage*>(layer->getKeyFrameAt(undoKeyPos))->selectionEditor();
+    }
+
+    if (currentSelectionEditor) {
+        // this->redoSelectionRect = currentSelectionEditor->mySelectionRect();
+        this->redoAnchor = currentSelectionEditor->currentTransformAnchor();
+        this->redoRotationAngle = currentSelectionEditor->myRotation();
+        this->redoScaleX = currentSelectionEditor->myScaleX();
+        this->redoScaleY = currentSelectionEditor->myScaleY();
+        this->redoTranslation = currentSelectionEditor->myTranslation();
+
+        this->undoAnchor = currentSelectionEditor->currentTransformAnchor();
+        this->undoRotationAngle = currentSelectionEditor->myRotation();
+        this->undoScaleX = currentSelectionEditor->myScaleX();
+        this->undoScaleY = currentSelectionEditor->myScaleY();
+        this->undoTranslation = currentSelectionEditor->myTranslation();
+
+        // this->undoSelectionRect = currentSelectionEditor->mapToSelection(QPolygonF(QRectF(undoSelectionEditor->mySelectionRect()))).boundingRect();
+    }
 
     setText(description);
 }
@@ -315,9 +354,14 @@ void TransformCommand::undo()
 {
     UndoRedoCommand::undo();
 
-    // if (undoSelectionEditor) {
-    //     editor()->select()->setEditorCallbacks(undoSelectionEditor);
-    // }
+    apply(undoLayerId,
+          undoKeyPos,
+          undoSelectionRect,
+          undoTranslation,
+          undoRotationAngle,
+          undoScaleX,
+          undoScaleY,
+          undoAnchor);
 }
 
 void TransformCommand::redo()
@@ -325,27 +369,42 @@ void TransformCommand::redo()
     UndoRedoCommand::redo();
 
     // // Ignore automatic redo when added to undo stack
-    // if (isFirstRedo()) { setFirstRedo(false); return; }
+    if (isFirstRedo()) { setFirstRedo(false); return; }
 
-    // if (redoSelectionEditor) {
-    //     editor()->select()->setEditorCallbacks(redoSelectionEditor);
-    // }
+    apply(redoLayerId,
+          redoKeyPos,
+          redoSelectionRect,
+          redoTranslation,
+          redoRotationAngle,
+          redoScaleX,
+          redoScaleY,
+          redoAnchor);
 }
 
-void TransformCommand::apply(const QRectF& selectionRect,
+void TransformCommand::apply(int layerId,
+                             int keyPos,
+                             const QRectF& selectionRect,
                              const QPointF& translation,
                              const qreal rotationAngle,
                              const qreal scaleX,
                              const qreal scaleY,
-                             const QPointF& selectionAnchor,
-                             const bool roundPixels)
+                             const QPointF& selectionAnchor)
 {
-    // auto selectMan = editor()->select();
-    // selectMan->setSelection(selectionRect, roundPixels);
-    // selectMan->setTransformAnchor(selectionAnchor);
-    // selectMan->setTranslation(translation);
-    // selectMan->setRotation(rotationAngle);
-    // selectMan->setScale(scaleX, scaleY);
+    Layer* layer = editor()->layers()->findLayerById(layerId);
+    SelectionEditor* selectionEditor = nullptr;
+    if (layer->type() == Layer::BITMAP) {
+        selectionEditor = static_cast<BitmapImage*>(layer->getKeyFrameAt(keyPos))->selectionEditor();
+    } else {
+        // TODO: implement for vector
+        // selectionEditor = static_cast<VectorImage*>(layer->getKeyFrameAt(undoKeyPos))->selectionEditor();
+    }
 
-    // selectMan->calculateSelectionTransformation();
+    if (selectionEditor) {
+        selectionEditor->setSelection(selectionRect);
+        selectionEditor->setTranslation(translation);
+        selectionEditor->setRotation(rotationAngle);
+        selectionEditor->setScale(scaleX, scaleY);
+        selectionEditor->setTransformAnchor(selectionAnchor);
+        selectionEditor->calculateSelectionTransformation();
+    }
 }

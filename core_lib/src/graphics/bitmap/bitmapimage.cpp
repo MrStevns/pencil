@@ -191,7 +191,13 @@ void BitmapImage::paste(BitmapImage* bitmapImage, QPainter::CompositionMode cm)
 
 void BitmapImage::paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMode cm)
 {
-    editor()->paste(tiledBuffer, cm);
+    QPolygon selectionPolygon = QPolygon();
+    QTransform selectionTransform = QTransform();
+    if (selectionEditor()) {
+        selectionPolygon = selectionEditor()->getSelectionPolygon().toPolygon();
+        selectionTransform = selectionEditor()->selectionTransform();
+    }
+    editor()->paste(tiledBuffer, selectionPolygon, selectionTransform, cm);
 
     modification();
 }

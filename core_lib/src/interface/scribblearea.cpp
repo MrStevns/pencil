@@ -364,6 +364,7 @@ void ScribbleArea::onLayerChanged()
 
 void ScribbleArea::onSelectionChanged()
 {
+    qDebug() << "selection changed";
     int currentFrame = mEditor->currentFrame();
     invalidateCacheForFrame(currentFrame);
     updateFrame();
@@ -1043,7 +1044,7 @@ void ScribbleArea::prepCanvas(int frame)
 
     SelectionManager* sm = mEditor->select();
     SelectionPainterOptions selectionPainterOptions;
-    selectionPainterOptions.selectionRect = sm->mySelectionRect();
+    selectionPainterOptions.selectionPolygon = sm->mySelectionPolygon();
     selectionPainterOptions.selectionTransform = sm->selectionTransform();
     selectionPainterOptions.viewTransform = mEditor->view()->getView();
     selectionPainterOptions.isSelectionActive = mEditor->select()->somethingSelected();

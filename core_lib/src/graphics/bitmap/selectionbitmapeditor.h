@@ -15,6 +15,7 @@ public:
     ~SelectionBitmapEditor() override;
 
     void setSelection(const QRectF& rect) override;
+    void setSelection(const QPolygonF& polygon) override;
 
     void commitChanges() override;
     void discardChanges() override;
@@ -22,17 +23,18 @@ public:
 
     void setDragOrigin(const QPointF& point) override { mDragOrigin = point.toPoint(); }
 
-    void setSelectionRect(const QRectF& selectionRect) override { mOriginalRect = selectionRect.toAlignedRect(); }
+    // void setSelectionRect(const QRectF& selectionRect) override { mOriginalRect = selectionRect.toAlignedRect(); }
     QPointF getSelectionAnchorPoint() const override;
+    const QPolygonF getSelectionPolygon() const { return mSelectionPolygon; }
 
     void resetSelectionProperties() override;
     void setMoveModeForAnchorInRange(const QPointF& point) override;
 
     void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement) override;
 
-    const QRectF mySelectionRect() const override { return mOriginalRect; }
+    // const QRectF mySelectionRect() const override { return mOriginalRect; }
 
-    bool somethingSelected() const override { return mOriginalRect.isValid(); }
+    bool somethingSelected() const override { return mSelectionPolygon.count() > 0; }
     bool isOutsideSelectionArea(const QPointF& point) const override;
 
     // void setFloatingEditor(BitmapEditor* bitmapEditor);
@@ -42,7 +44,7 @@ public:
 
 private:
     QPolygon mSelectionPolygon;
-    QRect mOriginalRect;
+    // QRect mOriginalRect;
 
     BitmapEditor* mBitmapEditor = nullptr;
 };

@@ -255,10 +255,10 @@ void MoveTool::transformSelection(const QPointF& pos, Qt::KeyboardModifiers keyM
 void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer)
 {
     auto selectMan = mEditor->select();
-    QRectF selectionRect = selectMan->mySelectionRect();
-    if (!selectionRect.isNull())
+    QPolygonF selectionPolygon = selectMan->mySelectionPolygon();
+    if (!selectionPolygon.isEmpty())
     {
-        mUndoSaveState = mEditor->undoRedo()->createState(UndoRedoRecordType::KEYFRAME_MODIFY);
+        mUndoSaveState = mEditor->undoRedo()->createState(UndoRedoRecordType::SELECTION, UndoRedoRecordActionType::MODIFY);
         mEditor->backup(typeName());
     }
 
@@ -417,10 +417,10 @@ bool MoveTool::leavingThisTool()
 {
     BaseTool::leavingThisTool();
 
-    if (currentPaintableLayer())
-    {
-        applyTransformation();
-    }
+    // if (currentPaintableLayer())
+    // {
+    //     applyTransformation();
+    // }
     return true;
 }
 

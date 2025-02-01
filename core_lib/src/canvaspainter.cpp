@@ -292,7 +292,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
     paintTransformedSelection(currentBitmapPainter, paintedImage);
 
-    if (isCurrentLayer && isDrawing)
+    if (isCurrentLayer && isDrawing && !paintedImage->selectionEditor()->somethingSelected())
     {
         currentBitmapPainter.setCompositionMode(mOptions.cmBufferBlendMode);
         const auto tiles = mTiledBuffer->tiles();
@@ -313,7 +313,7 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bi
 
     if (!selectionEditor || !selectionEditor->somethingSelected()) { return; }
 
-    // painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
     // const SelectionBitmapImage& floatingImage = selectionEditor->floatingImage();
     // if (floatingImage.selection.isValid()) {
     //     painter.save();
@@ -323,35 +323,48 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bi
 
     // } else {
 
-        const QRectF& selectionRect = selectionEditor->mySelectionRect();
+        const QPolygonF& selectionPolygon = selectionEditor->getSelectionPolygon();
         const QTransform& selectionTransform = selectionEditor->selectionTransform();
 
         painter.save();
-        painter.setTransform(mViewTransform);
+            painter.setTransform(mViewTransform);
 
-        // Clear the painted area to make it look like the content has been erased
-        painter.save();
-        painter.setCompositionMode(QPainter::CompositionMode_Clear);
-        painter.fillRect(selectionRect, QColor(255,255,255,255));
+            // Clear the painted area to make it look like the content has been erased
+            painter.save();
+                painter.setCompositionMode(QPainter::CompositionMode_Clear);
+                QPainterPath path;
+                path.addPolygon(selectionPolygon);
+                painter.fillPath(path, QColor(255,255,255,255));
+            painter.restore();
+
+            // Multiply the selection and view matrix to get proper rotation and scale values
+            // Now the image origin will be topleft
+            painter.setTransform(selectionTransform*mViewTransform);
+
+            // Draw the selection image separately and on top
+            painter.save();
+                painter.setClipPath(path);
+                painter.setClipping(true);
+                painter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
+
+                // The tiled buffer should not be transformed based on the selection
+                painter.setTransform(mViewTransform);
+                painter.setCompositionMode(mOptions.cmBufferBlendMode);
+                const auto tiles = mTiledBuffer->tiles();
+                for (const Tile* tile : tiles) {
+                    painter.drawPixmap(tile->posF(), tile->pixmap());
+                }
+            painter.restore();
         painter.restore();
 
-        // Multiply the selection and view matrix to get proper rotation and scale values
-        // Now the image origin will be topleft
-        painter.setTransform(selectionTransform*mViewTransform);
-
-        // Draw the selection image separately and on top
-        painter.save();
-        painter.setClipRect(selectionRect);
-        painter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
-        painter.restore();
-        painter.restore();
-
-        // Debugging
-        painter.save();
-        painter.setTransform(mViewTransform);
-        BitmapEditor transformedEditor = bitmapImage->editor()->transformed(selectionRect.toRect(), selectionTransform, true);
-        painter.drawImage(QPoint(), *transformedEditor.image());
-        painter.restore();
+        // // Debugging
+        // painter.save();
+        // painter.setTransform(mViewTransform);
+        // // qDebug() << selectionPolygon;
+        // BitmapEditor transformedEditor = bitmapImage->editor()->transformed(selectionPolygon.toPolygon(), selectionTransform, true);
+        // // painter.drawPolygon(selectionPolygon);
+        // painter.drawImage(QPoint(), *transformedEditor.image());
+        // painter.restore();
     // }
 }
 

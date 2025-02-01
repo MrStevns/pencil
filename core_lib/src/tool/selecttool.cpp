@@ -112,7 +112,7 @@ void SelectTool::beginSelection(Layer* currentLayer, const QPointF& pos)
                 vectorImage->deselectAll();
             }
         }
-        mSelectionRect = mEditor->select()->mappedSelectionRect();
+        mSelectionPolygon = mEditor->select()->mappedSelectionPolygon();
     }
     else
     {
@@ -131,7 +131,7 @@ void SelectTool::pointerPressEvent(PointerEvent* event)
     if (event->button() != Qt::LeftButton) { return; }
     auto selectMan = mEditor->select();
 
-    mUndoState = mEditor->undoRedo()->createState(UndoRedoRecordType::KEYFRAME_MODIFY);
+    mUndoState = mEditor->undoRedo()->createState(UndoRedoRecordType::SELECTION, UndoRedoRecordActionType::MODIFY);
 
     mPressPoint = event->canvasPos();
     selectMan->setMoveModeForAnchorInRange(mPressPoint);
@@ -193,7 +193,7 @@ void SelectTool::pointerReleaseEvent(PointerEvent* event)
     mEditor->undoRedo()->record(mUndoState, typeName());
 
     mStartMoveMode = MoveMode::NONE;
-    mSelectionRect = mEditor->select()->mappedSelectionRect();
+    mSelectionPolygon = mEditor->select()->mappedSelectionPolygon();
 
     mScribbleArea->updateToolCursor();
     mScribbleArea->updateFrame();
@@ -222,7 +222,7 @@ void SelectTool::controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint)
 {
     // when the selection is none, manage the selection Origin
     if (mStartMoveMode != MoveMode::NONE) {
-        QRectF rect = mSelectionRect;
+        QRectF rect = mSelectionPolygon.boundingRect();
 
         QPointF offset = offsetFromPressPos(currentPoint);
         if (mStartMoveMode == MoveMode::TOPLEFT) {
@@ -255,7 +255,7 @@ void SelectTool::manageSelectionOrigin(QPointF currentPoint, QPointF originPoint
     qreal mouseX = currentPoint.x();
     qreal mouseY = currentPoint.y();
 
-    QRectF selectRect = mSelectionRect;
+    QRectF selectRect = mSelectionPolygon.boundingRect();
 
     if (mouseX <= originPoint.x())
     {
@@ -332,7 +332,7 @@ bool SelectTool::keyEventForVectorLayer(QKeyEvent* event)
 bool SelectTool::keyEventForBitmapLayer(QKeyEvent* event)
 {
     auto selectMan = editor()->select();
-    QRectF selectionRect = selectMan->mySelectionRect();
+    QRectF selectionRect = selectMan->mySelectionPolygon().boundingRect();
     switch (event->key()) {
     case Qt::Key_Right:
         selectionRect.translate(QPointF(1, 0));

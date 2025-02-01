@@ -132,12 +132,12 @@ public:
     void undo() override;
     void redo() override;
 
+    BitmapImage undoBitmap;
+    BitmapImage redoBitmap;
+
 private:
     int undoLayerId = 0;
     int redoLayerId = 0;
-
-    BitmapImage undoBitmap;
-    BitmapImage redoBitmap;
 };
 
 class VectorReplaceCommand : public UndoRedoCommand
@@ -164,8 +164,9 @@ class TransformCommand : public UndoRedoCommand
 
 {
 public:
-    TransformCommand(SelectionEditor* undoSelectionEditor,
-                     SelectionEditor* redoSelectionEditor,
+    TransformCommand(int undoLayerId,
+                     int undoKeyPos,
+                     SelectionEditor* undoSelectionEditor,
                      const QString& description,
                      Editor* editor,
                      QUndoCommand* parent = nullptr);
@@ -174,16 +175,38 @@ public:
     void redo() override;
 
 private:
-    void apply(const QRectF& selectionRect,
+    void apply(int layerId,
+               int keyPos,
+               const QRectF& selectionRect,
                const QPointF& translation,
                const qreal rotationAngle,
                const qreal scaleX,
                const qreal scaleY,
-               const QPointF& selectionAnchor,
-               const bool roundPixels);
+               const QPointF& selectionAnchor);
 
-    SelectionEditor* undoSelectionEditor = nullptr;
-    SelectionEditor* redoSelectionEditor = nullptr;
+    int undoLayerId = 0;
+    int redoLayerId = 0;
+
+    int undoKeyPos = 0;
+    int redoKeyPos = 0;
+
+    QRectF undoSelectionRect;
+    QRectF redoSelectionRect;
+
+    QPointF undoAnchor;
+    QPointF redoAnchor;
+
+    QPointF undoTranslation;
+    QPointF redoTranslation;
+
+    qreal undoScaleX;
+    qreal undoScaleY;
+
+    qreal redoScaleX;
+    qreal redoScaleY;
+
+    qreal undoRotationAngle;
+    qreal redoRotationAngle;
 };
 
 #endif // UNDOREDOCOMMAND_H

@@ -37,13 +37,23 @@ class SoundClip;
 class KeyFrame;
 class LegacyBackupElement;
 class UndoRedoCommand;
+class SelectionEditor;
+
+enum class UndoRedoRecordType {
+    KEYFRAME,
+    SELECTION,
+    INVALID
+    // LAYER,
+    // TIMELINE
+};
 
 /// The undo/redo type which correspond to what is being recorded
-enum class UndoRedoRecordType {
-    KEYFRAME_MODIFY, // Any modification that involve a keyframe
-    KEYFRAME_REMOVE, // Removing a keyframe
-    KEYFRAME_ADD, // Adding a keyframe
-    KEYFRAME_MOVE,
+enum class UndoRedoRecordActionType {
+    MODIFY, // Any modification that involve a keyframe
+    REMOVE, // Removing a keyframe
+    ADD, // Adding a keyframe
+    MOVE,
+    // SCRUB, // Scrubbing layer
     // SCRUB_LAYER, // Scrubbing layer
     // SCRUB_KEYFRAME, // Scrubbing keyframe
     INVALID
@@ -94,21 +104,28 @@ struct MoveFramesSaveState {
 /// whatever states that needs to be stored temporarily.
 struct UndoSaveState {
 
-    ~UndoSaveState()
-    {
-        keyframe.reset();
-    }
-
     // Common data
     UndoRedoRecordType recordType = UndoRedoRecordType::INVALID;
     int layerId = 0;
     int currentFrameIndex = 0;
     Layer::LAYER_TYPE layerType = Layer::UNDEFINED;
-    std::unique_ptr<KeyFrame> keyframe = nullptr;
-    SelectionSaveState selectionState = {};
-    //
 
-    MoveFramesSaveState moveFramesState = {};
+    UndoSaveState() : keyframe(nullptr) { }
+    ~UndoSaveState() {
+        if (recordType == UndoRedoRecordType::KEYFRAME) {
+            keyframe.reset();
+        }
+    }
+
+    union
+    {
+        std::unique_ptr<KeyFrame> keyframe;
+        // SelectionSaveState selectionState;
+        SelectionEditor* selectionEditor;
+        MoveFramesSaveState moveFramesState;
+    };
+
+    UndoRedoRecordActionType recordAction;
 };
 
 class UndoRedoManager : public BaseManager
@@ -137,7 +154,7 @@ public:
 
     /** Prepares and returns an save state with common data
      * @return A UndoSaveState struct with common keyframe data */
-    UndoSaveState* createState(UndoRedoRecordType recordType);
+    UndoSaveState* createState(UndoRedoRecordType recordType, UndoRedoRecordActionType recordAction);
 
     QAction* createUndoAction(QObject* parent, const QIcon& icon);
     QAction* createRedoAction(QObject* parent, const QIcon& icon);
@@ -176,6 +193,9 @@ signals:
 
 private:
 
+    void recordSelection(const UndoSaveState* undoState, const QString& description);
+    void recordKeyFrame(const UndoSaveState* undoState, const QString& description);
+
     void replaceKeyFrame(const UndoSaveState& undoState, const QString& description);
     void replaceBitmap(const UndoSaveState& undoState, const QString& description);
     void replaceVector(const UndoSaveState& undoState, const QString& description);
@@ -184,6 +204,8 @@ private:
     void removeKeyFrame(const UndoSaveState& undoState, const QString& description);
     void moveKeyFrames(const UndoSaveState& undoState, const QString& description);
 
+    void initCommonState(UndoSaveState* undoSaveState) const;
+    void initSelectionState(UndoSaveState* undoSaveState) const;
     void initCommonKeyFrameState(UndoSaveState* undoSaveState) const;
 
     void pushCommand(QUndoCommand* command);

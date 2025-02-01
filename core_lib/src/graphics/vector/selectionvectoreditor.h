@@ -21,10 +21,11 @@ class SelectionVectorEditor : public SelectionEditor
 
     void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement) override;
 
-    void setSelectionRect(const QRectF&) override { /* Note: We can't modify the rect of a vector selection directly*/ }
+    const QPolygonF getSelectionPolygon() const { return mSelectionPolygon; }
+    // void setSelectionRect(const QRectF&) override { /* Note: We can't modify the rect of a vector selection directly*/ }
     QPointF getSelectionAnchorPoint() const override;
 
-    const QRectF mySelectionRect() const override;
+    // const QRectF mySelectionRect() const override;
 
     bool somethingSelected() const override { return false; /* TODO: Should check whether the vectorImage has any selections;*/ }
     bool isOutsideSelectionArea(const QPointF& point) const override;

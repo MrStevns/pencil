@@ -41,6 +41,7 @@ public:
     void flipSelection(bool flipVertical);
 
     virtual void setSelection(const QRectF& rect);
+    virtual void setSelection(const QPolygonF& polygon);
     void deselect();
 
     /** @brief SelectionManager::resetSelectionTransformProperties
@@ -53,7 +54,8 @@ public:
     virtual void setDragOrigin(const QPointF& point) = 0;
 
     virtual QPointF getSelectionAnchorPoint() const = 0;
-    virtual const QRectF mySelectionRect() const = 0;
+    // virtual const QRectF mySelectionRect() const = 0;
+    virtual const QPolygonF getSelectionPolygon() const = 0;
     virtual bool somethingSelected() const = 0;
 
     virtual void setMoveModeForAnchorInRange(const QPointF& point) = 0;
@@ -98,7 +100,7 @@ public:
     void setRotation(const qreal& rotation) { mRotatedAngle = rotation; }
     void setScale(const qreal scaleX, const qreal scaleY) { mScaleX = scaleX; mScaleY = scaleY; }
     void setTranslation(const QPointF& translation) { mTranslation = translation; }
-    virtual void setSelectionRect(const QRectF& selectionRect) = 0;
+    // virtual void setSelectionRect(const QRectF& selectionRect) = 0;
 
     qreal angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const;
 

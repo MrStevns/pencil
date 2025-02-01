@@ -277,6 +277,12 @@ void SelectionEditor::setSelection(const QRectF& rect)
     onSelectionChanged();
 }
 
+void SelectionEditor::setSelection(const QPolygonF &polygon)
+{
+    Q_UNUSED(polygon)
+    onSelectionChanged();
+}
+
 void SelectionEditor::deselect()
 {
     resetSelectionProperties();

@@ -134,9 +134,11 @@ void Editor::onLayerEvent(Layer* layer, KeyFrameEvent event, KeyFrame* keyframe)
         setupKeyframeDependencies(layer, keyframe);
     }
 
-    // Currently all frame events will trigger a frame modified event, if this is excessive, we can
-    // always move in into a MODIFY block only.
-    emit frameModified(keyframe->pos());
+    if (keyframe) {
+        // Currently all frame events will trigger a frame modified event, if this is excessive, we can
+        // always move in into a MODIFY block only.
+        emit frameModified(keyframe->pos());
+    }
 }
 
 void Editor::setupKeyframeDependencies(Layer* layer, KeyFrame* keyframe)
@@ -208,7 +210,8 @@ void Editor::copy()
         clipboards()->copySelectedFrames(currentLayer);
     } else if (currentLayer->type() == Layer::BITMAP) {
         BitmapImage* bitmapImage = static_cast<BitmapImage*>(currentLayer->getLastKeyFrameAtPosition(currentFrame()));
-        clipboards()->copyBitmapImage(bitmapImage, select()->mySelectionRect());
+        // TODO: test if this works
+        clipboards()->copyBitmapImage(bitmapImage, select()->mySelectionPolygon().boundingRect());
     } else if (currentLayer->type() == Layer::VECTOR) {
         VectorImage* vectorImage = static_cast<VectorImage*>(currentLayer->getLastKeyFrameAtPosition(currentFrame()));
         clipboards()->copyVectorImage(vectorImage);
@@ -896,7 +899,7 @@ KeyFrame* Editor::addKeyFrame(const int layerNumber, int frameIndex)
     Q_ASSERT(ok); // We already ensured that there is no keyframe at frameIndex, so this should always succeed
     scrubTo(frameIndex); // currentFrameChanged() emit inside.
 
-    UndoSaveState* state = undoRedo()->createState(UndoRedoRecordType::KEYFRAME_ADD);
+    UndoSaveState* state = undoRedo()->createState(UndoRedoRecordType::KEYFRAME, UndoRedoRecordActionType::ADD);
     emit frameModified(frameIndex);
     layers()->notifyAnimationLengthChanged();
     KeyFrame* newFrame = layer->getKeyFrameAt(frameIndex);
@@ -923,7 +926,7 @@ void Editor::removeKey()
         return;
     }
 
-    UndoSaveState* state =  undoRedo()->createState(UndoRedoRecordType::KEYFRAME_REMOVE);
+    UndoSaveState* state =  undoRedo()->createState(UndoRedoRecordType::KEYFRAME, UndoRedoRecordActionType::REMOVE);
     backup(tr("Remove frame"));
 
     deselectAll();
