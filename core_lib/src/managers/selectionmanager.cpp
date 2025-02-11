@@ -115,6 +115,52 @@ SelectionEditor* SelectionManager::getSelectionEditor(KeyFrame* keyframe)
     return nullptr;
 }
 
+void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)
+{
+    SelectionEditor* currentSelectionEditor = getSelectionEditor();
+    if (!currentSelectionEditor) {
+        return;
+    }
+
+    QPolygonF selectionPolygon = currentSelectionEditor->getSelectionPolygon();
+    if (selectionPolygon.count() < 4)
+    {
+        return;
+    }
+
+    QPolygonF projectedPolygon = currentSelectionEditor->mapToSelection(selectionPolygon);
+
+    const double calculatedSelectionTol = currentSelectionEditor->selectionTolerance() * editor()->viewScaleInversed();
+
+    MoveMode moveMode = MoveMode::NONE;
+    if (QLineF(point, projectedPolygon[0]).length() < calculatedSelectionTol)
+    {
+        moveMode = MoveMode::TOPLEFT;
+    }
+    else if (QLineF(point, projectedPolygon[1]).length() < calculatedSelectionTol)
+    {
+        moveMode = MoveMode::TOPRIGHT;
+    }
+    else if (QLineF(point, projectedPolygon[2]).length() < calculatedSelectionTol)
+    {
+        moveMode = MoveMode::BOTTOMRIGHT;
+    }
+    else if (QLineF(point, projectedPolygon[3]).length() < calculatedSelectionTol)
+    {
+        moveMode = MoveMode::BOTTOMLEFT;
+    }
+    else if (projectedPolygon.containsPoint(point, Qt::WindingFill))
+    {
+        moveMode = MoveMode::MIDDLE;
+    }
+    else
+    {
+        moveMode = MoveMode::NONE;
+    }
+    currentSelectionEditor->setMoveMode(moveMode);
+}
+
+
 void SelectionManager::setSelection(const QRectF& rect)
 {
     if (!getSelectionEditor()) { return; }
@@ -186,6 +232,7 @@ void SelectionManager::deleteSelection()
 {
     if (!getSelectionEditor()) { return; }
 
+    // editor()->backup(tr("Delete Selection", "Undo Step: clear the selection area."));
     getSelectionEditor()->deleteSelection();
     editor()->setModified(editor()->currentLayerIndex(), editor()->currentFrame());
 }
@@ -241,13 +288,6 @@ QPolygonF SelectionManager::mappedSelectionPolygon()
     if (!selectionEditor) { return QRectF(); }
 
     return selectionEditor->mapToSelection(selectionEditor->getSelectionPolygon());
-}
-
-void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)
-{
-    if (!getSelectionEditor()) { return; }
-
-    getSelectionEditor()->setMoveModeForAnchorInRange(point);
 }
 
 MoveMode SelectionManager::getMoveMode()

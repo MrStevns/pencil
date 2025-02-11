@@ -73,6 +73,17 @@ void SelectionBitmapEditor::commitChanges()
     // // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
     setSelection(mapToSelection(QPolygonF(alignedSelection)).boundingRect());
 }
+
+BitmapEditor SelectionBitmapEditor::transformedEditor() const
+{
+    return mBitmapEditor->transformed(mSelectionPolygon, mSelectionTransform, true);
+}
+
+QImage SelectionBitmapEditor::transformedEditorDebug() const
+{
+    return mBitmapEditor->transformed2(mSelectionPolygon, mSelectionTransform, true);
+}
+
 void SelectionBitmapEditor::discardChanges()
 {
     // if (!keyframe) { return; }
@@ -83,7 +94,7 @@ void SelectionBitmapEditor::discardChanges()
     //     bitmapImage->clearTemporaryImage();
     // }
 
-    // resetSelectionProperties();
+    resetSelectionProperties();
 }
 
 // void SelectionBitmapEditor::setFloatingImage(const QImage &floatingImage, const QRect &bounds)
@@ -95,25 +106,10 @@ void SelectionBitmapEditor::discardChanges()
 
 void SelectionBitmapEditor::deleteSelection()
 {
-    // if (somethingSelected())
-    // {
-    //     int currentFrame = editor()->currentFrame();
-    //     editor()->backup(tr("Delete Selection", "Undo Step: clear the selection area."));
-    //     if (mWorkingLayer->type() == Layer::VECTOR)
-    //     {
-    //         clearCurves();
-    //         VectorImage* vectorImage = static_cast<VectorImage*>(mWorkingLayer->getLastKeyFrameAtPosition(currentFrame));
-    //         Q_CHECK_PTR(vectorImage);
-    //         vectorImage->deleteSelection();
-    //     }
-    //     else if (mWorkingLayer->type() == Layer::BITMAP)
-    //     {
-    //         BitmapImage* bitmapImage = static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(currentFrame));
-    //         Q_CHECK_PTR(bitmapImage);
-    //         bitmapImage->clear(mOriginalRect);
-    //     }
-    //     editor()->setModified(editor()->currentLayerIndex(), currentFrame);
-    // }
+    if (somethingSelected())
+    {
+        mBitmapEditor->clear(mSelectionPolygon);
+    }
 }
 
 QPointF SelectionBitmapEditor::getSelectionAnchorPoint() const
@@ -124,11 +120,6 @@ QPointF SelectionBitmapEditor::getSelectionAnchorPoint() const
 bool SelectionBitmapEditor::isOutsideSelectionArea(const QPointF& point) const
 {
     return (!mSelectionTransform.map(mSelectionPolygon).containsPoint(point.toPoint(), Qt::WindingFill)) && mMoveMode == MoveMode::NONE;
-}
-
-void SelectionBitmapEditor::setMoveModeForAnchorInRange(const QPointF& point)
-{
-    return SelectionEditor::setMoveModeForAnchorInRange(mSelectionPolygon, point);
 }
 
 void SelectionBitmapEditor::adjustCurrentSelection(const QPointF &currentPoint, const QPointF &offset, qreal rotationOffset, int rotationIncrement)

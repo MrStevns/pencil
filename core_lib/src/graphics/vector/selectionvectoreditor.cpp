@@ -39,11 +39,6 @@ bool SelectionVectorEditor::isOutsideSelectionArea(const QPointF& point) const
     return (!mSelectionTransform.map(mSelectionPolygon).containsPoint(point, Qt::WindingFill)) && mMoveMode == MoveMode::NONE;
 }
 
-void SelectionVectorEditor::setMoveModeForAnchorInRange(const QPointF& point)
-{
-    SelectionEditor::setMoveModeForAnchorInRange(mSelectionPolygon, point);
-}
-
 void SelectionVectorEditor::adjustCurrentSelection(const QPointF &currentPoint, const QPointF &offset, qreal rotationOffset, int rotationIncrement)
 {
     SelectionEditor::adjustCurrentSelection(mSelectionPolygon, currentPoint, offset, rotationOffset, rotationIncrement);

@@ -30,6 +30,7 @@ public:
     void transform(QRect newBoundaries, bool smoothTransform);
     BitmapEditor transformed(const QRect& newBoundaries, const QTransform& transform, bool smoothTransform) const;
     BitmapEditor transformed(const QPolygon& polygon, const QTransform& transform, bool smoothTransform) const;
+    QImage transformed2(const QPolygon& polygon, const QTransform& transform, bool smoothTransform) const;
     // const QImage& transformed(const QImage& image, const QRect& selection, const QTransform& transform, bool smoothTransform);
     // const QImage& transformed(const QImage& image, const QRect& newBoundaries, bool smoothTransform);
 
@@ -83,6 +84,7 @@ public:
 
     void clear();
     void clear(const QPolygon& polygon);
+    void paste(const BitmapEditor& bitmapEditor, const QPointF& topLeft, QPainter::CompositionMode mode);
     void paste(const BitmapEditor& bitmapEditor, QPainter::CompositionMode mode = QPainter::CompositionMode::CompositionMode_SourceOver);
     void paste(const TiledBuffer* tiledBuffer, const QPolygon& clipPolygon, const QTransform& transform, QPainter::CompositionMode cm);
 

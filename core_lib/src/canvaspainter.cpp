@@ -311,9 +311,7 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bi
     //     selectionEditor = bitmapImage->temporaryImage()->selectionEditor();
     // }
 
-    if (!selectionEditor || !selectionEditor->somethingSelected()) { return; }
-
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    if (!selectionEditor || selectionEditor->selectionTransform().isIdentity()) { return; }
     // const SelectionBitmapImage& floatingImage = selectionEditor->floatingImage();
     // if (floatingImage.selection.isValid()) {
     //     painter.save();
@@ -337,19 +335,35 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bi
                 painter.fillPath(path, QColor(255,255,255,255));
             painter.restore();
 
+            // Draw the selection image separately and on top
+            painter.save();
+
             // Multiply the selection and view matrix to get proper rotation and scale values
             // Now the image origin will be topleft
             painter.setTransform(selectionTransform*mViewTransform);
-
-            // Draw the selection image separately and on top
-            painter.save();
-                painter.setClipPath(path);
-                painter.setClipping(true);
-                painter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
+                // painter.setClipPath(path);
+                // painter.setClipping(true);
 
                 // The tiled buffer should not be transformed based on the selection
                 painter.setTransform(mViewTransform);
                 painter.setCompositionMode(mOptions.cmBufferBlendMode);
+
+                // painter.setRenderHint(QPainter::SmoothPixmapTransform);
+                // painter.setRenderHint(QPainter::Antialiasing);
+
+                // BitmapEditor selectedEditor = bitmapImage->editor()->copyArea(selectionPolygon.boundingRect().toAlignedRect(), selectionPolygon.toPolygon());
+                // QImage transformedImage = selectedEditor.constImage()->transformed(selectionTransform, Qt::SmoothTransformation);
+                QImage bitmapEditor = selectionEditor->transformedEditorDebug();
+                // qDebug() << "draw image into: " << selectionTransform.mapRect(QRectF(selectionPolygon.boundingRect()));
+                QRectF rect = selectionTransform.mapRect(QRectF(selectionPolygon.boundingRect()));
+                // painter.drawImage(rect.topLeft(), *bitmapEditor.image());
+                painter.drawImage(rect.topLeft(), bitmapEditor);
+                // selectionTransform.mapRect(selectionPolygon.boundingRect()).normalized().topLeft()
+                // painter.drawImage(QImage::trueMatrix(selectionTransform,
+                //                                               transformedImage.width(),
+                //                                               transformedImage.height()).mapRect(selectionPolygon.boundingRect()).topLeft(),
+                //                   transformedImage);
+
                 const auto tiles = mTiledBuffer->tiles();
                 for (const Tile* tile : tiles) {
                     painter.drawPixmap(tile->posF(), tile->pixmap());

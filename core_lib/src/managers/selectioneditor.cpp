@@ -104,48 +104,9 @@ QPointF SelectionEditor::getSelectionAnchorPoint(const QPolygonF& selectionPolyg
     {
         anchorPoint = selectionPolygon[3];
     } else {
-        anchorPoint = QLineF(selectionPolygon[0], selectionPolygon[2]).pointAt(.5);
+        anchorPoint = selectionPolygon.boundingRect().center();
     }
     return anchorPoint;
-}
-
-
-void SelectionEditor::setMoveModeForAnchorInRange(const QPolygonF& selectionPolygon, const QPointF& point)
-{
-    if (selectionPolygon.count() < 4)
-    {
-        mMoveMode = MoveMode::NONE;
-        return;
-    }
-
-    QPolygonF projectedPolygon = mapToSelection(selectionPolygon);
-
-    const double calculatedSelectionTol = selectionTolerance();
-
-    if (QLineF(point, projectedPolygon[0]).length() < calculatedSelectionTol)
-    {
-        mMoveMode = MoveMode::TOPLEFT;
-    }
-    else if (QLineF(point, projectedPolygon[1]).length() < calculatedSelectionTol)
-    {
-        mMoveMode = MoveMode::TOPRIGHT;
-    }
-    else if (QLineF(point, projectedPolygon[2]).length() < calculatedSelectionTol)
-    {
-        mMoveMode = MoveMode::BOTTOMRIGHT;
-    }
-    else if (QLineF(point, projectedPolygon[3]).length() < calculatedSelectionTol)
-    {
-        mMoveMode = MoveMode::BOTTOMLEFT;
-    }
-    else if (projectedPolygon.containsPoint(point, Qt::WindingFill))
-    {
-        mMoveMode = MoveMode::MIDDLE;
-    }
-    else
-    {
-        mMoveMode = MoveMode::NONE;
-    }
 }
 
 void SelectionEditor::adjustCurrentSelection(const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)

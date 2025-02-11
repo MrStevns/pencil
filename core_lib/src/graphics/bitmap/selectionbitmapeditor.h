@@ -25,10 +25,12 @@ public:
 
     // void setSelectionRect(const QRectF& selectionRect) override { mOriginalRect = selectionRect.toAlignedRect(); }
     QPointF getSelectionAnchorPoint() const override;
-    const QPolygonF getSelectionPolygon() const { return mSelectionPolygon; }
+    const QPolygonF getSelectionPolygon() const override { return mSelectionPolygon; }
+
+    BitmapEditor transformedEditor() const;
+    QImage transformedEditorDebug() const;
 
     void resetSelectionProperties() override;
-    void setMoveModeForAnchorInRange(const QPointF& point) override;
 
     void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement) override;
 

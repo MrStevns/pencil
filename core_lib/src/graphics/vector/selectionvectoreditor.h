@@ -17,7 +17,6 @@ class SelectionVectorEditor : public SelectionEditor
     void setDragOrigin(const QPointF& point) override { mDragOrigin = point; }
 
     void resetSelectionProperties() override;
-    void setMoveModeForAnchorInRange(const QPointF& point) override;
 
     void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement) override;
 

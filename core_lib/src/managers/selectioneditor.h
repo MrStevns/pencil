@@ -58,8 +58,6 @@ public:
     virtual const QPolygonF getSelectionPolygon() const = 0;
     virtual bool somethingSelected() const = 0;
 
-    virtual void setMoveModeForAnchorInRange(const QPointF& point) = 0;
-
     virtual void resetSelectionProperties();
     virtual bool isOutsideSelectionArea(const QPointF& point) const = 0;
 
@@ -133,7 +131,6 @@ public:
     SelectionResetCallback onSelectionReset;
 
 protected:
-    void setMoveModeForAnchorInRange(const QPolygonF& selectionPolygon, const QPointF& point);
     void adjustCurrentSelection(const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
 
     QPointF getSelectionAnchorPoint(const QPolygonF& selectionPolygon) const;
