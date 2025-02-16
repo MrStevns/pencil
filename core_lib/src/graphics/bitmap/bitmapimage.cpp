@@ -196,6 +196,7 @@ void BitmapImage::paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMod
     if (selectionEditor()) {
         selectionPolygon = selectionEditor()->getSelectionPolygon().toPolygon();
         selectionTransform = selectionEditor()->selectionTransform();
+        selectionEditor()->invalidateCache();
     }
     editor()->paste(tiledBuffer, selectionPolygon, selectionTransform, cm);
 
@@ -207,46 +208,6 @@ void BitmapImage::moveTopLeft(QPoint point)
     editor()->moveTopLeft(point);
     // Size is unchanged so there is no need to update mBounds
     modification();
-}
-
-void BitmapImage::transform(QRect newBoundaries, bool smoothTransform)
-{
-    editor()->transform(newBoundaries, smoothTransform);
-
-    modification();
-}
-
-BitmapImage BitmapImage::transformed(QRect selection, QTransform transform, bool smoothTransform)
-{
-
-    // TODO: Maybe we can move these into the selection editor?
-    // Q_ASSERT(!selection.isEmpty());
-
-    // BitmapImage selectedPart = copy(selection);
-
-    // // Get the transformed image
-    // QImage transformedImage;
-    // if (smoothTransform)
-    // {
-    //     transformedImage = selectedPart.image()->transformed(transform, Qt::SmoothTransformation);
-    // }
-    // else
-    // {
-    //     transformedImage = selectedPart.image()->transformed(transform);
-    // }
-    // return BitmapImage(transform.mapRect(selection).normalized().topLeft(), transformedImage);
-}
-
-BitmapImage BitmapImage::transformed(QRect newBoundaries, bool smoothTransform)
-{
-    // TODO: Maybe we can move these into the selection editor?
-    // BitmapImage transformedImage(newBoundaries, QColor(0, 0, 0, 0));
-    // QPainter painter(transformedImage.image());
-    // painter.setRenderHint(QPainter::SmoothPixmapTransform, smoothTransform);
-    // newBoundaries.moveTopLeft(QPoint(0, 0));
-    // painter.drawImage(newBoundaries, *image());
-    // painter.end();
-    // return transformedImage;
 }
 
 /** Update image bounds.

@@ -107,6 +107,9 @@ public:
     QPolygonF mapToSelection(const QPolygonF& polygon) const { return mSelectionTransform.map(polygon); }
     QPolygonF mapFromLocalSpace(const QPolygonF& polygon) const { return mSelectionTransform.inverted().map(polygon); }
 
+    void invalidateCache() { mCacheInvalidated = true; }
+    bool isCacheInvalidated() const { return mCacheInvalidated; }
+
     // // Vector selection
     // VectorSelection vectorSelection;
 
@@ -138,6 +141,7 @@ protected:
     MoveMode mMoveMode = MoveMode::NONE;
     QTransform mSelectionTransform;
     QPointF mDragOrigin;
+    bool mCacheInvalidated = true;
 
 private:
     /** @brief Aligns the input position to the nearest axis.

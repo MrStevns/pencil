@@ -70,11 +70,6 @@ public:
 
     void moveTopLeft(QPoint point);
     void moveTopLeft(QPointF point) { moveTopLeft(point.toPoint()); }
-    void transform(QRect rectangle, bool smoothTransform);
-    void transform(QRectF rectangle, bool smoothTransform) { transform(rectangle.toRect(), smoothTransform); }
-    BitmapImage transformed(QRect selection, QTransform transform, bool smoothTransform);
-    BitmapImage transformed(QRect rectangle, bool smoothTransform);
-    BitmapImage transformed(QRectF rectangle, bool smoothTransform) { return transformed(rectangle.toRect(), smoothTransform); }
 
     bool contains(QPoint P) { return editor()->contains(P); }
     bool contains(QPointF P) { return contains(P.toPoint()); }

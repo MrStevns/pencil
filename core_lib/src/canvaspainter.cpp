@@ -338,31 +338,18 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bi
             // Draw the selection image separately and on top
             painter.save();
 
-            // Multiply the selection and view matrix to get proper rotation and scale values
-            // Now the image origin will be topleft
-            painter.setTransform(selectionTransform*mViewTransform);
-                // painter.setClipPath(path);
-                // painter.setClipping(true);
+                // Multiply the selection and view matrix to get proper rotation and scale values
+                // So we can clip the image properly.
+                painter.setTransform(selectionTransform*mViewTransform);
+                painter.setClipPath(path);
+                painter.setClipping(true);
 
                 // The tiled buffer should not be transformed based on the selection
                 painter.setTransform(mViewTransform);
                 painter.setCompositionMode(mOptions.cmBufferBlendMode);
 
-                // painter.setRenderHint(QPainter::SmoothPixmapTransform);
-                // painter.setRenderHint(QPainter::Antialiasing);
-
-                // BitmapEditor selectedEditor = bitmapImage->editor()->copyArea(selectionPolygon.boundingRect().toAlignedRect(), selectionPolygon.toPolygon());
-                // QImage transformedImage = selectedEditor.constImage()->transformed(selectionTransform, Qt::SmoothTransformation);
-                QImage bitmapEditor = selectionEditor->transformedEditorDebug();
-                // qDebug() << "draw image into: " << selectionTransform.mapRect(QRectF(selectionPolygon.boundingRect()));
-                QRectF rect = selectionTransform.mapRect(QRectF(selectionPolygon.boundingRect()));
-                // painter.drawImage(rect.topLeft(), *bitmapEditor.image());
-                painter.drawImage(rect.topLeft(), bitmapEditor);
-                // selectionTransform.mapRect(selectionPolygon.boundingRect()).normalized().topLeft()
-                // painter.drawImage(QImage::trueMatrix(selectionTransform,
-                //                                               transformedImage.width(),
-                //                                               transformedImage.height()).mapRect(selectionPolygon.boundingRect()).topLeft(),
-                //                   transformedImage);
+                BitmapEditor selectedEditor = selectionEditor->transformedEditor();
+                painter.drawImage(selectedEditor.bounds().topLeft(), *selectedEditor.image());
 
                 const auto tiles = mTiledBuffer->tiles();
                 for (const Tile* tile : tiles) {

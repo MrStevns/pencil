@@ -71,22 +71,6 @@ bool BitmapEditor::isLoaded()
     return mImage.width() == mBounds.width();
 }
 
-void BitmapEditor::transform(QRect newBoundaries, bool smoothTransform)
-{
-    mBounds = newBoundaries;
-    newBoundaries.moveTopLeft(QPoint(0, 0));
-    QImage newImage(mBounds.size(), QImage::Format_ARGB32_Premultiplied);
-
-    QPainter painter(&newImage);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, smoothTransform);
-    painter.setCompositionMode(QPainter::CompositionMode_Source);
-    painter.fillRect(newImage.rect(), QColor(0, 0, 0, 0));
-    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-    painter.drawImage(newBoundaries, *image());
-    painter.end();
-    mImage = newImage;
-}
-
 bool BitmapEditor::updateBounds(const QRect& newBoundaries)
 {
     // Check to make sure changes actually need to be made
@@ -152,45 +136,44 @@ BitmapEditor BitmapEditor::copyArea(const QRect& rect, const QPolygon& clipToPol
     return copyEditor;
 }
 
-BitmapEditor BitmapEditor::transformed(const QRect& selection, const QTransform& transform, bool smoothTransform) const
+BitmapEditor BitmapEditor::transformed(const QTransform& transform, bool smoothTransform) const
 {
-    const BitmapEditor& selectedEditor = copyArea(selection, QPolygon());
+    const QRect& bounds = mBounds;
+    const QPolygon& boundsPolygon = QPolygon(bounds);
 
-    const QImage& transformedImage = selectedEditor.constImage()->transformed(transform, smoothTransform ? Qt::SmoothTransformation : Qt::FastTransformation);
-    return BitmapEditor(transform.mapRect(selection).normalized().topLeft(), transformedImage);
-}
+    QRectF boundingRect = transform.map(boundsPolygon).boundingRect();
+    // The bounding box of a qpolygon is always 1 pixel larger
+    // eg. 1x1 polygon becomes 2x2 boundingRect
+    boundingRect = boundingRect.adjusted(0, 0,-1,-1);
 
-BitmapEditor BitmapEditor::transformed(const QPolygon& selection, const QTransform& transform, bool smoothTransform) const
-{
-    const QRectF& boundingRect = selection.boundingRect();
-    BitmapEditor selectedEditor = copyArea(selection.boundingRect(), selection);
+    QRectF bRectF = transform.map(QPolygonF(boundsPolygon)).boundingRect();
+    QRect transformedImageBounds(
+        qFloor(boundingRect.x()),
+        qFloor(boundingRect.y()),
+        qCeil(boundingRect.width()),
+        qCeil(boundingRect.height())
+    );
 
-    // QTransform trueMatrix = QImage::trueMatrix(transform, selectedEditor.width(), selectedEditor.height());
-    const QRectF& imageRect = transform.mapRect(QRectF(selectedEditor.bounds()));
-    const QRect& alignedRect = imageRect.toAlignedRect();
+    QImage transformedImage = QImage(QSize(transformedImageBounds.width(), transformedImageBounds.height()), QImage::Format_ARGB32_Premultiplied);
+    transformedImage.fill(Qt::transparent);
 
-    QImage sizedImage = QImage(alignedRect.size(), QImage::Format_ARGB32_Premultiplied);
-    sizedImage.fill(Qt::transparent);
+    QPainter imagePainter(&transformedImage);
 
-    QPainter imagePainter(&sizedImage);
-
-    const QPointF& oldCenter = QPointF(static_cast<qreal>(selectedEditor.width()*0.5),
-                             static_cast<qreal>(selectedEditor.height())*0.5);
-
-    const QPointF& transformedTopLeft = imageRect.topLeft();
-    const QPointF& newCenter = imageRect.center() - transformedTopLeft;
+    QPointF localCenter = QPointF(static_cast<qreal>(transformedImageBounds.width()) * 0.5, static_cast<qreal>(transformedImageBounds.height()) * 0.5);
+    QPointF preciseCenter = QPointF(bRectF.width() * 0.5, bRectF.height() * 0.5);
+    // Move origin to the center of the initial selection rect
 
     QTransform centeredTransform;
-
-    // Move origin to the center of the initial selection rect
-    centeredTransform.translate(boundingRect.width()*0.5, boundingRect.height()*0.5);
+    centeredTransform.translate(preciseCenter.x(), preciseCenter.y());
 
     // Apply the selection transform
     centeredTransform *= transform;
 
     // Translate Back to the oldCenter of the
-    centeredTransform.translate(-oldCenter.x(),
-                                -oldCenter.y());
+    centeredTransform.translate(-preciseCenter.x(), -preciseCenter.y());
+
+    // Compute the offset caused by rounding to integer bounds
+    const QPointF& pixelCorrectionOffset = preciseCenter - localCenter;
 
     if (smoothTransform) {
         imagePainter.setRenderHint(QPainter::Antialiasing);
@@ -198,65 +181,16 @@ BitmapEditor BitmapEditor::transformed(const QPolygon& selection, const QTransfo
     }
     imagePainter.setTransform(centeredTransform);
 
-    QPointF imagePoint = QPointF(centeredTransform.inverted().map(newCenter)-oldCenter);
-    // QPoint alignedPoint = QPoint(qRound(imagePoint.x()), qRound(imagePoint.y()));
-    imagePainter.drawImage(imagePoint, *selectedEditor.image());
+    const QPointF& copiedImageCenter = QPointF(bounds.width() * 0.5, bounds.height() * 0.5);
 
-    imagePainter.end();
-    return BitmapEditor(alignedRect.topLeft(), sizedImage);
-}
+    const QPointF& center = QPointF(centeredTransform.inverted().map(preciseCenter - pixelCorrectionOffset));
+    const QPointF& imagePoint = QPointF(center - copiedImageCenter);
 
-QImage BitmapEditor::transformed2(const QPolygon& selection, const QTransform& transform, bool smoothTransform) const
-{
-    const QRectF& boundingRect = selection.boundingRect();
-    BitmapEditor selectedEditor = copyArea(selection.boundingRect(), selection);
-
-    // QTransform trueMatrix = QImage::trueMatrix(transform, selectedEditor.width(), selectedEditor.height());
-    const QRectF& imageRect = transform.mapRect(QRectF(selectedEditor.bounds()));
-    const QRect& alignedRect = imageRect.toAlignedRect();
-
-    QImage sizedImage = QImage(alignedRect.size(), QImage::Format_ARGB32_Premultiplied);
-    sizedImage.fill(Qt::transparent);
-
-    QPainter imagePainter(&sizedImage);
-
-    const QPointF& transformedTopLeft = imageRect.topLeft();
-    const QPointF& newCenter = imageRect.center() - transformedTopLeft;
-
-    const QPointF& offset = QPointF(static_cast<qreal>(selectedEditor.width()*0.5),
-                             static_cast<qreal>(selectedEditor.height())*0.5);
-
-    QTransform centeredTransform;
-
-    // Move origin to the center of the initial selection rect
-    centeredTransform.translate(boundingRect.width()*0.5, boundingRect.height()*0.5);
-
-    // Apply the selection transform
-    centeredTransform *= transform;
-
-    // Translate Back to the offset of the
-    centeredTransform.translate(-offset.x(),
-                                -offset.y());
-
-    if (smoothTransform) {
-        imagePainter.setRenderHint(QPainter::Antialiasing);
-        imagePainter.setRenderHint(QPainter::SmoothPixmapTransform);
-    }
-    imagePainter.setTransform(centeredTransform);
-
-    QPointF imagePoint = QPointF(centeredTransform.inverted().map(newCenter)-offset);
-    // QPoint alignedPoint = QPoint(qRound(imagePoint.x()), qRound(imagePoint.y()));
-    imagePainter.drawImage(imagePoint, *selectedEditor.image());
+    imagePainter.drawImage(imagePoint, mImage);
 
     imagePainter.end();
 
-    // const QImage& transformedImage = selectedEditor.constImage()->transformed(transform, smoothTransform ? Qt::SmoothTransformation : Qt::FastTransformation);
-    // qDebug() << "image size: " << transform.mapRect(QRectF(selection.boundingRect())).normalized().size();
-    // return BitmapEditor(imageRect.toAlignedRect().topLeft(), sizedImage);
-    return sizedImage;
-    // qDebug() << "editor size: " << editor.size();
-    // return editor;
-    // return BitmapEditor(QImage::trueMatrix(transform, selectedEditor.width(), selectedEditor.height()).mapRect(selection.boundingRect()).normalized().toAlignedRect().topLeft(), transformedImage);
+    return BitmapEditor(transformedImageBounds.topLeft(), transformedImage);
 }
 
 void BitmapEditor::paintImage(QPainter& painter)
@@ -639,7 +573,6 @@ void BitmapEditor::paste(const BitmapEditor& bitmapEditor, const QPointF& topLef
     const QImage* imageToPaste = bitmapEditor.constImage();
 
     QPainter painter(&mImage);
-    // painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setCompositionMode(mode);
     painter.translate(-mBounds.topLeft());
@@ -659,7 +592,7 @@ void BitmapEditor::paste(const BitmapEditor& bitmapEditor, QPainter::Composition
     const QImage* imageToPaste = bitmapEditor.constImage();
 
     QPainter painter(&mImage);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setCompositionMode(mode);
     painter.drawImage(bitmapEditor.bounds().topLeft() - mBounds.topLeft(), *imageToPaste);
     painter.end();

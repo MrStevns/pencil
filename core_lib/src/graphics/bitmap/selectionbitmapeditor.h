@@ -27,8 +27,7 @@ public:
     QPointF getSelectionAnchorPoint() const override;
     const QPolygonF getSelectionPolygon() const override { return mSelectionPolygon; }
 
-    BitmapEditor transformedEditor() const;
-    QImage transformedEditorDebug() const;
+    BitmapEditor transformedEditor();
 
     void resetSelectionProperties() override;
 
@@ -45,10 +44,16 @@ public:
     // void clearFloatingImage() { mFloatingImage = SelectionBitmapImage(); }
 
 private:
+
+    /// Creates a copy of the editor based on the selection that was set
+    void createImageCache();
+
     QPolygon mSelectionPolygon;
-    // QRect mOriginalRect;
+    QRect mOriginalRect;
 
     BitmapEditor* mBitmapEditor = nullptr;
+
+    std::unique_ptr<BitmapEditor> mTransformCopyEditor;
 };
 
 #endif // SELECTIONBITMAPEDITOR_H

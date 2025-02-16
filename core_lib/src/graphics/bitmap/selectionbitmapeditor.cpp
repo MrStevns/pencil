@@ -15,8 +15,12 @@ SelectionBitmapEditor::SelectionBitmapEditor(BitmapEditor* bitmapEditor) : Selec
 SelectionBitmapEditor::SelectionBitmapEditor(SelectionBitmapEditor& editor, BitmapEditor* bitmapEditor) : SelectionEditor(editor)
 {
     mSelectionPolygon = editor.mSelectionPolygon;
-    // mOriginalRect = editor.mOriginalRect;
+    mOriginalRect = editor.mOriginalRect;
     mBitmapEditor = bitmapEditor;
+
+    if (editor.mTransformCopyEditor) {
+        mTransformCopyEditor.reset(new BitmapEditor(*editor.mTransformCopyEditor.get()));
+    }
 }
 
 SelectionBitmapEditor::~SelectionBitmapEditor()
@@ -33,15 +37,34 @@ void SelectionBitmapEditor::setSelection(const QPolygonF& polygon)
 {
     resetSelectionTransformProperties();
     mSelectionPolygon = polygon.toPolygon();
-    // mOriginalRect = rect.toAlignedRect();
+
     SelectionEditor::setSelection(polygon);
+
+    mOriginalRect = mSelectionPolygon.boundingRect().adjusted(0, 0,-1,-1);
+
+    createImageCache();
+}
+
+void SelectionBitmapEditor::createImageCache()
+{
+    // Make sure the selection is valid before creating a cache
+    if (!mOriginalRect.isValid()) {
+        return;
+    }
+
+    if (mCacheInvalidated || !mTransformCopyEditor || mTransformCopyEditor.get()->bounds().size() != mOriginalRect.size()) {
+        mTransformCopyEditor.reset(new BitmapEditor(mBitmapEditor->copyArea(mOriginalRect, mSelectionPolygon)));
+    }
+    mCacheInvalidated = false;
 }
 
 void SelectionBitmapEditor::resetSelectionProperties()
 {
     resetSelectionTransformProperties();
     mSelectionPolygon = QPolygon();
-    // mOriginalRect = QRect();
+    mOriginalRect = QRect();
+    mTransformCopyEditor.reset();
+    mCacheInvalidated = true;
     SelectionEditor::resetSelectionProperties();
 }
 
@@ -53,6 +76,10 @@ void SelectionBitmapEditor::commitChanges()
 
     // TODO: replace with qpolygon
     const QPolygon& alignedSelection = mSelectionPolygon;
+
+    if (!mTransformCopyEditor) {
+        return;
+    }
     // if (currentBitmapImage == nullptr) { return; }
 
     // BitmapImage* floatingImage = static_cast<SelectionBitmapEditor*>(currentBitmapImage->selectionEditor())->floatingImage();
@@ -65,7 +92,8 @@ void SelectionBitmapEditor::commitChanges()
     // //     // TODO: figure out how we clear the temporary image without destroying the editor as well
     // //     // currentBitmapImage->clearTemporaryImage();
     // } else {
-        BitmapEditor transformedImage = mBitmapEditor->transformed(alignedSelection, mSelectionTransform, true);
+        BitmapEditor transformedImage = mTransformCopyEditor.get()->transformed(mSelectionTransform, true);
+
         mBitmapEditor->clear(alignedSelection);
         mBitmapEditor->paste(transformedImage, QPainter::CompositionMode_SourceOver);
     // }
@@ -74,14 +102,15 @@ void SelectionBitmapEditor::commitChanges()
     setSelection(mapToSelection(QPolygonF(alignedSelection)).boundingRect());
 }
 
-BitmapEditor SelectionBitmapEditor::transformedEditor() const
+BitmapEditor SelectionBitmapEditor::transformedEditor()
 {
-    return mBitmapEditor->transformed(mSelectionPolygon, mSelectionTransform, true);
-}
-
-QImage SelectionBitmapEditor::transformedEditorDebug() const
-{
-    return mBitmapEditor->transformed2(mSelectionPolygon, mSelectionTransform, true);
+    if (!mTransformCopyEditor) {
+        return BitmapEditor();
+    }
+    if (mCacheInvalidated) {
+        createImageCache();
+    }
+    return mTransformCopyEditor.get()->transformed(mSelectionTransform, true);
 }
 
 void SelectionBitmapEditor::discardChanges()
@@ -114,7 +143,7 @@ void SelectionBitmapEditor::deleteSelection()
 
 QPointF SelectionBitmapEditor::getSelectionAnchorPoint() const
 {
-    return SelectionEditor::getSelectionAnchorPoint(mSelectionPolygon).toPoint();
+    return SelectionEditor::getSelectionAnchorPoint(mSelectionPolygon);
 }
 
 bool SelectionBitmapEditor::isOutsideSelectionArea(const QPointF& point) const
