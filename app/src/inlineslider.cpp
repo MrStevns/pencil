@@ -216,8 +216,17 @@ void InlineSlider::setCornerRadius(qreal percentage)
     mCornerRadiusPercentage = percentage;
 }
 
+void InlineSlider::setupPixmap(const QSize& size)
+{
+    mPixmap = QPixmap(size * devicePixelRatio());
+    mPixmap.setDevicePixelRatio(devicePixelRatio());
+    mPixmap.fill(Qt::transparent);
+}
+
 void InlineSlider::resizeEvent(QResizeEvent* event)
 {
+    QWidget::resizeEvent(event);
+
     setupPixmap(event->size());
     setCornerRadius(mCornerRadiusPercentage);
 
@@ -226,20 +235,21 @@ void InlineSlider::resizeEvent(QResizeEvent* event)
     update();
 }
 
-void InlineSlider::setupPixmap(const QSize& size)
-{
-    mPixmap = QPixmap(size * devicePixelRatio());
-    mPixmap.setDevicePixelRatio(devicePixelRatio());
-    mPixmap.fill(Qt::transparent);
-}
-
 void InlineSlider::mouseMoveEvent(QMouseEvent* event)
 {
+    QWidget::mouseMoveEvent(event);
     if (event->buttons() & Qt::LeftButton) {
         setSliderValueFromPos(event->localPos().x());
         setSliderPixelPos(event->localPos().x());
         update();
     }
+}
+
+void InlineSlider::mouseReleaseEvent(QMouseEvent *event)
+{
+    QWidget::mouseReleaseEvent(event);
+
+    emit sliderReleased(mSliderValue);
 }
 
 void InlineSlider::setValue(qreal newValue)
