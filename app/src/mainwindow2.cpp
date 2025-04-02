@@ -43,7 +43,6 @@ GNU General Public License for more details.
 #include "pencilsettings.h"
 #include "object.h"
 #include "editor.h"
-#include "polylinetool.h"
 
 #include "filemanager.h"
 #include "colormanager.h"
@@ -72,6 +71,7 @@ GNU General Public License for more details.
 #include "toolbox.h"
 #include "onionskinwidget.h"
 #include "pegbaralignmentdialog.h"
+#include "addtransparencytopaperdialog.h"
 #include "repositionframesdialog.h"
 #include "toolbrushsettingswidget.h" 
 
@@ -284,7 +284,6 @@ void MainWindow2::createMenus()
 
     //--- Edit Menu ---
     replaceUndoRedoActions();
-    connect(ui->actionRemoveLastPolylineSegment, &QAction::triggered, static_cast<PolylineTool*>(mEditor->tools()->getTool(POLYLINE)), &PolylineTool::removeLastPolylineSegment);
     connect(ui->actionCut, &QAction::triggered, mEditor, &Editor::copyAndCut);
     connect(ui->actionCopy, &QAction::triggered, mEditor, &Editor::copy);
     connect(ui->actionPaste_Previous, &QAction::triggered, mEditor, &Editor::pasteFromPreviousFrame);
@@ -294,6 +293,7 @@ void MainWindow2::createMenus()
     connect(ui->actionFlip_X, &QAction::triggered, mCommands, &ActionCommands::flipSelectionX);
     connect(ui->actionFlip_Y, &QAction::triggered, mCommands, &ActionCommands::flipSelectionY);
     connect(ui->actionPegbarAlignment, &QAction::triggered, this, &MainWindow2::openPegAlignDialog);
+    connect(ui->actionAdd_Transparency_to_paper, &QAction::triggered, this, &MainWindow2::openAddTranspToPaperDialog);
     connect(ui->actionSelect_All, &QAction::triggered, mCommands, &ActionCommands::selectAll);
     connect(ui->actionDeselect_All, &QAction::triggered, mCommands, &ActionCommands::deselectAll);
     connect(ui->actionReposition_Selected_Frames, &QAction::triggered, this, &MainWindow2::openRepositionDialog);
@@ -559,6 +559,34 @@ void MainWindow2::openLayerOpacityDialog()
     });
 }
 
+void MainWindow2::openAddTranspToPaperDialog()
+{
+    if (mAddTranspToPaper)
+    {
+        mAddTranspToPaper->activateWindow();
+        mAddTranspToPaper->raise();
+        return;
+    }
+
+    mAddTranspToPaper = new AddTransparencyToPaperDialog(this);
+    mAddTranspToPaper->setCore(mEditor);
+    mAddTranspToPaper->initUI();
+    mAddTranspToPaper->setWindowFlag(Qt::WindowStaysOnTopHint);
+    mAddTranspToPaper->show();
+
+    connect(mAddTranspToPaper, &AddTransparencyToPaperDialog::finished, [=](int result)
+    {
+        if (result == QDialog::Accepted)
+        {
+            mSuppressAutoSaveDialog = true;
+            mAddTranspToPaper->traceScannedDrawings();
+            mSuppressAutoSaveDialog = false;
+        }
+        mAddTranspToPaper->deleteLater();
+        mAddTranspToPaper = nullptr;
+    });
+}
+
 void MainWindow2::openRepositionDialog()
 {
     if (mEditor->layers()->currentLayer()->getSelectedFramesByPos().count() < 2)
@@ -793,7 +821,7 @@ bool MainWindow2::saveObject(QString strSavedFileName)
 
         ErrorDialog errorDialog(st.title(),
                                 st.description().append(tr("<br><br>An error has occurred and your file may not have saved successfully."
-                                                           "If you believe that this error is an issue with Pencil2D, please create a new issue at:"
+                                                           "\nIf you believe that this error is an issue with Pencil2D, please create a new issue at:"
                                                            "<br><a href='https://github.com/pencil2d/pencil/issues'>https://github.com/pencil2d/pencil/issues</a><br>"
                                                            "Please be sure to include the following details in your issue:")), st.details().html());
         errorDialog.exec();
@@ -906,7 +934,8 @@ void MainWindow2::importImage()
         return;
     }
 
-    Status st = mEditor->importImage(strFilePath);
+    ImportImageConfig importImageConfig = positionDialog->importConfig();
+    Status st = mEditor->importImage(strFilePath, importImageConfig);
     if (!st.ok())
     {
         ErrorDialog errorDialog(st.title(), st.description(), st.details().html());
@@ -943,7 +972,7 @@ void MainWindow2::importImageSequence()
         return;
     }
 
-    imageSeqDialog->importArbitrarySequence();
+    imageSeqDialog->importArbitrarySequence(positionDialog->importConfig());
 
     mSuppressAutoSaveDialog = false;
 }
@@ -972,7 +1001,7 @@ void MainWindow2::importPredefinedImageSet()
         return;
     }
 
-    imageSeqDialog->importPredefinedSet();
+    imageSeqDialog->importPredefinedSet(positionDialog->importConfig());
     mSuppressAutoSaveDialog = false;
 }
 
@@ -1228,7 +1257,6 @@ void MainWindow2::setupKeyboardShortcuts()
     // edit menu
     ui->actionUndo->setShortcut(cmdKeySeq(CMD_UNDO));
     ui->actionRedo->setShortcut(cmdKeySeq(CMD_REDO));
-    ui->actionRemoveLastPolylineSegment->setShortcut(cmdKeySeq(CMD_REMOVE_LAST_POLYLINE_SEGMENT));
     ui->actionCut->setShortcut(cmdKeySeq(CMD_CUT));
     ui->actionCopy->setShortcut(cmdKeySeq(CMD_COPY));
     ui->actionPaste_Previous->setShortcut(cmdKeySeq(CMD_PASTE_FROM_PREVIOUS));
@@ -1344,9 +1372,6 @@ void MainWindow2::setupKeyboardShortcuts()
 
     ui->actionHelp->setShortcut(cmdKeySeq(CMD_HELP));
     ui->actionExit->setShortcut(cmdKeySeq(CMD_EXIT));
-
-    // Actions not in a menu won't work unless added to a widget
-    addAction(ui->actionRemoveLastPolylineSegment);
 }
 
 void MainWindow2::clearKeyboardShortcuts()

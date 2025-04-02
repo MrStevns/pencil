@@ -32,6 +32,7 @@ class ToolManager : public BaseManager
     Q_OBJECT
 public:
     explicit ToolManager(Editor* editor);
+    ~ToolManager() override;
 
     bool init() override;
     Status load(Object*) override;

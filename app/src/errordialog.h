@@ -35,6 +35,9 @@ public:
     ErrorDialog(Status status, QWidget *parent = nullptr);
     ~ErrorDialog();
 
+public slots:
+    void onCopyToClipboard();
+
 private:
     Ui::ErrorDialog *ui;
 };

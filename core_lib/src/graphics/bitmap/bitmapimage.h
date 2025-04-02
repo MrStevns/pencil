@@ -25,9 +25,17 @@ GNU General Public License for more details.
 #include "tileindex.h"
 #include "mptile.h"
 
+class TiledBuffer;
+
 class BitmapImage : public KeyFrame
 {
 public:
+    const QRgb transp = qRgba(0, 0, 0, 0);
+    const QRgb blackline = qRgba(1, 1, 1, 255);
+    const QRgb redline = qRgba(254,0,0,255);
+    const QRgb greenline = qRgba(0,254,0,255);
+    const QRgb blueline = qRgba(0,0,254,255);
+
     BitmapImage();
     BitmapImage(const BitmapImage&);
     BitmapImage(const QRect &rectangle, const QColor& color);
@@ -95,20 +103,21 @@ public:
     void drawEllipse(QRectF rectangle, QPen pen, QBrush brush, QPainter::CompositionMode cm, bool antialiasing);
     void drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm, bool antialiasing);
 
-    QPoint topLeft() const { return mBounds.topLeft(); }
-    QPoint topRight() const { return mBounds.topRight(); }
-    QPoint bottomLeft() const { return mBounds.bottomLeft(); }
-    QPoint bottomRight() const { return mBounds.bottomRight(); }
-    int left() const { return mBounds.left(); }
-    int right() const { return mBounds.right(); }
-    int top() const { return mBounds.top(); }
-    int bottom() const { return mBounds.bottom(); }
-    int width() const { return mBounds.width(); }
-    int height() const { return mBounds.height(); }
-    QSize size() const { return mBounds.size(); }
+    QPoint topLeft() { autoCrop(); return mBounds.topLeft(); }
+    QPoint topRight() { autoCrop(); return mBounds.topRight(); }
+    QPoint bottomLeft() { autoCrop(); return mBounds.bottomLeft(); }
+    QPoint bottomRight() { autoCrop(); return mBounds.bottomRight(); }
+    int left() { autoCrop(); return mBounds.left(); }
+    int right() { autoCrop(); return mBounds.right(); }
+    int top() { autoCrop(); return mBounds.top(); }
+    int bottom() { autoCrop(); return mBounds.bottom(); }
+    int width() { autoCrop(); return mBounds.width(); }
+    int height() { autoCrop(); return mBounds.height(); }
+    QSize size() { autoCrop(); return mBounds.size(); }
 
-    /// The Bounds of the image
-    QRect bounds() const { return mBounds; }
+    BitmapImage* scanToTransparent(BitmapImage* img, int threshold, bool redEnabled, bool greenEnabled, bool blueEnabled);
+
+    QRect& bounds() { autoCrop(); return mBounds; }
 
     /** Determines if the BitmapImage is minimally bounded.
      *
@@ -184,6 +193,11 @@ private:
     /** @see isMinimallyBounded() */
     bool mMinBound = true;
     bool mEnableAutoCrop = false;
+
+    const int LOW_THRESHOLD = 30; // threshold for images to be given transparency
+    const int COLORDIFF = 5;      // difference in color values to decide color
+    const int GRAYSCALEDIFF = 15; // difference in grasycale values to decide color
+
     qreal mOpacity = 1.0;
 };
 

@@ -23,6 +23,7 @@ GNU General Public License for more details.
 #include <QObject>
 #include "pencilerror.h"
 #include "pencildef.h"
+#include "importimageconfig.h"
 #include "basetool.h"
 #include "brushsetting.h"
 
@@ -183,7 +184,7 @@ public: //slots
 
     void clearCurrentFrame();
 
-    Status importImage(const QString& filePath);
+    Status importImage(const QString& filePath, ImportImageConfig importConfig);
     Status importAnimatedImage(const QString& filePath, int frameSpacing, const std::function<void (int)>& progressChanged, const std::function<bool ()>& wasCanceled);
 
     void scrubNextKeyFrame();
@@ -254,7 +255,7 @@ public: //slots
 
 
 private:
-    Status importBitmapImage(const QString&);
+    Status importBitmapImage(const QString&, const QTransform& importTransform);
     Status importVectorImage(const QString&);
 
     void pasteToCanvas(BitmapImage* bitmapImage, int frameNumber);

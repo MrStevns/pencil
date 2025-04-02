@@ -18,6 +18,8 @@ GNU General Public License for more details.
 #include "ui_errordialog.h"
 
 #include "pencilerror.h"
+#include <QPushButton>
+#include <QClipboard>
 
 ErrorDialog::ErrorDialog( QString title, QString description, QString details, QWidget *parent ) :
     QDialog( parent ),
@@ -36,7 +38,11 @@ ErrorDialog::ErrorDialog( QString title, QString description, QString details, Q
     {
         ui->details->setText( QString( "<pre>%1</pre>" ).arg( details ) );
     }
-    this->adjustSize();
+
+    QPushButton* copyToClipboard = new QPushButton(tr("Copy to Clipboard"));
+    ui->buttonBox->addButton(copyToClipboard, QDialogButtonBox::ActionRole);
+
+    connect(copyToClipboard, &QPushButton::clicked, this, &ErrorDialog::onCopyToClipboard);
 }
 
 ErrorDialog::ErrorDialog(Status status, QWidget* parent) : QDialog(parent),
@@ -57,10 +63,18 @@ ErrorDialog::ErrorDialog(Status status, QWidget* parent) : QDialog(parent),
     {
         ui->details->setText(QString("<pre>%1</pre>").arg(details));
     }
-    this->adjustSize();
+
+    QPushButton* copyToClipboard = new QPushButton(tr("Copy to Clipboard"));
+    ui->buttonBox->addButton(copyToClipboard, QDialogButtonBox::ActionRole);
+
+    connect(copyToClipboard, &QPushButton::clicked, this, &ErrorDialog::onCopyToClipboard);
 }
 
 ErrorDialog::~ErrorDialog()
 {
     delete ui;
+}
+
+void ErrorDialog::onCopyToClipboard() {
+    QGuiApplication::clipboard()->setText(ui->details->toPlainText());
 }

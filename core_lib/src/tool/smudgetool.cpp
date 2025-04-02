@@ -58,6 +58,17 @@ void SmudgeTool::loadSettings()
     mQuickSizingProperties.insert(Qt::ShiftModifier, WIDTH);
 }
 
+void SmudgeTool::saveSettings()
+{
+    QSettings settings(PENCIL2D, PENCIL2D);
+
+    settings.setValue("smudgeWidth", properties.width);
+    settings.setValue("smudgeFeather", properties.feather);
+    settings.setValue("smudgePressure", properties.pressure);
+
+    settings.sync();
+}
+
 void SmudgeTool::resetToDefault()
 {
     setWidth(24.0);
@@ -68,33 +79,18 @@ void SmudgeTool::setWidth(const qreal width)
 {
     // Set current property
     properties.width = width;
-
-    // Update settings
-    QSettings settings(PENCIL2D, PENCIL2D);
-    settings.setValue("smudgeWidth", width);
-    settings.sync();
 }
 
 void SmudgeTool::setFeather(const qreal feather)
 {
     // Set current property
     properties.feather = feather;
-
-    // Update settings
-    QSettings settings(PENCIL2D, PENCIL2D);
-    settings.setValue("smudgeFeather", feather);
-    settings.sync();
 }
 
 void SmudgeTool::setPressure(const bool pressure)
 {
     // Set current property
     properties.pressure = pressure;
-
-    // Update settings
-    QSettings settings(PENCIL2D, PENCIL2D);
-    settings.setValue("smudgePressure", pressure);
-    settings.sync();
 }
 
 bool SmudgeTool::emptyFrameActionEnabled()

@@ -81,6 +81,7 @@ INCLUDEPATH += \
 PRECOMPILED_HEADER = src/app-pch.h
 
 HEADERS += \
+    src/addtransparencytopaperdialog.h \
     src/app-pch.h \
     src/brushsettingeditwidget.h \
     src/inlineslider.h \
@@ -139,7 +140,7 @@ HEADERS += \
     src/doubleprogressdialog.h \
     src/colorslider.h \
     src/checkupdatesdialog.h \
-    src/presetdialog.h     \
+    src/presetdialog.h \
     src/repositionframesdialog.h \
     src/commandlineparser.h \
     src/commandlineexporter.h \
@@ -148,8 +149,7 @@ HEADERS += \
     src/cameraoptionswidget.h
 
 SOURCES += \
-    src/main.cpp \
-    src/mainwindow2.cpp \
+    src/addtransparencytopaperdialog.cpp \
     src/inlineslider.cpp \
     src/lineeditwidget.cpp \
     src/layeropacitydialog.cpp \
@@ -166,6 +166,8 @@ SOURCES += \
     src/mpbrushpresetswidget.cpp \
     src/mpbrushpreview.cpp \
     src/mpbrushselector.cpp \
+    src/main.cpp \
+    src/mainwindow2.cpp \
     src/onionskinwidget.cpp \
     src/predefinedsetmodel.cpp \
     src/pegbaralignmentdialog.cpp \
@@ -216,6 +218,7 @@ SOURCES += \
 
 FORMS += \
     ui/mainwindow2.ui \
+    ui/addtransparencytopaperdialog.ui \
     ui/cameraoptionswidget.ui \
     ui/camerapropertiesdialog.ui \
     ui/importimageseqpreview.ui \

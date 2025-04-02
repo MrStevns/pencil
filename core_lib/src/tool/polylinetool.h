@@ -29,6 +29,7 @@ public:
     explicit PolylineTool(QObject* parent = 0);
     ToolType type() override;
     void loadSettings() override;
+    void saveSettings() override;
     QCursor cursor() override;
     void resetToDefault() override;
 
@@ -49,8 +50,6 @@ public:
     void setFeather(const qreal feather) override;
     void setClosedPath(const bool closed) override;
 
-    void removeLastPolylineSegment();
-
     bool leavingThisTool() override;
 
     bool isActive() const override;
@@ -65,6 +64,7 @@ private:
 
     void updateDirtyRect(QList<QPointF> linePoints, BlitRect dirtyRect);
     void drawPolyline(QList<QPointF> points, QPointF endPoint, quint64 timeStamp);
+    void removeLastPolylineSegment();
     void cancelPolyline();
     void endPolyline(QList<QPointF> points, quint64 timeStamp);
 };

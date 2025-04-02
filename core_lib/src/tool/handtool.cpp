@@ -44,6 +44,10 @@ void HandTool::loadSettings()
     connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &HandTool::updateSettings);
 }
 
+void HandTool::saveSettings()
+{
+}
+
 void HandTool::updateSettings(const SETTING setting)
 {
     switch (setting)
