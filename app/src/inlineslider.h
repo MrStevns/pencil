@@ -54,6 +54,7 @@ protected:
 signals:
     void valueChanged(qreal value);
     void sliderReleased(qreal value);
+    void valueChangedByKeyboard(qreal value);
 
 private:
 

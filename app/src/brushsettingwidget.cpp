@@ -39,6 +39,7 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
     mValueSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     connect(mValueSlider, &InlineSlider::sliderReleased, this, &BrushSettingWidget::updateSetting);
+    connect(mValueSlider, &InlineSlider::valueChangedByKeyboard, this, &BrushSettingWidget::updateSetting);
 }
 
 void BrushSettingWidget::initUI()
