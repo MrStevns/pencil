@@ -329,6 +329,7 @@ void MPBrushConfigurator::updateSettingsView(QTreeWidgetItem* item)
 
 void MPBrushConfigurator::prepareUpdateBrushPreview()
 {
+    if (isHidden()) { return; }
     mBrushPreviewWidget->updatePreview(mEditor->brushes()->currentBrushData(), mEditor->color()->frontColor());
 }
 
