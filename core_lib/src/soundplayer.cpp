@@ -20,6 +20,7 @@ GNU General Public License for more details.
 #include <QFile>
 #include "soundclip.h"
 #include "util.h"
+#include <QDebug>
 
 SoundPlayer::SoundPlayer()
 {
