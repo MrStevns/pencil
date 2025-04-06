@@ -138,6 +138,8 @@ void InlineSlider::drawSlider()
                      option.palette.base());
 
     // // Draw the filled part of the slider
+    QColor textColor = option.palette.highlightedText().color();
+
     switch (mSliderOrigin) {
         case SliderStartPosType::LEFT:
         {
@@ -159,7 +161,7 @@ void InlineSlider::drawSlider()
                                     brush);
 
             painter.save();
-            painter.setPen(option.palette.text().color());
+            painter.setPen(textColor);
 
             // Draw center line
             painter.drawLine(QPointF(borderRect.center().x() - mCaretWidth, borderRect.top()),
@@ -169,8 +171,8 @@ void InlineSlider::drawSlider()
         }
     }
 
-    drawCaret(painter, borderRect, option.palette.text().color());
-    drawLabels(painter, borderRect, option.palette.text().color());
+    drawCaret(painter, borderRect, textColor);
+    drawLabels(painter, borderRect, textColor);
     painter.restore();
 
     painter.drawRoundedRect(borderRect, mAbsoluteCornerRadiusX, mAbsoluteCornerRadiusY);
