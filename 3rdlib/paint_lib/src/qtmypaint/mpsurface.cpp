@@ -115,9 +115,19 @@ void MPSurface::onNewTile(MPSurface *surface, MPTile *tile)
     emit mParentHandler->tileAdded(surface, tile);
 }
 
+void MPSurface::onTileCleared(MPSurface *surface, MPTile *tile)
+{
+    emit mParentHandler->tileCleared(surface, tile);
+}
+
 void MPSurface::onClearedSurface(MPSurface *surface)
 {
     emit mParentHandler->surfaceCleared(surface);
+}
+
+void MPSurface::onSurfaceContentDestroyed(MPSurface* surface)
+{
+    emit mParentHandler->surfaceContentDestroyed(surface);
 }
 
 void MPSurface::loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile)
@@ -197,14 +207,30 @@ void MPSurface::clear()
         i.next();
         MPTile* tile = i.value();
 
-        if (tile)
-        {
+        if (tile) {
+            tile->clear();
+            onTileCleared(this, tile);
+        }
+    }
+
+    onClearedSurface(this);
+}
+
+void MPSurface::destroyTiles()
+{
+    QHashIterator<TileIndex, MPTile*> i(mTilesHash);
+
+    while (i.hasNext()) {
+        i.next();
+        MPTile* tile = i.value();
+
+        if (tile) {
             delete tile;
         }
         mTilesHash.remove(i.key());
     }
 
-    onClearedSurface(this);
+    onSurfaceContentDestroyed(this);
 }
 
 int MPSurface::getTilesWidth()

@@ -64,6 +64,11 @@ void MPHandler::clearSurface()
     mSurface->clear();
 }
 
+void MPHandler::destroySurfaceContent()
+{
+    mSurface->destroyTiles();
+}
+
 /**
  * @brief MPHandler::saveSurface
  * Debug method to check the content of surface

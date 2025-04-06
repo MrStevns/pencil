@@ -30,13 +30,13 @@ private:
 
     void updateTile(MPSurface *surface, MPTile* tile);
     void loadTile(MPSurface* surface, MPTile* tile);
-    void tileRemoved(MPSurface* surface, QRect tileRect);
-    void surfaceTilesRemoved(MPSurface* surface);
+    void onTileCleared(MPSurface* surface, MPTile* tile);
 
     MPHandler* mMypaintHandler = nullptr;
 
-    QHash<TileIndex, MPTile*> mSurfaceTiles;
+    MPSurface* mSurface = nullptr;
     QElapsedTimer* perfTimer = nullptr;
+    QElapsedTimer* updateTimer = nullptr;
 
     QImage mSurfaceBackground;
 };

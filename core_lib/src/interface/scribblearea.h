@@ -185,9 +185,9 @@ public slots:
 
     void showLayerNotVisibleWarning();
 
-    void updateTile(MPSurface* surface, MPTile* tile);
-    void clearTile(MPSurface *surface, QRect tileRect);
-    void loadTile(MPSurface* surface, MPTile* tile);
+    void onMPTileUpdated(MPSurface* surface, MPTile* tile);
+    void onMPTileCleared(MPSurface *surface, MPTile* tile);
+    void onMPTileAdded(MPSurface* surface, MPTile* tile);
 
     void onTileUpdated(TiledBuffer* tiledBuffer, Tile* tile);
     void onTileCreated(TiledBuffer* tiledBuffer, Tile* tile);

@@ -89,14 +89,16 @@ public:
     QSize surfaceSize();
 
     void clearSurface();
+    void destroySurfaceContent();
 
     void loadTile(const QImage& image, const QPoint& topLeft, MPTile* tile);
 
 signals:
     void tileUpdated(MPSurface *surface, MPTile *tile);
     void tileAdded(MPSurface *surface, MPTile *tile);
-    void tileCleared(MPSurface* surface, QRect tileRect);
+    void tileCleared(MPSurface* surface, MPTile* tile);
     void surfaceCleared(MPSurface *surface);
+    void surfaceContentDestroyed(MPSurface* surface);
 
 public slots:
     void loadBrush(const QByteArray& content);

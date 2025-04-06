@@ -70,6 +70,8 @@ public:
     void setTilesWidth(int newWidth) { mTilesWidth = newWidth; }
     void setTilesHeight(int newHeight) { mTilesHeight = newHeight; }
 
+    QHash<TileIndex, MPTile*>& tiles() { return mTilesHash; }
+
     MPTile* getTileFromPos(const QPoint& pos);
     MPTile* getTileFromIdx(int tileX, int tileY);
 
@@ -90,7 +92,9 @@ public:
 
     void onUpdateTile(MPSurface *surface, MPTile *tile);
     void onNewTile(MPSurface *surface, MPTile *tile);
+    void onTileCleared(MPSurface* surface, MPTile* tile);
     void onClearedSurface(MPSurface *surface);
+    void onSurfaceContentDestroyed(MPSurface* surface);
 
     void saveSurface(const QString path);
 
@@ -98,6 +102,7 @@ public:
     QSize size();
 
     void clear();
+    void destroyTiles();
 
 private:
     void resetNullTile();

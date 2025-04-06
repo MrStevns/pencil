@@ -73,9 +73,9 @@ bool ScribbleArea::init()
     mMouseFilterTimer = new QTimer(this);
     mMyPaint = new MPHandler();
 
-    connect(mMyPaint, &MPHandler::tileAdded, this, &ScribbleArea::loadTile);
-    connect(mMyPaint, &MPHandler::tileUpdated, this, &ScribbleArea::updateTile);
-    connect(mMyPaint, &MPHandler::tileCleared, this, &ScribbleArea::clearTile);
+    connect(mMyPaint, &MPHandler::tileAdded, this, &ScribbleArea::onMPTileAdded);
+    connect(mMyPaint, &MPHandler::tileUpdated, this, &ScribbleArea::onMPTileUpdated);
+    connect(mMyPaint, &MPHandler::tileCleared, this, &ScribbleArea::onMPTileCleared);
 
     connect(&mTiledBuffer, &TiledBuffer::tileUpdated, this, &ScribbleArea::onTileUpdated);
     connect(&mTiledBuffer, &TiledBuffer::tileCreated, this, &ScribbleArea::onTileCreated);
@@ -799,7 +799,7 @@ void ScribbleArea::paintBitmapBuffer()
 
 void ScribbleArea::clearDrawingBuffer()
 {
-    mMyPaint->clearSurface();
+    mMyPaint->destroySurfaceContent();
     mBufferTiles.clear();
     mTilesBlitRect = BlitRect();
     mTiledBuffer.clear();
@@ -1179,7 +1179,7 @@ void ScribbleArea::onTileCreated(TiledBuffer* tiledBuffer, Tile* tile)
     update(mappedRect.toAlignedRect());
 }
 
-void ScribbleArea::updateTile(MPSurface *surface, MPTile *tile)
+void ScribbleArea::onMPTileUpdated(MPSurface *surface, MPTile *tile)
 {
     Q_UNUSED(surface)
 
@@ -1191,7 +1191,7 @@ void ScribbleArea::updateTile(MPSurface *surface, MPTile *tile)
     update(mappedRect.toAlignedRect());
 }
 
-void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
+void ScribbleArea::onMPTileAdded(MPSurface* surface, MPTile* tile)
 {
     Q_UNUSED(surface)
     Layer* layer = mEditor->layers()->currentLayer();
@@ -1208,15 +1208,12 @@ void ScribbleArea::loadTile(MPSurface* surface, MPTile* tile)
     update(mappedRect.toAlignedRect());
 }
 
-void ScribbleArea::clearTile(MPSurface *surface, QRect tileRect)
+void ScribbleArea::onMPTileCleared(MPSurface *surface, MPTile* tile)
 {
     Q_UNUSED(surface)
 
-    int posX = tileRect.x();
-    int posY = tileRect.y();
-
-    mBufferTiles.remove(surface->getTileIndex(posX, posY));
-    const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tileRect));
+    mBufferTiles.remove(surface->getTileIndex(tile->pos()));
+    const QRectF& mappedRect = mEditor->view()->getView().mapRect(QRectF(tile->pos(), tile->boundingRect().size()));
     update(mappedRect.toAlignedRect());
 }
 
