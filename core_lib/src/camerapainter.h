@@ -34,6 +34,23 @@ class QPixmap;
 class QRect;
 class KeyFrame;
 
+struct CameraPainterOptions
+{
+    const Object* object = nullptr;
+    int frameIndex = 0;
+    int currentLayerIndex = 0;
+    LayerVisibility layerVisibility;
+    float relativeLayerOpacityThreshold = 0;
+
+    QTransform viewTransform;
+    qreal viewScale = 0;
+
+    bool isPlaying = false;
+    bool cameraCacheValid = false;
+
+    OnionSkinPainterOptions onionSkinOptions;
+};
+
 class CameraPainter
 {
 public:
@@ -42,8 +59,8 @@ public:
     void paint(const QRect& blitRect);
     void paintCached(const QRect& blitRect);
 
-    void setOnionSkinPainterOptions(const OnionSkinPainterOptions& options) { mOnionSkinOptions = options; }
-    void preparePainter(const Object* object, int layerIndex, int frameIndex, const QTransform& transform, bool isPlaying, LayerVisibility layerVisibility, float relativeLayerOpacityThreshold, qreal viewScale);
+    // void setOnionSkinPainterOptions(const OnionSkinPainterOptions& options) { mOnionSkinOptions = options; }
+    void preparePainter(const CameraPainterOptions& cameraPainterOptions);
     void reset();
 
     void resetCache();
@@ -54,25 +71,12 @@ private:
     void paintBorder(QPainter& painter, const QTransform& camTransform, const QRect& camRect);
     void paintOnionSkinning(QPainter& painter, const LayerCamera* cameraLayer);
 
-    const Object* mObject = nullptr;
+    OnionSkinSubPainter mOnionSkinPainter;
     QPixmap& mCanvas;
-
     QPixmap mCameraPixmap;
-    QTransform mViewTransform;
 
     const QPointF mZeroPoint;
-
-    OnionSkinSubPainter mOnionSkinPainter;
-    OnionSkinPainterOptions mOnionSkinOptions;
-
-    int mFrameIndex = 0;
-    int mCurrentLayerIndex = 0;
-    LayerVisibility mLayerVisibility;
-    float mRelativeLayerOpacityThreshold = 0;
-    qreal mViewScale = 0;
-
-    bool mIsPlaying = false;
-    bool mCameraCacheValid = false;
+    CameraPainterOptions mOptions;
 };
 
 #endif // CAMERAPAINTER_H

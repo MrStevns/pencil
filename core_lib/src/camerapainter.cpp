@@ -42,26 +42,12 @@ void CameraPainter::reset()
 
 void CameraPainter::resetCache()
 {
-    mCameraCacheValid = false;
+    mOptions.cameraCacheValid = false;
 }
 
-void CameraPainter::preparePainter(const Object* object,
-                                   int layerIndex,
-                                   int frameIndex,
-                                   const QTransform& transform,
-                                   bool isPlaying,
-                                   LayerVisibility layerVisibility,
-                                   float relativeLayerOpacityThreshold,
-                                   qreal viewScale)
+void CameraPainter::preparePainter(const CameraPainterOptions& cameraPainterOptions)
 {
-    mObject = object;
-    mCurrentLayerIndex = layerIndex;
-    mFrameIndex = frameIndex;
-    mViewTransform = transform;
-    mIsPlaying = isPlaying;
-    mLayerVisibility = layerVisibility;
-    mRelativeLayerOpacityThreshold = relativeLayerOpacityThreshold;
-    mViewScale = viewScale;
+    mOptions = cameraPainterOptions;
 }
 
 void CameraPainter::paint(const QRect& blitRect)
@@ -70,7 +56,7 @@ void CameraPainter::paint(const QRect& blitRect)
     initializePainter(painter, mCanvas, blitRect, false);
     paintVisuals(painter, blitRect);
 
-    mCameraCacheValid = true;
+    mOptions.cameraCacheValid = true;
 }
 
 void CameraPainter::paintCached(const QRect& blitRect)
@@ -80,10 +66,10 @@ void CameraPainter::paintCached(const QRect& blitRect)
     // In this case though because the canvas has already been painted, we're not interested in
     // having the blitter clear the image again, as that would remove our previous painted data, ie. strokes...
     initializePainter(painter, mCanvas, blitRect, false);
-    if (!mCameraCacheValid) {
+    if (!mOptions.cameraCacheValid) {
         paintVisuals(painter, blitRect);
         painter.end();
-        mCameraCacheValid = true;
+        mOptions.cameraCacheValid = true;
     } else {
         painter.setWorldMatrixEnabled(false);
         painter.drawPixmap(mZeroPoint, mCameraPixmap);
@@ -105,28 +91,28 @@ void CameraPainter::initializePainter(QPainter& painter, QPixmap& pixmap, const 
 
     painter.setClipRect(blitRect);
     painter.setWorldMatrixEnabled(true);
-    painter.setWorldTransform(mViewTransform);
+    painter.setWorldTransform(mOptions.viewTransform);
 }
 
 void CameraPainter::paintVisuals(QPainter& painter, const QRect& blitRect)
 {
-    LayerCamera* cameraLayerBelow = static_cast<LayerCamera*>(mObject->getLayerBelow(mCurrentLayerIndex, Layer::CAMERA));
+    LayerCamera* cameraLayerBelow = static_cast<LayerCamera*>(mOptions.object->getLayerBelow(mOptions.currentLayerIndex, Layer::CAMERA));
 
     if (cameraLayerBelow == nullptr) { return; }
 
-    const Layer* currentLayer = mObject->getLayer(mCurrentLayerIndex);
+    const Layer* currentLayer = mOptions.object->getLayer(mOptions.currentLayerIndex);
 
-    if (mLayerVisibility == LayerVisibility::CURRENTONLY && currentLayer->type() != Layer::CAMERA) { return; }
+    if (mOptions.layerVisibility == LayerVisibility::CURRENTONLY && currentLayer->type() != Layer::CAMERA) { return; }
 
     QPainter visualsPainter;
     initializePainter(visualsPainter, mCameraPixmap, blitRect, true);
 
-    if (!mIsPlaying || mOnionSkinOptions.enabledWhilePlaying) {
+    if (!mOptions.isPlaying || mOptions.onionSkinOptions.enabledWhilePlaying) {
 
         int startLayerI = 0;
-        int endLayerI = mObject->getLayerCount() - 1;
+        int endLayerI = mOptions.object->getLayerCount() - 1;
         for (int i = startLayerI; i <= endLayerI; i++) {
-            Layer* layer = mObject->getLayer(i);
+            Layer* layer = mOptions.object->getLayer(i);
             if (layer->type() != Layer::CAMERA) { continue; }
 
             LayerCamera* cameraLayer = static_cast<LayerCamera*>(layer);
@@ -135,8 +121,8 @@ void CameraPainter::paintVisuals(QPainter& painter, const QRect& blitRect)
 
             visualsPainter.save();
             visualsPainter.setOpacity(1);
-            if (mLayerVisibility == LayerVisibility::RELATED && !isCurrentLayer) {
-                visualsPainter.setOpacity(calculateRelativeOpacityForLayer(mCurrentLayerIndex, i, mRelativeLayerOpacityThreshold));
+            if (mOptions.layerVisibility == LayerVisibility::RELATED && !isCurrentLayer) {
+                visualsPainter.setOpacity(calculateRelativeOpacityForLayer(mOptions.currentLayerIndex, i, mOptions.relativeLayerOpacityThreshold));
             }
 
             paintOnionSkinning(visualsPainter, cameraLayer);
@@ -147,7 +133,7 @@ void CameraPainter::paintVisuals(QPainter& painter, const QRect& blitRect)
 
     if (!cameraLayerBelow->visible()) { return; }
 
-    QTransform camTransform = cameraLayerBelow->getViewAtFrame(mFrameIndex);
+    QTransform camTransform = cameraLayerBelow->getViewAtFrame(mOptions.frameIndex);
     QRect cameraRect = cameraLayerBelow->getViewRect();
     paintBorder(visualsPainter, camTransform, cameraRect);
 
@@ -166,7 +152,7 @@ void CameraPainter::paintBorder(QPainter& painter, const QTransform& camTransfor
     painter.setBrush(QColor(0, 0, 0, 80));
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
-    QTransform viewInverse = mViewTransform.inverted();
+    QTransform viewInverse = mOptions.viewTransform.inverted();
     QRect boundingRect = viewInverse.mapRect(viewRect);
 
     QPolygon camPoly = camTransform.inverted().map(QPolygon(camRect));
@@ -187,20 +173,21 @@ void CameraPainter::paintOnionSkinning(QPainter& painter, const LayerCamera* cam
     painter.setWorldMatrixEnabled(false);
 
     onionSkinPen.setStyle(Qt::PenStyle::DashLine);
-    mOnionSkinPainter.paint(painter, cameraLayer, mOnionSkinOptions, mFrameIndex, [&] (OnionSkinPaintState state, int onionSkinNumber) {
+    QTransform viewTransform = mOptions.viewTransform;
+    mOnionSkinPainter.paint(painter, cameraLayer, mOptions.onionSkinOptions, mOptions.frameIndex, [&] (OnionSkinPaintState state, int onionSkinNumber) {
 
         const QTransform& cameraTransform = cameraLayer->getViewAtFrame(onionSkinNumber);
-        const QPolygonF& cameraPolygon = Transform::mapToWorldPolygon(cameraTransform, mViewTransform, cameraLayer->getViewRect());
+        const QPolygonF& cameraPolygon = Transform::mapToWorldPolygon(cameraTransform, viewTransform, cameraLayer->getViewRect());
         if (state == OnionSkinPaintState::PREV) {
 
-            if (mOnionSkinOptions.colorizePrevFrames) {
+            if (mOptions.onionSkinOptions.colorizePrevFrames) {
                 onionSkinPen.setColor(Qt::red);
             }
 
             painter.setPen(onionSkinPen);
             painter.drawPolygon(cameraPolygon);
         } else if (state == OnionSkinPaintState::NEXT) {
-            if (mOnionSkinOptions.colorizeNextFrames) {
+            if (mOptions.onionSkinOptions.colorizeNextFrames) {
                 onionSkinPen.setColor(Qt::blue);
             }
 

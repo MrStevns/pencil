@@ -1068,16 +1068,15 @@ VectorImage* ScribbleArea::currentVectorImage(Layer* layer) const
 
 void ScribbleArea::prepCameraPainter(int frame)
 {
-    Object* object = mEditor->object();
-
-    mCameraPainter.preparePainter(object,
-                                  mEditor->currentLayerIndex(),
-                                  frame,
-                                  mEditor->view()->getView(),
-                                  mEditor->playback()->isPlaying(),
-                                  mLayerVisibility,
-                                  mPrefs->getFloat(SETTING::LAYER_VISIBILITY_THRESHOLD),
-                                  mEditor->view()->getScaleInversed());
+    CameraPainterOptions options;
+    options.object = mEditor->object();
+    options.currentLayerIndex = mEditor->currentLayerIndex();
+    options.frameIndex = frame;
+    options.viewTransform = mEditor->view()->getView();
+    options.isPlaying = mEditor->playback()->isPlaying();
+    options.layerVisibility = mLayerVisibility;
+    options.relativeLayerOpacityThreshold = mPrefs->getFloat(SETTING::LAYER_VISIBILITY_THRESHOLD);
+    options.viewScale = mEditor->view()->getScaleInversed();
 
     OnionSkinPainterOptions onionSkinOptions;
     onionSkinOptions.enabledWhilePlaying = mPrefs->getInt(SETTING::ONION_WHILE_PLAYBACK);
@@ -1092,7 +1091,8 @@ void ScribbleArea::prepCameraPainter(int frame)
     onionSkinOptions.maxOpacity = mPrefs->getInt(SETTING::ONION_MAX_OPACITY);
     onionSkinOptions.minOpacity = mPrefs->getInt(SETTING::ONION_MIN_OPACITY);
 
-    mCameraPainter.setOnionSkinPainterOptions(onionSkinOptions);
+    options.onionSkinOptions = onionSkinOptions;
+    mCameraPainter.preparePainter(options);
 }
 
 void ScribbleArea::prepCanvas(int frame)
