@@ -124,6 +124,7 @@ void ScribbleArea::settingUpdated(SETTING setting)
     case SETTING::GRID:
     case SETTING::GRID_SIZE_W:
     case SETTING::GRID_SIZE_H:
+    case SETTING::CANVAS_PASSEPARTOUT_OPACITY:
     case SETTING::OVERLAY_CENTER:
     case SETTING::OVERLAY_THIRDS:
     case SETTING::OVERLAY_GOLDEN:
@@ -1077,6 +1078,7 @@ void ScribbleArea::prepCameraPainter(int frame)
     options.layerVisibility = mLayerVisibility;
     options.relativeLayerOpacityThreshold = mPrefs->getFloat(SETTING::LAYER_VISIBILITY_THRESHOLD);
     options.viewScale = mEditor->view()->getScaleInversed();
+    options.passepartoutOpacity = mPrefs->getInt(SETTING::CANVAS_PASSEPARTOUT_OPACITY);
 
     OnionSkinPainterOptions onionSkinOptions;
     onionSkinOptions.enabledWhilePlaying = mPrefs->getInt(SETTING::ONION_WHILE_PLAYBACK);

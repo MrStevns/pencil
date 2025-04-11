@@ -78,6 +78,7 @@ void PreferenceManager::loadPrefs()
     set(SETTING::SHADOW,                   settings.value(SETTING_SHADOW,                 false).toBool());
     set(SETTING::QUICK_SIZING,             settings.value(SETTING_QUICK_SIZING,           true).toBool());
     set(SETTING::SHOW_SELECTION_INFO,      settings.value(SETTING_SHOW_SELECTION_INFO,    false).toBool());
+    set(SETTING::CANVAS_PASSEPARTOUT_OPACITY, settings.value(SETTING_CANVAS_PASSEPARTOUT_OPACITY, 25).toInt());
 
     set(SETTING::INVERT_DRAG_ZOOM_DIRECTION,   settings.value(SETTING_INVERT_DRAG_ZOOM_DIRECTION,  false).toBool());
     set(SETTING::INVERT_SCROLL_ZOOM_DIRECTION, settings.value(SETTING_INVERT_SCROLL_ZOOM_DIRECTION,  false).toBool());
@@ -254,6 +255,9 @@ void PreferenceManager::set(SETTING option, int value)
         break;
     case SETTING::AUTO_SAVE_NUMBER:
         settings.setValue(SETTING_AUTO_SAVE_NUMBER, value);
+        break;
+    case SETTING::CANVAS_PASSEPARTOUT_OPACITY:
+        settings.setValue(SETTING_CANVAS_PASSEPARTOUT_OPACITY, value);
         break;
     case SETTING::FRAME_SIZE:
         if (value < 4) { value = 4; }

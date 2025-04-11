@@ -39,6 +39,7 @@ struct CameraPainterOptions
     const Object* object = nullptr;
     int frameIndex = 0;
     int currentLayerIndex = 0;
+    int passepartoutOpacity = 25;
     LayerVisibility layerVisibility;
     float relativeLayerOpacityThreshold = 0;
 

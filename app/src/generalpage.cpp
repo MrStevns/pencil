@@ -129,6 +129,8 @@ GeneralPage::GeneralPage() : ui(new Ui::GeneralPage)
     connect(ui->undoStepsBox, spinValueChanged, this, &GeneralPage::undoRedoMaxStepsChanged);
     connect(ui->undoRedoGroupApplyButton, &QPushButton::clicked, this, &GeneralPage::undoRedoApplyButtonPressed);
     connect(ui->undoRedoGroupCancelButton, &QPushButton::clicked, this, &GeneralPage::undoRedoCancelButtonPressed);
+    connect(ui->canvasPassepartoutSpinbox, spinValueChanged, this, &GeneralPage::canvasPassepartoutValueChanged);
+    connect(ui->canvasPassepartoutSlider, &QSlider::valueChanged, this, &GeneralPage::canvasPassepartoutValueChanged);
 }
 
 GeneralPage::~GeneralPage()
@@ -193,6 +195,12 @@ void GeneralPage::updateValues()
 
     QSignalBlocker bUndoRedoLimitSpinBox(ui->undoStepsBox);
     ui->undoStepsBox->setValue(mManager->getInt(SETTING::UNDO_REDO_MAX_STEPS));
+
+    QSignalBlocker bCanvasPassepartoutSpinbox(ui->canvasPassepartoutSpinbox);
+    QSignalBlocker bCanvasPassepartoutSlider(ui->canvasPassepartoutSlider);
+    int canvasPassepartoutOpacity = mManager->getInt(SETTING::CANVAS_PASSEPARTOUT_OPACITY);
+    ui->canvasPassepartoutSpinbox->setValue(canvasPassepartoutOpacity);
+    ui->canvasPassepartoutSlider->setValue(canvasPassepartoutOpacity);
 
     int buttonIdx = 1;
     if (bgName == "checkerboard") buttonIdx = 1;
@@ -267,6 +275,16 @@ void GeneralPage::toolCursorsCheckboxStateChanged(int b)
 void GeneralPage::canvasCursorCheckboxStateChanged(int b)
 {
     mManager->set(SETTING::CANVAS_CURSOR, b != Qt::Unchecked);
+}
+
+void GeneralPage::canvasPassepartoutValueChanged(int value)
+{
+    QSignalBlocker b1(ui->canvasPassepartoutSlider);
+    QSignalBlocker b2(ui->canvasPassepartoutSpinbox);
+    ui->canvasPassepartoutSlider->setValue(value);
+    ui->canvasPassepartoutSpinbox->setValue(value);
+
+    mManager->set(SETTING::CANVAS_PASSEPARTOUT_OPACITY, value);
 }
 
 void GeneralPage::gridWidthChanged(int value)
