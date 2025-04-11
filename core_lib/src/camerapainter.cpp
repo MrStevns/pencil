@@ -149,7 +149,7 @@ void CameraPainter::paintBorder(QPainter& painter, const QTransform& camTransfor
     painter.setOpacity(mOptions.passepartoutOpacity * 0.01);
     painter.setWorldMatrixEnabled(true);
     painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor(0, 0, 0, 255));
+    painter.setBrush(QColor(127, 127, 127, 255));
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
     QTransform viewInverse = mOptions.viewTransform.inverted();
