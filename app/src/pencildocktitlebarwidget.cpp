@@ -87,7 +87,7 @@ void PencilDockTitleBarWidget::setWindowTitle(const QString &title)
 
 QSize PencilDockTitleBarWidget::minimumSizeHint() const
 {
-    return QSize(16, 100);
+    return QSize(16, 32);
 }
 
 void PencilDockTitleBarWidget::hideButtons(bool hide)

@@ -91,8 +91,8 @@ private:
     int smartSpacing(QStyle::PixelMetric pm) const;
 
     QList<QLayoutItem *> itemList;
-    int m_hSpace;
-    int m_vSpace;
+    int m_hSpace = 0;
+    int m_vSpace = 0;
 
     FlowLayoutState mState;
 };

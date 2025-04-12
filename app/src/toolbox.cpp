@@ -153,10 +153,6 @@ void ToolBoxWidget::initUI()
     mFlowlayout->addWidget(ui->brushButton);
     mFlowlayout->addWidget(ui->smudgeButton);
 
-    mFlowlayout->setSizeConstraint(QLayout::SetMinimumSize);
-
-    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
-
     delete ui->scrollAreaWidgetContents_2->layout();
     ui->scrollAreaWidgetContents_2->setLayout(mFlowlayout);
     ui->scrollAreaWidgetContents_2->setContentsMargins(0,0,0,0);
@@ -164,11 +160,9 @@ void ToolBoxWidget::initUI()
     QSettings settings(PENCIL2D, PENCIL2D);
     restoreGeometry(settings.value("ToolBoxGeom").toByteArray());
 
-    // ui->scrollArea->setMinimumSize(minimumSizeHint());
-    // ui->scrollAreaWidgetContents_2->setMinimumSize(minimumSizeHint());
-    // setMinimumSize(minimumSizeHint());
     setMinimumHeight(1);
     ui->scrollArea->setMinimumHeight(1);
+    ui->scrollArea->setMinimumWidth(1);
     ui->scrollAreaWidgetContents_2->setMinimumHeight(1);
 }
 
@@ -179,7 +173,7 @@ int ToolBoxWidget::getMinHeightForWidth(int width) const
 
 QSize ToolBoxWidget::minimumSizeHint() const
 {
-    return QSize(42, getMinHeightForWidth(width()));
+    return QSize(mFlowlayout->minimumSize().width(), getMinHeightForWidth(width()));
 }
 
 void ToolBoxWidget::resizeEvent(QResizeEvent *event)
@@ -187,6 +181,7 @@ void ToolBoxWidget::resizeEvent(QResizeEvent *event)
     BaseDockWidget::resizeEvent(event);
 
     setMinimumHeight(getMinHeightForWidth(event->size().width()));
+    setMinimumWidth(mFlowlayout->minimumSize().width());
 
     if (mFlowlayout->rows() == 1) {
         mFlowlayout->setAlignment(Qt::AlignHCenter);

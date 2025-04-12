@@ -198,10 +198,8 @@ FlowLayoutState FlowLayout::doLayout(const QRect &rect, bool testOnly) const
                 totalWidth += (rowCount - 1) * spaceX; // Add spacing between items
                 int extraSpace = effectiveRect.width() - totalWidth;
 
-                // qDebug() << extraSpace;
-                    // Calculate the spacing between items for justification
                 int spacing = (rowCount > 1) ? extraSpace / (rowCount - 1) : 0;
-                // qDebug() << spacing;
+
                 for(int j = i-1; j > i-1-rowCount; j--) {
                     auto rowItem = itemList.at(j);
                     rowItem->setGeometry(rowItem->geometry().adjusted(offset, 0, offset, 0));
