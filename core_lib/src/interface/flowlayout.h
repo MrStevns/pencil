@@ -61,6 +61,12 @@ struct FlowLayoutState
     int height = 0;
 };
 
+struct RowLayoutInfo {
+    int startIndex;
+    int startX;
+    int spacing;
+};
+
 class FlowLayout : public QLayout
 {
 public:
@@ -71,7 +77,6 @@ public:
     void addItem(QLayoutItem *item) override;
     int horizontalSpacing() const;
     int verticalSpacing() const;
-    Qt::Orientations expandingDirections() const override;
     bool hasHeightForWidth() const override;
     int heightForWidth(int) const override;
     int count() const override;
@@ -85,7 +90,21 @@ public:
     // int rowWidth() const { return mState.rowWidth; }
 
 private:
+    void applyRowAlignment(int start, int end, int x, int y, int rowCount, int spaceX, const QRect &effectiveRect, bool testOnly) const;
     void layoutWithAlignment(int i, bool testOnly, const QRect& effectiveRect, int spaceX, int x) const;
+
+    void layoutRow(const QList<QLayoutItem*>& rowItems,
+                   const QRect& effectiveRect,
+                   int rowEndX,
+                   int spaceX) const;
+
+
+    void alignRowFromRowInfo(int startIndex, int count, RowLayoutInfo rowInfo) const;
+
+    RowLayoutInfo alignHCenterRow(int startIndex, int count, const QRect &effectiveRect, int spaceX) const;
+    RowLayoutInfo alignJustifiedRow(int startIndex, int count, const QRect& effectiveRect, int spaceX) const;
+
+    int calculateRowWidth(int rowCount, int spacing) const;
 
     FlowLayoutState doLayout(const QRect &rect, bool testOnly) const;
     int smartSpacing(QStyle::PixelMetric pm) const;

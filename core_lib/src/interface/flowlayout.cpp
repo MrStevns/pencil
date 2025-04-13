@@ -115,11 +115,6 @@ QLayoutItem *FlowLayout::takeAt(int index)
         return nullptr;
 }
 
-Qt::Orientations FlowLayout::expandingDirections() const
-{
-    return {};
-}
-
 bool FlowLayout::hasHeightForWidth() const
 {
     return true;
@@ -153,10 +148,81 @@ QSize FlowLayout::minimumSize() const
     return size;
 }
 
+RowLayoutInfo FlowLayout::alignJustifiedRow(int startIndex, int count, const QRect& effectiveRect, int spaceX) const
+{
+    int rowWidth = calculateRowWidth(count, spaceX);
+    int extraSpace = effectiveRect.width() - rowWidth;
+    int spacing = (count > 1) ? extraSpace / count : 0;
+
+    int itemX = (count == 1)
+            ? effectiveRect.left() // Align first item to the left
+            : spaceX + qFloor((effectiveRect.width() - spacing) / count) - itemList.at(startIndex)->geometry().width();
+
+    RowLayoutInfo row;
+
+    row.startX = itemX;
+    row.startIndex = startIndex;
+    row.spacing = spaceX + spacing;
+
+    for (int j = startIndex; j < startIndex + count; j += 1) {
+        QLayoutItem *rowItem = itemList.at(j);
+        QSize itemSize = rowItem->geometry().size();
+        rowItem->setGeometry(QRect(QPoint(itemX, rowItem->geometry().y()), itemSize));
+        itemX += itemSize.width() + spaceX + spacing;
+    }
+
+    return row;
+}
+
+RowLayoutInfo FlowLayout::alignHCenterRow(int startIndex, int count, const QRect &effectiveRect, int spaceX) const
+{
+    int rowWidth = calculateRowWidth(count, spaceX);
+    int offset = (effectiveRect.width() - rowWidth) / 2;
+    int rowOffsetX = effectiveRect.x() + offset;
+
+    RowLayoutInfo row;
+
+    row.startX = rowOffsetX;
+    row.startIndex = startIndex;
+    row.spacing = spaceX;
+
+    for (int i = startIndex; i < startIndex + count; i += 1) {
+        QLayoutItem *rowItem = itemList.at(i);
+
+        QSize itemSize = rowItem->geometry().size();
+        rowItem->setGeometry(QRect(QPoint(rowOffsetX, rowItem->geometry().y()), itemSize));
+        rowOffsetX += itemSize.width() + spaceX;
+    }
+
+    return row;
+}
+
+
+void FlowLayout::alignRowFromRowInfo(int startIndex, int count, RowLayoutInfo rowInfo) const
+{
+    int x = rowInfo.startX;
+
+    for (int i = startIndex; i < startIndex + count; i += 1) {
+
+        if (i > itemList.length() - 1) {
+            break;
+        }
+        QLayoutItem *item = itemList.at(i);
+        QSize size = item->geometry().size();
+        item->setGeometry(QRect(QPoint(x, item->geometry().y()), size));
+        x += size.width() + rowInfo.spacing;
+    }
+}
+
+
 FlowLayoutState FlowLayout::doLayout(const QRect &rect, bool testOnly) const
 {
     int left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
+
+    int spaceX = horizontalSpacing();
+    int spaceY = verticalSpacing();
+
     QRect effectiveRect = rect.adjusted(+left, +top, -right, -bottom);
     int x = effectiveRect.x();
     int y = effectiveRect.y();
@@ -164,86 +230,65 @@ FlowLayoutState FlowLayout::doLayout(const QRect &rect, bool testOnly) const
     int rowCount = 0;
 
     QLayoutItem *item;
-    int spaceX = 0;
-    int numberOfRows = 0;
 
-    for (int i = 0; i < itemList.length(); i++) {
+    QVector<RowLayoutInfo> rowAlignments;
+    for (int i = 0; i < itemList.length(); i += 1) {
         item = itemList.at(i);
-        QWidget *wid = item->widget();
-        spaceX = horizontalSpacing();
-        if (spaceX == -1)
-            spaceX = wid->style()->layoutSpacing(
-                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal);
-        int spaceY = verticalSpacing();
-        if (spaceY == -1)
-            spaceY = wid->style()->layoutSpacing(
-                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Vertical);
 
-        int nextX = x + item->sizeHint().width() + spaceX;
-        if (nextX - spaceX > effectiveRect.right() && lineHeight > 0) {
-            if(!testOnly && alignment() & Qt::AlignHCenter) {
-                int offset = qFloor((effectiveRect.right() + spaceX - x) / 2);
+        int rowWidth = calculateRowWidth(rowCount, spaceX);
 
-                for(int j = i-1; j > i-1-rowCount; j--) {
-                    auto rowItem = itemList.at(j);
-                    rowItem->setGeometry(rowItem->geometry().adjusted(offset, 0, offset, 0));
-                }
+        if (rowWidth + item->sizeHint().width() >= effectiveRect.width() && rowCount > 0) {
+            if (!testOnly && alignment() & Qt::AlignHCenter) {
+                rowAlignments.append(alignHCenterRow(i - rowCount, rowCount, effectiveRect, spaceX));
             } else if (!testOnly && alignment() & Qt::AlignJustify) {
-                int offset = qFloor((effectiveRect.right() + spaceX - x) / 2);
-
-                int totalWidth = 0;
-                for (int j = i - rowCount; j < i; j++) {
-                    totalWidth += itemList.at(j)->sizeHint().width();
-                }
-                totalWidth += (rowCount - 1) * spaceX; // Add spacing between items
-                int extraSpace = effectiveRect.width() - totalWidth;
-
-                int spacing = (rowCount > 1) ? extraSpace / (rowCount - 1) : 0;
-
-                for(int j = i-1; j > i-1-rowCount; j--) {
-                    auto rowItem = itemList.at(j);
-                    rowItem->setGeometry(rowItem->geometry().adjusted(offset, 0, offset, 0));
-                }
+                rowAlignments.append(alignJustifiedRow(i - rowCount, rowCount, effectiveRect, spaceX));
             }
 
-            numberOfRows = rowCount;
-
-            x = effectiveRect.x();
             y = y + lineHeight + spaceY;
-            nextX = x + item->sizeHint().width() + spaceX;
             lineHeight = 0;
             rowCount = 0;
         }
 
+        // Set item back to start of next row
         if (!testOnly) {
             item->setGeometry(QRect(QPoint(x, y), item->sizeHint()));
         }
 
-        x = nextX;
         lineHeight = qMax(lineHeight, item->sizeHint().height());
         rowCount++;
     }
 
-    if (!testOnly && alignment() & Qt::AlignHCenter) {
-        int offset = qFloor((effectiveRect.right() + spaceX - x) / 2);
-        for (int j = itemList.length()-1; j > itemList.length()-1-rowCount; j--) {
-            auto rowItem = itemList.at(j);
-            rowItem->setGeometry(rowItem->geometry().adjusted(offset, 0, offset, 0));
-        }
-    } else if (!testOnly && alignment() & Qt::AlignJustify) {
-        int offset = qFloor((effectiveRect.right() + spaceX - x) / 2);
-        for (int j = itemList.length()-1; j > itemList.length()-1-rowCount; j--) {
-            auto rowItem = itemList.at(j);
-            rowItem->setGeometry(rowItem->geometry().adjusted(offset, 0, offset, 0));
+    if (rowCount > 0 && !testOnly) {
+        if (rowAlignments.count() > 0) {
+            alignRowFromRowInfo(itemList.length() - rowCount, rowCount, rowAlignments.last());
+        } else {
+            RowLayoutInfo fallback = {
+                        itemList.length() - rowCount,
+                        effectiveRect.x(),
+                        spaceX
+                    };
+            alignRowFromRowInfo(itemList.length() - rowCount, rowCount, fallback);
         }
     }
 
     FlowLayoutState state;
-    state.rowCount = numberOfRows;
+    state.rowCount = rowCount;
     state.height = bottom + y + lineHeight - rect.y();
-    // qDebug() << "state.height" << state.height;
-    // qDebug() << "bottom top: " << bottom << " " << top;
+
     return state;
+}
+
+int FlowLayout::calculateRowWidth(int rowCount, int spacing) const
+{
+    if (itemList.isEmpty()) { return 0; }
+
+    int totalWidth = 0;
+    // Calculate the total width of all item in row
+    for (int i = 0; i < rowCount; i += 1) {
+        totalWidth += itemList.at(i)->sizeHint().width() + spacing;
+    }
+
+    return totalWidth;
 }
 
 int FlowLayout::smartSpacing(QStyle::PixelMetric pm) const
