@@ -93,19 +93,6 @@ void BaseDockWidget::resizeEvent(QResizeEvent *event)
     if (mTitleBarWidget) {
         mTitleBarWidget->resizeEvent(event);
     }
-    // Not sure where the -2 comes from, but the event width is always 2 more than what is passed to FlowLayout::setGeometry
-    int minHeight = getMinHeightForWidth(event->size().width() - 2);
-
-    if (minHeight < 0) return;
-
-#ifdef __APPLE__
-    // For some reason the behavior of minimumSize and the margin changes on mac when floating, so we need to do this
-#else
-    int top, bottom;
-    layout()->getContentsMargins(nullptr, &top, nullptr, &bottom);
-    minHeight += top + bottom;
-#endif
-    setMinimumSize(QSize(layout()->minimumSize().width(), minHeight));
 }
 
 int BaseDockWidget::getMinHeightForWidth(int width) const
