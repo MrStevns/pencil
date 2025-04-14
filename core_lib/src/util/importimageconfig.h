@@ -15,32 +15,21 @@ GNU General Public License for more details.
 
 */
 
-#include "preview.h"
-#include <QPainter>
+#ifndef IMPORTIMAGECONFIG_H
+#define IMPORTIMAGECONFIG_H
 
-
-PreviewCanvas::PreviewCanvas( QWidget* parent ) : QWidget( parent )
+struct ImportImageConfig
 {
-	setFixedSize( 200, 200 );
-}
+    enum PositionType {
+        CenterOfView,
+        CenterOfCanvas,
+        CenterOfCamera,
+        CenterOfCameraFollowed,
+        None
+    };
 
-void PreviewCanvas::paintEvent( QPaintEvent* )
-{
-	QPainter painter( this );
-	if ( mBitmapImage )
-	{
-		painter.drawImage( rect( ), *( mBitmapImage->image() ) );
-	}
-	painter.end( );
-}
+    int importFrame = 1;
+    PositionType positionType = None;
+};
 
-PreviewWidget::PreviewWidget( QWidget* parent ) : QDockWidget( parent )
-{
-	mCanvas = new PreviewCanvas( this );
-	setWidget( mCanvas );
-}
-
-void PreviewWidget::updateImage()
-{
-	mCanvas->update();
-}
+#endif // IMPORTIMAGECONFIG_H

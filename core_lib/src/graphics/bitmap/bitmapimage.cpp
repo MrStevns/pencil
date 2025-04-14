@@ -18,6 +18,7 @@ GNU General Public License for more details.
 
 #include <cmath>
 #include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QPainterPath>
@@ -100,7 +101,7 @@ BitmapImage* BitmapImage::clone() const
     b->setFileName(""); // don't link to the file of the source bitmap image
 
     const bool validKeyFrame = !fileName().isEmpty();
-    if (validKeyFrame && !isLoaded())
+    if (validKeyFrame && !isModified())
     {
         // This bitmapImage is temporarily unloaded.
         // since it's not in the memory, we need to copy the linked png file to prevent data loss.
@@ -108,14 +109,18 @@ BitmapImage* BitmapImage::clone() const
         Q_ASSERT(finfo.isAbsolute());
         Q_ASSERT(QFile::exists(fileName()));
 
-        QString newFileName = QString("%1/%2-%3.%4")
-            .arg(finfo.canonicalPath())
-            .arg(finfo.completeBaseName())
-            .arg(uniqueString(12))
-            .arg(finfo.suffix());
-        b->setFileName(newFileName);
+        QString newFilePath;
+        do
+        {
+            newFilePath = QString("%1/temp-%2.%3")
+                .arg(finfo.canonicalPath())
+                .arg(uniqueString(12))
+                .arg(finfo.suffix());
+        }
+        while (QFile::exists(newFilePath));
 
-        bool ok = QFile::copy(fileName(), newFileName);
+        b->setFileName(newFilePath);
+        bool ok = QFile::copy(fileName(), newFilePath);
         Q_ASSERT(ok);
         qDebug() << "COPY>" << fileName();
     }
@@ -728,6 +733,88 @@ void BitmapImage::drawPath(QPainterPath path, QPen pen, QBrush brush,
     modification();
 }
 
+BitmapImage* BitmapImage::scanToTransparent(BitmapImage *img, const int threshold, const bool redEnabled, const bool greenEnabled, const bool blueEnabled)
+{
+    Q_ASSERT(img != nullptr);
+
+    QRgb rgba = img->constScanLine(img->left(), img->top());
+    if (qAlpha(rgba) == 0)
+        return img;
+
+    for (int x = img->left(); x <= img->right(); x++)
+    {
+        for (int y = img->top(); y <= img->bottom(); y++)
+        {
+            rgba = img->constScanLine(x, y);
+
+            if (qAlpha(rgba) == 0)
+                break;
+
+            const int grayValue = qGray(rgba);
+            const int redValue = qRed(rgba);
+            const int greenValue = qGreen(rgba);
+            const int blueValue = qBlue(rgba);
+            if (grayValue >= threshold)
+            {   // IF Threshold or above
+                img->scanLine(x, y, transp);
+            }
+            else if (redValue > greenValue + COLORDIFF &&
+                     redValue > blueValue + COLORDIFF &&
+                     redValue > grayValue + GRAYSCALEDIFF)
+            {   // IF Red line
+                if (redEnabled)
+                {
+                    img->scanLine(x, y, redline);
+                }
+                else
+                {
+                    img->scanLine(x, y, transp);
+                }
+            }
+            else if (greenValue > redValue + COLORDIFF &&
+                     greenValue > blueValue + COLORDIFF &&
+                     greenValue > grayValue + GRAYSCALEDIFF)
+            {   // IF Green line
+                if (greenEnabled)
+                {
+                    img->scanLine(x, y, greenline);
+                }
+                else
+                {
+                    img->scanLine(x, y, transp);
+                }
+            }
+            else if (blueValue > redValue + COLORDIFF &&
+                     blueValue > greenValue + COLORDIFF &&
+                     blueValue > grayValue + GRAYSCALEDIFF)
+            {   // IF Blue line
+                if (blueEnabled)
+                {
+                    img->scanLine(x, y, blueline);
+                }
+                else
+                {
+                    img->scanLine(x, y, transp);
+                }
+            }
+            else
+            {   // okay, so it is in grayscale graduation area
+                if (grayValue >= LOW_THRESHOLD)
+                {
+                    const qreal factor = static_cast<qreal>(threshold - grayValue) / static_cast<qreal>(threshold - LOW_THRESHOLD);
+                    img->scanLine(x , y, qRgba(0, 0, 0, static_cast<int>(threshold * factor)));
+                }
+                else // grayValue < LOW_THRESHOLD
+                {
+                    img->scanLine(x , y, blackline);
+                }
+            }
+        }
+    }
+    img->modification();
+    return img;
+}
+
 Status BitmapImage::writeFile(const QString& filename)
 {
     if (!mImage.isNull())
@@ -742,9 +829,14 @@ Status BitmapImage::writeFile(const QString& filename)
         if(f.exists())
         {
             bool b = f.remove();
-            return (b) ? Status::OK : Status::FAIL;
+            if (!b) {
+                return Status::FAIL;
+            }
         }
-        return Status::SAFE;
+
+        // The frame is likely empty, act like there's no file name
+        // so we don't end up writing to it later.
+        setFileName("");
     }
     return Status::SAFE;
 }
@@ -799,39 +891,17 @@ bool BitmapImage::floodFill(BitmapImage** replaceImage,
                             const int expandValue)
 {
     // Fill region must be 1 pixel larger than the target image to fill regions on the edge connected only by transparent pixels
-    const QRect& fillBounds = targetImage->mBounds;
+    const QRect& fillBounds = targetImage->mBounds.adjusted(-1, -1, 1, 1);
     QRect maxBounds = cameraRect.united(fillBounds).adjusted(-expandValue, -expandValue, expandValue, expandValue);
     const int maxWidth = maxBounds.width(), left = maxBounds.left(), top = maxBounds.top();
-
-    // If the point we are supposed to fill is outside the max bounds, do nothing
-    if(!maxBounds.contains(point))
-    {
-        return false;
-    }
 
     // Square tolerance for use with compareColor
     tolerance = static_cast<int>(qPow(tolerance, 2));
 
     QRect newBounds;
-    bool shouldFillBorder = false;
-    bool *filledPixels = floodFillPoints(targetImage, fillBounds, maxBounds, point, tolerance, newBounds, shouldFillBorder);
+    bool *filledPixels = floodFillPoints(targetImage, maxBounds, point, tolerance, newBounds);
 
     QRect translatedSearchBounds = newBounds.translated(-maxBounds.topLeft());
-
-    if (shouldFillBorder)
-    {
-        for (int y = 0; y < maxBounds.height(); y++)
-        {
-            for (int x = 0; x < maxBounds.width(); x++)
-            {
-                if(!translatedSearchBounds.contains(x, y))
-                {
-                    filledPixels[y*maxWidth+x] = true;
-                }
-            }
-        }
-        newBounds = maxBounds;
-    }
 
     // The scanned bounds should take the expansion into account
     const QRect& expandRect = newBounds.adjusted(-expandValue, -expandValue, expandValue, expandValue);
@@ -871,17 +941,13 @@ bool BitmapImage::floodFill(BitmapImage** replaceImage,
 // Flood filling based on this scanline algorithm
 // ----- http://lodev.org/cgtutor/floodfill.html
 bool* BitmapImage::floodFillPoints(const BitmapImage* targetImage,
-                                   QRect searchBounds,
-                                   const QRect& maxBounds,
+                                   const QRect& searchBounds,
                                    QPoint point,
                                    const int tolerance,
-                                   QRect& newBounds,
-                                   bool& fillBorder)
+                                   QRect& newBounds)
 {
     QRgb oldColor = targetImage->constScanLine(point.x(), point.y());
     oldColor = qRgba(qRed(oldColor), qGreen(oldColor), qBlue(oldColor), qAlpha(oldColor));
-    QRect borderBounds = searchBounds.intersected(maxBounds);
-    searchBounds = searchBounds.adjusted(-1, -1, 1, 1).intersected(maxBounds);
 
     // Preparations
     QList<QPoint> queue; // queue all the pixels of the filled area (as they are found)
@@ -893,19 +959,10 @@ bool* BitmapImage::floodFillPoints(const BitmapImage* targetImage,
     bool spanLeft = false;
     bool spanRight = false;
 
-    if (!searchBounds.contains(point))
-    {
-        // If point is outside the search area, move it anywhere in the 1px transparent border
-        point = searchBounds.topLeft();
-    }
-
     queue.append(point);
     // Preparations END
 
-    bool *filledPixels = new bool[maxBounds.height()*maxBounds.width()]{};
-
-    // True if the algorithm has attempted to fill a pixel outside the search bounds
-    bool checkOutside = false;
+    bool *filledPixels = new bool[searchBounds.height()*searchBounds.width()]{};
 
     BlitRect blitBounds(point);
     while (!queue.empty())
@@ -917,15 +974,10 @@ bool* BitmapImage::floodFillPoints(const BitmapImage* targetImage,
 
         xTemp = point.x();
 
-        int xCoord = xTemp - maxBounds.left();
-        int yCoord = point.y() - maxBounds.top();
+        int xCoord = xTemp - searchBounds.left();
+        int yCoord = point.y() - searchBounds.top();
 
-        // In case we fill outside the searchBounds, expand the search area to the max.
-        if (!borderBounds.contains(point)) {
-            checkOutside = true;
-        }
-
-        if (filledPixels[yCoord*maxBounds.width()+xCoord]) continue;
+        if (filledPixels[yCoord*searchBounds.width()+xCoord]) continue;
 
         while (xTemp >= searchBounds.left() &&
                compareColor(targetImage->constScanLine(xTemp, point.y()), oldColor, tolerance, cache.data())) xTemp--;
@@ -941,9 +993,9 @@ bool* BitmapImage::floodFillPoints(const BitmapImage* targetImage,
                 blitBounds.extend(floodPoint);
             }
 
-            xCoord = xTemp - maxBounds.left();
+            xCoord = xTemp - searchBounds.left();
             // This pixel is what we're going to fill later
-            filledPixels[yCoord*maxBounds.width()+xCoord] = true;
+            filledPixels[yCoord*searchBounds.width()+xCoord] = true;
 
             if (!spanLeft && (point.y() > searchBounds.top()) &&
                 compareColor(targetImage->constScanLine(xTemp, point.y() - 1), oldColor, tolerance, cache.data())) {
@@ -965,12 +1017,10 @@ bool* BitmapImage::floodFillPoints(const BitmapImage* targetImage,
                 spanRight = false;
             }
 
-            Q_ASSERT(queue.count() < (maxBounds.width() * maxBounds.height()));
+            Q_ASSERT(queue.count() < (searchBounds.width() * searchBounds.height()));
             xTemp++;
         }
     }
-
-    fillBorder = checkOutside && compareColor(qRgba(0,0,0,0), oldColor, tolerance, cache.data());
 
     newBounds = blitBounds;
 

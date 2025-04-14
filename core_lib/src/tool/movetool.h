@@ -21,6 +21,7 @@ GNU General Public License for more details.
 #include "basetool.h"
 #include "movemode.h"
 #include "preferencemanager.h"
+#include "undoredomanager.h"
 
 class Layer;
 class VectorImage;
@@ -33,6 +34,7 @@ public:
     explicit MoveTool(QObject* parent);
     ToolType type() override;
     void loadSettings() override;
+    void saveSettings() override;
     QCursor cursor() override;
     QCursor cursor(MoveMode mode) const;
 
@@ -65,6 +67,8 @@ private:
     int mRotationIncrement = 0;
     MoveMode mPerspMode;
     QPointF mOffset;
+
+    const UndoSaveState* mUndoSaveState = nullptr;
 };
 
 #endif

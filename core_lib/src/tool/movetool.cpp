@@ -27,6 +27,7 @@ GNU General Public License for more details.
 #include "strokeinterpolator.h"
 #include "selectionmanager.h"
 #include "overlaymanager.h"
+#include "undoredomanager.h"
 #include "scribblearea.h"
 #include "layervector.h"
 #include "layermanager.h"
@@ -45,17 +46,29 @@ ToolType MoveTool::type()
 
 void MoveTool::loadSettings()
 {
+    QSettings settings(PENCIL2D, PENCIL2D);
+
     properties.width = -1;
     properties.feather = -1;
     properties.useFeather = false;
     properties.stabilizerLevel = -1;
-    properties.useAA = -1;
+    properties.useAA = settings.value("moveAA").toBool();
     mRotationIncrement = mEditor->preference()->getInt(SETTING::ROTATION_INCREMENT);
-    QSettings settings(PENCIL2D, PENCIL2D);
     properties.showSelectionInfo = settings.value("ShowSelectionInfo").toBool();
     mPropertyEnabled[SHOWSELECTIONINFO] = true;
+    mPropertyEnabled[ANTI_ALIASING] = true;
 
     connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &MoveTool::updateSettings);
+}
+
+void MoveTool::saveSettings()
+{
+    QSettings settings(PENCIL2D, PENCIL2D);
+
+    settings.setValue("ShowSelectionInfo", properties.showSelectionInfo);
+    settings.setValue("moveAA", properties.useAA);
+
+    settings.sync();
 }
 
 QCursor MoveTool::cursor()
@@ -161,6 +174,8 @@ void MoveTool::pointerMoveEvent(PointerEvent* event)
 
 void MoveTool::pointerReleaseEvent(PointerEvent*)
 {
+    mEditor->undoRedo()->record(mUndoSaveState, typeName());
+
     if (mEditor->overlays()->anyOverlayEnabled())
     {
         mEditor->overlays()->setMoveMode(MoveMode::NONE);
@@ -172,7 +187,7 @@ void MoveTool::pointerReleaseEvent(PointerEvent*)
         return;
 
     mScribbleArea->updateToolCursor();
-    mEditor->frameModified(mEditor->currentFrame());
+    emit mEditor->frameModified(mEditor->currentFrame());
 }
 
 void MoveTool::transformSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod)
@@ -209,6 +224,7 @@ void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod
     QRectF selectionRect = selectMan->mySelectionRect();
     if (!selectionRect.isNull())
     {
+        mUndoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
         mEditor->backup(typeName());
     }
 
@@ -325,6 +341,9 @@ bool MoveTool::leavingThisTool()
     {
         applyTransformation();
     }
+
+    saveSettings();
+
     return true;
 }
 
@@ -336,6 +355,7 @@ bool MoveTool::isActive() const {
 void MoveTool::resetToDefault()
 {
     setShowSelectionInfo(false);
+    setAA(true);
 }
 
 void MoveTool::setShowSelectionInfo(const bool b)

@@ -54,6 +54,7 @@ BaseTool::BaseTool(QObject* parent) : QObject(parent)
     mPropertyEnabled.insert(INVISIBILITY, false);
     mPropertyEnabled.insert(PRESERVEALPHA, false);
     mPropertyEnabled.insert(BEZIER, false);
+    mPropertyEnabled.insert(CLOSEDPATH, false);
     mPropertyEnabled.insert(ANTI_ALIASING, false);
     mPropertyEnabled.insert(FILL_MODE, false);
     mPropertyEnabled.insert(STABILIZATION, false);
@@ -71,6 +72,9 @@ bool BaseTool::leavingThisTool()
        disconnect(connection);
        mActiveConnections.removeOne(connection);
    }
+
+   saveSettings();
+
    return true;
 }
 
@@ -146,6 +150,11 @@ void BaseTool::setInvisibility(const bool invisibility)
 void BaseTool::setBezier(const bool _bezier_state)
 {
     properties.bezier_state = _bezier_state;
+}
+
+void BaseTool::setClosedPath(const bool closed)
+{
+    properties.closedPolylinePath = closed;
 }
 
 void BaseTool::setPressure(const bool pressure)

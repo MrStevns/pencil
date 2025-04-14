@@ -44,8 +44,6 @@ public:
     void initUI() override;
     void updateUI() override;
 
-    QSize minimumSizeHint() const override;
-    void resizeEvent(QResizeEvent* event) override;
 
 public slots:
     void onToolSetActive(ToolType toolType);
@@ -64,10 +62,12 @@ public slots:
 
 protected:
     int getMinHeightForWidth(int width) const override;
+    QSize minimumSizeHint() const override;
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
     void deselectAllTools();
-    bool toolOn(ToolType toolType, QToolButton* toolButton);
+    void toolOn(ToolType toolType, QToolButton* toolButton);
 
     Ui::ToolBoxWidget* ui = nullptr;
 

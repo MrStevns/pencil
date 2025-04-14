@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include "layermanager.h"
 #include "viewmanager.h"
 #include "selectionmanager.h"
+#include "undoredomanager.h"
 
 #include "layerbitmap.h"
 #include "layervector.h"
@@ -58,6 +59,17 @@ void SmudgeTool::loadSettings()
     mQuickSizingProperties.insert(Qt::ControlModifier, FEATHER);
 }
 
+void SmudgeTool::saveSettings()
+{
+    QSettings settings(PENCIL2D, PENCIL2D);
+
+    settings.setValue("smudgeWidth", properties.width);
+    settings.setValue("smudgeFeather", properties.feather);
+    settings.setValue("smudgePressure", properties.pressure);
+
+    settings.sync();
+}
+
 void SmudgeTool::resetToDefault()
 {
     setWidth(24.0);
@@ -68,33 +80,18 @@ void SmudgeTool::setWidth(const qreal width)
 {
     // Set current property
     properties.width = width;
-
-    // Update settings
-    QSettings settings(PENCIL2D, PENCIL2D);
-    settings.setValue("smudgeWidth", width);
-    settings.sync();
 }
 
 void SmudgeTool::setFeather(const qreal feather)
 {
     // Set current property
     properties.feather = feather;
-
-    // Update settings
-    QSettings settings(PENCIL2D, PENCIL2D);
-    settings.setValue("smudgeFeather", feather);
-    settings.sync();
 }
 
 void SmudgeTool::setPressure(const bool pressure)
 {
     // Set current property
     properties.pressure = pressure;
-
-    // Update settings
-    QSettings settings(PENCIL2D, PENCIL2D);
-    settings.setValue("smudgePressure", pressure);
-    settings.sync();
 }
 
 bool SmudgeTool::emptyFrameActionEnabled()
@@ -182,7 +179,7 @@ void SmudgeTool::pointerPressEvent(PointerEvent* event)
                 selectMan->vectorSelection.add(selectMan->closestCurves());
                 selectMan->vectorSelection.add(selectMan->closestVertices());
 
-                mEditor->frameModified(mEditor->currentFrame());
+                emit mEditor->frameModified(mEditor->currentFrame());
             }
             else
             {
@@ -300,10 +297,8 @@ void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
 
 void SmudgeTool::drawStroke()
 {
-    if (!mScribbleArea->isLayerPaintable()) return;
-
     Layer* layer = mEditor->layers()->currentLayer();
-    if (layer == nullptr) { return; }
+    if (layer == nullptr || !layer->isPaintable()) { return; }
 
     BitmapImage *sourceImage = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(mEditor->currentFrame(), 0);
     if (sourceImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing

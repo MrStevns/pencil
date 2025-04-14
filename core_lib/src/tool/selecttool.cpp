@@ -24,6 +24,7 @@ GNU General Public License for more details.
 #include "layermanager.h"
 #include "toolmanager.h"
 #include "selectionmanager.h"
+#include "undoredomanager.h"
 
 SelectTool::SelectTool(QObject* parent) : BaseTool(parent)
 {
@@ -38,6 +39,15 @@ void SelectTool::loadSettings()
     QSettings settings(PENCIL2D, PENCIL2D);
     properties.showSelectionInfo = settings.value("ShowSelectionInfo").toBool();
     mPropertyEnabled[SHOWSELECTIONINFO] = true;
+}
+
+void SelectTool::saveSettings()
+{
+    QSettings settings(PENCIL2D, PENCIL2D);
+
+    settings.setValue("ShowSelectionInfo", properties.showSelectionInfo);
+
+    settings.sync();
 }
 
 QCursor SelectTool::cursor()
@@ -88,9 +98,6 @@ void SelectTool::resetToDefault()
 void SelectTool::setShowSelectionInfo(const bool b)
 {
     properties.showSelectionInfo = b;
-
-    QSettings settings(PENCIL2D, PENCIL2D);
-    settings.setValue("ShowSelectionInfo", b);
 }
 
 void SelectTool::beginSelection(Layer* currentLayer, const QPointF& pos)
@@ -124,6 +131,8 @@ void SelectTool::pointerPressEvent(PointerEvent* event)
     if (!currentLayer->isPaintable()) { return; }
     if (event->button() != Qt::LeftButton) { return; }
     auto selectMan = mEditor->select();
+
+    mUndoState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
 
     mPressPoint = event->canvasPos();
     selectMan->setMoveModeForAnchorInRange(mPressPoint);
@@ -183,6 +192,8 @@ void SelectTool::pointerReleaseEvent(PointerEvent* event)
     {
         keepSelection(currentLayer);
     }
+
+    mEditor->undoRedo()->record(mUndoState, typeName());
 
     mStartMoveMode = MoveMode::NONE;
     mSelectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();

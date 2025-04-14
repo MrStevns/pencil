@@ -279,17 +279,17 @@
 <context>
     <name>BucketOptionsWidget</name>
     <message>
-        <location filename="../app/ui/bucketoptionswidget.ui" line="14"/>
+        <location filename="../app/ui/bucketoptionswidget.ui" line="20"/>
         <source>Form</source>
         <translation>表格</translation>
     </message>
     <message>
-        <location filename="../app/ui/bucketoptionswidget.ui" line="48"/>
+        <location filename="../app/ui/bucketoptionswidget.ui" line="54"/>
         <source>Reference</source>
         <translation>参考</translation>
     </message>
     <message>
-        <location filename="../app/ui/bucketoptionswidget.ui" line="72"/>
+        <location filename="../app/ui/bucketoptionswidget.ui" line="78"/>
         <source>Blend mode</source>
         <translation>混合模式</translation>
     </message>
@@ -408,9 +408,13 @@
     </message>
     <message>
         <location filename="../app/src/cameracontextmenu.cpp" line="51"/>
-        <location filename="../app/src/cameracontextmenu.cpp" line="52"/>
         <source>Faster</source>
         <translation>更快</translation>
+    </message>
+    <message>
+        <location filename="../app/src/cameracontextmenu.cpp" line="52"/>
+        <source>Fastest</source>
+        <translation>最快</translation>
     </message>
     <message>
         <location filename="../app/src/cameracontextmenu.cpp" line="53"/>
@@ -482,23 +486,23 @@
     </message>
     <message>
         <location filename="../core_lib/src/util/cameraeasingtype.cpp" line="25"/>
-        <source>Normal Ease-in</source>
-        <translation>正常缓入</translation>
+        <source>Moderate Ease-in</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../core_lib/src/util/cameraeasingtype.cpp" line="26"/>
-        <source>Normal Ease-out</source>
-        <translation>正常缓出</translation>
+        <source>Moderate Ease-out</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../core_lib/src/util/cameraeasingtype.cpp" line="27"/>
-        <source>Normal Ease-in - Ease-out</source>
-        <translation>常速缓入 - 缓出</translation>
+        <source>Moderate Ease-in - Ease-out</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../core_lib/src/util/cameraeasingtype.cpp" line="28"/>
-        <source>Normal Ease-out - Ease-in</source>
-        <translation>常速缓出 - 缓入</translation>
+        <source>Moderate Ease-out - Ease-in</source>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../core_lib/src/util/cameraeasingtype.cpp" line="29"/>
@@ -684,83 +688,83 @@
 <context>
     <name>CameraOptionsWidget</name>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="29"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="35"/>
         <source>Transform</source>
         <translation>变换</translation>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="50"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="56"/>
         <source>Reset scaling</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="67"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="73"/>
         <source>Reset rotation</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="84"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="90"/>
         <source>Reset</source>
         <translation>重置</translation>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="91"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="97"/>
         <source>Reset translation</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="108"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="114"/>
         <source>Reset all transforms</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="111"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="117"/>
         <source>Reset all</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="121"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="127"/>
         <source>Camera path</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="144"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="150"/>
         <source>Show interpolation path</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="147"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="153"/>
         <source>Show path</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="155"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="161"/>
         <source>Red</source>
         <translation>红色</translation>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="160"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="166"/>
         <source>Blue</source>
         <translation>蓝色</translation>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="165"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="171"/>
         <source>Green</source>
         <translation>绿色</translation>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="170"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="176"/>
         <source>Black</source>
         <translation>黑色</translation>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="175"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="181"/>
         <source>White</source>
         <translation>白色</translation>
     </message>
     <message>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="200"/>
-        <location filename="../app/ui/cameraoptionswidget.ui" line="203"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="206"/>
+        <location filename="../app/ui/cameraoptionswidget.ui" line="209"/>
         <source>Reset path</source>
         <translation type="unfinished"/>
     </message>
@@ -870,60 +874,60 @@
 <context>
     <name>ColorInspector</name>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="46"/>
+        <location filename="../app/ui/colorinspector.ui" line="52"/>
         <source>HSV</source>
         <translation>HSV</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="52"/>
+        <location filename="../app/ui/colorinspector.ui" line="70"/>
         <source>H</source>
         <translation>色调</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="59"/>
+        <location filename="../app/ui/colorinspector.ui" line="77"/>
         <source>S</source>
         <translation>饱和度</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="66"/>
+        <location filename="../app/ui/colorinspector.ui" line="84"/>
         <source>V</source>
         <translation>明度</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="73"/>
-        <location filename="../app/ui/colorinspector.ui" line="139"/>
+        <location filename="../app/ui/colorinspector.ui" line="91"/>
+        <location filename="../app/ui/colorinspector.ui" line="197"/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="92"/>
+        <location filename="../app/ui/colorinspector.ui" line="138"/>
         <source>°</source>
         <translation>°</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="102"/>
-        <location filename="../app/ui/colorinspector.ui" line="112"/>
-        <location filename="../app/ui/colorinspector.ui" line="122"/>
+        <location filename="../app/ui/colorinspector.ui" line="148"/>
+        <location filename="../app/ui/colorinspector.ui" line="158"/>
+        <location filename="../app/ui/colorinspector.ui" line="168"/>
         <source>%</source>
         <translation>%</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="133"/>
+        <location filename="../app/ui/colorinspector.ui" line="179"/>
         <source>RGB</source>
         <translation>RGB</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="146"/>
+        <location filename="../app/ui/colorinspector.ui" line="204"/>
         <source>G</source>
         <translation>G</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="159"/>
+        <location filename="../app/ui/colorinspector.ui" line="231"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorinspector.ui" line="172"/>
+        <location filename="../app/ui/colorinspector.ui" line="258"/>
         <source>R</source>
         <translation>R</translation>
     </message>
@@ -937,23 +941,23 @@
 <context>
     <name>ColorPalette</name>
     <message>
-        <location filename="../app/ui/colorpalette.ui" line="14"/>
+        <location filename="../app/ui/colorpalette.ui" line="20"/>
         <source>Color Palette</source>
         <comment>Window title of color palette.</comment>
         <translation>调色板</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorpalette.ui" line="47"/>
+        <location filename="../app/ui/colorpalette.ui" line="53"/>
         <source>Add Color</source>
         <translation>增加颜色</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorpalette.ui" line="82"/>
+        <location filename="../app/ui/colorpalette.ui" line="88"/>
         <source>Remove Color</source>
         <translation>删除颜色</translation>
     </message>
     <message>
-        <location filename="../app/ui/colorpalette.ui" line="142"/>
+        <location filename="../app/ui/colorpalette.ui" line="148"/>
         <source>Native color dialog window</source>
         <translation>操作系统原生颜色对话窗口</translation>
     </message>
@@ -2586,118 +2590,118 @@
 <context>
     <name>Editor</name>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="532"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="529"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="577"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="591"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="574"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="588"/>
         <source>Paste from Previous Keyframe</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="689"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="686"/>
         <source>Paste</source>
         <translation>粘贴</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="711"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="708"/>
         <source>Flip selection vertically</source>
         <translation>垂直翻转选中区域</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="713"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="710"/>
         <source>Flip selection horizontally</source>
         <translation>水平翻转选中区域</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="729"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="726"/>
         <source>Reposition frame</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="813"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="822"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="831"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="863"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="810"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="819"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="828"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="860"/>
         <source>Could not open file</source>
         <translation>无法打开文件</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="814"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="811"/>
         <source>The file you have selected is a directory, so we are unable to open it. If you are are trying to open a project that uses the old structure, please open the file ending with .pcl, not the data folder.</source>
         <translation>你选的文件是个目录，我们不能打开它。如果你在试图打开用了旧结构的项目，请直接打开后续带 .pcl 的文件，而非数据文件夹。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="823"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="820"/>
         <source>The file you have selected does not exist, so we are unable to open it. Please make sure that you&apos;ve entered the correct path and that the file is accessible and try again.</source>
         <translation>你选择的文件不存在，所以打不开。请确定你输入了可访问的正确文件路径，然后重试。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="832"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="829"/>
         <source>This program does not have permission to read the file you have selected. Please check that you have read permissions for this file and try again.</source>
         <translation>程序没有权限读取你选的文件。请检查并确认你有读取权限后再试一次。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="864"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="861"/>
         <source>An unknown error occurred while trying to load the file and we are not able to load your file.</source>
         <translation>加载文件时发生了未知错误，我们无法加载你的文件。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="941"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1070"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="944"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1074"/>
         <source>File not found at path &quot;%1&quot;. Please check the image is present at the specified location and try again.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="944"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1073"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="947"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1077"/>
         <source>Image format is not supported. Please convert the image file to one of the following formats and try again:
 %1</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="948"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1077"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="951"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1081"/>
         <source>An error has occurred while reading the image. Please check that the file is a valid image and try again.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="951"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1001"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1031"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1046"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1053"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1080"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="954"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1005"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1035"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1050"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1057"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1084"/>
         <source>Import failed</source>
         <translation>导入失败</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="968"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="998"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1099"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="972"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1002"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1103"/>
         <source>Import Image</source>
         <translation>导入图像</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1001"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1005"/>
         <source>You cannot import images into a vector layer.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1031"/>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1046"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1035"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1050"/>
         <source>You can only import images to a bitmap layer.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1053"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1057"/>
         <source>The selected image has a format that does not support animation.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/editor.cpp" line="1267"/>
+        <location filename="../core_lib/src/interface/editor.cpp" line="1269"/>
         <source>Remove frame</source>
         <translation>删除帧</translation>
     </message>
@@ -2852,67 +2856,77 @@
         <translation>宽度</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="88"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="66"/>
+        <source>The MP4 format does not support odd width. Please specify an even width or use a different file format.</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/ui/exportmovieoptions.ui" line="98"/>
         <source>Height</source>
         <translation>高度</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="108"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="105"/>
+        <source>The MP4 format does not support odd height. Please specify an even height or use a different file format.</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/ui/exportmovieoptions.ui" line="128"/>
         <source>Range</source>
         <translation>范围</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="154"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="174"/>
         <source>The last frame you want to include in the exported movie</source>
         <translation>要导出在电影中的最后一帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="157"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="177"/>
         <source>End Frame</source>
         <translation>结束帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="176"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="196"/>
         <source>The first frame you want to include in the exported movie</source>
         <translation>要 包含在导出电影里的第一帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="179"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="199"/>
         <source>Start Frame</source>
         <translation>起始帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="204"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="224"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;End frame is set to last paintable keyframe (Useful when you only want to export to the last animated frame)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;结束帧设置成最后一个可以绘制的关键帧(用于想导出最后一个动画帧时)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="210"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="230"/>
         <source>To the end of sound clips</source>
         <translation>到声音剪辑的结尾处</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="233"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="253"/>
         <source>GIF and APNG only</source>
         <translation>仅 GIF 和 APNG</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="236"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="256"/>
         <source>Loop</source>
         <translation>循环</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="249"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="269"/>
         <source>Exporter Settings</source>
         <translation>导出器设置</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="267"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="287"/>
         <source>WebM and APNG only</source>
         <translation>仅 WebM 和 APNG</translation>
     </message>
     <message>
-        <location filename="../app/ui/exportmovieoptions.ui" line="270"/>
+        <location filename="../app/ui/exportmovieoptions.ui" line="290"/>
         <source>Transparency</source>
         <translation>透明</translation>
     </message>
@@ -2988,11 +3002,6 @@
         <location filename="../app/src/filedialog.cpp" line="188"/>
         <source>Export movie</source>
         <translation>导出电影</translation>
-    </message>
-    <message>
-        <location filename="../app/src/filedialog.cpp" line="189"/>
-        <source>Export sound</source>
-        <translation>导出声音</translation>
     </message>
     <message>
         <location filename="../app/src/filedialog.cpp" line="190"/>
@@ -3079,99 +3088,99 @@
 <context>
     <name>FileManager</name>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="229"/>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="244"/>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="252"/>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="259"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="230"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="245"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="253"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="260"/>
         <source>Invalid Save Path</source>
         <translation>无效的保存路径</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="230"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="231"/>
         <source>The path is empty.</source>
         <translation>该路径为空</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="245"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="246"/>
         <source>The path (&quot;%1&quot;) points to a directory.</source>
         <translation>路径 (&quot;%1&quot;) 指向一个目录。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="253"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="254"/>
         <source>The directory (&quot;%1&quot;) does not exist.</source>
         <translation>目录 (&quot;%1&quot;) 不存在。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="260"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="261"/>
         <source>The path (&quot;%1&quot;) is not writable.</source>
         <translation>路径 (&quot;%1&quot;) 是不可写入的。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="297"/>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="306"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="298"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="307"/>
         <source>Cannot Create Data Directory</source>
         <translation>不能创建数据目录</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="298"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="299"/>
         <source>Failed to create directory &quot;%1&quot;. Please make sure you have sufficient permissions.</source>
         <translation>创建目录 &quot;%1&quot; 失败。请确保拥有足够的权限。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="307"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="308"/>
         <source>&quot;%1&quot; is a file. Please delete the file and try again.</source>
         <translation>&quot;%1&quot; 是一个文件。请删除文件再尝试一次。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="340"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="341"/>
         <source>Miniz Error</source>
         <translation>Miniz 错误</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="331"/>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="341"/>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="356"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="332"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="342"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="357"/>
         <source>An internal error occurred. Your file may not be saved successfully.</source>
         <translation>发生了一个内部错误。你的文件可能没有保存成功。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="330"/>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="355"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="331"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="356"/>
         <source>Internal Error</source>
         <translation>内部错误</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="524"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="525"/>
         <source>Could not open file</source>
         <translation>不能打开文件</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="534"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="535"/>
         <source>The file does not exist, so we are unable to open it.Please check to make sure the path is correct and try again.</source>
         <translation>檔案不存在所以無法開啟。請檢查檔案路徑並再試一次。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="539"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="540"/>
         <source>No permission to read the file. Please check you have read permissions for this file and try again.</source>
         <translation>沒有讀取該檔案的權限</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="545"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="546"/>
         <source>There was an error processing your file. This usually means that your project has been at least partially corrupted. Try again with a newer version of Pencil2D, or try to use a backup file if you have one. If you contact us through one of our official channels we may be able to help you.For reporting issues, the best places to reach us are:</source>
         <translation>處理檔案過程出現錯誤，您的檔案可能已經損毀。請下載最新版 Pencil2D 再嘗試開啟一次，或者使用您的備份檔案。聯絡 Pencil2D 的開發者：</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="976"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="977"/>
         <source>Bitmap Layer %1</source>
         <translation>位图层 %1</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="978"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="979"/>
         <source>Vector Layer %1</source>
         <translation>矢量层 %1</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/structure/filemanager.cpp" line="980"/>
+        <location filename="../core_lib/src/structure/filemanager.cpp" line="981"/>
         <source>Sound Layer %1</source>
         <translation>声音层 %1</translation>
     </message>
@@ -3246,287 +3255,317 @@
 <context>
     <name>GeneralPage</name>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="50"/>
+        <location filename="../app/ui/generalpage.ui" line="38"/>
         <source>Language</source>
         <comment>GroupBox title in Preference</comment>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="56"/>
-        <location filename="../app/ui/generalpage.ui" line="60"/>
+        <location filename="../app/ui/generalpage.ui" line="44"/>
+        <location filename="../app/ui/generalpage.ui" line="48"/>
         <source>[System-Language]</source>
         <comment>First item of the language list</comment>
         <translation>[系统语言]</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="71"/>
+        <location filename="../app/ui/generalpage.ui" line="59"/>
         <source>Window opacity</source>
         <comment>GroupBox title in Preference</comment>
         <translation>窗口不透明度</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="77"/>
+        <location filename="../app/ui/generalpage.ui" line="65"/>
         <source>Opacity</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="100"/>
+        <location filename="../app/ui/generalpage.ui" line="88"/>
         <source>Appearance</source>
         <comment>GroupBox title in Preference</comment>
         <translation>外观</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="106"/>
+        <location filename="../app/ui/generalpage.ui" line="94"/>
         <source>Shadows</source>
         <translation>阴影</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="113"/>
+        <location filename="../app/ui/generalpage.ui" line="101"/>
         <source>Tool Cursors</source>
         <translation>工具光标</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="120"/>
+        <location filename="../app/ui/generalpage.ui" line="108"/>
         <source>Canvas Cursor</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="130"/>
+        <location filename="../app/ui/generalpage.ui" line="118"/>
         <source>Background</source>
         <comment>GroupBox title in Preference</comment>
         <translation>背景</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="174"/>
+        <location filename="../app/ui/generalpage.ui" line="162"/>
         <source>Canvas</source>
         <comment>GroupBox title in Preference</comment>
         <translation>画布</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="180"/>
+        <location filename="../app/ui/generalpage.ui" line="168"/>
         <source>Antialiasing</source>
         <translation>抗锯齿</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="203"/>
+        <location filename="../app/ui/generalpage.ui" line="191"/>
         <source>Editing</source>
         <comment>GroupBox title in Preference</comment>
         <translation>编辑</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="209"/>
+        <location filename="../app/ui/generalpage.ui" line="197"/>
         <source>Vector curve smoothing</source>
         <translation>矢量曲线平滑</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="229"/>
+        <location filename="../app/ui/generalpage.ui" line="217"/>
         <source>Tablet high-resolution position</source>
         <translation>绘图板高分辨率位置</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="239"/>
+        <location filename="../app/ui/generalpage.ui" line="227"/>
         <source>Grid</source>
         <comment>groupBox title in Preference</comment>
         <translation>栅格</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="245"/>
+        <location filename="../app/ui/generalpage.ui" line="233"/>
         <source>Grid Height</source>
         <translation>栅格高度</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="252"/>
+        <location filename="../app/ui/generalpage.ui" line="240"/>
         <source>Enable Grid</source>
         <translation>启用栅格</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="297"/>
+        <location filename="../app/ui/generalpage.ui" line="285"/>
         <source>Grid Width</source>
         <translation>栅格宽度</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="307"/>
+        <location filename="../app/ui/generalpage.ui" line="295"/>
         <source>Overlays</source>
         <translation>叠加</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="323"/>
+        <location filename="../app/ui/generalpage.ui" line="311"/>
         <source>Enable Action Safe area (%)</source>
         <translation>启用操作安全区域 (%)</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="366"/>
+        <location filename="../app/ui/generalpage.ui" line="354"/>
         <source>Enable Title Safe area (%)</source>
         <translation>启用标题安全区域 (%)</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="406"/>
+        <location filename="../app/ui/generalpage.ui" line="394"/>
         <source>Show Safe area labels</source>
         <translation>显示安全区域标签</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="416"/>
+        <location filename="../app/ui/generalpage.ui" line="404"/>
         <source>Scroll Wheel Zoom</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="434"/>
+        <location filename="../app/ui/generalpage.ui" line="422"/>
         <source>Invert Scroll Direction</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="444"/>
+        <location filename="../app/ui/generalpage.ui" line="432"/>
         <source>Advanced</source>
         <comment>groupBox title in Preference</comment>
         <translation>高级</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="459"/>
+        <location filename="../app/ui/generalpage.ui" line="447"/>
         <source>Memory Cache Budget</source>
         <translation>高速缓存大小</translation>
     </message>
     <message>
-        <location filename="../app/ui/generalpage.ui" line="490"/>
+        <location filename="../app/ui/generalpage.ui" line="478"/>
         <source>MB</source>
         <translation>MB</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="37"/>
+        <location filename="../app/src/generalpage.cpp" line="39"/>
         <source>Arabic</source>
         <translation>阿拉伯语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="38"/>
+        <location filename="../app/src/generalpage.cpp" line="40"/>
+        <source>Bulgarian</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/generalpage.cpp" line="41"/>
         <source>Catalan</source>
         <translation>加泰罗尼亚语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="39"/>
+        <location filename="../app/src/generalpage.cpp" line="42"/>
         <source>Czech</source>
         <translation>加泰罗尼亚语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="40"/>
+        <location filename="../app/src/generalpage.cpp" line="43"/>
         <source>Danish</source>
         <translation>丹麦语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="41"/>
+        <location filename="../app/src/generalpage.cpp" line="44"/>
         <source>German</source>
         <translation>德语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="42"/>
+        <location filename="../app/src/generalpage.cpp" line="45"/>
         <source>Greek</source>
         <translation>希腊语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="43"/>
+        <location filename="../app/src/generalpage.cpp" line="46"/>
         <source>English</source>
         <translation>英语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="44"/>
+        <location filename="../app/src/generalpage.cpp" line="47"/>
         <source>Spanish</source>
         <translation>西班牙语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="45"/>
+        <location filename="../app/src/generalpage.cpp" line="48"/>
         <source>Estonian</source>
         <translation>爱沙尼亚语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="46"/>
+        <location filename="../app/src/generalpage.cpp" line="49"/>
+        <source>Persian</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/generalpage.cpp" line="50"/>
         <source>French</source>
         <translation>法语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="47"/>
+        <location filename="../app/src/generalpage.cpp" line="51"/>
         <source>Hebrew</source>
         <translation>希伯来语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="48"/>
+        <location filename="../app/src/generalpage.cpp" line="52"/>
         <source>Hungarian</source>
         <translation>匈牙利语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="49"/>
+        <location filename="../app/src/generalpage.cpp" line="53"/>
         <source>Indonesian</source>
         <translation>印度尼西亚语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="50"/>
+        <location filename="../app/src/generalpage.cpp" line="54"/>
         <source>Italian</source>
         <translation>意大利语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="51"/>
+        <location filename="../app/src/generalpage.cpp" line="55"/>
         <source>Japanese</source>
         <translation>日语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="52"/>
+        <location filename="../app/src/generalpage.cpp" line="56"/>
         <source>Kabyle</source>
         <translation>卡拜尔语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="53"/>
+        <location filename="../app/src/generalpage.cpp" line="57"/>
+        <source>Korean</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/generalpage.cpp" line="58"/>
+        <source>Norwegian Bokmål</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/generalpage.cpp" line="59"/>
+        <source>Dutch – Netherlands</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/generalpage.cpp" line="60"/>
         <source>Polish</source>
         <translation>波兰语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="54"/>
+        <location filename="../app/src/generalpage.cpp" line="61"/>
         <source>Portuguese – Portugal</source>
         <translation>葡萄牙语 – 葡萄牙</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="55"/>
+        <location filename="../app/src/generalpage.cpp" line="62"/>
         <source>Portuguese – Brazil</source>
         <translation>葡萄牙语 – 巴西</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="56"/>
+        <location filename="../app/src/generalpage.cpp" line="63"/>
         <source>Russian</source>
         <translation>俄语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="57"/>
+        <location filename="../app/src/generalpage.cpp" line="64"/>
         <source>Slovene</source>
         <translation>斯洛文尼亚语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="58"/>
+        <location filename="../app/src/generalpage.cpp" line="65"/>
         <source>Swedish</source>
         <translation>瑞典语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="59"/>
+        <location filename="../app/src/generalpage.cpp" line="66"/>
         <source>Turkish</source>
         <translation>土耳其语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="60"/>
+        <location filename="../app/src/generalpage.cpp" line="67"/>
         <source>Vietnamese</source>
         <translation>越南语</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="61"/>
+        <location filename="../app/src/generalpage.cpp" line="68"/>
+        <source>Cantonese</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/generalpage.cpp" line="69"/>
         <source>Chinese – China</source>
         <translation>汉语 - 中国</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="62"/>
+        <location filename="../app/src/generalpage.cpp" line="70"/>
         <source>Chinese – Taiwan</source>
         <translation>汉语 - 台湾</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="195"/>
+        <location filename="../app/src/generalpage.cpp" line="212"/>
         <source>Restart Required</source>
         <translation>需要重启</translation>
     </message>
     <message>
-        <location filename="../app/src/generalpage.cpp" line="196"/>
+        <location filename="../app/src/generalpage.cpp" line="213"/>
         <source>The language change will take effect after a restart of Pencil2D</source>
         <translation>语言的更改在重启 Pencil2D 后起作用</translation>
     </message>
@@ -3595,23 +3634,23 @@ The importer will search and find images matching the same criteria. You can see
     </message>
     <message>
         <location filename="../app/src/importimageseqdialog.cpp" line="179"/>
-        <location filename="../app/src/importimageseqdialog.cpp" line="296"/>
+        <location filename="../app/src/importimageseqdialog.cpp" line="293"/>
         <source>Abort</source>
         <translation>中止</translation>
     </message>
     <message>
-        <location filename="../app/src/importimageseqdialog.cpp" line="296"/>
+        <location filename="../app/src/importimageseqdialog.cpp" line="293"/>
         <source>Importing images...</source>
         <translation>导入图像...</translation>
     </message>
     <message>
-        <location filename="../app/src/importimageseqdialog.cpp" line="356"/>
-        <location filename="../app/src/importimageseqdialog.cpp" line="381"/>
+        <location filename="../app/src/importimageseqdialog.cpp" line="352"/>
+        <location filename="../app/src/importimageseqdialog.cpp" line="377"/>
         <source>Invalid path</source>
         <translation>无效的路径</translation>
     </message>
     <message>
-        <location filename="../app/src/importimageseqdialog.cpp" line="357"/>
+        <location filename="../app/src/importimageseqdialog.cpp" line="353"/>
         <source>The following file did not meet the criteria: 
 %1 
 
@@ -3622,7 +3661,7 @@ Read the instructions and try again</source>
 阅读说明，然后重试</translation>
     </message>
     <message>
-        <location filename="../app/src/importimageseqdialog.cpp" line="382"/>
+        <location filename="../app/src/importimageseqdialog.cpp" line="378"/>
         <source>The following file(-s) did not meet the criteria: 
 %1</source>
         <translation>以下文件不符合条件：
@@ -3809,22 +3848,22 @@ Read the instructions and try again</source>
         <translation>淡入</translation>
     </message>
     <message>
-        <location filename="../app/ui/layeropacitydialog.ui" line="132"/>
+        <location filename="../app/ui/layeropacitydialog.ui" line="135"/>
         <source>Fade out over selected keyframes</source>
         <translation>在选定的多个关键帧上淡出</translation>
     </message>
     <message>
-        <location filename="../app/ui/layeropacitydialog.ui" line="135"/>
+        <location filename="../app/ui/layeropacitydialog.ui" line="138"/>
         <source>Fade out</source>
         <translation>淡出</translation>
     </message>
     <message>
-        <location filename="../app/ui/layeropacitydialog.ui" line="160"/>
+        <location filename="../app/ui/layeropacitydialog.ui" line="166"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../app/ui/layeropacitydialog.ui" line="169"/>
+        <location filename="../app/ui/layeropacitydialog.ui" line="178"/>
         <source>Be aware that opacity changes are made in the rendering, and will not change your artwork.</source>
         <translation>请注意，不透明度的改变是在渲染中进行的，并不会改变你的图稿。</translation>
     </message>
@@ -3837,7 +3876,7 @@ Read the instructions and try again</source>
 <context>
     <name>LayerSound</name>
     <message>
-        <location filename="../core_lib/src/structure/layersound.cpp" line="28"/>
+        <location filename="../core_lib/src/structure/layersound.cpp" line="29"/>
         <source>Sound Layer</source>
         <translation>声音层</translation>
     </message>
@@ -3858,885 +3897,886 @@ Read the instructions and try again</source>
         <translation>主窗口</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="57"/>
+        <location filename="../app/ui/mainwindow2.ui" line="54"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="61"/>
+        <location filename="../app/ui/mainwindow2.ui" line="58"/>
         <source>Import</source>
         <translation>导入</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="79"/>
+        <location filename="../app/ui/mainwindow2.ui" line="76"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="101"/>
+        <location filename="../app/ui/mainwindow2.ui" line="98"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="105"/>
+        <location filename="../app/ui/mainwindow2.ui" line="102"/>
         <source>Selection</source>
         <translation>选择</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="130"/>
+        <location filename="../app/ui/mainwindow2.ui" line="127"/>
         <source>View</source>
         <translation>查看</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="134"/>
+        <location filename="../app/ui/mainwindow2.ui" line="131"/>
         <source>Onion Skin</source>
         <translation>洋葱皮</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="141"/>
+        <location filename="../app/ui/mainwindow2.ui" line="138"/>
         <source>Zoom</source>
         <translation>缩放</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="157"/>
+        <location filename="../app/ui/mainwindow2.ui" line="154"/>
         <source>Layer Visibility</source>
         <translation>图层可见性</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="165"/>
+        <location filename="../app/ui/mainwindow2.ui" line="162"/>
         <source>Overlays</source>
         <translation>叠加</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="169"/>
+        <location filename="../app/ui/mainwindow2.ui" line="166"/>
         <source>Perspective Lines Angle</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="219"/>
+        <location filename="../app/ui/mainwindow2.ui" line="215"/>
         <source>Animation</source>
         <translation>动画</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="223"/>
+        <location filename="../app/ui/mainwindow2.ui" line="219"/>
         <source>Timeline Selection</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="255"/>
+        <location filename="../app/ui/mainwindow2.ui" line="251"/>
         <source>Tools</source>
         <translation>工具</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="273"/>
+        <location filename="../app/ui/mainwindow2.ui" line="269"/>
         <source>Layer</source>
         <translation>层</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="277"/>
+        <location filename="../app/ui/mainwindow2.ui" line="273"/>
         <source>Change line color</source>
         <translation>更改线条颜色</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="295"/>
-        <location filename="../app/ui/mainwindow2.ui" line="824"/>
+        <location filename="../app/ui/mainwindow2.ui" line="291"/>
+        <location filename="../app/ui/mainwindow2.ui" line="812"/>
         <source>Help</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="312"/>
+        <location filename="../app/ui/mainwindow2.ui" line="308"/>
         <source>Windows</source>
         <translation>窗口</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="316"/>
+        <location filename="../app/ui/mainwindow2.ui" line="312"/>
         <source>Toolbars</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="340"/>
+        <location filename="../app/ui/mainwindow2.ui" line="336"/>
         <source>New</source>
         <translation>新建</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="349"/>
+        <location filename="../app/ui/mainwindow2.ui" line="345"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="358"/>
+        <location filename="../app/ui/mainwindow2.ui" line="354"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="367"/>
+        <location filename="../app/ui/mainwindow2.ui" line="363"/>
         <source>Save As...</source>
         <translation>另存为...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="372"/>
+        <location filename="../app/ui/mainwindow2.ui" line="368"/>
         <source>Exit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="377"/>
-        <location filename="../app/ui/mainwindow2.ui" line="405"/>
+        <location filename="../app/ui/mainwindow2.ui" line="373"/>
+        <location filename="../app/ui/mainwindow2.ui" line="401"/>
         <source>Image Sequence...</source>
         <translation>图像序列...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="382"/>
-        <location filename="../app/ui/mainwindow2.ui" line="400"/>
+        <location filename="../app/ui/mainwindow2.ui" line="378"/>
+        <location filename="../app/ui/mainwindow2.ui" line="396"/>
         <source>Image...</source>
         <translation>图像...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="387"/>
+        <location filename="../app/ui/mainwindow2.ui" line="383"/>
         <source>Movie...</source>
         <translation>电影...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="395"/>
+        <location filename="../app/ui/mainwindow2.ui" line="391"/>
         <source>Palette</source>
         <translation>调色板</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="410"/>
+        <location filename="../app/ui/mainwindow2.ui" line="406"/>
         <source>Movie Video...</source>
         <translation>电影视频...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="415"/>
+        <location filename="../app/ui/mainwindow2.ui" line="411"/>
         <source>Sound...</source>
         <translation>声音...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="420"/>
+        <location filename="../app/ui/mainwindow2.ui" line="416"/>
         <source>Image Predefined set...</source>
         <translation>图像预设集...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="429"/>
+        <location filename="../app/ui/mainwindow2.ui" line="425"/>
         <source>Undo</source>
         <translation>撤销</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="438"/>
+        <location filename="../app/ui/mainwindow2.ui" line="434"/>
         <source>Redo</source>
         <translation>重做</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="450"/>
+        <location filename="../app/ui/mainwindow2.ui" line="446"/>
         <source>Cut</source>
         <translation>剪切</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="462"/>
+        <location filename="../app/ui/mainwindow2.ui" line="458"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="474"/>
+        <location filename="../app/ui/mainwindow2.ui" line="470"/>
         <source>Paste</source>
         <translation>粘贴</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1110"/>
-        <location filename="../app/ui/mainwindow2.ui" line="1113"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1057"/>
+        <source>Center</source>
+        <comment>To move sth. to the center</comment>
+        <translation>中心</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/mainwindow2.ui" line="1098"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1101"/>
         <source>Paste from Previous Keyframe</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1125"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1113"/>
         <source>Show Invisible Lines</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1137"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1125"/>
         <source>Show Outlines Only</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1161"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1137"/>
+        <source>Center</source>
+        <comment>The middle point of an area</comment>
+        <translation>中心</translation>
+    </message>
+    <message>
+        <location filename="../app/ui/mainwindow2.ui" line="1149"/>
         <source>Thirds</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1173"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1161"/>
         <source>Golden Ratio</source>
         <translation>黄金比例</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1185"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1173"/>
         <source>Safe Areas</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1197"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1185"/>
         <source>One Point Perspective</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1209"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1197"/>
         <source>Two Point Perspective</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1221"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1209"/>
         <source>Three Point Perspective</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1229"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1217"/>
         <source>2°</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1237"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1225"/>
         <source>3°</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1245"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1233"/>
         <source>5°</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1253"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1241"/>
         <source>7.5°</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1261"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1249"/>
         <source>10°</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1269"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1257"/>
         <source>15°</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1277"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1265"/>
         <source>20°</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1285"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1273"/>
         <source>30°</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="479"/>
+        <location filename="../app/ui/mainwindow2.ui" line="475"/>
         <source>Select All</source>
         <translation>选择全部</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="484"/>
+        <location filename="../app/ui/mainwindow2.ui" line="480"/>
         <source>Deselect All</source>
         <translation>取消选择全部</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="493"/>
+        <location filename="../app/ui/mainwindow2.ui" line="489"/>
         <source>Clear Frame</source>
         <translation>清除帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="498"/>
+        <location filename="../app/ui/mainwindow2.ui" line="494"/>
         <source>Preferences</source>
         <translation>首选项</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="506"/>
+        <location filename="../app/ui/mainwindow2.ui" line="502"/>
         <source>Reset Windows</source>
         <translation>重置窗口</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="515"/>
+        <location filename="../app/ui/mainwindow2.ui" line="511"/>
         <source>Zoom In</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="524"/>
+        <location filename="../app/ui/mainwindow2.ui" line="520"/>
         <source>Zoom Out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="529"/>
+        <location filename="../app/ui/mainwindow2.ui" line="525"/>
         <source>Rotate Clockwise</source>
         <translation>顺时针旋转</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="534"/>
+        <location filename="../app/ui/mainwindow2.ui" line="530"/>
         <source>Rotate Anticlockwise</source>
         <translation>逆时针旋转</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="543"/>
+        <location filename="../app/ui/mainwindow2.ui" line="539"/>
         <source>Reset</source>
         <translation>重置</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="555"/>
+        <location filename="../app/ui/mainwindow2.ui" line="551"/>
         <source>Horizontal Flip</source>
         <translation>水平反转</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="567"/>
+        <location filename="../app/ui/mainwindow2.ui" line="563"/>
         <source>Vertical Flip</source>
         <translation>垂直反转</translation>
     </message>
     <message>
         <location filename="../app/ui/mainwindow2.ui" line="575"/>
-        <source>Preview</source>
-        <translation>预览</translation>
-    </message>
-    <message>
-        <location filename="../app/ui/mainwindow2.ui" line="587"/>
         <source>Grid</source>
         <translation>栅格</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="599"/>
+        <location filename="../app/ui/mainwindow2.ui" line="587"/>
         <source>Previous</source>
         <translation>前一帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="602"/>
+        <location filename="../app/ui/mainwindow2.ui" line="590"/>
         <source>Show previous onion skin</source>
         <translation>显示前一帧洋葱皮</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="614"/>
+        <location filename="../app/ui/mainwindow2.ui" line="602"/>
         <source>Next</source>
         <translation>后一帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="617"/>
+        <location filename="../app/ui/mainwindow2.ui" line="605"/>
         <source>Show next onion skin</source>
         <translation>显示后一帧洋葱皮</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="626"/>
-        <location filename="../app/src/mainwindow2.cpp" line="1515"/>
+        <location filename="../app/ui/mainwindow2.ui" line="614"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1538"/>
         <source>Play</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="638"/>
+        <location filename="../app/ui/mainwindow2.ui" line="626"/>
         <source>Loop</source>
         <translation>循环</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="643"/>
+        <location filename="../app/ui/mainwindow2.ui" line="631"/>
         <source>Next Frame</source>
         <translation>后一帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="648"/>
+        <location filename="../app/ui/mainwindow2.ui" line="636"/>
         <source>Previous Frame</source>
         <translation>前一帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="657"/>
+        <location filename="../app/ui/mainwindow2.ui" line="645"/>
         <source>Add Frame</source>
         <translation>添加帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="666"/>
+        <location filename="../app/ui/mainwindow2.ui" line="654"/>
         <source>Duplicate Frame</source>
         <translation>复制帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="675"/>
+        <location filename="../app/ui/mainwindow2.ui" line="663"/>
         <source>Remove Frame</source>
         <translation>删除帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="684"/>
+        <location filename="../app/ui/mainwindow2.ui" line="672"/>
         <source>Move</source>
         <translation>移动</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="693"/>
+        <location filename="../app/ui/mainwindow2.ui" line="681"/>
         <source>Select</source>
         <translation>选择</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="702"/>
+        <location filename="../app/ui/mainwindow2.ui" line="690"/>
         <source>Brush</source>
         <translation>画笔</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="711"/>
+        <location filename="../app/ui/mainwindow2.ui" line="699"/>
         <source>Polyline</source>
         <translation>折线</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="720"/>
+        <location filename="../app/ui/mainwindow2.ui" line="708"/>
         <source>Smudge</source>
         <translation>涂抹</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="729"/>
+        <location filename="../app/ui/mainwindow2.ui" line="717"/>
         <source>Pen</source>
         <translation>钢笔</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="738"/>
+        <location filename="../app/ui/mainwindow2.ui" line="726"/>
         <source>Hand</source>
         <translation>抓手</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="747"/>
+        <location filename="../app/ui/mainwindow2.ui" line="735"/>
         <source>Pencil</source>
         <translation>铅笔</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="756"/>
+        <location filename="../app/ui/mainwindow2.ui" line="744"/>
         <source>Bucket</source>
         <translation>颜料桶</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="765"/>
+        <location filename="../app/ui/mainwindow2.ui" line="753"/>
         <source>Eyedropper</source>
         <translation>吸管</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="774"/>
+        <location filename="../app/ui/mainwindow2.ui" line="762"/>
         <source>Eraser</source>
         <translation>橡皮擦</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="783"/>
+        <location filename="../app/ui/mainwindow2.ui" line="771"/>
         <source>New Bitmap Layer</source>
         <translation>新建位图层</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="792"/>
+        <location filename="../app/ui/mainwindow2.ui" line="780"/>
         <source>New Vector Layer</source>
         <translation>新建矢量层</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="801"/>
+        <location filename="../app/ui/mainwindow2.ui" line="789"/>
         <source>New Sound Layer</source>
         <translation>新建声音层</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="810"/>
+        <location filename="../app/ui/mainwindow2.ui" line="798"/>
         <source>New Camera Layer</source>
         <translation>新建相机层</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="819"/>
+        <location filename="../app/ui/mainwindow2.ui" line="807"/>
         <source>Delete Current Layer</source>
         <translation>删除当前层</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="829"/>
+        <location filename="../app/ui/mainwindow2.ui" line="817"/>
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="834"/>
-        <location filename="../app/ui/mainwindow2.ui" line="837"/>
+        <location filename="../app/ui/mainwindow2.ui" line="822"/>
+        <location filename="../app/ui/mainwindow2.ui" line="825"/>
         <source>Reset to default</source>
         <translation>重置为默认</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="847"/>
-        <location filename="../app/ui/mainwindow2.ui" line="850"/>
+        <location filename="../app/ui/mainwindow2.ui" line="835"/>
+        <location filename="../app/ui/mainwindow2.ui" line="838"/>
         <source>Next Keyframe</source>
         <translation>后一关键帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="860"/>
-        <location filename="../app/ui/mainwindow2.ui" line="863"/>
+        <location filename="../app/ui/mainwindow2.ui" line="848"/>
+        <location filename="../app/ui/mainwindow2.ui" line="851"/>
         <source>Previous KeyFrame</source>
         <translation>前一关键帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="874"/>
+        <location filename="../app/ui/mainwindow2.ui" line="862"/>
         <source>Range</source>
         <translation>范围</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="879"/>
+        <location filename="../app/ui/mainwindow2.ui" line="867"/>
         <source>Flip X</source>
         <translation>反转 X</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="884"/>
+        <location filename="../app/ui/mainwindow2.ui" line="872"/>
         <source>Flip Y</source>
         <translation>反转 Y</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="889"/>
+        <location filename="../app/ui/mainwindow2.ui" line="877"/>
         <source>Move Frame Forward</source>
         <translation>向前移动帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="894"/>
+        <location filename="../app/ui/mainwindow2.ui" line="882"/>
         <source>Move Frame Backward</source>
         <translation>向后移动帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="899"/>
+        <location filename="../app/ui/mainwindow2.ui" line="887"/>
         <source>Pencil2D Website</source>
         <translation>Pencil2D 网站</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="904"/>
+        <location filename="../app/ui/mainwindow2.ui" line="892"/>
         <source>Report a Bug</source>
         <translation>报告问题</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="909"/>
+        <location filename="../app/ui/mainwindow2.ui" line="897"/>
         <source>Quick Reference Guide</source>
         <translation>快速参考指南</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="912"/>
+        <location filename="../app/ui/mainwindow2.ui" line="900"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="917"/>
+        <location filename="../app/ui/mainwindow2.ui" line="905"/>
         <source>Animated Image...</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="922"/>
+        <location filename="../app/ui/mainwindow2.ui" line="910"/>
         <source>Animated GIF...</source>
         <translation>动画 GIF...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="927"/>
+        <location filename="../app/ui/mainwindow2.ui" line="915"/>
         <source>Check for Updates</source>
         <translation>检查更新</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="932"/>
+        <location filename="../app/ui/mainwindow2.ui" line="920"/>
         <source>Pencil2D Forum</source>
         <translation>Pencil2D 论坛</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="937"/>
+        <location filename="../app/ui/mainwindow2.ui" line="925"/>
         <source>Pencil2D Discord</source>
         <translation>Pencil2D Discord论坛</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="942"/>
+        <location filename="../app/ui/mainwindow2.ui" line="930"/>
         <source>200%</source>
         <translation>200%</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="947"/>
+        <location filename="../app/ui/mainwindow2.ui" line="935"/>
         <source>300%</source>
         <translation>300%</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="952"/>
+        <location filename="../app/ui/mainwindow2.ui" line="940"/>
         <source>400%</source>
         <translation>400%</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="957"/>
+        <location filename="../app/ui/mainwindow2.ui" line="945"/>
         <source>50%</source>
         <translation>50%</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="962"/>
+        <location filename="../app/ui/mainwindow2.ui" line="950"/>
         <source>33%</source>
         <translation>33%</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="967"/>
+        <location filename="../app/ui/mainwindow2.ui" line="955"/>
         <source>25%</source>
         <translation>25%</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="972"/>
+        <location filename="../app/ui/mainwindow2.ui" line="960"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="977"/>
+        <location filename="../app/ui/mainwindow2.ui" line="965"/>
         <source>Flip In-Between</source>
         <translation>预览中间帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="982"/>
+        <location filename="../app/ui/mainwindow2.ui" line="970"/>
         <source>Flip Rolling</source>
         <translation>预览动态</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1025"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1013"/>
         <source>Current layer only</source>
         <translation>仅当前图层</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1033"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1021"/>
         <source>Relative</source>
         <translation>相对的</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="987"/>
+        <location filename="../app/ui/mainwindow2.ui" line="975"/>
         <source>Peg bar Alignment</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="992"/>
+        <location filename="../app/ui/mainwindow2.ui" line="980"/>
         <source>Movie Audio...</source>
         <translation>电影音频...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="997"/>
+        <location filename="../app/ui/mainwindow2.ui" line="985"/>
         <source>Append to Palette...</source>
         <translation>附加到调色板...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1002"/>
+        <location filename="../app/ui/mainwindow2.ui" line="990"/>
         <source>Replace Palette...</source>
         <translation>更换调色板...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1007"/>
+        <location filename="../app/ui/mainwindow2.ui" line="995"/>
         <source>Current keyframe</source>
         <translation>当前关键帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1012"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1000"/>
         <source>All keyframes on layer</source>
         <translation>图层上的所有关键帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1017"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1005"/>
         <source>Layers from Project file...</source>
         <translation>项目文件中的图层...</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1041"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1029"/>
         <source>All layers</source>
         <translation>所有层</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1046"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1034"/>
         <source>Reposition Selected Frames</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1051"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1039"/>
         <source>Layer / Keyframe opacity</source>
         <translation>图层/关键帧透明度</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1056"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1044"/>
         <source>Open Temporary Directory</source>
         <translation>打开临时目录</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1064"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1052"/>
         <source>Lock Windows</source>
         <translation>锁定窗口</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1069"/>
-        <location filename="../app/ui/mainwindow2.ui" line="1149"/>
-        <source>Center</source>
-        <translation>中心</translation>
-    </message>
-    <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1074"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1062"/>
         <source>Reset Rotation</source>
         <translation>重置旋转</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1079"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1067"/>
         <source>Add Exposure</source>
         <translation>增加曝光度</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1084"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1072"/>
         <source>Subtract Exposure</source>
         <translation>减少曝光度</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1089"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1077"/>
         <source>Reverse Frames Order</source>
         <translation>翻转帧顺序</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1094"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1082"/>
         <source>Remove Frames</source>
         <translation>删除帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/mainwindow2.ui" line="1105"/>
+        <location filename="../app/ui/mainwindow2.ui" line="1093"/>
         <source>Status Bar</source>
         <translation>状态栏</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="154"/>
+        <location filename="../app/src/mainwindow2.cpp" line="153"/>
         <source>color palette:&lt;br&gt;use &lt;b&gt;(C)&lt;/b&gt;&lt;br&gt;toggle at cursor</source>
         <translation>调色板&lt;br&gt;使用 &lt;b&gt;(C)&lt;/b&gt;&lt;br&gt;光标位置切换</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="158"/>
+        <location filename="../app/src/mainwindow2.cpp" line="157"/>
         <source>Color inspector</source>
         <translation>颜色检视器</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="460"/>
+        <location filename="../app/src/mainwindow2.cpp" line="459"/>
         <source>Open Recent</source>
         <translation>打开最近使用</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="485"/>
-        <location filename="../app/src/mainwindow2.cpp" line="509"/>
+        <location filename="../app/src/mainwindow2.cpp" line="484"/>
+        <location filename="../app/src/mainwindow2.cpp" line="508"/>
         <source>Dialog is already open!</source>
         <translation>对话框已经打开！</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="531"/>
+        <location filename="../app/src/mainwindow2.cpp" line="530"/>
         <source>Please select at least 2 frames!</source>
         <translation>请选择至少2帧</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="659"/>
+        <location filename="../app/src/mainwindow2.cpp" line="658"/>
         <source>Opening document...</source>
         <translation>打开文档中...</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="659"/>
-        <location filename="../app/src/mainwindow2.cpp" line="716"/>
+        <location filename="../app/src/mainwindow2.cpp" line="658"/>
+        <location filename="../app/src/mainwindow2.cpp" line="715"/>
         <source>Abort</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="704"/>
-        <location filename="../app/src/mainwindow2.cpp" line="806"/>
+        <location filename="../app/src/mainwindow2.cpp" line="703"/>
+        <location filename="../app/src/mainwindow2.cpp" line="805"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="705"/>
+        <location filename="../app/src/mainwindow2.cpp" line="704"/>
         <source>This program does not currently have permission to write to the file you have selected. Please make sure you have write permission for this file before attempting to save it. Alternatively, you can use the Save As... menu option to save to a writable location.</source>
         <translation>程序没有权限写入你选的文件。请在保存文件之前确认有该文件的写入权限。另外，你可以用 另存为.. 菜单项保存到一个可以写的地方。</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="716"/>
+        <location filename="../app/src/mainwindow2.cpp" line="715"/>
         <source>Saving document...</source>
         <translation>保存文档中...</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="759"/>
+        <location filename="../app/src/mainwindow2.cpp" line="758"/>
         <source>&lt;br&gt;&lt;br&gt;An error has occurred and your file may not have saved successfully.If you believe that this error is an issue with Pencil2D, please create a new issue at:&lt;br&gt;&lt;a href=&apos;https://github.com/pencil2d/pencil/issues&apos;&gt;https://github.com/pencil2d/pencil/issues&lt;/a&gt;&lt;br&gt;Please be sure to include the following details in your issue:</source>
         <translation>&lt;br&gt;&lt;br&gt;发生错误，你的文件没有保存成功。如果你确信问题来自 Pencile2D，请在 &lt;br&gt;&lt;a href=&apos;https://github.com/pencil2d/pencil/issues&apos;&gt;https://github.com/pencil2d/pencil/issues&lt;/a&gt;&lt;br&gt;开个新问题。另外请包含如下的细节在其中：</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="807"/>
+        <location filename="../app/src/mainwindow2.cpp" line="806"/>
         <source>This animation has been modified.
  Do you want to save your changes?</source>
         <translation>该动画被修改过了。
 你要保存所做的变动吗？</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="830"/>
+        <location filename="../app/src/mainwindow2.cpp" line="829"/>
         <source>AutoSave Reminder</source>
         <translation>自动保存提醒</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="831"/>
+        <location filename="../app/src/mainwindow2.cpp" line="830"/>
         <source>The animation is not saved yet.
  Do you want to save now?</source>
         <translation>该动画还没被保存。
 你要现在保存吗？</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="832"/>
+        <location filename="../app/src/mainwindow2.cpp" line="831"/>
         <source>Never ask again</source>
         <comment>AutoSave reminder button</comment>
         <translation>不要再问</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1300"/>
-        <location filename="../app/src/mainwindow2.cpp" line="1305"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1323"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1328"/>
         <source>Undo</source>
         <comment>Menu item text</comment>
         <translation>撤销</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1313"/>
-        <location filename="../app/src/mainwindow2.cpp" line="1320"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1336"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1343"/>
         <source>Redo</source>
         <comment>Menu item text</comment>
         <translation>重做</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1356"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1379"/>
         <source>Opening a palette will replace the old palette.
 Color(s) in strokes will be altered by this action!</source>
         <translation>打开调色板将替换旧的调色板。
 此操作将更改笔画的颜色！</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1358"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1381"/>
         <source>Open Palette</source>
         <translation>打开调色板</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1510"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1533"/>
         <source>Stop</source>
         <translation>停止</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1559"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1582"/>
         <source>Restore Project?</source>
         <translation>恢复项目？</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1560"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1583"/>
         <source>Pencil2D didn&apos;t close correctly. Would you like to restore the project?</source>
         <translation>Pencil2D上次没有被正常关闭。您要恢复项目吗？</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1565"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1588"/>
         <source>Restore project</source>
         <translation>恢复项目</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1599"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1622"/>
         <source>Recovery Failed.</source>
         <translation>项目恢复失败。</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1600"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1623"/>
         <source>Sorry! Pencil2D is unable to restore your project</source>
         <translation>抱歉！ Pencil2D 无法恢复您的项目</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1610"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1633"/>
         <source>Recovery Succeeded!</source>
         <translation>项目恢复成功！</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1611"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1634"/>
         <source>Please save your work immediately to prevent loss of data</source>
         <translation>请立即保存您的工作以防止数据丢失</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1617"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1640"/>
         <source>Main Toolbar</source>
         <translation>主工具栏</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1631"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1654"/>
         <source>View Toolbar</source>
         <translation>显示工具栏</translation>
     </message>
     <message>
-        <location filename="../app/src/mainwindow2.cpp" line="1643"/>
+        <location filename="../app/src/mainwindow2.cpp" line="1666"/>
         <source>Overlay Toolbar</source>
         <translation type="unfinished"/>
     </message>
@@ -5026,61 +5066,61 @@ Color(s) in strokes will be altered by this action!</source>
         <translation>洋葱皮</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="105"/>
+        <location filename="../app/ui/onionskin.ui" line="111"/>
         <source>Previous Frames</source>
         <translation>前一帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="160"/>
-        <location filename="../app/ui/onionskin.ui" line="253"/>
+        <location filename="../app/ui/onionskin.ui" line="169"/>
+        <location filename="../app/ui/onionskin.ui" line="265"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="154"/>
-        <location filename="../app/ui/onionskin.ui" line="157"/>
+        <location filename="../app/ui/onionskin.ui" line="163"/>
+        <location filename="../app/ui/onionskin.ui" line="166"/>
         <source>Onion skin color: red</source>
         <translation>洋葱皮颜色: 红</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="186"/>
+        <location filename="../app/ui/onionskin.ui" line="195"/>
         <source>Next Frames</source>
         <translation>后一帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="244"/>
-        <location filename="../app/ui/onionskin.ui" line="247"/>
+        <location filename="../app/ui/onionskin.ui" line="256"/>
+        <location filename="../app/ui/onionskin.ui" line="259"/>
         <source>Onion skin color: blue</source>
         <translation>洋葱皮颜色: 蓝</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="279"/>
+        <location filename="../app/ui/onionskin.ui" line="291"/>
         <source>Distributed Opacity</source>
         <translation>分布不透明度</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="321"/>
+        <location filename="../app/ui/onionskin.ui" line="401"/>
         <source>Min</source>
         <translation>最小值</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="343"/>
-        <location filename="../app/ui/onionskin.ui" line="402"/>
+        <location filename="../app/ui/onionskin.ui" line="361"/>
+        <location filename="../app/ui/onionskin.ui" line="426"/>
         <source> %</source>
         <translation>%</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="380"/>
+        <location filename="../app/ui/onionskin.ui" line="336"/>
         <source>Max</source>
         <translation>最大值</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="421"/>
+        <location filename="../app/ui/onionskin.ui" line="450"/>
         <source>Show Keyframes Only</source>
         <translation>仅显示关键帧</translation>
     </message>
     <message>
-        <location filename="../app/ui/onionskin.ui" line="428"/>
+        <location filename="../app/ui/onionskin.ui" line="457"/>
         <source>Show During Playback</source>
         <translation>在播放时显示</translation>
     </message>
@@ -5201,32 +5241,32 @@ Check selection, and please try again.</source>
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../app/ui/preferencesdialog.ui" line="20"/>
+        <location filename="../app/ui/preferencesdialog.ui" line="14"/>
         <source>Preferences</source>
         <translation>首选项</translation>
     </message>
     <message>
-        <location filename="../app/ui/preferencesdialog.ui" line="68"/>
+        <location filename="../app/ui/preferencesdialog.ui" line="74"/>
         <source>General</source>
         <translation>通用</translation>
     </message>
     <message>
-        <location filename="../app/ui/preferencesdialog.ui" line="83"/>
+        <location filename="../app/ui/preferencesdialog.ui" line="89"/>
         <source>Files</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../app/ui/preferencesdialog.ui" line="98"/>
+        <location filename="../app/ui/preferencesdialog.ui" line="104"/>
         <source>Timeline</source>
         <translation>时间轴</translation>
     </message>
     <message>
-        <location filename="../app/ui/preferencesdialog.ui" line="113"/>
+        <location filename="../app/ui/preferencesdialog.ui" line="119"/>
         <source>Tools</source>
         <translation>工具</translation>
     </message>
     <message>
-        <location filename="../app/ui/preferencesdialog.ui" line="128"/>
+        <location filename="../app/ui/preferencesdialog.ui" line="134"/>
         <source>Shortcuts</source>
         <translation>快捷键</translation>
     </message>
@@ -5336,24 +5376,24 @@ or cancel</source>
 <context>
     <name>ScribbleArea</name>
     <message>
-        <location filename="../core_lib/src/interface/scribblearea.cpp" line="776"/>
+        <location filename="../core_lib/src/interface/scribblearea.cpp" line="772"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/scribblearea.cpp" line="777"/>
+        <location filename="../core_lib/src/interface/scribblearea.cpp" line="773"/>
         <source>You are trying to modify a hidden layer! Please select another layer (or make the current layer visible).</source>
         <translation>你正在尝试修改一个隐藏层！请选择其它层（或将当前层设为可见）。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/scribblearea.cpp" line="1467"/>
+        <location filename="../core_lib/src/interface/scribblearea.cpp" line="1463"/>
         <source>Delete Selection</source>
         <comment>Undo Step: clear the selection area.</comment>
         <translation>删除选择区域</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/interface/scribblearea.cpp" line="1493"/>
-        <location filename="../core_lib/src/interface/scribblearea.cpp" line="1505"/>
+        <location filename="../core_lib/src/interface/scribblearea.cpp" line="1489"/>
+        <location filename="../core_lib/src/interface/scribblearea.cpp" line="1501"/>
         <source>Clear Image</source>
         <comment>Undo step text</comment>
         <translation>清理图像</translation>
@@ -5517,40 +5557,40 @@ or cancel</source>
         <translation>导出电影</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="313"/>
+        <location filename="../app/src/shortcutspage.cpp" line="314"/>
         <source>Export Palette</source>
         <comment>Shortcut</comment>
         <translation>导出调色板</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="314"/>
-        <source>Export Sound</source>
-        <comment>Shortcut</comment>
-        <translation>导出声音</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="315"/>
-        <source>Horizontal Flip</source>
-        <comment>Shortcut</comment>
-        <translation>水平反转</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="316"/>
+        <location filename="../app/src/shortcutspage.cpp" line="317"/>
         <source>Flip In-Between</source>
         <comment>Shortcut</comment>
         <translation>预览中间帧</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="317"/>
+        <location filename="../app/src/shortcutspage.cpp" line="318"/>
         <source>Flip Rolling</source>
         <comment>Shortcut</comment>
         <translation>预览动态</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="318"/>
-        <source>Vertical Flip</source>
+        <location filename="../app/src/shortcutspage.cpp" line="315"/>
+        <source>View: Horizontal Flip</source>
         <comment>Shortcut</comment>
-        <translation>垂直反转</translation>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="313"/>
+        <source>Export Animated GIF</source>
+        <comment>Shortcut</comment>
+        <translation>导出动画 GIF</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="316"/>
+        <source>View: Vertical Flip</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="319"/>
@@ -5572,402 +5612,540 @@ or cancel</source>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="322"/>
-        <source>Previous Keyframe</source>
+        <source>Selection: Horizontal Flip</source>
         <comment>Shortcut</comment>
-        <translation>前一关键帧</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="323"/>
-        <source>Selection: Add Frame Exposure</source>
+        <source>Selection: Vertical Flip</source>
         <comment>Shortcut</comment>
         <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="324"/>
-        <source>Selection: Subtract Frame Exposure</source>
+        <source>Previous Keyframe</source>
         <comment>Shortcut</comment>
-        <translation type="unfinished"/>
+        <translation>前一关键帧</translation>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="325"/>
-        <source>Selection: Reverse Keyframes</source>
+        <source>Selection: Reposition Frames</source>
         <comment>Shortcut</comment>
         <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="326"/>
-        <source>Selection: Remove Keyframes</source>
+        <source>Selection: Add Frame Exposure</source>
         <comment>Shortcut</comment>
         <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="327"/>
+        <source>Selection: Subtract Frame Exposure</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="328"/>
+        <source>Selection: Reverse Keyframes</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="329"/>
+        <source>Selection: Remove Keyframes</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="330"/>
         <source>Toggle Grid</source>
         <comment>Shortcut</comment>
         <translation>啟用格線</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="328"/>
-        <source>Import Image</source>
-        <comment>Shortcut</comment>
-        <translation>导入图像</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="329"/>
-        <source>Import Image Sequence</source>
-        <comment>Shortcut</comment>
-        <translation>匯入連續圖片</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="330"/>
-        <source>Import Sound</source>
-        <comment>Shortcut</comment>
-        <translation>导入声音</translation>
-    </message>
-    <message>
         <location filename="../app/src/shortcutspage.cpp" line="331"/>
-        <source>Show All Layers</source>
+        <source>Toggle Center Overlay</source>
         <comment>Shortcut</comment>
-        <translation>显示所有图层</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="332"/>
-        <source>Show Current Layer Only</source>
+        <source>Toggle Thirds Overlay</source>
         <comment>Shortcut</comment>
-        <translation>仅显示当前图层</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="333"/>
-        <source>Show Layers Relative to Current Layer</source>
+        <source>Toggle Golden Ratio Overlay</source>
         <comment>Shortcut</comment>
         <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="334"/>
-        <source>Toggle Loop</source>
+        <source>Toggle Safe Areas Overlay</source>
         <comment>Shortcut</comment>
-        <translation>啟用循環播放</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="335"/>
-        <source>Move Frame Backward</source>
+        <source>Toggle One Point Perspective Overlay</source>
         <comment>Shortcut</comment>
-        <translation>向后移动帧</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="336"/>
-        <source>Move Frame Forward</source>
+        <source>Toggle Two Point Perspective Overlay</source>
         <comment>Shortcut</comment>
-        <translation>向前移动帧</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="337"/>
-        <source>New Bitmap Layer</source>
+        <source>Toggle Three Point Perspective Overlay</source>
         <comment>Shortcut</comment>
-        <translation>新建位图层</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="338"/>
-        <source>New Camera Layer</source>
+        <source>Import Image</source>
         <comment>Shortcut</comment>
-        <translation>新建相机层</translation>
+        <translation>导入图像</translation>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="339"/>
-        <source>New File</source>
+        <source>Import Image Sequence</source>
         <comment>Shortcut</comment>
-        <translation>新建文件</translation>
+        <translation>匯入連續圖片</translation>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="340"/>
-        <source>New Sound Layer</source>
+        <source>Import Image Predefined Set</source>
         <comment>Shortcut</comment>
-        <translation>新建声音层</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="341"/>
-        <source>New Vector Layer</source>
+        <source>Import Movie Video</source>
         <comment>Shortcut</comment>
-        <translation>新建矢量层</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="342"/>
-        <source>Toggle Next Onion Skin</source>
+        <source>Import Movie Audio</source>
         <comment>Shortcut</comment>
-        <translation>切換後續描圖紙</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="343"/>
-        <source>Toggle Previous Onion Skin</source>
+        <source>Import Animated Image</source>
         <comment>Shortcut</comment>
         <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="344"/>
-        <source>Open File</source>
-        <comment>Shortcut</comment>
-        <translation>打开文件</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="345"/>
-        <source>Paste</source>
-        <comment>Shortcut</comment>
-        <translation>粘贴</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="346"/>
-        <source>Play/Stop</source>
-        <comment>Shortcut</comment>
-        <translation>播放/暂停</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="347"/>
-        <source>Preferences</source>
-        <comment>Shortcut</comment>
-        <translation>偏好设置</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="348"/>
-        <source>Preview</source>
-        <comment>Shortcut</comment>
-        <translation>预览</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="349"/>
-        <source>Redo</source>
-        <comment>Shortcut</comment>
-        <translation>重做</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="350"/>
-        <source>Remove Frame</source>
-        <comment>Shortcut</comment>
-        <translation>删除帧</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="351"/>
-        <source>Reset Windows</source>
-        <comment>Shortcut</comment>
-        <translation>重置窗口</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="352"/>
-        <source>Reset View</source>
-        <comment>Shortcut</comment>
-        <translation>重置视觉</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="353"/>
-        <source>Center View</source>
-        <comment>Shortcut</comment>
-        <translation>中置视觉</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="354"/>
-        <source>Rotate Anticlockwise</source>
-        <comment>Shortcut</comment>
-        <translation>逆时针旋转</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="355"/>
-        <source>Rotate Clockwise</source>
-        <comment>Shortcut</comment>
-        <translation>顺时针旋转</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="356"/>
-        <source>Reset Rotation</source>
-        <comment>Shortcut</comment>
-        <translation>重置旋转</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="357"/>
-        <source>Save File As</source>
-        <comment>Shortcut</comment>
-        <translation>将文件另存为</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="358"/>
-        <source>Save File</source>
-        <comment>Shortcut</comment>
-        <translation>保存文件</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="359"/>
-        <source>Select All</source>
-        <comment>Shortcut</comment>
-        <translation>选择全部</translation>
-    </message>
-    <message>
-        <location filename="../app/src/shortcutspage.cpp" line="360"/>
-        <source>Toggle Status Bar Visibility</source>
+        <source>Import Layers from project file</source>
         <comment>Shortcut</comment>
         <translation type="unfinished"/>
     </message>
     <message>
+        <location filename="../app/src/shortcutspage.cpp" line="345"/>
+        <source>Import Palette (Append)</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="346"/>
+        <source>Import Palette (Replace)</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="347"/>
+        <source>Import Sound</source>
+        <comment>Shortcut</comment>
+        <translation>导入声音</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="348"/>
+        <source>Show All Layers</source>
+        <comment>Shortcut</comment>
+        <translation>显示所有图层</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="349"/>
+        <source>Show Current Layer Only</source>
+        <comment>Shortcut</comment>
+        <translation>仅显示当前图层</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="350"/>
+        <source>Show Layers Relative to Current Layer</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="351"/>
+        <source>Toggle Loop</source>
+        <comment>Shortcut</comment>
+        <translation>啟用循環播放</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="352"/>
+        <source>Toggle Range Playback</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="353"/>
+        <source>Move Frame Backward</source>
+        <comment>Shortcut</comment>
+        <translation>向后移动帧</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="354"/>
+        <source>Move Frame Forward</source>
+        <comment>Shortcut</comment>
+        <translation>向前移动帧</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="355"/>
+        <source>New Bitmap Layer</source>
+        <comment>Shortcut</comment>
+        <translation>新建位图层</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="356"/>
+        <source>New Camera Layer</source>
+        <comment>Shortcut</comment>
+        <translation>新建相机层</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="357"/>
+        <source>New File</source>
+        <comment>Shortcut</comment>
+        <translation>新建文件</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="358"/>
+        <source>New Sound Layer</source>
+        <comment>Shortcut</comment>
+        <translation>新建声音层</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="359"/>
+        <source>New Vector Layer</source>
+        <comment>Shortcut</comment>
+        <translation>新建矢量层</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="360"/>
+        <source>Toggle Next Onion Skin</source>
+        <comment>Shortcut</comment>
+        <translation>切換後續描圖紙</translation>
+    </message>
+    <message>
         <location filename="../app/src/shortcutspage.cpp" line="361"/>
-        <source>Toggle Color Inspector Window Visibility</source>
+        <source>Toggle Previous Onion Skin</source>
         <comment>Shortcut</comment>
         <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="362"/>
-        <source>Toggle Color Palette Window Visibility</source>
+        <source>Open File</source>
         <comment>Shortcut</comment>
-        <translation type="unfinished"/>
+        <translation>打开文件</translation>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="363"/>
-        <source>Toggle Color Box Window Visibility</source>
+        <source>Paste</source>
         <comment>Shortcut</comment>
-        <translation type="unfinished"/>
+        <translation>粘贴</translation>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="364"/>
-        <source>Toggle Onion Skins Window Visibility</source>
+        <source>Play/Stop</source>
         <comment>Shortcut</comment>
-        <translation type="unfinished"/>
+        <translation>播放/暂停</translation>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="365"/>
-        <source>Toggle Timeline Window Visibility</source>
+        <source>Peg bar Alignment</source>
         <comment>Shortcut</comment>
         <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../app/src/shortcutspage.cpp" line="366"/>
+        <source>Preferences</source>
+        <comment>Shortcut</comment>
+        <translation>偏好设置</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="367"/>
+        <source>Redo</source>
+        <comment>Shortcut</comment>
+        <translation>重做</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="368"/>
+        <source>Remove Frame</source>
+        <comment>Shortcut</comment>
+        <translation>删除帧</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="369"/>
+        <source>Reset Windows</source>
+        <comment>Shortcut</comment>
+        <translation>重置窗口</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="370"/>
+        <source>Lock Windows</source>
+        <comment>Shortcut</comment>
+        <translation>锁定窗口</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="371"/>
+        <source>Reset View</source>
+        <comment>Shortcut</comment>
+        <translation>重置视觉</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="372"/>
+        <source>Center View</source>
+        <comment>Shortcut</comment>
+        <translation>中置视觉</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="373"/>
+        <source>Rotate Anticlockwise</source>
+        <comment>Shortcut</comment>
+        <translation>逆时针旋转</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="374"/>
+        <source>Rotate Clockwise</source>
+        <comment>Shortcut</comment>
+        <translation>顺时针旋转</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="375"/>
+        <source>Reset Rotation</source>
+        <comment>Shortcut</comment>
+        <translation>重置旋转</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="376"/>
+        <source>Save File As</source>
+        <comment>Shortcut</comment>
+        <translation>将文件另存为</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="377"/>
+        <source>Save File</source>
+        <comment>Shortcut</comment>
+        <translation>保存文件</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="378"/>
+        <source>Select All</source>
+        <comment>Shortcut</comment>
+        <translation>选择全部</translation>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="379"/>
+        <source>Toggle Status Bar Visibility</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="380"/>
+        <source>Toggle Color Inspector Window Visibility</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="381"/>
+        <source>Toggle Color Palette Window Visibility</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="382"/>
+        <source>Toggle Color Box Window Visibility</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="383"/>
+        <source>Toggle Onion Skins Window Visibility</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="384"/>
+        <source>Toggle Timeline Window Visibility</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="385"/>
         <source>Toggle Tools Window Visibility</source>
         <comment>Shortcut</comment>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="367"/>
+        <location filename="../app/src/shortcutspage.cpp" line="386"/>
         <source>Toggle Options Window Visibility</source>
         <comment>Shortcut</comment>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="368"/>
+        <location filename="../app/src/shortcutspage.cpp" line="387"/>
         <source>Brush Tool</source>
         <comment>Shortcut</comment>
         <translation>笔刷工具</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="369"/>
+        <location filename="../app/src/shortcutspage.cpp" line="388"/>
         <source>Bucket Tool</source>
         <comment>Shortcut</comment>
         <translation>油桶工具</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="370"/>
+        <location filename="../app/src/shortcutspage.cpp" line="389"/>
         <source>Eraser Tool</source>
         <comment>Shortcut</comment>
         <translation>橡皮擦工具</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="371"/>
+        <location filename="../app/src/shortcutspage.cpp" line="390"/>
         <source>Eyedropper Tool</source>
         <comment>Shortcut</comment>
         <translation>吸管工具</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="372"/>
+        <location filename="../app/src/shortcutspage.cpp" line="391"/>
         <source>Hand Tool</source>
         <comment>Shortcut</comment>
         <translation>抓手工具</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="373"/>
+        <location filename="../app/src/shortcutspage.cpp" line="392"/>
         <source>Move Tool</source>
         <comment>Shortcut</comment>
         <translation>移动工具</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="374"/>
+        <location filename="../app/src/shortcutspage.cpp" line="393"/>
         <source>Pen Tool</source>
         <comment>Shortcut</comment>
         <translation>钢笔工具</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="375"/>
+        <location filename="../app/src/shortcutspage.cpp" line="394"/>
         <source>Pencil Tool</source>
         <comment>Shortcut</comment>
         <translation>铅笔工具</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="376"/>
+        <location filename="../app/src/shortcutspage.cpp" line="395"/>
         <source>Polyline Tool</source>
         <comment>Shortcut</comment>
         <translation>折线工具</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="377"/>
+        <location filename="../app/src/shortcutspage.cpp" line="396"/>
         <source>Select Tool</source>
         <comment>Shortcut</comment>
         <translation>选择</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="378"/>
+        <location filename="../app/src/shortcutspage.cpp" line="397"/>
         <source>Smudge Tool</source>
         <comment>Shortcut</comment>
         <translation>涂抹工具</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="379"/>
+        <location filename="../app/src/shortcutspage.cpp" line="398"/>
+        <source>Reset all tools to default</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="399"/>
+        <source>Change Line Color (Current keyframe)</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="400"/>
+        <source>Change Line Color (All keyframes on layer)</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="401"/>
+        <source>Change Layer / Keyframe Opacity</source>
+        <comment>Shortcut</comment>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/src/shortcutspage.cpp" line="402"/>
         <source>Undo</source>
         <comment>Shortcut</comment>
         <translation>撤销</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="380"/>
+        <location filename="../app/src/shortcutspage.cpp" line="403"/>
         <source>Set Zoom to 100%</source>
         <comment>Shortcut</comment>
         <translation>将缩放设置为 100%</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="381"/>
+        <location filename="../app/src/shortcutspage.cpp" line="404"/>
         <source>Set Zoom to 200%</source>
         <comment>Shortcut</comment>
         <translation>将缩放设置为 200%</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="382"/>
+        <location filename="../app/src/shortcutspage.cpp" line="405"/>
         <source>Set Zoom to 25%</source>
         <comment>Shortcut</comment>
         <translation>将缩放设置为 25%</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="383"/>
+        <location filename="../app/src/shortcutspage.cpp" line="406"/>
         <source>Set Zoom to 300%</source>
         <comment>Shortcut</comment>
         <translation>将缩放设置为 300%</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="384"/>
+        <location filename="../app/src/shortcutspage.cpp" line="407"/>
         <source>Set Zoom to 33%</source>
         <comment>Shortcut</comment>
         <translation>将缩放设置为 33%</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="385"/>
+        <location filename="../app/src/shortcutspage.cpp" line="408"/>
         <source>Set Zoom to 400%</source>
         <comment>Shortcut</comment>
         <translation>将缩放设置为 400%</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="386"/>
+        <location filename="../app/src/shortcutspage.cpp" line="409"/>
         <source>Set Zoom to 50%</source>
         <comment>Shortcut</comment>
         <translation>将缩放设置为 50%</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="387"/>
+        <location filename="../app/src/shortcutspage.cpp" line="410"/>
         <source>Zoom In</source>
         <comment>Shortcut</comment>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="../app/src/shortcutspage.cpp" line="388"/>
+        <location filename="../app/src/shortcutspage.cpp" line="411"/>
         <source>Zoom Out</source>
         <comment>Shortcut</comment>
         <translation>缩小</translation>
@@ -5976,32 +6154,32 @@ or cancel</source>
 <context>
     <name>Status</name>
     <message>
-        <location filename="../core_lib/src/util/pencilerror.cpp" line="110"/>
+        <location filename="../core_lib/src/util/pencilerror.cpp" line="108"/>
         <source>Everything ok.</source>
         <translation>一切良好。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/util/pencilerror.cpp" line="111"/>
+        <location filename="../core_lib/src/util/pencilerror.cpp" line="109"/>
         <source>Ooops, Something went wrong.</source>
         <translation>哎呀，出错了。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/util/pencilerror.cpp" line="112"/>
+        <location filename="../core_lib/src/util/pencilerror.cpp" line="110"/>
         <source>File doesn&apos;t exist.</source>
         <translation>文件不存在。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/util/pencilerror.cpp" line="113"/>
+        <location filename="../core_lib/src/util/pencilerror.cpp" line="111"/>
         <source>Cannot open file.</source>
         <translation>不能打开文件。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/util/pencilerror.cpp" line="114"/>
+        <location filename="../core_lib/src/util/pencilerror.cpp" line="112"/>
         <source>The file is not a valid xml document.</source>
         <translation>该文件不是有效的 xml 文档。</translation>
     </message>
     <message>
-        <location filename="../core_lib/src/util/pencilerror.cpp" line="115"/>
+        <location filename="../core_lib/src/util/pencilerror.cpp" line="113"/>
         <source>The file is not valid pencil document.</source>
         <translation>该文件不是有效的 Pencil 文档。</translation>
     </message>
@@ -6198,84 +6376,84 @@ or cancel</source>
 <context>
     <name>TimeLine</name>
     <message>
-        <location filename="../app/src/timeline.cpp" line="45"/>
+        <location filename="../app/src/timeline.cpp" line="46"/>
         <source>Timeline</source>
         <comment>Subpanel title</comment>
         <translation>时间轴</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="71"/>
+        <location filename="../app/src/timeline.cpp" line="72"/>
         <source>Layers:</source>
         <translation>层:</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="76"/>
+        <location filename="../app/src/timeline.cpp" line="77"/>
         <source>Add Layer</source>
         <translation>添加层</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="80"/>
+        <location filename="../app/src/timeline.cpp" line="81"/>
         <source>Delete Layer</source>
         <translation>删除层</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="84"/>
+        <location filename="../app/src/timeline.cpp" line="85"/>
         <source>Duplicate Layer</source>
         <translation>重复图层</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="97"/>
+        <location filename="../app/src/timeline.cpp" line="98"/>
         <source>New Bitmap Layer</source>
         <translation>新位图层</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="98"/>
+        <location filename="../app/src/timeline.cpp" line="99"/>
         <source>New Vector Layer</source>
         <translation>新矢量层</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="99"/>
+        <location filename="../app/src/timeline.cpp" line="100"/>
         <source>New Sound Layer</source>
         <translation>新声音层</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="100"/>
+        <location filename="../app/src/timeline.cpp" line="101"/>
         <source>New Camera Layer</source>
         <translation>新相机层</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="102"/>
+        <location filename="../app/src/timeline.cpp" line="103"/>
         <source>Layer</source>
         <comment>Timeline add-layer menu</comment>
         <translation>层</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="121"/>
+        <location filename="../app/src/timeline.cpp" line="122"/>
         <source>Keys:</source>
         <translation>关键帧:</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="126"/>
+        <location filename="../app/src/timeline.cpp" line="127"/>
         <source>Add Frame</source>
         <translation>添加帧</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="130"/>
+        <location filename="../app/src/timeline.cpp" line="131"/>
         <source>Remove Frame</source>
         <translation>删除帧</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="134"/>
+        <location filename="../app/src/timeline.cpp" line="135"/>
         <source>Duplicate Frame</source>
         <translation>复制帧</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="136"/>
+        <location filename="../app/src/timeline.cpp" line="137"/>
         <source>Zoom:</source>
         <translation>缩放:</translation>
     </message>
     <message>
-        <location filename="../app/src/timeline.cpp" line="143"/>
+        <location filename="../app/src/timeline.cpp" line="144"/>
         <source>Adjust frame width</source>
         <translation>调整帧宽</translation>
     </message>
@@ -6283,12 +6461,12 @@ or cancel</source>
 <context>
     <name>TimeLineCells</name>
     <message>
-        <location filename="../app/src/timelinecells.cpp" line="1185"/>
+        <location filename="../app/src/timelinecells.cpp" line="1192"/>
         <source>Layer Properties</source>
         <translation>层属性</translation>
     </message>
     <message>
-        <location filename="../app/src/timelinecells.cpp" line="1186"/>
+        <location filename="../app/src/timelinecells.cpp" line="1193"/>
         <source>Layer name:</source>
         <translation>层名:</translation>
     </message>
@@ -6347,67 +6525,67 @@ or cancel</source>
         <translation>进行在前一关键帧上绘制</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="135"/>
+        <location filename="../app/ui/timelinepage.ui" line="130"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(Applies to Pencil, Eraser, Pen, Polyline, Bucket and Brush tools)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;（适用于铅笔，橡皮擦，钢笔，折线，颜料桶，笔刷）&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="148"/>
+        <location filename="../app/ui/timelinepage.ui" line="143"/>
         <source>Flip and Roll</source>
         <translation>快速动态预览</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="156"/>
+        <location filename="../app/ui/timelinepage.ui" line="151"/>
         <source>Maximum numbers of drawings in roll</source>
         <translation>预览动态帧数</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="208"/>
+        <location filename="../app/ui/timelinepage.ui" line="203"/>
         <source>Msecs per drawing in flip inbetween</source>
         <translation>预览中间帧速度 每帧毫秒</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="257"/>
+        <location filename="../app/ui/timelinepage.ui" line="252"/>
         <source>Msecs per drawing in flip roll</source>
         <translation>预览动态速度 每帧毫秒</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="269"/>
+        <location filename="../app/ui/timelinepage.ui" line="264"/>
         <source>Sound scrub</source>
         <translation>声音指示器</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="302"/>
+        <location filename="../app/ui/timelinepage.ui" line="297"/>
         <source> ms</source>
         <translation>毫秒</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="326"/>
+        <location filename="../app/ui/timelinepage.ui" line="321"/>
         <source>Layer Visibility</source>
         <translation>图层可见性</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="332"/>
+        <location filename="../app/ui/timelinepage.ui" line="327"/>
         <source>Startup option</source>
         <translation>启动选项</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="340"/>
+        <location filename="../app/ui/timelinepage.ui" line="335"/>
         <source>Current layer only</source>
         <translation>仅当前图层</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="345"/>
+        <location filename="../app/ui/timelinepage.ui" line="340"/>
         <source>Relative</source>
         <translation>相对的</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="350"/>
+        <location filename="../app/ui/timelinepage.ui" line="345"/>
         <source>All Layers</source>
         <translation>所有层</translation>
     </message>
     <message>
-        <location filename="../app/ui/timelinepage.ui" line="358"/>
+        <location filename="../app/ui/timelinepage.ui" line="353"/>
         <source>When layer visibility is relative (gray dot)</source>
         <translation type="unfinished"/>
     </message>
@@ -6546,7 +6724,7 @@ or cancel</source>
     </message>
     <message>
         <location filename="../app/src/tooloptionwidget.cpp" line="57"/>
-        <location filename="../app/src/tooloptionwidget.cpp" line="213"/>
+        <location filename="../app/src/tooloptionwidget.cpp" line="223"/>
         <source>Width</source>
         <translation>宽度</translation>
     </message>
@@ -6559,141 +6737,151 @@ or cancel</source>
 <context>
     <name>ToolOptions</name>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="14"/>
+        <location filename="../app/ui/tooloptions.ui" line="20"/>
         <source>Form</source>
         <translation>表单</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="55"/>
+        <location filename="../app/ui/tooloptions.ui" line="76"/>
         <source>Set Stroke Width &lt;br&gt;&lt;b&gt;[SHIFT]+drag&lt;/b&gt;&lt;br&gt;for quick adjustment</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="91"/>
+        <location filename="../app/ui/tooloptions.ui" line="112"/>
         <source>Set Stroke Feather &lt;br&gt;&lt;b&gt;[CTRL]+drag&lt;/b&gt;&lt;br&gt;for quick adjustment</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="125"/>
+        <location filename="../app/ui/tooloptions.ui" line="151"/>
         <source>Enable or disable feathering</source>
         <translation>启用或者停用羽化</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="128"/>
+        <location filename="../app/ui/tooloptions.ui" line="154"/>
         <source>Use Feather</source>
         <translation>使用羽化</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="136"/>
+        <location filename="../app/ui/tooloptions.ui" line="161"/>
         <source>Show Size and Diff.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="159"/>
+        <location filename="../app/ui/tooloptions.ui" line="171"/>
         <source>Contour will be filled</source>
         <translation>轮廓将被填充</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="162"/>
+        <location filename="../app/ui/tooloptions.ui" line="174"/>
         <source>Fill Contour</source>
         <translation>填充轮廓</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="169"/>
+        <location filename="../app/ui/tooloptions.ui" line="181"/>
+        <source>Close Polyline path (hold Ctrl to temporarily invert)</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/ui/tooloptions.ui" line="184"/>
+        <source>Closed Path</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../app/ui/tooloptions.ui" line="191"/>
         <source>Use Bézier curves to create curved lines</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="172"/>
+        <location filename="../app/ui/tooloptions.ui" line="194"/>
         <source>Bézier</source>
         <comment>Tool options</comment>
         <translation>贝塞尔曲线</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="179"/>
+        <location filename="../app/ui/tooloptions.ui" line="201"/>
         <source>Vary strokes based on pressure when drawing on a tablet</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="182"/>
+        <location filename="../app/ui/tooloptions.ui" line="204"/>
         <source>Pressure</source>
         <comment>Tool options</comment>
         <translation>压力</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="189"/>
+        <location filename="../app/ui/tooloptions.ui" line="211"/>
         <source>Use anti-aliasing to create smooth edges</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="192"/>
+        <location filename="../app/ui/tooloptions.ui" line="214"/>
         <source>Anti-Aliasing</source>
         <comment>Brush AA</comment>
         <translation>抗锯齿</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="199"/>
+        <location filename="../app/ui/tooloptions.ui" line="221"/>
         <source>Make invisible</source>
         <translation>使不看见</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="202"/>
+        <location filename="../app/ui/tooloptions.ui" line="224"/>
         <source>Invisible</source>
         <comment>Tool options</comment>
         <translation>隐藏</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="209"/>
+        <location filename="../app/ui/tooloptions.ui" line="231"/>
         <source>Preserve Alpha</source>
         <translation>保留透明度</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="212"/>
+        <location filename="../app/ui/tooloptions.ui" line="234"/>
         <source>Alpha</source>
         <comment>Tool options</comment>
         <translation>透明度</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="219"/>
+        <location filename="../app/ui/tooloptions.ui" line="241"/>
         <source>Merge vector lines when they are close together</source>
         <translation>合并彼此靠近的矢量线</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="222"/>
+        <location filename="../app/ui/tooloptions.ui" line="244"/>
         <source>Merge</source>
         <comment>Vector line merge (Tool options)</comment>
         <translation>合并</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="237"/>
+        <location filename="../app/ui/tooloptions.ui" line="274"/>
         <source>Stabilizer</source>
         <translation>稳定器</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="244"/>
+        <location filename="../app/ui/tooloptions.ui" line="281"/>
         <source>Use stabilizer to interpolate strokes</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="247"/>
+        <location filename="../app/ui/tooloptions.ui" line="284"/>
         <source>None</source>
         <comment>Stablizer level</comment>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="251"/>
+        <location filename="../app/ui/tooloptions.ui" line="288"/>
         <source>None</source>
         <comment>Stabilizer option</comment>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="256"/>
+        <location filename="../app/ui/tooloptions.ui" line="293"/>
         <source>Simple</source>
         <comment>Stabilizer option</comment>
         <translation>简单</translation>
     </message>
     <message>
-        <location filename="../app/ui/tooloptions.ui" line="261"/>
+        <location filename="../app/ui/tooloptions.ui" line="298"/>
         <source>Strong</source>
         <comment>Stabilizer option</comment>
         <translation>强烈</translation>

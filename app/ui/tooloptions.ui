@@ -16,11 +16,6 @@
     <height>0</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>11</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -177,6 +172,16 @@
            </property>
            <property name="text">
             <string>Fill Contour</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="useClosedPathBox">
+           <property name="toolTip">
+            <string>Close Polyline path (hold Ctrl to temporarily invert)</string>
+           </property>
+           <property name="text">
+            <string>Closed Path</string>
            </property>
           </widget>
          </item>

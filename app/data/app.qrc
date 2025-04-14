@@ -102,6 +102,9 @@
         <file>icons/themes/playful/window/window-close-button-14.svg</file>
         <file>icons/themes/playful/window/window-close-button-14-hollow.svg</file>
         <file>icons/themes/playful/window/window-float-button-14-hollow.svg</file>
+        <file>icons/blue.png</file>
+        <file>icons/green.png</file>
+        <file>icons/red.png</file>
     </qresource>
     <qresource prefix="/app">
         <file>pencil2d_quick_guide.pdf</file>

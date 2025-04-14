@@ -24,10 +24,15 @@ GNU General Public License for more details.
 
 class TiledBuffer;
 
-
 class BitmapImage : public KeyFrame
 {
 public:
+    const QRgb transp = qRgba(0, 0, 0, 0);
+    const QRgb blackline = qRgba(1, 1, 1, 255);
+    const QRgb redline = qRgba(254,0,0,255);
+    const QRgb greenline = qRgba(0,254,0,255);
+    const QRgb blueline = qRgba(0,0,254,255);
+
     BitmapImage();
     BitmapImage(const BitmapImage&);
     BitmapImage(const QRect &rectangle, const QColor& color);
@@ -80,11 +85,10 @@ public:
 
     static bool floodFill(BitmapImage** replaceImage, const BitmapImage* targetImage, const QRect& cameraRect, const QPoint& point, const QRgb& fillColor, int tolerance, const int expandValue);
     static bool* floodFillPoints(const BitmapImage* targetImage,
-                                QRect searchBounds, const QRect& maxBounds,
+                                const QRect& searchBounds,
                                 QPoint point,
                                 const int tolerance,
-                                QRect& newBounds,
-                                 bool &fillBorder);
+                                QRect& newBounds);
     static void expandFill(bool* fillPixels, const QRect& searchBounds, const QRect& maxBounds, int expand);
 
     void drawLine(QPointF P1, QPointF P2, QPen pen, QPainter::CompositionMode cm, bool antialiasing);
@@ -104,6 +108,7 @@ public:
     int height() { autoCrop(); return mBounds.height(); }
     QSize size() { autoCrop(); return mBounds.size(); }
 
+    BitmapImage* scanToTransparent(BitmapImage* img, int threshold, bool redEnabled, bool greenEnabled, bool blueEnabled);
 
     QRect& bounds() { autoCrop(); return mBounds; }
 
@@ -181,6 +186,11 @@ private:
     /** @see isMinimallyBounded() */
     bool mMinBound = true;
     bool mEnableAutoCrop = false;
+
+    const int LOW_THRESHOLD = 30; // threshold for images to be given transparency
+    const int COLORDIFF = 5;      // difference in color values to decide color
+    const int GRAYSCALEDIFF = 15; // difference in grasycale values to decide color
+
     qreal mOpacity = 1.0;
 };
 

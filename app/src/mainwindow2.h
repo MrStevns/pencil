@@ -19,8 +19,6 @@ GNU General Public License for more details.
 #define MAINWINDOW2_H
 
 #include <QMainWindow>
-#include "preferencemanager.h"
-
 
 template<typename T> class QList;
 class QActionGroup;
@@ -41,9 +39,10 @@ class ColorInspector;
 class RecentFileMenu;
 class ActionCommands;
 class ImportImageSeqDialog;
-class BackupElement;
+class UndoRedoCommand;
 class LayerOpacityDialog;
 class PegBarAlignmentDialog;
+class AddTransparencyToPaperDialog;
 class RepositionFramesDialog;
 class StatusBar;
 enum class SETTING;
@@ -65,12 +64,13 @@ public:
     Editor* mEditor = nullptr;
 
 public slots:
-    void undoActSetText();
+    void updateBackupActionState();
     void updateSaveState();
     void openPegAlignDialog();
     void openRepositionDialog();
     void closeRepositionDialog();
     void openLayerOpacityDialog();
+    void openAddTranspToPaperDialog();
     void currentLayerChanged();
     void selectionChanged();
     void viewFlipped();
@@ -124,6 +124,7 @@ private:
 
     void createDockWidgets();
     void createMenus();
+    void replaceUndoRedoActions();
     void setupKeyboardShortcuts();
     void clearKeyboardShortcuts();
     bool loadMostRecent();
@@ -169,12 +170,10 @@ private:
     QToolBar*             mViewToolbar = nullptr;
     QToolBar*             mOverlayToolbar = nullptr;
 
-    // backup
-    BackupElement* mBackupAtSave = nullptr;
-
     PegBarAlignmentDialog* mPegAlign = nullptr;
     RepositionFramesDialog* mReposDialog = nullptr;
     LayerOpacityDialog* mLayerOpacityDialog = nullptr;
+    AddTransparencyToPaperDialog* mAddTranspToPaper = nullptr;
 
     void createToolbars();
 private:

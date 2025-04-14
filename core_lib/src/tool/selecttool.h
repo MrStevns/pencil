@@ -20,6 +20,7 @@ GNU General Public License for more details.
 
 #include "basetool.h"
 #include "movemode.h"
+#include "undoredomanager.h"
 
 #include <QRectF>
 
@@ -34,6 +35,7 @@ public:
     explicit SelectTool(QObject* parent = nullptr);
     ToolType type() override { return SELECT; }
     void loadSettings() override;
+    void saveSettings() override;
     QCursor cursor() override;
 
     void resetToDefault() override;
@@ -67,6 +69,8 @@ private:
     QRectF mSelectionRect;
 
     QPixmap mCursorPixmap = QPixmap(24, 24);
+
+    const UndoSaveState* mUndoState = nullptr;
 };
 
 #endif
