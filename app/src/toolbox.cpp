@@ -138,7 +138,6 @@ void ToolBoxWidget::initUI()
 
     connect(editor()->layers(), &LayerManager::currentLayerChanged, this, &ToolBoxWidget::onLayerDidChange);
 
-
     mFlowlayout = new FlowLayout(3,3,3);
 
     mFlowlayout->addWidget(ui->pencilButton);
@@ -155,20 +154,22 @@ void ToolBoxWidget::initUI()
 
     delete ui->scrollAreaWidgetContents_2->layout();
     ui->scrollAreaWidgetContents_2->setLayout(mFlowlayout);
-    ui->scrollAreaWidgetContents_2->setContentsMargins(0,0,0,0);
 
     QSettings settings(PENCIL2D, PENCIL2D);
     restoreGeometry(settings.value("ToolBoxGeom").toByteArray());
 
-    setMinimumHeight(1);
-    ui->scrollArea->setMinimumHeight(1);
-    ui->scrollArea->setMinimumWidth(1);
-    ui->scrollAreaWidgetContents_2->setMinimumHeight(1);
+    // Important to set the proper minimumSize;
+    ui->scrollArea->setMinimumSize(minimumSizeHint());
 }
 
 int ToolBoxWidget::getMinHeightForWidth(int width) const
 {
-    return mFlowlayout->heightForWidth(width);
+    int layoutHeight = mFlowlayout->heightForWidth(width);
+    if (this->isFloating()) {
+        return layoutHeight;
+    } else {
+        return layoutHeight + BaseDockWidget::minimumSizeHint().height();
+    }
 }
 
 QSize ToolBoxWidget::minimumSizeHint() const
@@ -179,9 +180,6 @@ QSize ToolBoxWidget::minimumSizeHint() const
 void ToolBoxWidget::resizeEvent(QResizeEvent *event)
 {
     BaseDockWidget::resizeEvent(event);
-
-    setMinimumHeight(getMinHeightForWidth(event->size().width()));
-    setMinimumWidth(mFlowlayout->minimumSize().width());
 
     if (mFlowlayout->rows() == 1) {
         mFlowlayout->setAlignment(Qt::AlignHCenter);
