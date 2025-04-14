@@ -41,7 +41,7 @@ QWidget* PencilDockTitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
 
     QSize iconSize = QSize(14,14);
     QSize padding = QSize(2,2);
-    QIcon closeIcon("://icons/themes/playful/window/window-close-button-14.svg");
+    QIcon closeIcon("://icons/themes/playful/window/window-close-button.svg");
 
     mCloseButton->setIcon(closeIcon);
     mCloseButton->setIconSize(iconSize);
@@ -52,7 +52,7 @@ QWidget* PencilDockTitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
     });
 
     mDockButton = new PencilDockWidgetTitleButton(parent);
-    mDockButton->setIcon(QIcon("://icons/themes/playful/window/window-float-button-14.svg"));
+    mDockButton->setIcon(QIcon("://icons/themes/playful/window/window-float-button.svg"));
     mDockButton->setIconSize(iconSize);
     mDockButton->setFixedSize(iconSize + padding);
 
