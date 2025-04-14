@@ -47,6 +47,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+/*
+
+Pencil2D - Traditional Animation Software
+Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
+Copyright (C) 2012-2020 Matthew Chiawen Chang
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; version 2 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+*/
 
 #ifndef FLOWLAYOUT_H
 #define FLOWLAYOUT_H
@@ -87,7 +103,6 @@ public:
     QLayoutItem *takeAt(int index) override;
 
     int rows() const { return mState.rowCount; }
-    // int rowWidth() const { return mState.rowWidth; }
 
 private:
     void applyRowAlignment(int start, int end, int x, int y, int rowCount, int spaceX, const QRect &effectiveRect, bool testOnly) const;
@@ -104,9 +119,11 @@ private:
     RowLayoutInfo alignHCenterRow(int startIndex, int count, const QRect &effectiveRect, int spaceX) const;
     RowLayoutInfo alignJustifiedRow(int startIndex, int count, const QRect& effectiveRect, int spaceX) const;
 
+    int calculateHeightForWidth(int width) const;
     int calculateRowWidth(int rowCount, int spacing) const;
 
-    FlowLayoutState doLayout(const QRect &rect, bool testOnly) const;
+    FlowLayoutState sizeHintLayout(const QRect&) const;
+    FlowLayoutState applyLayout(const QRect &rect) const;
     int smartSpacing(QStyle::PixelMetric pm) const;
 
     QList<QLayoutItem *> itemList;

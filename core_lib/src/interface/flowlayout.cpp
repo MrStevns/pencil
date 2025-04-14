@@ -47,11 +47,28 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+/*
+
+Pencil2D - Traditional Animation Software
+Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
+Copyright (C) 2012-2020 Matthew Chiawen Chang
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; version 2 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+*/
 
 #include <QWidget>
 #include <QLayout>
 #include <QtMath>
 #include <QDebug>
+#include <QDockWidget>
 
 #include "flowlayout.h"
 
@@ -120,15 +137,16 @@ bool FlowLayout::hasHeightForWidth() const
     return true;
 }
 
+
 int FlowLayout::heightForWidth(int width) const
 {
-    return doLayout(QRect(0, 0, width, 0), true).height;
+    return calculateHeightForWidth(width);
 }
 
 void FlowLayout::setGeometry(const QRect &rect)
 {
     QLayout::setGeometry(rect);
-    mState = doLayout(rect, false);
+    mState = applyLayout(rect);
 }
 
 QSize FlowLayout::sizeHint() const
@@ -214,8 +232,34 @@ void FlowLayout::alignRowFromRowInfo(int startIndex, int count, RowLayoutInfo ro
     }
 }
 
+int FlowLayout::calculateHeightForWidth(int width) const
+{
+    int left, top, right, bottom;
+    getContentsMargins(&left, &top, &right, &bottom);
+    int lineHeight = 0;
+    int rowCount = 0;
+    int totalRows = 0;
 
-FlowLayoutState FlowLayout::doLayout(const QRect &rect, bool testOnly) const
+    int spaceX = horizontalSpacing();
+
+    for (int i = 0; i < itemList.length(); i++) {
+        const QLayoutItem* item = itemList.at(i);
+        int rowWidth = calculateRowWidth(rowCount, spaceX);
+
+        if (rowWidth + item->sizeHint().width() >= width && rowCount > 0) {
+            lineHeight = 0;
+            rowCount = 0;
+            totalRows++;
+        }
+
+        lineHeight = qMax(lineHeight, item->sizeHint().height());
+        rowCount++;
+    }
+
+    return lineHeight + top + bottom;
+}
+
+FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
 {
     int left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
@@ -238,9 +282,9 @@ FlowLayoutState FlowLayout::doLayout(const QRect &rect, bool testOnly) const
         int rowWidth = calculateRowWidth(rowCount, spaceX);
 
         if (rowWidth + item->sizeHint().width() >= effectiveRect.width() && rowCount > 0) {
-            if (!testOnly && alignment() & Qt::AlignHCenter) {
+            if (alignment() & Qt::AlignHCenter) {
                 rowAlignments.append(alignHCenterRow(i - rowCount, rowCount, effectiveRect, spaceX));
-            } else if (!testOnly && alignment() & Qt::AlignJustify) {
+            } else if (alignment() & Qt::AlignJustify) {
                 rowAlignments.append(alignJustifiedRow(i - rowCount, rowCount, effectiveRect, spaceX));
             }
 
@@ -249,16 +293,13 @@ FlowLayoutState FlowLayout::doLayout(const QRect &rect, bool testOnly) const
             rowCount = 0;
         }
 
-        // Set item back to start of next row
-        if (!testOnly) {
-            item->setGeometry(QRect(QPoint(x, y), item->sizeHint()));
-        }
+        item->setGeometry(QRect(QPoint(x, y), item->sizeHint()));
 
         lineHeight = qMax(lineHeight, item->sizeHint().height());
-        rowCount++;
+        rowCount += 1;
     }
 
-    if (rowCount > 0 && !testOnly) {
+    if (rowCount > 0) {
         if (rowAlignments.count() > 0) {
             alignRowFromRowInfo(itemList.length() - rowCount, rowCount, rowAlignments.last());
         } else {
