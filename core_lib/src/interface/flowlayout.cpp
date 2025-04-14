@@ -291,6 +291,10 @@ FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
             y = y + lineHeight + spaceY;
             lineHeight = 0;
             rowCount = 0;
+        } else if (rowCount > 0) {
+            // For now this will default ot center alignment however we could introduce checks
+            // for justified or AlignVCenter as well.
+            rowAlignments.append(alignHCenterRow(i - rowCount, rowCount, effectiveRect, spaceX));
         }
 
         item->setGeometry(QRect(QPoint(x, y), item->sizeHint()));
@@ -326,10 +330,12 @@ int FlowLayout::calculateRowWidth(int rowCount, int spacing) const
     int totalWidth = 0;
     // Calculate the total width of all item in row
     for (int i = 0; i < rowCount; i += 1) {
-        totalWidth += itemList.at(i)->sizeHint().width() + spacing;
+        totalWidth += spacing + itemList.at(i)->sizeHint().width() + spacing;
     }
 
-    return totalWidth;
+    // we subtract spacing from the left and right side, as that's considered margin
+    // and we're only interested in the width of the row including spacing.
+    return totalWidth - (spacing * 2);
 }
 
 int FlowLayout::smartSpacing(QStyle::PixelMetric pm) const
