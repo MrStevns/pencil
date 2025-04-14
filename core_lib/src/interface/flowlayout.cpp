@@ -292,8 +292,7 @@ FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
             lineHeight = 0;
             rowCount = 0;
         } else if (rowCount > 0) {
-            // For now this will default ot center alignment however we could introduce checks
-            // for justified or AlignVCenter as well.
+            // For now this will default to center alignment.
             rowAlignments.append(alignHCenterRow(i - rowCount, rowCount, effectiveRect, spaceX));
         }
 
