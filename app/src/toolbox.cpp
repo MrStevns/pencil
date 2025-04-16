@@ -186,10 +186,6 @@ void ToolBoxWidget::resizeEvent(QResizeEvent *event)
 
 void ToolBoxWidget::updateLayoutAlignment()
 {
-    // TODO: figure out when we can call update layout because this will intiially
-    // be 0 which will set the laout to justified... and that's not what we want.
-    qDebug() << "update layout alignment";
-
     mFlowlayout->invalidate();
     if (mFlowlayout->rows() > 1) {
         mFlowlayout->setAlignment(Qt::AlignJustify);

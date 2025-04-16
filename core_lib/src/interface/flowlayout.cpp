@@ -79,10 +79,8 @@ FlowLayout::FlowLayout(QWidget *parent, int margin, int hSpacing, int vSpacing)
 }
 
 FlowLayout::FlowLayout(int margin, int hSpacing, int vSpacing)
-    : m_hSpace(hSpacing), m_vSpace(vSpacing)
-{
-    setContentsMargins(margin, margin, margin, margin);
-}
+    : FlowLayout(nullptr, margin, hSpacing, vSpacing)
+{}
 
 FlowLayout::~FlowLayout()
 {
@@ -271,52 +269,59 @@ FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
     int x = effectiveRect.x();
     int y = effectiveRect.y();
     int lineHeight = 0;
-    int rowCount = 0;
 
     QLayoutItem *item;
 
     QVector<RowLayoutInfo> rowAlignments;
+
+    int currentRowCount = 0;
+    int maxRowCount = 0;
+
     for (int i = 0; i < itemList.length(); i += 1) {
         item = itemList.at(i);
 
-        int rowWidth = calculateRowWidth(rowCount, spaceX);
+        int rowWidth = calculateRowWidth(currentRowCount, spaceX);
 
-        if (rowWidth + item->sizeHint().width() >= effectiveRect.width() && rowCount > 0) {
-            if (alignment() & Qt::AlignHCenter) {
-                rowAlignments.append(alignHCenterRow(i - rowCount, rowCount, effectiveRect, spaceX));
-            } else if (alignment() & Qt::AlignJustify) {
-                rowAlignments.append(alignJustifiedRow(i - rowCount, rowCount, effectiveRect, spaceX));
+        if (currentRowCount > 0) {
+            int startRowIndex = i - currentRowCount;
+            maxRowCount = qMax(currentRowCount, maxRowCount);
+
+            if (rowWidth + item->sizeHint().width() >= effectiveRect.width()) {
+                if (alignment() & Qt::AlignHCenter) {
+                    rowAlignments.append(alignHCenterRow(startRowIndex, currentRowCount, effectiveRect, spaceX));
+                } else if (alignment() & Qt::AlignJustify) {
+                    rowAlignments.append(alignJustifiedRow(startRowIndex, currentRowCount, effectiveRect, spaceX));
+                }
+
+                y = y + lineHeight + spaceY;
+                lineHeight = 0;
+                currentRowCount = 0;
+            } else if (maxRowCount == itemList.length() - 1) {
+                rowAlignments.append(alignHCenterRow(startRowIndex, currentRowCount, effectiveRect, spaceX));
             }
-
-            y = y + lineHeight + spaceY;
-            lineHeight = 0;
-            rowCount = 0;
-        } else if (rowCount > 0) {
-            // For now this will default to center alignment.
-            rowAlignments.append(alignHCenterRow(i - rowCount, rowCount, effectiveRect, spaceX));
         }
 
         item->setGeometry(QRect(QPoint(x, y), item->sizeHint()));
 
         lineHeight = qMax(lineHeight, item->sizeHint().height());
-        rowCount += 1;
+        currentRowCount += 1;
     }
 
-    if (rowCount > 0) {
+    if (currentRowCount > 0) {
         if (rowAlignments.count() > 0) {
-            alignRowFromRowInfo(itemList.length() - rowCount, rowCount, rowAlignments.last());
+            alignRowFromRowInfo(itemList.length() - currentRowCount, currentRowCount, rowAlignments.last());
         } else {
             RowLayoutInfo fallback = {
-                        static_cast<int>(itemList.length()) - rowCount,
+                        static_cast<int>(itemList.length()) - currentRowCount,
                         effectiveRect.x(),
                         spaceX
                     };
-            alignRowFromRowInfo(itemList.length() - rowCount, rowCount, fallback);
+            alignRowFromRowInfo(itemList.length() - currentRowCount, currentRowCount, fallback);
         }
     }
 
     FlowLayoutState state;
-    state.rowCount = rowCount;
+    state.rowCount = maxRowCount;
     state.height = bottom + y + lineHeight - rect.y();
 
     return state;
