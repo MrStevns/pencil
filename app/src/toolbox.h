@@ -66,6 +66,7 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
 
 private:
+    void updateLayoutAlignment();
     void deselectAllTools();
     void toolOn(ToolType toolType, QToolButton* toolButton);
 
