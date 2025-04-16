@@ -307,7 +307,7 @@ FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
             alignRowFromRowInfo(itemList.length() - rowCount, rowCount, rowAlignments.last());
         } else {
             RowLayoutInfo fallback = {
-                        itemList.length() - rowCount,
+                        static_cast<int>(itemList.length()) - rowCount,
                         effectiveRect.x(),
                         spaceX
                     };

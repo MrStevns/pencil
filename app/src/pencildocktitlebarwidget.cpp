@@ -60,7 +60,6 @@ QWidget* PencilDockTitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
        emit undockButtonPressed();
     });
 
-
     mTitleLabel = new QLabel(parent);
     QFont font;
     font.setPointSize(11);
@@ -147,7 +146,7 @@ void PencilDockWidgetTitleButton::paintEvent(QPaintEvent *)
     QPainter p(this);
 
     QStyleOptionToolButton opt;
-    opt.init(this);
+    opt.initFrom(this);
 
     opt.icon = icon();
     opt.subControls = { };
