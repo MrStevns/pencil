@@ -135,6 +135,10 @@ bool FlowLayout::hasHeightForWidth() const
     return true;
 }
 
+Qt::Orientations FlowLayout::expandingDirections() const
+{
+    return {};
+}
 
 int FlowLayout::heightForWidth(int width) const
 {
@@ -144,7 +148,7 @@ int FlowLayout::heightForWidth(int width) const
 void FlowLayout::setGeometry(const QRect &rect)
 {
     QLayout::setGeometry(rect);
-    mState = applyLayout(rect);
+    mNumberOfRows = applyLayout(rect);
 }
 
 QSize FlowLayout::sizeHint() const
@@ -260,7 +264,7 @@ int FlowLayout::calculateHeightForWidth(int width) const
     return lineHeight + y + top + bottom;
 }
 
-FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
+int FlowLayout::applyLayout(const QRect &rect) const
 {
     int left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
@@ -322,11 +326,7 @@ FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
         lastLineAlignment(itemList.length() - currentRowCount, currentRowCount, rowAlignments.last(), effectiveRect);
     }
 
-    FlowLayoutState state;
-    state.rowCount = maxRowCount;
-    state.height = bottom + y + lineHeight - rect.y();
-
-    return state;
+    return maxRowCount;
 }
 
 void FlowLayout::lastLineAlignment(int startIndex, int count, RowLayoutInfo rowInfo, const QRect& effectiveRect) const

@@ -71,12 +71,6 @@ GNU General Public License for more details.
 #include <QRect>
 #include <QStyle>
 
-struct FlowLayoutState
-{
-    int rowCount = 0;
-    int height = 0;
-};
-
 struct RowLayoutInfo {
     int startIndex;
     int startX;
@@ -93,6 +87,7 @@ public:
     void addItem(QLayoutItem *item) override;
     int horizontalSpacing() const;
     int verticalSpacing() const;
+    Qt::Orientations expandingDirections() const override;
     bool hasHeightForWidth() const override;
     int heightForWidth(int) const override;
     int count() const override;
@@ -102,7 +97,7 @@ public:
     QSize sizeHint() const override;
     QLayoutItem *takeAt(int index) override;
 
-    int rows() const { return mState.rowCount; }
+    int rows() const { return mNumberOfRows; }
 
 protected:
     virtual void lastLineAlignment(int startIndex, int count, RowLayoutInfo rowInfo, const QRect& effectiveRect) const;
@@ -111,23 +106,17 @@ protected:
     int m_hSpace = 0;
     int m_vSpace = 0;
 
-    FlowLayoutState mState;
-
 private:
-    void applyRowAlignment(int start, int end, int x, int y, int rowCount, int spaceX, const QRect &effectiveRect, bool testOnly) const;
-    void layoutWithAlignment(int i, bool testOnly, const QRect& effectiveRect, int spaceX, int x) const;
-
-    // void alignRowFromRowInfo(int startIndex, int count, RowLayoutInfo rowInfo, const QRect& effectiveRect) const;
-
     RowLayoutInfo alignHCenterRow(int startIndex, int count, const QRect &effectiveRect, int spaceX) const;
     RowLayoutInfo alignJustifiedRow(int startIndex, int count, const QRect& effectiveRect, int spaceX) const;
 
     int calculateHeightForWidth(int width) const;
     int calculateRowWidth(int rowCount, int spacing) const;
 
-    FlowLayoutState sizeHintLayout(const QRect&) const;
-    FlowLayoutState applyLayout(const QRect &rect) const;
+    int applyLayout(const QRect &rect) const;
     int smartSpacing(QStyle::PixelMetric pm) const;
+
+    int mNumberOfRows = 0;
 };
 
 #endif // FLOWLAYOUT_H
