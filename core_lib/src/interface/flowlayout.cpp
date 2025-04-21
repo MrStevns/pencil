@@ -228,22 +228,36 @@ int FlowLayout::calculateHeightForWidth(int width) const
     int totalRows = 0;
 
     int spaceX = horizontalSpacing();
+    int spaceY = verticalSpacing();
+
+    int y = 0;
 
     for (int i = 0; i < itemList.length(); i++) {
-        const QLayoutItem* item = itemList.at(i);
+         QLayoutItem* item = itemList.at(i);
+         QWidget *wid = item->widget();
         int rowWidth = calculateRowWidth(rowCount, spaceX);
 
-        if (rowWidth + item->sizeHint().width() + spaceX >= width) {
+        if (spaceX == -1)
+            spaceX = wid->style()->layoutSpacing(
+                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal);
+        if (spaceY == -1)
+            spaceY = wid->style()->layoutSpacing(
+                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Vertical);
+
+        if (rowWidth + item->sizeHint().width() + spaceX >= width && lineHeight > 0) {
+            totalRows++;
+
+            y += lineHeight + spaceY;
             lineHeight = 0;
             rowCount = 0;
-            totalRows++;
         }
 
         lineHeight = qMax(lineHeight, item->sizeHint().height());
         rowCount++;
     }
 
-    return lineHeight + top + bottom;
+
+    return lineHeight + y + top + bottom;
 }
 
 FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
