@@ -104,17 +104,20 @@ public:
 
     int rows() const { return mState.rowCount; }
 
+protected:
+    virtual void lastLineAlignment(int startIndex, int count, RowLayoutInfo rowInfo, const QRect& effectiveRect) const;
+
+    QList<QLayoutItem *> itemList;
+    int m_hSpace = 0;
+    int m_vSpace = 0;
+
+    FlowLayoutState mState;
+
 private:
     void applyRowAlignment(int start, int end, int x, int y, int rowCount, int spaceX, const QRect &effectiveRect, bool testOnly) const;
     void layoutWithAlignment(int i, bool testOnly, const QRect& effectiveRect, int spaceX, int x) const;
 
-    void layoutRow(const QList<QLayoutItem*>& rowItems,
-                   const QRect& effectiveRect,
-                   int rowEndX,
-                   int spaceX) const;
-
-
-    void alignRowFromRowInfo(int startIndex, int count, RowLayoutInfo rowInfo) const;
+    // void alignRowFromRowInfo(int startIndex, int count, RowLayoutInfo rowInfo, const QRect& effectiveRect) const;
 
     RowLayoutInfo alignHCenterRow(int startIndex, int count, const QRect &effectiveRect, int spaceX) const;
     RowLayoutInfo alignJustifiedRow(int startIndex, int count, const QRect& effectiveRect, int spaceX) const;
@@ -125,12 +128,6 @@ private:
     FlowLayoutState sizeHintLayout(const QRect&) const;
     FlowLayoutState applyLayout(const QRect &rect) const;
     int smartSpacing(QStyle::PixelMetric pm) const;
-
-    QList<QLayoutItem *> itemList;
-    int m_hSpace = 0;
-    int m_vSpace = 0;
-
-    FlowLayoutState mState;
 };
 
 #endif // FLOWLAYOUT_H

@@ -166,13 +166,19 @@ QSize FlowLayout::minimumSize() const
 
 RowLayoutInfo FlowLayout::alignJustifiedRow(int startIndex, int count, const QRect& effectiveRect, int spaceX) const
 {
-    int rowWidth = calculateRowWidth(count, spaceX);
-    int extraSpace = effectiveRect.width() - rowWidth;
-    int spacing = (count > 1) ? extraSpace / count : 0;
 
-    int itemX = (count == 1)
-            ? effectiveRect.left() // Align first item to the left
-            : spaceX + qFloor((effectiveRect.width() - spacing) / count) - itemList.at(startIndex)->geometry().width();
+    int spacing = 0;
+    if (count > 0) {
+        int gapCount = count + 1;
+        int rowWidth = calculateRowWidth(count, spaceX);
+        int availableSpace = effectiveRect.width() - rowWidth;
+
+        spacing = (gapCount > 0 && availableSpace > 0)
+                  ? availableSpace / gapCount
+                  : 0;
+    }
+
+    int itemX = effectiveRect.left() + spacing;
 
     RowLayoutInfo row;
 
@@ -182,9 +188,9 @@ RowLayoutInfo FlowLayout::alignJustifiedRow(int startIndex, int count, const QRe
 
     for (int j = startIndex; j < startIndex + count; j += 1) {
         QLayoutItem *rowItem = itemList.at(j);
-        QSize itemSize = rowItem->geometry().size();
+        const QSize& itemSize = rowItem->sizeHint();
         rowItem->setGeometry(QRect(QPoint(itemX, rowItem->geometry().y()), itemSize));
-        itemX += itemSize.width() + spaceX + spacing;
+        itemX += row.spacing + itemSize.width();
     }
 
     return row;
@@ -194,7 +200,7 @@ RowLayoutInfo FlowLayout::alignHCenterRow(int startIndex, int count, const QRect
 {
     int rowWidth = calculateRowWidth(count, spaceX);
     int offset = (effectiveRect.width() - rowWidth) / 2;
-    int rowOffsetX = effectiveRect.x() + offset;
+    int rowOffsetX = effectiveRect.left() + offset;
 
     RowLayoutInfo row;
 
@@ -205,29 +211,12 @@ RowLayoutInfo FlowLayout::alignHCenterRow(int startIndex, int count, const QRect
     for (int i = startIndex; i < startIndex + count; i += 1) {
         QLayoutItem *rowItem = itemList.at(i);
 
-        QSize itemSize = rowItem->geometry().size();
+        const QSize& itemSize = rowItem->sizeHint();
         rowItem->setGeometry(QRect(QPoint(rowOffsetX, rowItem->geometry().y()), itemSize));
-        rowOffsetX += itemSize.width() + spaceX;
+        rowOffsetX += spaceX + itemSize.width();
     }
 
     return row;
-}
-
-
-void FlowLayout::alignRowFromRowInfo(int startIndex, int count, RowLayoutInfo rowInfo) const
-{
-    int x = rowInfo.startX;
-
-    for (int i = startIndex; i < startIndex + count; i += 1) {
-
-        if (i > itemList.length() - 1) {
-            break;
-        }
-        QLayoutItem *item = itemList.at(i);
-        QSize size = item->geometry().size();
-        item->setGeometry(QRect(QPoint(x, item->geometry().y()), size));
-        x += size.width() + rowInfo.spacing;
-    }
 }
 
 int FlowLayout::calculateHeightForWidth(int width) const
@@ -244,7 +233,7 @@ int FlowLayout::calculateHeightForWidth(int width) const
         const QLayoutItem* item = itemList.at(i);
         int rowWidth = calculateRowWidth(rowCount, spaceX);
 
-        if (rowWidth + item->sizeHint().width() >= width && rowCount > 0) {
+        if (rowWidth + item->sizeHint().width() + spaceX >= width) {
             lineHeight = 0;
             rowCount = 0;
             totalRows++;
@@ -279,6 +268,14 @@ FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
 
     for (int i = 0; i < itemList.length(); i += 1) {
         item = itemList.at(i);
+        QWidget *wid = item->widget();
+
+        if (spaceX == -1)
+            spaceX = wid->style()->layoutSpacing(
+                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal);
+        if (spaceY == -1)
+            spaceY = wid->style()->layoutSpacing(
+                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Vertical);
 
         int rowWidth = calculateRowWidth(currentRowCount, spaceX);
 
@@ -286,7 +283,7 @@ FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
             int startRowIndex = i - currentRowCount;
             maxRowCount = qMax(currentRowCount, maxRowCount);
 
-            if (rowWidth + item->sizeHint().width() >= effectiveRect.width()) {
+            if (rowWidth + item->sizeHint().width() + spaceX >= effectiveRect.width()) {
                 if (alignment() & Qt::AlignHCenter) {
                     rowAlignments.append(alignHCenterRow(startRowIndex, currentRowCount, effectiveRect, spaceX));
                 } else if (alignment() & Qt::AlignJustify) {
@@ -308,16 +305,7 @@ FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
     }
 
     if (currentRowCount > 0) {
-        if (rowAlignments.count() > 0) {
-            alignRowFromRowInfo(itemList.length() - currentRowCount, currentRowCount, rowAlignments.last());
-        } else {
-            RowLayoutInfo fallback = {
-                        static_cast<int>(itemList.length()) - currentRowCount,
-                        effectiveRect.x(),
-                        spaceX
-                    };
-            alignRowFromRowInfo(itemList.length() - currentRowCount, currentRowCount, fallback);
-        }
+        lastLineAlignment(itemList.length() - currentRowCount, currentRowCount, rowAlignments.last(), effectiveRect);
     }
 
     FlowLayoutState state;
@@ -327,19 +315,26 @@ FlowLayoutState FlowLayout::applyLayout(const QRect &rect) const
     return state;
 }
 
+void FlowLayout::lastLineAlignment(int startIndex, int count, RowLayoutInfo rowInfo, const QRect& effectiveRect) const
+{
+    if (alignment() & Qt::AlignHCenter) {
+        alignHCenterRow(startIndex, count, effectiveRect, rowInfo.spacing);
+    } else if (alignment() & Qt::AlignJustify) {
+        alignJustifiedRow(startIndex, count, effectiveRect, rowInfo.spacing);
+    }
+}
+
 int FlowLayout::calculateRowWidth(int rowCount, int spacing) const
 {
     if (itemList.isEmpty()) { return 0; }
 
     int totalWidth = 0;
-    // Calculate the total width of all item in row
+    // Calculate the total width of all item in row including spacing
     for (int i = 0; i < rowCount; i += 1) {
-        totalWidth += spacing + itemList.at(i)->sizeHint().width() + spacing;
+        totalWidth += itemList.at(i)->sizeHint().width();
     }
 
-    // we subtract spacing from the left and right side, as that's considered margin
-    // and we're only interested in the width of the row including spacing.
-    return totalWidth - (spacing * 2);
+    return totalWidth + (spacing * (rowCount - 1));
 }
 
 int FlowLayout::smartSpacing(QStyle::PixelMetric pm) const

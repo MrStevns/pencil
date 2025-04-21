@@ -32,6 +32,7 @@ GNU General Public License for more details.
 #include "toolmanager.h"
 #include "layermanager.h"
 #include "pencilsettings.h"
+#include "toolboxlayout.h"
 
 // ----------------------------------------------------------------------------------
 QString GetToolTips(QString strCommandName)
@@ -138,7 +139,7 @@ void ToolBoxWidget::initUI()
 
     connect(editor()->layers(), &LayerManager::currentLayerChanged, this, &ToolBoxWidget::onLayerDidChange);
 
-    mFlowlayout = new FlowLayout(3,3,3);
+    mFlowlayout = new ToolBoxLayout(nullptr, 3,3,3);
 
     mFlowlayout->addWidget(ui->pencilButton);
     mFlowlayout->addWidget(ui->eraserButton);
