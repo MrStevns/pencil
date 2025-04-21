@@ -69,7 +69,7 @@ GNU General Public License for more details.
 #include "pegbaralignmentdialog.h"
 #include "addtransparencytopaperdialog.h"
 #include "repositionframesdialog.h"
-#include "pencildocktitlebarwidget.h"
+#include "titlebarwidget.h"
 
 #include "errordialog.h"
 #include "filedialog.h"

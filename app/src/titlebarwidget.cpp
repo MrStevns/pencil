@@ -1,4 +1,20 @@
-#include "pencildocktitlebarwidget.h"
+/*
+
+Pencil2D - Traditional Animation Software
+Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
+Copyright (C) 2012-2020 Matthew Chiawen Chang
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; version 2 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+*/
+#include "titlebarwidget.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -14,7 +30,7 @@
 
 #include <QDebug>
 
-PencilDockTitleBarWidget::PencilDockTitleBarWidget()
+TitleBarWidget::TitleBarWidget()
     : QWidget()
 {
 
@@ -31,39 +47,39 @@ PencilDockTitleBarWidget::PencilDockTitleBarWidget()
     setLayout(vLayout);
 }
 
-QWidget* PencilDockTitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
+QWidget* TitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
 {
     QWidget* containerWidget = new QWidget(parent);
 
     QHBoxLayout* layout = new QHBoxLayout(parent);
 
-    mCloseButton = new PencilDockWidgetTitleButton(parent);
+    mCloseButton = new QPushButton(parent);
+    mCloseButton->setFlat(true);
 
     QSize iconSize = QSize(14,14);
     QSize padding = QSize(2,2);
-    QIcon closeIcon("://icons/themes/playful/window/window-close-button.svg");
+    QIcon closeIcon(":/icons/themes/playful/window/window-close-button.svg");
 
     mCloseButton->setIcon(closeIcon);
     mCloseButton->setIconSize(iconSize);
     mCloseButton->setFixedSize(iconSize + padding);
 
-    connect(mCloseButton, &PencilDockWidgetTitleButton::clicked, this, [this] {
+    connect(mCloseButton, &QPushButton::clicked, this, [this] {
         emit closeButtonPressed();
     });
 
-    mDockButton = new PencilDockWidgetTitleButton(parent);
+    mDockButton = new QPushButton(parent);
     mDockButton->setIcon(QIcon("://icons/themes/playful/window/window-float-button.svg"));
+    mDockButton->setFlat(true);
+
     mDockButton->setIconSize(iconSize);
     mDockButton->setFixedSize(iconSize + padding);
 
-    connect(mDockButton, &PencilDockWidgetTitleButton::clicked, this, [this] {
+    connect(mDockButton, &QPushButton::clicked, this, [this] {
        emit undockButtonPressed();
     });
 
     mTitleLabel = new QLabel(parent);
-    QFont font;
-    font.setPointSize(11);
-    mTitleLabel->setFont(font);
     mTitleLabel->setAlignment(Qt::AlignVCenter);
 
     layout->addWidget(mCloseButton);
@@ -79,23 +95,23 @@ QWidget* PencilDockTitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
     return containerWidget;
 }
 
-void PencilDockTitleBarWidget::setWindowTitle(const QString &title)
+void TitleBarWidget::setWindowTitle(const QString &title)
 {
     mTitleLabel->setText(title);
 }
 
-QSize PencilDockTitleBarWidget::minimumSizeHint() const
+QSize TitleBarWidget::minimumSizeHint() const
 {
     return QSize(16, 32);
 }
 
-void PencilDockTitleBarWidget::hideButtons(bool hide)
+void TitleBarWidget::hideButtons(bool hide)
 {
     mCloseButton->setHidden(hide);
     mDockButton->setHidden(hide);
 }
 
-void PencilDockTitleBarWidget::resizeEvent(QResizeEvent *resizeEvent)
+void TitleBarWidget::resizeEvent(QResizeEvent *resizeEvent)
 {
     QWidget::resizeEvent(resizeEvent);
 
@@ -106,7 +122,7 @@ void PencilDockTitleBarWidget::resizeEvent(QResizeEvent *resizeEvent)
     }
 }
 
-void PencilDockTitleBarWidget::paintEvent(QPaintEvent *)
+void TitleBarWidget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
 
@@ -121,40 +137,3 @@ void PencilDockTitleBarWidget::paintEvent(QPaintEvent *)
     painter.drawLine(QPoint(this->rect().x(), this->rect().height()), QPoint(this->rect().width(), this->rect().height()));
     painter.restore();
 }
-
-
-PencilDockWidgetTitleButton::PencilDockWidgetTitleButton(QWidget* widget)
-    : QAbstractButton(widget)
-{
-    setFocusPolicy(Qt::NoFocus);
-}
-
-QSize PencilDockWidgetTitleButton::sizeHint() const
-{
-    ensurePolished();
-    int size = 2 * style()->pixelMetric(QStyle::PM_TitleBarButtonIconSize, nullptr, this);
-
-    if (!icon().isNull()) {
-        const QSize sz = icon().actualSize(iconSize());
-        size += qMax(sz.width(), sz.height());
-    }
-    return QSize(size, size);
-}
-
-void PencilDockWidgetTitleButton::paintEvent(QPaintEvent *)
-{
-    QPainter p(this);
-
-    QStyleOptionToolButton opt;
-    opt.initFrom(this);
-
-    opt.icon = icon();
-    opt.subControls = { };
-    opt.activeSubControls = { };
-    opt.features = QStyleOptionToolButton::None;
-    opt.arrowType = Qt::NoArrow;
-    opt.iconSize = iconSize();
-    style()->drawComplexControl(QStyle::CC_ToolButton, &opt, &p, this);
-}
-
-

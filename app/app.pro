@@ -81,7 +81,6 @@ HEADERS += \
     src/layeropacitydialog.h \
     src/mainwindow2.h \
     src/onionskinwidget.h \
-    src/pencildocktitlebarwidget.h \
     src/predefinedsetmodel.h \
     src/pegbaralignmentdialog.h \
     src/shortcutfilter.h \
@@ -91,6 +90,7 @@ HEADERS += \
     src/generalpage.h \
     src/shortcutspage.h \
     src/timelinepage.h \
+    src/titlebarwidget.h \
     src/toolspage.h \
     src/basedockwidget.h \
     src/colorbox.h \
@@ -134,7 +134,6 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow2.cpp \
     src/onionskinwidget.cpp \
-    src/pencildocktitlebarwidget.cpp \
     src/predefinedsetmodel.cpp \
     src/pegbaralignmentdialog.cpp \
     src/shortcutfilter.cpp \
@@ -144,6 +143,7 @@ SOURCES += \
     src/generalpage.cpp \
     src/shortcutspage.cpp \
     src/timelinepage.cpp \
+    src/titlebarwidget.cpp \
     src/toolspage.cpp \
     src/basedockwidget.cpp \
     src/colorbox.cpp \

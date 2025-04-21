@@ -21,7 +21,7 @@ GNU General Public License for more details.
 #include <QDockWidget>
 
 class Editor;
-class PencilDockTitleBarWidget;
+class TitleBarWidget;
 
 
 class BaseDockWidget : public QDockWidget
@@ -52,7 +52,7 @@ private:
     Editor* mEditor = nullptr;
 
     QWidget* mNoTitleBarWidget = nullptr;
-    PencilDockTitleBarWidget* mTitleBarWidget = nullptr;
+    TitleBarWidget* mTitleBarWidget = nullptr;
 
     bool mLocked = false;
 };
