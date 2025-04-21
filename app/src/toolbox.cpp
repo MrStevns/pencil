@@ -169,7 +169,7 @@ int ToolBoxWidget::getMinHeightForWidth(int width) const
     if (this->isFloating()) {
         return layoutHeight;
     } else {
-        return layoutHeight + BaseDockWidget::minimumSizeHint().height();
+        return qMax(layoutHeight, BaseDockWidget::minimumHeight());
     }
 }
 
