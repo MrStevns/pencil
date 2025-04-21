@@ -23,6 +23,7 @@ GNU General Public License for more details.
 class QLabel;
 class QHBoxLayout;
 class QPushButton;
+class QMenu;
 
 class TitleBarWidget : public QWidget
 {
@@ -35,6 +36,8 @@ public:
     void resizeEvent(QResizeEvent* resizeEvent) override;
     void setWindowTitle(const QString& title);
     void paintEvent(QPaintEvent*) override;
+
+    void setIsFloating(bool floating) { mIsFloating = floating; }
 
 signals:
     void closeButtonPressed();
@@ -51,6 +54,10 @@ private:
     QLabel* mTitleLabel = nullptr;
     QPushButton* mCloseButton = nullptr;
     QPushButton* mDockButton = nullptr;
+
+    QMenu* mMenu = nullptr;
+    QAction* mDockAction = nullptr;
+    bool mIsFloating = false;
 };
 
 #endif // TITLEBARWIDGET_H

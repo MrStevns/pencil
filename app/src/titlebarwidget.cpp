@@ -27,6 +27,7 @@ GNU General Public License for more details.
 #include <QStyle>
 #include <QPainter>
 #include <QStyleOptionToolButton>
+#include <QMenu>
 
 #include <QDebug>
 
@@ -69,7 +70,8 @@ QWidget* TitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
     });
 
     mDockButton = new QPushButton(parent);
-    mDockButton->setIcon(QIcon("://icons/themes/playful/window/window-float-button.svg"));
+    QIcon dockIcon ("://icons/themes/playful/window/window-float-button.svg");
+    mDockButton->setIcon(dockIcon);
     mDockButton->setFlat(true);
 
     mDockButton->setIconSize(iconSize);
@@ -77,6 +79,25 @@ QWidget* TitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
 
     connect(mDockButton, &QPushButton::clicked, this, [this] {
        emit undockButtonPressed();
+    });
+
+    mMenu = new QMenu(this);
+    mMenu->addAction(closeIcon, tr("Close"), [=] {
+        emit closeButtonPressed();
+    });
+    mDockAction = mMenu->addAction(dockIcon, "", [=] {
+        emit undockButtonPressed();
+    });
+
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &QWidget::customContextMenuRequested, this, [=](const QPoint& pos) {
+
+        if (mIsFloating) {
+            mDockAction->setText(tr("Dock"));
+        } else {
+            mDockAction->setText(tr("Undock"));
+        }
+        mMenu->exec(mapToGlobal(pos));
     });
 
     mTitleLabel = new QLabel(parent);

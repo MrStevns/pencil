@@ -50,6 +50,8 @@ BaseDockWidget::BaseDockWidget(QWidget* pParent)
     connect(mTitleBarWidget, &TitleBarWidget::undockButtonPressed, this, [this] {
        setFloating(!isFloating());
     });
+
+    connect(this, &QDockWidget::topLevelChanged, mTitleBarWidget, &TitleBarWidget::setIsFloating);
 }
 
 BaseDockWidget::~BaseDockWidget()
