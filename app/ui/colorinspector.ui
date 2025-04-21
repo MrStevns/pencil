@@ -23,11 +23,6 @@
     <height>114</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>11</pointsize>
-   </font>
-  </property>
   <layout class="QVBoxLayout">
    <property name="leftMargin">
     <number>3</number>
@@ -302,10 +297,10 @@
       <bool>true</bool>
      </property>
      <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+      <enum>QFrame::Shape::StyledPanel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+      <enum>QFrame::Shadow::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <property name="leftMargin">
@@ -326,10 +321,10 @@
          <bool>true</bool>
         </property>
         <property name="frameShape">
-         <enum>QFrame::Box</enum>
+         <enum>QFrame::Shape::Box</enum>
         </property>
         <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
+         <enum>QFrame::Shadow::Raised</enum>
         </property>
        </widget>
       </item>
