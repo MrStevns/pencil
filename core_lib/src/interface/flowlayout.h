@@ -111,7 +111,7 @@ private:
     RowLayoutInfo alignJustifiedRow(int startIndex, int count, const QRect& effectiveRect, int spaceX) const;
 
     int calculateHeightForWidth(int width) const;
-    int calculateRowWidth(int rowCount, int spacing) const;
+    int calculateRowWidth(int start, int end, int spacing) const;
 
     int applyLayout(const QRect &rect) const;
     int smartSpacing(QStyle::PixelMetric pm) const;

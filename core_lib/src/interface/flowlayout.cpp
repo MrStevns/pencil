@@ -174,7 +174,7 @@ RowLayoutInfo FlowLayout::alignJustifiedRow(int startIndex, int count, const QRe
     int spacing = 0;
     if (count > 0) {
         int gapCount = count + 1;
-        int rowWidth = calculateRowWidth(count, spaceX);
+        int rowWidth = calculateRowWidth(startIndex, count, spaceX);
         int availableSpace = effectiveRect.width() - rowWidth;
 
         spacing = (gapCount > 0 && availableSpace > 0)
@@ -202,7 +202,7 @@ RowLayoutInfo FlowLayout::alignJustifiedRow(int startIndex, int count, const QRe
 
 RowLayoutInfo FlowLayout::alignHCenterRow(int startIndex, int count, const QRect &effectiveRect, int spaceX) const
 {
-    int rowWidth = calculateRowWidth(count, spaceX);
+    int rowWidth = calculateRowWidth(startIndex, count, spaceX);
     int offset = (effectiveRect.width() - rowWidth) / 2;
     int rowOffsetX = effectiveRect.left() + offset;
 
@@ -237,9 +237,9 @@ int FlowLayout::calculateHeightForWidth(int width) const
     int y = 0;
 
     for (int i = 0; i < itemList.length(); i++) {
-         QLayoutItem* item = itemList.at(i);
-         QWidget *wid = item->widget();
-        int rowWidth = calculateRowWidth(rowCount, spaceX);
+        QLayoutItem* item = itemList.at(i);
+        QWidget *wid = item->widget();
+        int rowWidth = calculateRowWidth(0, rowCount, spaceX);
 
         if (spaceX == -1)
             spaceX = wid->style()->layoutSpacing(
@@ -295,7 +295,7 @@ int FlowLayout::applyLayout(const QRect &rect) const
             spaceY = wid->style()->layoutSpacing(
                 QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Vertical);
 
-        int rowWidth = calculateRowWidth(currentRowCount, spaceX);
+        int rowWidth = calculateRowWidth(0, currentRowCount, spaceX);
 
         if (currentRowCount > 0) {
             int startRowIndex = i - currentRowCount;
@@ -338,17 +338,17 @@ void FlowLayout::lastLineAlignment(int startIndex, int count, RowLayoutInfo rowI
     }
 }
 
-int FlowLayout::calculateRowWidth(int rowCount, int spacing) const
+int FlowLayout::calculateRowWidth(int start, int end, int spacing) const
 {
     if (itemList.isEmpty()) { return 0; }
 
     int totalWidth = 0;
     // Calculate the total width of all item in row including spacing
-    for (int i = 0; i < rowCount; i += 1) {
+    for (int i = start; i < start + end; i += 1) {
         totalWidth += itemList.at(i)->sizeHint().width();
     }
 
-    return totalWidth + (spacing * (rowCount - 1));
+    return totalWidth + (spacing * (end - 1));
 }
 
 int FlowLayout::smartSpacing(QStyle::PixelMetric pm) const
