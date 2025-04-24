@@ -21,25 +21,23 @@ GNU General Public License for more details.
 #include <QLabel>
 #include <QIcon>
 #include <QPushButton>
-#include <QToolButton>
 #include <QResizeEvent>
-#include <QAbstractButton>
 #include <QStyle>
 #include <QPainter>
-#include <QStyleOptionToolButton>
 #include <QMenu>
-
+#include <QEvent>
 #include <QDebug>
 
-TitleBarWidget::TitleBarWidget()
-    : QWidget()
+#include "platformhandler.h"
+
+TitleBarWidget::TitleBarWidget(QWidget* parent)
+    : QWidget(parent)
 {
 
     QVBoxLayout* vLayout = new QVBoxLayout();
 
-    vLayout->setContentsMargins(0,3,0,0);
-    vLayout->setSpacing(3);
-    vLayout->setSizeConstraint(QVBoxLayout::SetMinAndMaxSize);
+    vLayout->setContentsMargins(3,4,3,4);
+    vLayout->setSpacing(0);
 
     mNormalTitleBarWidget = createNormalTitleBarWidget(this);
 
@@ -48,34 +46,61 @@ TitleBarWidget::TitleBarWidget()
     setLayout(vLayout);
 }
 
+TitleBarWidget::~TitleBarWidget()
+{
+}
+
 QWidget* TitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
 {
+    bool isDarkmode = PlatformHandler::isDarkMode();
     QWidget* containerWidget = new QWidget(parent);
 
-    QHBoxLayout* layout = new QHBoxLayout(parent);
+    mContainerLayout = new QHBoxLayout(parent);
 
     mCloseButton = new QPushButton(parent);
     mCloseButton->setFlat(true);
 
     QSize iconSize = QSize(14,14);
     QSize padding = QSize(2,2);
-    QIcon closeIcon(":/icons/themes/playful/window/window-close-button.svg");
+
+    IconResource closeButtonRes;
+    closeButtonRes.lightMode = "://icons/themes/playful/window/window-close-button-normal.svg";
+    closeButtonRes.darkMode = "://icons/themes/playful/window/window-close-button-normal-darkm.svg";
+
+    QIcon closeIcon = closeButtonRes.iconForMode(isDarkmode);
+
+    IconResource closeHoverButtonRes;
+    closeHoverButtonRes.lightMode = "://icons/themes/playful/window/window-close-button-active.svg";
+    closeHoverButtonRes.darkMode = closeHoverButtonRes.lightMode;
 
     mCloseButton->setIcon(closeIcon);
     mCloseButton->setIconSize(iconSize);
     mCloseButton->setFixedSize(iconSize + padding);
+    mCloseButton->installEventFilter(new ButtonAppearanceWatcher(closeButtonRes,
+                                                                 closeHoverButtonRes,
+                                                            this));
 
     connect(mCloseButton, &QPushButton::clicked, this, [this] {
         emit closeButtonPressed();
     });
 
+    IconResource dockButtonRes;
+    dockButtonRes.lightMode = "://icons/themes/playful/window/window-float-button-normal.svg";
+    dockButtonRes.darkMode = "://icons/themes/playful/window/window-float-button-normal-darkm.svg";
+
+    IconResource dockHoverButtonRes;
+    dockHoverButtonRes.lightMode = "://icons/themes/playful/window/window-float-button-active.svg";
+    dockHoverButtonRes.darkMode = dockHoverButtonRes.lightMode;
+
     mDockButton = new QPushButton(parent);
-    QIcon dockIcon ("://icons/themes/playful/window/window-float-button.svg");
+
+    QIcon dockIcon = dockButtonRes.iconForMode(isDarkmode);
     mDockButton->setIcon(dockIcon);
     mDockButton->setFlat(true);
 
     mDockButton->setIconSize(iconSize);
     mDockButton->setFixedSize(iconSize + padding);
+    mDockButton->installEventFilter(new ButtonAppearanceWatcher(dockButtonRes, dockHoverButtonRes, this));
 
     connect(mDockButton, &QPushButton::clicked, this, [this] {
        emit undockButtonPressed();
@@ -103,15 +128,21 @@ QWidget* TitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
     mTitleLabel = new QLabel(parent);
     mTitleLabel->setAlignment(Qt::AlignVCenter);
 
-    layout->addWidget(mCloseButton);
-    layout->addWidget(mDockButton);
-    layout->addWidget(mTitleLabel);
-    layout->setSpacing(3);
-    layout->setContentsMargins(3,0,3,2);
+#ifdef __APPLE__
+    mContainerLayout->addWidget(mCloseButton);
+    mContainerLayout->addWidget(mDockButton);
+    mContainerLayout->addWidget(mTitleLabel);
+#else
+    mContainerLayout->addWidget(mTitleLabel);
+    mContainerLayout->addWidget(mDockButton);
+    mContainerLayout->addWidget(mCloseButton);
+#endif
 
-    containerWidget->setLayout(layout);
+    mContainerLayout->setSpacing(3);
+    mContainerLayout->setContentsMargins(0,0,0,0);
+
+    containerWidget->setLayout(mContainerLayout);
     containerWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    containerWidget->setFixedHeight(18);
 
     return containerWidget;
 }
@@ -119,11 +150,6 @@ QWidget* TitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
 void TitleBarWidget::setWindowTitle(const QString &title)
 {
     mTitleLabel->setText(title);
-}
-
-QSize TitleBarWidget::minimumSizeHint() const
-{
-    return QSize(16, 32);
 }
 
 void TitleBarWidget::hideButtons(bool hide)
@@ -136,11 +162,28 @@ void TitleBarWidget::resizeEvent(QResizeEvent *resizeEvent)
 {
     QWidget::resizeEvent(resizeEvent);
 
-    if (resizeEvent->size().width() < 75) {
+    hideButtonsIfNeeded(resizeEvent->size().width());
+}
+
+void TitleBarWidget::hideButtonsIfNeeded(int width)
+{
+    if (width <= mWidthOfFullLayout) {
         hideButtons(true);
-    } else if (resizeEvent->size().width() >= 75) {
+    } else {
         hideButtons(false);
     }
+}
+
+void TitleBarWidget::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+
+    // This is to ensure that after the titlebar has been hidden with buttons hidden
+    // the layout width is smaller, so we enable them again briefly to get the correct width.
+    hideButtons(false);
+
+    mWidthOfFullLayout = layout()->sizeHint().width();
+    hideButtonsIfNeeded(size().width());
 }
 
 void TitleBarWidget::paintEvent(QPaintEvent *)
@@ -153,8 +196,55 @@ void TitleBarWidget::paintEvent(QPaintEvent *)
     painter.drawRect(this->rect());
 
     QPen pen(palette().color(QPalette::Mid));
-    pen.setWidth(1);
+    int penWidth = 1;
+    pen.setWidth(penWidth);
     painter.setPen(pen);
-    painter.drawLine(QPoint(this->rect().x(), this->rect().height()), QPoint(this->rect().width(), this->rect().height()));
+    painter.drawLine(QPoint(this->rect().x(),
+                            this->rect().height()-penWidth),
+                     QPoint(this->rect().width(),
+                            this->rect().height()-penWidth));
     painter.restore();
+}
+
+ButtonAppearanceWatcher::ButtonAppearanceWatcher(IconResource normalIconResource,
+                                                 IconResource hoverIconResource,
+                                                 QObject* parent) :
+    QObject(parent),
+    mNormalIconResource(normalIconResource),
+    mHoverIconResource(hoverIconResource)
+{}
+
+bool ButtonAppearanceWatcher::eventFilter(QObject* watched, QEvent* event)
+{
+    QAbstractButton* button = qobject_cast<QAbstractButton*>(watched);
+    if (!button) {
+        return false;
+    }
+
+    bool shouldUpdate = false;
+    IconResource res = mNormalIconResource;
+    bool darkmodeEnabled = PlatformHandler::isDarkMode();
+    AppearanceType appearanceType = static_cast<AppearanceType>(darkmodeEnabled);
+    if (event->type() == QEvent::ApplicationPaletteChange && mLastDarkmodeGlobalAppearanceType != appearanceType) {
+        res = mNormalIconResource;
+        shouldUpdate = true;
+        mLastDarkmodeGlobalAppearanceType = appearanceType;
+    } else if (mUsedEventType != event->type()) {
+        if (event->type() == QEvent::Enter) {
+            res = mHoverIconResource;
+            mUsedEventType = event->type();
+            shouldUpdate = true;
+        }
+        else if (event->type() == QEvent::Leave){
+            res = mNormalIconResource;
+            mUsedEventType = event->type();
+            shouldUpdate = true;
+        }
+    }
+
+    if (shouldUpdate) {
+        button->setIcon(res.iconForMode(darkmodeEnabled));
+    }
+
+    return shouldUpdate;
 }

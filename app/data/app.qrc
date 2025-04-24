@@ -94,9 +94,12 @@
         <file>icons/themes/playful/tools/tool-polyline.svg</file>
         <file>icons/themes/playful/tools/tool-select.svg</file>
         <file>icons/themes/playful/tools/tool-smudge.svg</file>
-        <file>icons/themes/playful/window/window-close-button.svg</file>
-        <file>icons/themes/playful/window/window-drag-handle.svg</file>
-        <file>icons/themes/playful/window/window-float-button.svg</file>
+        <file>icons/themes/playful/window/window-float-button-normal.svg</file>
+        <file>icons/themes/playful/window/window-close-button-normal.svg</file>
+        <file>icons/themes/playful/window/window-close-button-normal-darkm.svg</file>
+        <file>icons/themes/playful/window/window-float-button-normal-darkm.svg</file>
+        <file>icons/themes/playful/window/window-close-button-active.svg</file>
+        <file>icons/themes/playful/window/window-float-button-active.svg</file>
     </qresource>
     <qresource prefix="/app">
         <file>pencil2d_quick_guide.pdf</file>

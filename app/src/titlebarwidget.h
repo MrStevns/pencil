@@ -19,19 +19,38 @@ GNU General Public License for more details.
 
 #include <QWidget>
 #include <QAbstractButton>
+#include <QEvent>
+
+#include "appearance.h"
 
 class QLabel;
 class QHBoxLayout;
 class QPushButton;
 class QMenu;
 
+class ButtonAppearanceWatcher : public QObject
+{
+    Q_OBJECT
+public:
+    explicit ButtonAppearanceWatcher(IconResource normalIconResource,
+                                     IconResource hoverIconResource,
+                                     QObject * parent = nullptr);
+    virtual bool eventFilter(QObject * watched, QEvent * event) override;
+
+private:
+    const IconResource mNormalIconResource;
+    const IconResource mHoverIconResource;
+
+    AppearanceType mLastDarkmodeGlobalAppearanceType = AppearanceType::NOT_DETERMINED;
+    QEvent::Type mUsedEventType = QEvent::None;
+};
+
 class TitleBarWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TitleBarWidget();
-
-    QSize minimumSizeHint() const override;
+    explicit TitleBarWidget(QWidget* parent = nullptr);
+    ~TitleBarWidget();
 
     void resizeEvent(QResizeEvent* resizeEvent) override;
     void setWindowTitle(const QString& title);
@@ -44,12 +63,14 @@ signals:
     void undockButtonPressed();
 
 private:
-
+    void showEvent(QShowEvent* event) override;
     void hideButtons(bool hide);
+    void hideButtonsIfNeeded(int width);
 
     QWidget* createNormalTitleBarWidget(QWidget* parent);
 
     QWidget* mNormalTitleBarWidget = nullptr;
+    QLayout* mContainerLayout = nullptr;
 
     QLabel* mTitleLabel = nullptr;
     QPushButton* mCloseButton = nullptr;
@@ -58,6 +79,8 @@ private:
     QMenu* mMenu = nullptr;
     QAction* mDockAction = nullptr;
     bool mIsFloating = false;
+
+    int mWidthOfFullLayout = 0;
 };
 
 #endif // TITLEBARWIDGET_H

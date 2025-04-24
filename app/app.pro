@@ -76,6 +76,7 @@ PRECOMPILED_HEADER = src/app-pch.h
 HEADERS += \
     src/addtransparencytopaperdialog.h \
     src/app-pch.h \
+    src/appearance.h \
     src/importlayersdialog.h \
     src/importpositiondialog.h \
     src/layeropacitydialog.h \
