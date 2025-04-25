@@ -38,11 +38,13 @@ public:
     virtual bool eventFilter(QObject * watched, QEvent * event) override;
 
 private:
+    bool shouldUpdateResource(QEvent* event, AppearanceEventType appearanceType) const;
+    AppearanceEventType determineAppearanceEvent(QEvent* event) const;
+
     const IconResource mNormalIconResource;
     const IconResource mHoverIconResource;
 
-    AppearanceType mLastDarkmodeGlobalAppearanceType = AppearanceType::NOT_DETERMINED;
-    QEvent::Type mUsedEventType = QEvent::None;
+    AppearanceEventType mOldAppearanceType = AppearanceEventType::NONE;
 };
 
 class TitleBarWidget : public QWidget
