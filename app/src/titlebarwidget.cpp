@@ -64,13 +64,13 @@ QWidget* TitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
     QSize padding = QSize(2,2);
 
     IconResource closeButtonRes;
-    closeButtonRes.lightMode = "://icons/themes/playful/window/window-close-button-normal.svg";
-    closeButtonRes.darkMode = "://icons/themes/playful/window/window-close-button-normal-darkm.svg";
+    closeButtonRes.lightMode = QIcon("://icons/themes/playful/window/window-close-button-normal.svg");
+    closeButtonRes.darkMode = QIcon("://icons/themes/playful/window/window-close-button-normal-darkm.svg");
 
     QIcon closeIcon = closeButtonRes.iconForMode(isDarkmode);
 
     IconResource closeHoverButtonRes;
-    closeHoverButtonRes.lightMode = "://icons/themes/playful/window/window-close-button-active.svg";
+    closeHoverButtonRes.lightMode = QIcon("://icons/themes/playful/window/window-close-button-active.svg");
     closeHoverButtonRes.darkMode = closeHoverButtonRes.lightMode;
 
     mCloseButton->setIcon(closeIcon);
@@ -85,11 +85,11 @@ QWidget* TitleBarWidget::createNormalTitleBarWidget(QWidget* parent)
     });
 
     IconResource dockButtonRes;
-    dockButtonRes.lightMode = "://icons/themes/playful/window/window-float-button-normal.svg";
-    dockButtonRes.darkMode = "://icons/themes/playful/window/window-float-button-normal-darkm.svg";
+    dockButtonRes.lightMode = QIcon("://icons/themes/playful/window/window-float-button-normal.svg");
+    dockButtonRes.darkMode = QIcon("://icons/themes/playful/window/window-float-button-normal-darkm.svg");
 
     IconResource dockHoverButtonRes;
-    dockHoverButtonRes.lightMode = "://icons/themes/playful/window/window-float-button-active.svg";
+    dockHoverButtonRes.lightMode = QIcon("://icons/themes/playful/window/window-float-button-active.svg");
     dockHoverButtonRes.darkMode = dockHoverButtonRes.lightMode;
 
     mDockButton = new QPushButton(parent);

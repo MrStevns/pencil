@@ -28,15 +28,15 @@ enum class AppearanceType {
 
 struct IconResource
 {
-    QString lightMode;
-    QString darkMode;
+    QIcon lightMode;
+    QIcon darkMode;
 
-    QIcon iconForMode(bool darkmodeEnabled) const
+    const QIcon& iconForMode(bool darkmodeEnabled) const
     {
         if (darkmodeEnabled) {
-            return QIcon(darkMode);
+            return darkMode;
         } else {
-            return QIcon(lightMode);
+            return lightMode;
         }
     }
 };
