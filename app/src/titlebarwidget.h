@@ -18,8 +18,6 @@ GNU General Public License for more details.
 #define TITLEBARWIDGET_H
 
 #include <QWidget>
-#include <QAbstractButton>
-#include <QEvent>
 
 #include "appearance.h"
 
@@ -27,25 +25,6 @@ class QLabel;
 class QHBoxLayout;
 class QPushButton;
 class QMenu;
-
-class ButtonAppearanceWatcher : public QObject
-{
-    Q_OBJECT
-public:
-    explicit ButtonAppearanceWatcher(IconResource normalIconResource,
-                                     IconResource hoverIconResource,
-                                     QObject * parent = nullptr);
-    virtual bool eventFilter(QObject * watched, QEvent * event) override;
-
-private:
-    bool shouldUpdateResource(QEvent* event, AppearanceEventType appearanceType) const;
-    AppearanceEventType determineAppearanceEvent(QEvent* event) const;
-
-    const IconResource mNormalIconResource;
-    const IconResource mHoverIconResource;
-
-    AppearanceEventType mOldAppearanceType = AppearanceEventType::NONE;
-};
 
 class TitleBarWidget : public QWidget
 {

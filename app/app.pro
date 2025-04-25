@@ -77,6 +77,7 @@ HEADERS += \
     src/addtransparencytopaperdialog.h \
     src/app-pch.h \
     src/appearance.h \
+    src/buttonappearancewatcher.h \
     src/importlayersdialog.h \
     src/importpositiondialog.h \
     src/layeropacitydialog.h \
@@ -129,6 +130,7 @@ HEADERS += \
 
 SOURCES += \
     src/addtransparencytopaperdialog.cpp \
+    src/buttonappearancewatcher.cpp \
     src/importlayersdialog.cpp \
     src/importpositiondialog.cpp \
     src/layeropacitydialog.cpp \

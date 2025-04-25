@@ -18,13 +18,7 @@ GNU General Public License for more details.
 #ifndef APPEARANCE_H
 #define APPEARANCE_H
 
-#include <QPalette>
-
-enum class AppearanceType {
-    LIGHTMODE = 0,
-    DARKMODE = 1,
-    NOT_DETERMINED = 2,
-};
+#include <QIcon>
 
 struct IconResource
 {
