@@ -65,7 +65,7 @@ public:
 
     void paint(QPainter& painter, const QRect& blitRect) override;
 
-    void strokeTo(QPointF point);
+    void doStroke(float brushWidth, float brushFeather, float brushOpacity);
 
 public slots:
     void onPreferenceChanged(SETTING setting);
@@ -79,7 +79,7 @@ protected:
     QPointF getLastPixel() const;
     QPointF getLastPoint() const;
 
-    virtual void drawDab(const QPointF&) { }
+    virtual void drawDab(const QPointF&, float, float, float) { }
 
     // dynamic cursor adjustment
     virtual bool startAdjusting(Qt::KeyboardModifiers modifiers);

@@ -200,57 +200,63 @@ void StrokeTool::drawStroke()
     }
 }
 
-void StrokeTool::strokeTo(QPointF point) {
-
-    qreal brushWidth = mCurrentWidth;
+void StrokeTool::doStroke(float brushWidth, float brushFeather, float brushOpacity) {
 
     float leftOverDistance = mLeftOverDabDistance;
 
-    QPointF lastPoint = getLastPoint();
+    QList<QPointF> p = mInterpolator.interpolateStroke();
 
-    // calculate the euclidean distance
-    // to find the distance that we need to cover with dabs
-    float distance = QLineF(lastPoint, point).length();
+    float totalDistance = 0.f;
 
-    float spacing = brushWidth;
+    for (int i = 1; i < p.size(); i += 1) {
+        QPointF lastPoint = mEditor->view()->mapScreenToCanvas(p[i-1]);
+        QPointF currentPoint = mEditor->view()->mapScreenToCanvas(p[i]);
 
-    // Calculate the unit direction vector
-    float dirX = (point.x() - lastPoint.x()) / distance;
-    float dirY = (point.y() - lastPoint.y()) / distance;
+        // calculate the euclidean distance
+        // to find the distance that we need to cover with dabs
+        float distance = QLineF(lastPoint, currentPoint).length();
 
-    float offsetX = 0.0;
-    float offsetY = 0.0;
+        float spacing = brushWidth * 0.2f;
 
-    // since we want to dab at a specific interval,
-    // add the potentially missing leftover distance to the current distance
-    float totalDistance = leftOverDistance + distance;
+        // Calculate the unit direction vector
+        float dirX = (currentPoint.x() - lastPoint.x()) / distance;
+        float dirY = (currentPoint.y() - lastPoint.y()) / distance;
 
-    // will dap until totalDistance is less than spacing
-    while (totalDistance >= spacing)
-    {
-        // make sure to add potentially missed distance
-        // to our offset
+        float offsetX = 0.0f;
+        float offsetY = 0.0f;
 
-        if (leftOverDistance > 0) {
-            offsetX += dirX * (spacing - leftOverDistance);
-            offsetY += dirY * (spacing - leftOverDistance);
+        // since we want to dab at a specific interval,
+        // add the potentially missing leftover distance to the current distance
+        totalDistance = leftOverDistance + distance;
 
-            leftOverDistance -= spacing;
-        } else {
+        // will dap until totalDistance is less than spacing
+        while (totalDistance >= spacing)
+        {
+            // make sure to add potentially missed distance
+            // to our offset
+            if (leftOverDistance > 0) {
+                offsetX += dirX * (spacing - leftOverDistance);
+                offsetY += dirY * (spacing - leftOverDistance);
 
-            // otherwise just calculate the offset from the
-            // direction (dirX, dirY) and spacing.
-            offsetX += dirX * spacing;
-            offsetY += dirY * spacing;
+                leftOverDistance -= spacing;
+            } else {
 
+                // otherwise just calculate the offset from the
+                // direction (dirX, dirY) and spacing.
+                offsetX += dirX * spacing;
+                offsetY += dirY * spacing;
+
+            }
+
+            QPointF stampAt = QPointF(lastPoint.x()+offsetX, lastPoint.y()+offsetY);
+
+            drawDab(stampAt, brushWidth, brushFeather, brushOpacity);
+
+            // remove the distance we've covered already
+            totalDistance -= spacing;
         }
 
-        QPointF stampAt = QPointF(lastPoint.x()+offsetX, lastPoint.y()+offsetY);
-
-        drawDab(stampAt);
-
-        // remove the distance we've covered already
-        totalDistance -= spacing;
+        leftOverDistance = totalDistance;
     }
 
     // there might still be dabbing we didn't cover

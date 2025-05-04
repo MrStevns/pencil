@@ -220,8 +220,7 @@ QList<QPointF> StrokeInterpolator::interpolateStroke()
 
     if (mStabilizerLevel == StabilizationLevel::SIMPLE)
     {
-        result = tangentInpolOp(result);
-
+        result = catmulInpolOp(strokeQueue);
     }
     else if (mStabilizerLevel == StabilizationLevel::STRONG)
     {
@@ -251,56 +250,49 @@ QList<QPointF> StrokeInterpolator::noInpolOp(QList<QPointF> points)
     return points;
 }
 
-QList<QPointF> StrokeInterpolator::tangentInpolOp(QList<QPointF> points)
+QPointF StrokeInterpolator::catmullRomInterpolate(const QPointF& p0, const QPointF& p1,
+                                                  const QPointF& p2, const QPointF& p3,
+                                                  float t) const
 {
-    static const qreal smoothness = 1.f;
-    QLineF line(mLastPixel, mCurrentPixel);
+    float t2 = t * t;
+    float t3 = t2 * t;
 
-    qreal scaleFactor = line.length() * 3.f;
+    // Catmull-Rom spline equation (centripetal form, tension = 0.5)
+    QPointF term1 = 2.0f * p1;
+    QPointF term2 = (p2 - p0) * t;
+    QPointF term3 = (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2;
+    QPointF term4 = (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3;
 
-    if (!mHasTangent && scaleFactor > 0.01f)
+    return 0.5f * (term1 + term2 + term3 + term4);
+}
+
+
+QList<QPointF> StrokeInterpolator::catmulInpolOp(const QList<QPointF>& points)
+{
+    QList<QPointF> result;
+
+    // You need at least 4 points for Catmull-Rom
+    if (points.size() < 4)
+        return result;
+
+    for (int i = 0; i < points.size() - 3; ++i)
     {
-        mHasTangent = true;
-        /*
-        qDebug() << "scaleFactor" << scaleFactor
-                 << "current pixel " << mCurrentPixel
-                 << "last pixel" << mLastPixel;
-         */
-        m_previousTangent = (mCurrentPixel - mLastPixel) * smoothness / (3.0 * scaleFactor);
-        //qDebug() << "previous tangent" << m_previousTangent;
-        QLineF _line(QPointF(0, 0), m_previousTangent);
-        // don't bother for small tangents, as they can induce single pixel wobbliness
-        if (_line.length() < 2)
+        QPointF p0 = points[i];
+        QPointF p1 = points[i + 1];
+        QPointF p2 = points[i + 2];
+        QPointF p3 = points[i + 3];
+
+        // Subdivide each segment into 8 points
+        const int subdivisions = 8;
+        for (int j = 0; j <= subdivisions; ++j)
         {
-            m_previousTangent = QPointF(0, 0);
+            float t = float(j) / subdivisions;
+            QPointF pt = catmullRomInterpolate(p0, p1, p2, p3, t);
+            result.append(pt);
         }
     }
-    else
-    {
-        QPointF c1 = mLastPixel + m_previousTangent * scaleFactor;
-        QPointF newTangent = (mCurrentPixel - c1) * smoothness / (3.0 * scaleFactor);
-        //qDebug() << "scalefactor1=" << scaleFactor << m_previousTangent << newTangent;
-        if (scaleFactor == 0)
-        {
-            newTangent = QPointF(0, 0);
-        }
-        else
-        {
-            //QLineF _line(QPointF(0,0), newTangent);
-            //if (_line.length() < 2)
-            //{
-            //    newTangent = QPointF(0,0);
-            //}
-        }
-        QPointF c2 = mCurrentPixel - newTangent * scaleFactor;
-        //c1 = mLastPixel;
-        //c2 = mCurrentPixel;
-        points << mLastPixel << c1 << c2 << mCurrentPixel;
-        //qDebug() << mLastPixel << c1 << c2 << mCurrentPixel;
-        m_previousTangent = newTangent;
-    }
 
-    return points;
+    return result;
 }
 
 // Mean sampling interpolation operation

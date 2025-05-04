@@ -49,7 +49,7 @@ public:
     void smoothMousePos(QPointF pos);
     QList<QPointF> meanInpolOp(QList<QPointF> points, qreal x, qreal y, qreal pressure);
     QList<QPointF> noInpolOp(QList<QPointF> points);
-    QList<QPointF> tangentInpolOp(QList<QPointF> points);
+    QList<QPointF> catmulInpolOp(const QList<QPointF>& points);
 
     QPointF getCurrentPixel() const { return mCurrentPixel; }
     QPointF getLastPixel() const { return mLastPixel; }
@@ -57,7 +57,9 @@ public:
     QPointF getCurrentPressPixel() const { return mCurrentPressPixel; }
 
 private:
-    static const int STROKE_QUEUE_LENGTH = 3; // 4 points for cubic bezier
+    QPointF catmullRomInterpolate(const QPointF& p0, const QPointF& p1,
+                                                      const QPointF& p2, const QPointF& p3, float t) const;
+    static const int STROKE_QUEUE_LENGTH = 4; // 4 points for cubic bezier
 
     void reset();
 

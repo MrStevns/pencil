@@ -216,14 +216,14 @@ void BrushTool::paintAt(QPointF point)
     }
 }
 
-void BrushTool::drawDab(const QPointF& point)
+void BrushTool::drawDab(const QPointF& point, float width, float feather, float opacity)
 {
     mScribbleArea->drawBrush(point,
-                             properties.width,
-                             properties.feather,
+                             width,
+                             feather,
                              mEditor->color()->frontColor(),
                              QPainter::CompositionMode_SourceOver,
-                             1.0,
+                             opacity,
                              true);
 }
 
@@ -241,52 +241,10 @@ void BrushTool::drawStroke()
         qreal brushWidth = properties.width * pressure;
         mCurrentWidth = brushWidth;
 
-        qreal brushStep = (0.5 * brushWidth);
-        brushStep = qMax(1.0, brushStep);
+        // qreal brushStep = (0.5 * brushWidth);
+        // brushStep = qMax(1.0, brushStep);
 
-        // QPointF a = getLastPoint();
-        // QPointF b = getCurrentPoint();
-
-        // qreal distance = 4 * QLineF(b, a).length();
-        // int steps = qRound(distance / brushStep);
-
-        // note: playing around with with fixed brush step amount;
-        // renderInterpolatedStroke(p, 1);
-        strokeTo(getCurrentPoint());
-        // for (int i = 0; i < steps; i++)
-        // {
-        //     for (const QPointF& p1 : p) {
-        //         QPointF point = mLastBrushPoint + (i + 1) * brushStep * (p1 - mLastBrushPoint) / distance;
-
-        //         mScribbleArea->drawBrush(point,
-        //                                  brushWidth,
-        //                                  properties.feather,
-        //                                  mEditor->color()->frontColor(),
-        //                                  QPainter::CompositionMode_SourceOver,
-        //                                  opacity,
-        //                                  true);
-        //     }
-        //     if (i == (steps - 1))
-        //     {
-        //         mLastBrushPoint = getCurrentPoint();
-        //     }
-        // }
-
-        // Line visualizer
-        // for debugging
-//        QPainterPath tempPath;
-
-//        QPointF mappedMousePos = mEditor->view()->mapScreenToCanvas(strokeManager()->getMousePos());
-//        tempPath.moveTo(getCurrentPoint());
-//        tempPath.lineTo(mappedMousePos);
-
-//        QPen pen( Qt::black,
-//                   1,
-//                   Qt::SolidLine,
-//                   Qt::RoundCap,
-//                   Qt::RoundJoin );
-//        mScribbleArea->drawPolyline(tempPath, pen, true);
-
+        doStroke(brushWidth, properties.feather, opacity);
     }
     else if (layer->type() == Layer::VECTOR)
     {

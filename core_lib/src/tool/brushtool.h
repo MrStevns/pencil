@@ -52,7 +52,8 @@ public:
     void renderInterpolatedStroke(const QList<QPointF>& points, float dabSpacing);
 
 private:
-    void drawDab(const QPointF& point) override;
+    void drawDab(const QPointF& point, float width, float feather, float opacity) override;
+
 protected:
     QPointF mLastBrushPoint;
     QPointF mMouseDownPoint;
