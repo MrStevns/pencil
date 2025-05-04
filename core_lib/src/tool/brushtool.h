@@ -49,6 +49,10 @@ public:
     void setInvisibility(const bool invisibility) override;
     void setStabilizerLevel(const int level) override;
 
+    void renderInterpolatedStroke(const QList<QPointF>& points, float dabSpacing);
+
+private:
+    void drawDab(const QPointF& point) override;
 protected:
     QPointF mLastBrushPoint;
     QPointF mMouseDownPoint;
