@@ -267,68 +267,6 @@ void BrushTool::drawStroke()
     }
 }
 
-void BrushTool::renderInterpolatedStroke(const QList<QPointF>& points, float dabSpacing)
-{
-    if (points.size() < 2)
-        return;
-
-    QPointF lastDabPoint = mLastBrushPoint;
-    float leftOverDistance = QLineF(lastDabPoint, getCurrentPoint()).length();
-
-    qDebug() << leftOverDistance;
-    qDebug() << "last p: " << mLastBrushPoint;
-    float spacing = properties.width * dabSpacing;
-    for (int i = 1; i < points.size(); i += 1)
-    {
-        QPointF p0 = mEditor->view()->mapScreenToCanvas(points[i - 1]);
-        QPointF p1 = mEditor->view()->mapScreenToCanvas(points[i]);
-        float distance = QLineF(p0, p1).length();
-
-
-        // qDebug() << p0;
-        float totalDistance = leftOverDistance + distance;
-        qDebug() << "total distance: " << totalDistance;
-        while (totalDistance >= spacing)
-        {
-            float t = (spacing - leftOverDistance) / distance;
-            QPointF dabPoint = p0 + t * (p1 - p0);
-
-            if (leftOverDistance > 0) {
-                leftOverDistance -= spacing;
-            }
-
-            mScribbleArea->drawBrush(dabPoint,
-                                     properties.width,
-                                     properties.feather,
-                                     mEditor->color()->frontColor(),
-                                     QPainter::CompositionMode_SourceOver,
-                                     1.0,
-                                     true);
-            lastDabPoint = dabPoint;
-
-            p0 = dabPoint;
-            totalDistance -= spacing;
-        }
-
-        // float visualDist = QLineF(lastDabPoint, p1).length();
-        //     if (distance + segmentLength < brushStep)
-        //     {
-        //         mScribbleArea->drawBrush(p1,
-        //                                  properties.width,
-        //                                  properties.feather,
-        //                                  mEditor->color()->frontColor(),
-        //                                  QPainter::CompositionMode_SourceOver,
-        //                                  1.0,
-        //                                  true);
-        //         lastDabPoint = p1;
-        //         remai ningDistance = 0.0f;
-        //     }
-    }
-
-    mLastBrushPoint = lastDabPoint;
-}
-
-
 // This function uses the points from DrawStroke
 // and turns them into vector lines.
 void BrushTool::paintVectorStroke(Layer* layer)
