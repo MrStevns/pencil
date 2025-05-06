@@ -25,6 +25,8 @@ GNU General Public License for more details.
 #include "toolmanager.h"
 #include "mathutils.h"
 
+#include "QPainterPath"
+
 #include "canvascursorpainter.h"
 
 #ifdef Q_OS_MAC
@@ -200,18 +202,16 @@ void StrokeTool::drawStroke()
     }
 }
 
-void StrokeTool::doStroke(float brushWidth, float brushFeather, float brushOpacity) {
+void StrokeTool::doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity) {
 
     float leftOverDistance = mLeftOverDabDistance;
-
-    QList<QPointF> p = mInterpolator.interpolateStroke();
 
     float totalDistance = 0.f;
     float dabSpacing = brushWidth * 0.1f;
 
-    for (int i = 1; i < p.size(); i += 1) {
-        QPointF lastPoint = mEditor->view()->mapScreenToCanvas(p[i-1]);
-        QPointF currentPoint = mEditor->view()->mapScreenToCanvas(p[i]);
+    for (int i = 1; i < points.size(); i += 1) {
+        QPointF lastPoint = mEditor->view()->mapScreenToCanvas(points[i-1]);
+        QPointF currentPoint = mEditor->view()->mapScreenToCanvas(points[i]);
 
         // calculate the euclidean distance
         // to find the distance that we need to cover with dabs
@@ -254,6 +254,19 @@ void StrokeTool::doStroke(float brushWidth, float brushFeather, float brushOpaci
 
     // set the remaining dabs for next stroke
     mLeftOverDabDistance = totalDistance;
+}
+
+void StrokeTool::doPath(const QList<QPointF>& points, QBrush brush, QPen pen)
+{
+    if (points.size() < 4) { return; }
+
+    QPainterPath path;
+    path.moveTo(points[0]);
+    for (int i = 0; i < points.count(); i += 1) {
+        path.lineTo(points[i].x(), points[i].y());
+    }
+
+    mScribbleArea->drawPath(path, pen, brush, QPainter::CompositionMode_Source);
 }
 
 bool StrokeTool::handleQuickSizing(PointerEvent* event)

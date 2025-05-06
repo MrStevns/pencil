@@ -52,7 +52,7 @@ public:
     static const qreal WIDTH_MAX;
 
     void loadSettings() override;
-    bool isActive() const override { return mInterpolator.isActive(); };
+    bool isActive() const override { return mInterpolator.isActive(); }
 
     bool keyPressEvent(QKeyEvent* event) override;
     void pointerPressEvent(PointerEvent* event) override;
@@ -65,7 +65,8 @@ public:
 
     void paint(QPainter& painter, const QRect& blitRect) override;
 
-    void doStroke(float brushWidth, float brushFeather, float brushOpacity);
+    void doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity);
+    void doPath(const QList<QPointF>& points, QBrush brush, QPen pen);
 
 public slots:
     void onPreferenceChanged(SETTING setting);
