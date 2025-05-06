@@ -207,7 +207,7 @@ void StrokeTool::doStroke(float brushWidth, float brushFeather, float brushOpaci
     QList<QPointF> p = mInterpolator.interpolateStroke();
 
     float totalDistance = 0.f;
-    float dabSpacing = brushWidth * 0.2f;
+    float dabSpacing = brushWidth * 0.1f;
 
     for (int i = 1; i < p.size(); i += 1) {
         QPointF lastPoint = mEditor->view()->mapScreenToCanvas(p[i-1]);
@@ -228,7 +228,7 @@ void StrokeTool::doStroke(float brushWidth, float brushFeather, float brushOpaci
         // add the potentially missing leftover distance to the current distance
         totalDistance = leftOverDistance + distance;
 
-        // will dap until totalDistance is less than dabSpacing
+        // Draw dabs until totalDistance is less than dabSpacing
         while (totalDistance >= dabSpacing)
         {
             // make sure to add potentially missed distance
@@ -252,8 +252,7 @@ void StrokeTool::doStroke(float brushWidth, float brushFeather, float brushOpaci
         leftOverDistance = totalDistance;
     }
 
-    // there might still be dabbing we didn't cover
-    // so set the remaining to our new left over distance
+    // set the remaining dabs for next stroke
     mLeftOverDabDistance = totalDistance;
 }
 
