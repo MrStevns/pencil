@@ -241,9 +241,6 @@ void BrushTool::drawStroke()
         qreal brushWidth = properties.width * pressure;
         mCurrentWidth = brushWidth;
 
-        // qreal brushStep = (0.5 * brushWidth);
-        // brushStep = qMax(1.0, brushStep);
-
         doStroke(brushWidth, properties.feather, opacity);
     }
     else if (layer->type() == Layer::VECTOR)
@@ -257,11 +254,14 @@ void BrushTool::drawStroke()
                  Qt::RoundCap,
                  Qt::RoundJoin);
 
-        if (p.size() == 4)
+        if (p.size() > 3)
         {
-            QPainterPath path(p[0]);
-            path.cubicTo(p[1], p[2], p[3]);
+            QPainterPath path;
+            path.moveTo(p[0]);
+            for (int i = 0; i < p.count(); i += 1) {
+                path.lineTo(p[i].x(), p[i].y());
 
+            }
             mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
         }
     }

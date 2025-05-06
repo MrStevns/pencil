@@ -207,6 +207,7 @@ void StrokeTool::doStroke(float brushWidth, float brushFeather, float brushOpaci
     QList<QPointF> p = mInterpolator.interpolateStroke();
 
     float totalDistance = 0.f;
+    float dabSpacing = brushWidth * 0.2f;
 
     for (int i = 1; i < p.size(); i += 1) {
         QPointF lastPoint = mEditor->view()->mapScreenToCanvas(p[i-1]);
@@ -215,8 +216,6 @@ void StrokeTool::doStroke(float brushWidth, float brushFeather, float brushOpaci
         // calculate the euclidean distance
         // to find the distance that we need to cover with dabs
         float distance = QLineF(lastPoint, currentPoint).length();
-
-        float spacing = brushWidth * 0.2f;
 
         // Calculate the unit direction vector
         float dirX = (currentPoint.x() - lastPoint.x()) / distance;
@@ -229,31 +228,25 @@ void StrokeTool::doStroke(float brushWidth, float brushFeather, float brushOpaci
         // add the potentially missing leftover distance to the current distance
         totalDistance = leftOverDistance + distance;
 
-        // will dap until totalDistance is less than spacing
-        while (totalDistance >= spacing)
+        // will dap until totalDistance is less than dabSpacing
+        while (totalDistance >= dabSpacing)
         {
             // make sure to add potentially missed distance
             // to our offset
+            int dabDelta = dabSpacing;
             if (leftOverDistance > 0) {
-                offsetX += dirX * (spacing - leftOverDistance);
-                offsetY += dirY * (spacing - leftOverDistance);
-
-                leftOverDistance -= spacing;
-            } else {
-
-                // otherwise just calculate the offset from the
-                // direction (dirX, dirY) and spacing.
-                offsetX += dirX * spacing;
-                offsetY += dirY * spacing;
-
+                dabDelta -= leftOverDistance;
+                leftOverDistance -= dabSpacing;
             }
+            offsetX += dirX * dabDelta;
+            offsetY += dirY * dabDelta;
 
-            QPointF stampAt = QPointF(lastPoint.x()+offsetX, lastPoint.y()+offsetY);
+            const QPointF& stampAt = QPointF(lastPoint.x()+offsetX, lastPoint.y()+offsetY);
 
             drawDab(stampAt, brushWidth, brushFeather, brushOpacity);
 
             // remove the distance we've covered already
-            totalDistance -= spacing;
+            totalDistance -= dabSpacing;
         }
 
         leftOverDistance = totalDistance;
