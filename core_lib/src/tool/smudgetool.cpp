@@ -271,8 +271,6 @@ void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
         if (layer->type() == Layer::BITMAP)
         {
             drawStroke();
-            mScribbleArea->paintBitmapBuffer();
-            mScribbleArea->clearDrawingBuffer();
             endStroke();
         }
         else if (layer->type() == Layer::VECTOR)

@@ -19,11 +19,21 @@ GNU General Public License for more details.
 
 #include <QKeyEvent>
 #include "scribblearea.h"
+
 #include "viewmanager.h"
 #include "preferencemanager.h"
-#include "editor.h"
+#include "selectionmanager.h"
 #include "toolmanager.h"
+#include "colormanager.h"
+#include "layermanager.h"
+
+#include "editor.h"
 #include "mathutils.h"
+#include "beziercurve.h"
+#include "vectorimage.h"
+#include "layerbitmap.h"
+#include "layervector.h"
+#include "layer.h"
 
 #include "QPainterPath"
 
@@ -173,6 +183,8 @@ bool StrokeTool::emptyFrameActionEnabled()
 
 void StrokeTool::endStroke()
 {
+    applyPaintedBuffer();
+
     mInterpolator.interpolateEnd();
     mStrokePressures << mInterpolator.getPressure();
     mStrokePoints.clear();
@@ -194,7 +206,7 @@ void StrokeTool::drawStroke()
         // get last pixel before interpolation initializes
         // QPointF startStrokes = mInterpolator.interpolateStart(getLastPixel());
         // mStrokePoints << mEditor->view()->mapScreenToCanvas(startStrokes);
-        // mStrokePressures << mInterpolator.getPressure();
+        mStrokePressures << mInterpolator.getPressure();
     }
     else
     {
@@ -266,7 +278,64 @@ void StrokeTool::doPath(const QList<QPointF>& points, QBrush brush, QPen pen)
         path.lineTo(points[i].x(), points[i].y());
     }
 
-    mScribbleArea->drawPath(path, pen, brush, QPainter::CompositionMode_Source);
+    drawPath(path, pen, brush);
+}
+
+void StrokeTool::applyPaintedBuffer()
+{
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+    int currentFrame = mEditor->currentFrame();
+
+    if (currentLayer->type() == Layer::BITMAP) {
+        BitmapImage* bitmapImage = static_cast<LayerBitmap*>(currentLayer)->getLastBitmapImageAtFrame(currentFrame);
+        if (bitmapImage) {
+            applyPaintedBuffer(bitmapImage);
+        }
+    } else if (currentLayer->type() == Layer::VECTOR) {
+        VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(currentFrame, 0);
+        if (vectorImage) {
+            applyPaintedBuffer(vectorImage);
+        }
+    }
+}
+
+void StrokeTool::applyPaintedBuffer(VectorImage* vectorImage)
+{
+    // FIXME: doesn't currently work with the way the stroke interpolator works
+    // might need it's own stroke interpolator
+    QList<QPointF> points = mInterpolator.interpolateStroke();
+
+    for (QPointF& point : points) {
+        point = mEditor->view()->mapScreenToCanvas(point);
+    }
+
+    qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
+
+    BezierCurve curve(points);
+    curve.setWidth(properties.width);
+    curve.setFeather(properties.feather);
+    curve.setFilled(false);
+    curve.setInvisibility(properties.invisibility);
+    curve.setVariableWidth(properties.pressure);
+    curve.setColorNumber(mEditor->color()->frontColorNumber());
+
+    vectorImage->addCurve(curve, mEditor->view()->scaling(), false);
+
+    if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
+    {
+        mEditor->deselectAll();
+    }
+
+    vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
+
+    // Clear the temporary pixel path
+    mScribbleArea->clearDrawingBuffer();
+    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+}
+
+void StrokeTool::applyPaintedBuffer(BitmapImage* bitmapImage)
+{
+    mScribbleArea->paintBitmapBuffer(bitmapImage);
 }
 
 bool StrokeTool::handleQuickSizing(PointerEvent* event)

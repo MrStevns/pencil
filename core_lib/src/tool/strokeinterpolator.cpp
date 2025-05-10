@@ -128,7 +128,10 @@ void StrokeInterpolator::smoothMousePos(QPointF pos)
             strokeQueue.pop_front();
         }
 
-        strokeQueue.push_back(smoothPos);
+        // Note(MrStevns): Was smoothPos, but we don't want a smooth pos, unless explicit said
+        // maybe create a GUI control to set the smoothed position?
+        strokeQueue.push_back(pos);
+        // qDebug() << strokeQueue;
     }
     else if (mStabilizerLevel == StabilizationLevel::STRONG)
     {

@@ -29,6 +29,9 @@ GNU General Public License for more details.
 #include <QList>
 #include <QPointF>
 
+class VectorImage;
+class BitmapImage;
+
 
 class StrokeTool : public BaseTool
 {
@@ -68,6 +71,8 @@ public:
     void doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity);
     void doPath(const QList<QPointF>& points, QBrush brush, QPen pen);
 
+    void applyPaintedBuffer();
+
 public slots:
     void onPreferenceChanged(SETTING setting);
     void onViewUpdated();
@@ -81,6 +86,7 @@ protected:
     QPointF getLastPoint() const;
 
     virtual void drawDab(const QPointF&, float, float, float) { }
+    virtual void drawPath(const QPainterPath&, QPen, QBrush) { }
 
     // dynamic cursor adjustment
     virtual bool startAdjusting(Qt::KeyboardModifiers modifiers);
@@ -120,6 +126,10 @@ protected:
     StrokeInterpolator mInterpolator;
 
     const UndoSaveState* mUndoSaveState = nullptr;
+
+private:
+    void applyPaintedBuffer(VectorImage* vectorImage);
+    void applyPaintedBuffer(BitmapImage* bitmapImage);
 };
 
 #endif // STROKETOOL_H

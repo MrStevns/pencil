@@ -186,9 +186,9 @@ void BrushTool::pointerReleaseEvent(PointerEvent *event)
         drawStroke();
     }
 
-    if (layer->type() == Layer::VECTOR) {
-        paintVectorStroke(layer);
-    }
+    // if (layer->type() == Layer::VECTOR) {
+    //     paintVectorStroke(layer);
+    // }
 
     endStroke();
 
@@ -225,6 +225,11 @@ void BrushTool::drawDab(const QPointF& point, float width, float feather, float 
                              QPainter::CompositionMode_SourceOver,
                              opacity,
                              true);
+}
+
+void BrushTool::drawPath(const QPainterPath& path, QPen pen, QBrush brush)
+{
+    mScribbleArea->drawPath(path, pen, brush, QPainter::CompositionMode_Source);
 }
 
 void BrushTool::drawStroke()
