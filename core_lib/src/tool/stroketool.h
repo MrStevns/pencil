@@ -69,6 +69,7 @@ public:
     void paint(QPainter& painter, const QRect& blitRect) override;
 
     void doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity);
+    void doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity, float dabSpacing);
     void doPath(const QList<QPointF>& points, QBrush brush, QPen pen);
 
     void applyPaintedBuffer();

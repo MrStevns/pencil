@@ -321,7 +321,7 @@ void SmudgeTool::drawStroke()
     qreal offset = qMax(0.0, width - 0.5 * properties.feather) / brushWidth;
 
     targetImage.paste(&mScribbleArea->mTiledBuffer);
-    doStroke(p, brushWidth, offset, opacity);
+    doStroke(p, brushWidth, offset, opacity, 1);
 }
 
 void SmudgeTool::drawDab(const QPointF& point, float width, float feather, float opacity)

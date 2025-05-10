@@ -214,12 +214,11 @@ void StrokeTool::drawStroke()
     }
 }
 
-void StrokeTool::doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity) {
-
+void StrokeTool::doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity, float dabSpacing)
+{
     float leftOverDistance = mLeftOverDabDistance;
 
     float totalDistance = 0.f;
-    float dabSpacing = brushWidth * 0.1f;
 
     for (int i = 1; i < points.size(); i += 1) {
         QPointF lastPoint = mEditor->view()->mapScreenToCanvas(points[i-1]);
@@ -266,6 +265,11 @@ void StrokeTool::doStroke(const QList<QPointF>& points, float brushWidth, float 
 
     // set the remaining dabs for next stroke
     mLeftOverDabDistance = totalDistance;
+}
+
+void StrokeTool::doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity)
+{
+    doStroke(points,brushWidth, brushFeather, brushOpacity, brushWidth*0.1);
 }
 
 void StrokeTool::doPath(const QList<QPointF>& points, QBrush brush, QPen pen)
