@@ -244,7 +244,7 @@ void StrokeTool::doStroke(const QList<QPointF>& points, float brushWidth, float 
         {
             // make sure to add potentially missed distance
             // to our offset
-            int dabDelta = dabSpacing;
+            float dabDelta = dabSpacing;
             if (leftOverDistance > 0) {
                 dabDelta -= leftOverDistance;
                 leftOverDistance -= dabSpacing;
