@@ -48,6 +48,9 @@ public:
     void setAA(const int aa) override;
     void setStabilizerLevel(const int level) override;
 
+private:
+    void drawDab(const QPointF& point, float brushWidth, float brushFeather, float brushOpacity) override;
+
 protected:
     QPointF mLastBrushPoint;
     QPointF mMouseDownPoint;

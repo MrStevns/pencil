@@ -53,7 +53,10 @@ void SmudgeTool::loadSettings()
     properties.width = settings.value("smudgeWidth", 24.0).toDouble();
     properties.feather = settings.value("smudgeFeather", 48.0).toDouble();
     properties.pressure = false;
-    properties.stabilizerLevel = -1;
+
+    // TODO(MrStevns): fix properly, this makes it work for now but we need to deal with the stabilizer setting properly
+
+    properties.stabilizerLevel = 1;
 
     mQuickSizingProperties.insert(Qt::ShiftModifier, WIDTH);
     mQuickSizingProperties.insert(Qt::ControlModifier, FEATHER);
@@ -143,6 +146,11 @@ void SmudgeTool::pointerPressEvent(PointerEvent* event)
     Layer* layer = mEditor->layers()->currentLayer();
     auto selectMan = mEditor->select();
     if (layer == nullptr) { return; }
+
+    if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
+    {
+        mInterpolator.setStabilizerLevel(properties.stabilizerLevel);
+    }
 
     if (event->button() == Qt::LeftButton)
     {
@@ -295,78 +303,46 @@ void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
 
 void SmudgeTool::drawStroke()
 {
+    StrokeTool::drawStroke();
+
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer == nullptr || !layer->isPaintable()) { return; }
 
     BitmapImage *sourceImage = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(mEditor->currentFrame(), 0);
     if (sourceImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
-    BitmapImage targetImage = sourceImage->copy();
-    StrokeTool::drawStroke();
-    QList<QPointF> p = mInterpolator.interpolateStroke();
 
-    for (int i = 0; i < p.size(); i++)
-    {
-        p[i] = mEditor->view()->mapScreenToCanvas(p[i]);
-    }
+    // TODO: Figure out a better way to copy the target image
+    targetImage = sourceImage->copy();
+    QList<QPointF> p = mInterpolator.interpolateStroke();
 
     qreal opacity = 1.0;
     qreal width = properties.width;
     qreal brushWidth = width + 0.0 * properties.feather;
     qreal offset = qMax(0.0, width - 0.5 * properties.feather) / brushWidth;
 
-    QPointF a = mLastBrushPoint;
-    QPointF b = getCurrentPoint();
+    targetImage.paste(&mScribbleArea->mTiledBuffer);
+    doStroke(p, brushWidth, offset, opacity);
+}
 
+void SmudgeTool::drawDab(const QPointF& point, float width, float feather, float opacity)
+{
+    qreal brushWidth = width + 0.0 * properties.feather;
+    qreal offset = qMax(0.0, width - 0.5 * properties.feather) / brushWidth;
 
-    if (toolMode == 1) // liquify hard
-    {
-        qreal brushStep = 2;
-        qreal distance = QLineF(b, a).length() / 2.0;
-        int steps = qRound(distance / brushStep);
-
-        QPointF sourcePoint = mLastBrushPoint;
-        for (int i = 0; i < steps; i++)
-        {
-            targetImage.paste(&mScribbleArea->mTiledBuffer);
-            QPointF targetPoint = mLastBrushPoint + (i + 1) * (brushStep) * (b - mLastBrushPoint) / distance;
-            mScribbleArea->liquifyBrush(&targetImage,
-                                        sourcePoint,
-                                        targetPoint,
-                                        brushWidth,
-                                        offset,
-                                        opacity);
-
-            if (i == (steps - 1))
-            {
-                mLastBrushPoint = targetPoint;
-            }
-            sourcePoint = targetPoint;
-        }
-    }
-    else // liquify smooth
-    {
-        qreal brushStep = 2.0;
-        qreal distance = QLineF(b, a).length();
-        int steps = qRound(distance / brushStep);
-
-        QPointF sourcePoint = mLastBrushPoint;
-        for (int i = 0; i < steps; i++)
-        {
-            targetImage.paste(&mScribbleArea->mTiledBuffer);
-            QPointF targetPoint = mLastBrushPoint + (i + 1) * (brushStep) * (b - mLastBrushPoint) / distance;
-            mScribbleArea->blurBrush(&targetImage,
-                                     sourcePoint,
-                                     targetPoint,
-                                     brushWidth,
-                                     offset,
-                                     opacity);
-
-            if (i == (steps - 1))
-            {
-                mLastBrushPoint = targetPoint;
-            }
-            sourcePoint = targetPoint;
-        }
+    if (toolMode == 0) {
+    mScribbleArea->blurBrush(&targetImage,
+                             getLastPoint(),
+                             point,
+                             brushWidth,
+                             offset,
+                             opacity);
+    } else {
+        mScribbleArea->liquifyBrush(&targetImage,
+                                    getLastPoint(),
+                                    point,
+                                    brushWidth,
+                                    offset,
+                                    opacity);
     }
 }
 

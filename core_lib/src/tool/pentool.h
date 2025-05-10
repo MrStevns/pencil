@@ -47,6 +47,8 @@ public:
     void setStabilizerLevel(const int level) override;
 
 private:
+    void drawDab(const QPointF& point, float width, float feather, float opacity) override;
+
     QPointF mLastBrushPoint;
     QPointF mMouseDownPoint;
 };

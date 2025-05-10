@@ -187,10 +187,10 @@ void PenTool::paintAt(QPointF point)
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
         qreal brushWidth = properties.width * pressure;
 
-        mScribbleArea->drawPen(point,
-                               brushWidth,
-                               mEditor->color()->frontColor(),
-                               properties.useAA);
+        drawDab(point,
+                brushWidth,
+                properties.feather,
+                1.0);
     }
 }
 
@@ -206,30 +206,7 @@ void PenTool::drawStroke()
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
         qreal brushWidth = properties.width * pressure;
 
-        // TODO: Make popup widget for less important properties,
-        // Eg. stepsize should be a slider.. will have fixed (0.3) value for now.
-        qreal brushStep = (0.5 * brushWidth);
-        brushStep = qMax(1.0, brushStep);
-
-        QPointF a = mLastBrushPoint;
-        QPointF b = getCurrentPoint();
-
-        qreal distance = 4 * QLineF(b, a).length();
-        int steps = qRound(distance / brushStep);
-
-        for (int i = 0; i < steps; i++)
-        {
-            QPointF point = mLastBrushPoint + (i + 1) * brushStep * (getCurrentPoint() - mLastBrushPoint) / distance;
-            mScribbleArea->drawPen(point,
-                                   brushWidth,
-                                   mEditor->color()->frontColor(),
-                                   properties.useAA);
-
-            if (i == (steps - 1))
-            {
-                mLastBrushPoint = getCurrentPoint();
-            }
-        }
+        doStroke(p, brushWidth, properties.feather, 1);
     }
     else if (layer->type() == Layer::VECTOR)
     {
@@ -249,6 +226,14 @@ void PenTool::drawStroke()
             mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
         }
     }
+}
+
+void PenTool::drawDab(const QPointF& point, float width, float feather, float opacity)
+{
+    mScribbleArea->drawPen(point,
+                           width,
+                           mEditor->color()->frontColor(),
+                           properties.useAA);
 }
 
 void PenTool::paintVectorStroke(Layer* layer)

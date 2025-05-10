@@ -205,14 +205,7 @@ void EraserTool::paintAt(QPointF point)
         qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
         qreal brushWidth = properties.width * pressure;
 
-        mScribbleArea->drawBrush(point,
-                                 brushWidth,
-                                 properties.feather,
-                                 QColor(255, 255, 255, 255),
-                                 QPainter::CompositionMode_SourceOver,
-                                 opacity,
-                                 properties.useFeather,
-                                 properties.useAA == ON);
+        drawDab(point, brushWidth, properties.feather, opacity);
     }
 }
 
@@ -229,34 +222,7 @@ void EraserTool::drawStroke()
         qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
         qreal brushWidth = properties.width * pressure;
 
-        qreal brushStep = (0.5 * brushWidth);
-        brushStep = qMax(1.0, brushStep);
-
-        BlitRect rect;
-
-        QPointF a = mLastBrushPoint;
-        QPointF b = getCurrentPoint();
-
-        qreal distance = 4 * QLineF(b, a).length();
-        int steps = qRound(distance / brushStep);
-
-        for (int i = 0; i < steps; i++)
-        {
-            QPointF point = mLastBrushPoint + (i + 1) * brushStep * (getCurrentPoint() - mLastBrushPoint) / distance;
-
-            mScribbleArea->drawBrush(point,
-                                     brushWidth,
-                                     properties.feather,
-                                     Qt::white,
-                                     QPainter::CompositionMode_SourceOver,
-                                     opacity,
-                                     properties.useFeather,
-                                     properties.useAA == ON);
-            if (i == (steps - 1))
-            {
-                mLastBrushPoint = getCurrentPoint();
-            }
-        }
+        doStroke(p, brushWidth, properties.feather, opacity);
     }
     else if (layer->type() == Layer::VECTOR)
     {
@@ -277,6 +243,18 @@ void EraserTool::drawStroke()
             mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
         }
     }
+}
+
+void EraserTool::drawDab(const QPointF& point, float brushWidth, float brushFeather, float brushOpacity)
+{
+    mScribbleArea->drawBrush(point,
+                             brushWidth,
+                             brushFeather,
+                             Qt::white,
+                             QPainter::CompositionMode_SourceOver,
+                             brushOpacity,
+                             properties.useFeather,
+                             properties.useAA == ON);
 }
 
 void EraserTool::removeVectorPaint()

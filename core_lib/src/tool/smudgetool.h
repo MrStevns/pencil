@@ -20,6 +20,8 @@ GNU General Public License for more details.
 
 #include "stroketool.h"
 
+#include "bitmapimage.h"
+
 class SmudgeTool : public StrokeTool
 {
     Q_OBJECT
@@ -49,10 +51,13 @@ protected:
     bool emptyFrameActionEnabled() override;
 
 private:
+    void drawDab(const QPointF& point, float width, float feather, float opacity) override;
 
     QPointF offsetFromPressPos();
 
     QPointF mLastBrushPoint;
+
+    BitmapImage targetImage;
 };
 
 #endif // SMUDGETOOL_H
