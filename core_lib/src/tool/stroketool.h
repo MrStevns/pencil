@@ -102,7 +102,6 @@ protected:
     QList<QPointF> mStrokePoints;
     QList<qreal> mStrokePressures;
 
-    qreal mCurrentWidth    = 0.0;
     qreal mCurrentPressure = 0.5;
 
     float mLeftOverDabDistance = 0.0;

@@ -198,21 +198,13 @@ void BrushTool::pointerReleaseEvent(PointerEvent *event)
 // draw a single paint dab at the given location
 void BrushTool::paintAt(QPointF point)
 {
-    //qDebug() << "Made a single dab at " << point;
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer->type() == Layer::BITMAP)
     {
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
         qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
         qreal brushWidth = properties.width * pressure;
-        mCurrentWidth = brushWidth;
-        mScribbleArea->drawBrush(point,
-                                 brushWidth,
-                                 properties.feather,
-                                 mEditor->color()->frontColor(),
-                                 QPainter::CompositionMode_SourceOver,
-                                 opacity,
-                                 true);
+        drawDab(point, brushWidth, properties.feather, opacity);
     }
 }
 
@@ -244,7 +236,6 @@ void BrushTool::drawStroke()
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
         qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
         qreal brushWidth = properties.width * pressure;
-        mCurrentWidth = brushWidth;
 
         doStroke(p, brushWidth, properties.feather, opacity);
     }

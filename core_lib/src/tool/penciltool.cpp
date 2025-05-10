@@ -216,12 +216,10 @@ void PencilTool::paintAt(QPointF point)
         qreal brushWidth = properties.width * pressure;
         qreal fixedBrushFeather = properties.feather;
 
-        mCurrentWidth = brushWidth;
-        mScribbleArea->drawPencil(point,
-                                  brushWidth,
-                                  fixedBrushFeather,
-                                  mEditor->color()->frontColor(),
-                                  opacity);
+        drawDab(point,
+                brushWidth,
+                fixedBrushFeather,
+                opacity);
     }
 }
 
@@ -236,37 +234,14 @@ void PencilTool::drawStroke()
     if (layer->type() == Layer::BITMAP)
     {
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
+        qreal feather = properties.feather;
         qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
         qreal brushWidth = properties.width * pressure;
-        mCurrentWidth = brushWidth;
 
-        qreal fixedBrushFeather = properties.feather;
-        qreal brushStep = qMax(1.0, (0.5 * brushWidth));
-
-        QPointF a = mLastBrushPoint;
-        QPointF b = getCurrentPoint();
-
-        qreal distance = 4 * QLineF(b, a).length();
-        int steps = qRound(distance / brushStep);
-
-        for (int i = 0; i < steps; i++)
-        {
-            QPointF point = mLastBrushPoint + (i + 1) * brushStep * (getCurrentPoint() - mLastBrushPoint) / distance;
-            mScribbleArea->drawPencil(point,
-                                      brushWidth,
-                                      fixedBrushFeather,
-                                      mEditor->color()->frontColor(),
-                                      opacity);
-
-            if (i == (steps - 1))
-            {
-                mLastBrushPoint = getCurrentPoint();
-            }
-        }
+        doStroke(p, brushWidth, feather, opacity);
     }
     else if (layer->type() == Layer::VECTOR)
     {
-        mCurrentWidth = 0; // FIXME: WTF?
         QPen pen(mEditor->color()->frontColor(),
                  1,
                  Qt::DotLine,
@@ -282,6 +257,15 @@ void PencilTool::drawStroke()
             mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
         }
     }
+}
+
+void PencilTool::drawDab(const QPointF& point, float width, float feather, float opacity)
+{
+    mScribbleArea->drawPencil(point,
+                              width,
+                              feather,
+                              mEditor->color()->frontColor(),
+                              opacity);
 }
 
 void PencilTool::paintVectorStroke(Layer* layer)

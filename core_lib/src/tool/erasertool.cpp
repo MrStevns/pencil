@@ -204,7 +204,6 @@ void EraserTool::paintAt(QPointF point)
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
         qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
         qreal brushWidth = properties.width * pressure;
-        mCurrentWidth = brushWidth;
 
         mScribbleArea->drawBrush(point,
                                  brushWidth,
@@ -229,7 +228,6 @@ void EraserTool::drawStroke()
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
         qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
         qreal brushWidth = properties.width * pressure;
-        mCurrentWidth = brushWidth;
 
         qreal brushStep = (0.5 * brushWidth);
         brushStep = qMax(1.0, brushStep);
@@ -262,12 +260,11 @@ void EraserTool::drawStroke()
     }
     else if (layer->type() == Layer::VECTOR)
     {
-        mCurrentWidth = properties.width;
+        qreal brushWidth = properties.width;
         if (properties.pressure)
         {
-            mCurrentWidth = (mCurrentWidth + (mInterpolator.getPressure() * mCurrentWidth)) * 0.5;
+            brushWidth = (brushWidth + (mInterpolator.getPressure() * brushWidth)) * 0.5;
         }
-        qreal brushWidth = mCurrentWidth;
 
         QPen pen(Qt::white, brushWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 

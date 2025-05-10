@@ -186,7 +186,6 @@ void PenTool::paintAt(QPointF point)
     {
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
         qreal brushWidth = properties.width * pressure;
-        mCurrentWidth = brushWidth;
 
         mScribbleArea->drawPen(point,
                                brushWidth,
@@ -206,7 +205,6 @@ void PenTool::drawStroke()
     {
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
         qreal brushWidth = properties.width * pressure;
-        mCurrentWidth = brushWidth;
 
         // TODO: Make popup widget for less important properties,
         // Eg. stepsize should be a slider.. will have fixed (0.3) value for now.

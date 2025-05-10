@@ -310,11 +310,9 @@ void SmudgeTool::drawStroke()
     }
 
     qreal opacity = 1.0;
-    mCurrentWidth = properties.width;
-    qreal brushWidth = mCurrentWidth + 0.0 * properties.feather;
-    qreal offset = qMax(0.0, mCurrentWidth - 0.5 * properties.feather) / brushWidth;
-    //opacity = currentPressure; // todo: Probably not interesting?!
-    //brushWidth = brushWidth * opacity;
+    qreal width = properties.width;
+    qreal brushWidth = width + 0.0 * properties.feather;
+    qreal offset = qMax(0.0, width - 0.5 * properties.feather) / brushWidth;
 
     QPointF a = mLastBrushPoint;
     QPointF b = getCurrentPoint();

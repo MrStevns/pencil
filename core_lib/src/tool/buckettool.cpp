@@ -268,11 +268,11 @@ void BucketTool::drawStroke()
 
     if (layer->type() == Layer::VECTOR)
     {
-        mCurrentWidth = 30;
+        int width = 30;
         QColor pathColor = qPremultiply(mEditor->color()->frontColor().rgba());
 
         QPen pen(pathColor,
-                 mCurrentWidth * mEditor->view()->scaling(),
+                 width * mEditor->view()->scaling(),
                  Qt::NoPen,
                  Qt::RoundCap,
                  Qt::RoundJoin);

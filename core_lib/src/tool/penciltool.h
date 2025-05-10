@@ -52,6 +52,9 @@ public:
     void setUseFillContour(const bool useFillContour) override;
 
 private:
+
+    void drawDab(const QPointF& point, float width, float feather, float opacity) override;
+
     QPointF mLastBrushPoint{ 0, 0 };
     QPointF mMouseDownPoint;
 };
