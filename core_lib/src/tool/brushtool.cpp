@@ -186,10 +186,6 @@ void BrushTool::pointerReleaseEvent(PointerEvent *event)
         drawStroke();
     }
 
-    // if (layer->type() == Layer::VECTOR) {
-    //     paintVectorStroke(layer);
-    // }
-
     endStroke();
 
     StrokeTool::pointerReleaseEvent(event);
@@ -227,7 +223,6 @@ void BrushTool::drawPath(const QPainterPath& path, QPen pen, QBrush brush)
 void BrushTool::drawStroke()
 {
     StrokeTool::drawStroke();
-    QList<QPointF> p = mInterpolator.interpolateStroke();
 
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -237,7 +232,7 @@ void BrushTool::drawStroke()
         qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
         qreal brushWidth = properties.width * pressure;
 
-        doStroke(p, brushWidth, properties.feather, opacity);
+        doStroke(mStrokeSegment, brushWidth, properties.feather, opacity);
     }
     else if (layer->type() == Layer::VECTOR)
     {
@@ -250,41 +245,32 @@ void BrushTool::drawStroke()
                  Qt::RoundCap,
                  Qt::RoundJoin);
 
-        doPath(p, Qt::NoBrush, pen);
+        doPath(mStrokeSegment, Qt::NoBrush, pen);
     }
 }
 
 // This function uses the points from DrawStroke
 // and turns them into vector lines.
-void BrushTool::paintVectorStroke(Layer* layer)
+void BrushTool::applyVectorBuffer(VectorImage* vectorImage)
 {
-    if (mStrokePoints.empty())
-        return;
+    qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
 
-    if (layer->type() == Layer::VECTOR && mStrokePoints.size() > -1)
+    BezierCurve curve(mStrokePoints, mStrokePressures, tol);
+    curve.setWidth(properties.width);
+    curve.setFeather(properties.feather);
+    curve.setFilled(false);
+    curve.setInvisibility(properties.invisibility);
+    curve.setVariableWidth(properties.pressure);
+    curve.setColorNumber(mEditor->color()->frontColorNumber());
+
+    vectorImage->addCurve(curve, mEditor->view()->scaling(), false);
+
+    if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
     {
-        // Clear the temporary pixel path
-        mScribbleArea->clearDrawingBuffer();
-        qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
-
-        BezierCurve curve(mStrokePoints, mStrokePressures, tol);
-        curve.setWidth(properties.width);
-        curve.setFeather(properties.feather);
-        curve.setFilled(false);
-        curve.setInvisibility(properties.invisibility);
-        curve.setVariableWidth(properties.pressure);
-        curve.setColorNumber(mEditor->color()->frontColorNumber());
-
-        VectorImage* vectorImage = static_cast<VectorImage*>(layer->getLastKeyFrameAtPosition(mEditor->currentFrame()));
-        vectorImage->addCurve(curve, mEditor->view()->scaling(), false);
-
-        if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
-        {
-            mEditor->deselectAll();
-        }
-
-        vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
-
-        mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+        mEditor->deselectAll();
     }
+
+    vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
+
+    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
 }

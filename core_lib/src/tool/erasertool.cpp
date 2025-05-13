@@ -189,7 +189,6 @@ void EraserTool::pointerReleaseEvent(PointerEvent *event)
         drawStroke();
     }
 
-    removeVectorPaint();
     endStroke();
 
     StrokeTool::pointerReleaseEvent(event);
@@ -234,14 +233,7 @@ void EraserTool::drawStroke()
 
         QPen pen(Qt::white, brushWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
-        if (p.size() == 4)
-        {
-            QPainterPath path(p[0]);
-            path.cubicTo(p[1],
-                         p[2],
-                         p[3]);
-            mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
-        }
+        doPath(mStrokeSegment, Qt::NoBrush, pen);
     }
 }
 
@@ -257,21 +249,21 @@ void EraserTool::drawDab(const QPointF& point, float brushWidth, float brushFeat
                              properties.useAA == ON);
 }
 
-void EraserTool::removeVectorPaint()
+void EraserTool::drawPath(const QPainterPath& path, QPen pen, QBrush brush)
 {
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer->type() == Layer::VECTOR)
-    {
-        mScribbleArea->clearDrawingBuffer();
-        VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-        if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
-        // Clear the area containing the last point
-        //vectorImage->removeArea(lastPoint);
-        // Clear the temporary pixel path
-        vectorImage->deleteSelectedPoints();
+    mScribbleArea->drawPath(path, pen, brush, QPainter::CompositionMode_Source);
+}
 
-        mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-    }
+void EraserTool::applyVectorBuffer(VectorImage* vectorImage)
+{
+    // Clear the area containing the current point
+    vectorImage->removeArea(getCurrentPoint());
+    // Clear the temporary pixel path
+    vectorImage->deleteSelectedPoints();
+
+    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+
+    StrokeTool::applyVectorBuffer(vectorImage);
 }
 
 void EraserTool::updateStrokes()

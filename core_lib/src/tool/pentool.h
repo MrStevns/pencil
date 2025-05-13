@@ -39,7 +39,8 @@ public:
 
     void drawStroke();
     void paintAt(QPointF point);
-    void paintVectorStroke(Layer *layer);
+
+    void applyVectorBuffer(VectorImage* vectorImage) override;
 
     void setWidth(const qreal width) override;
     void setPressure(const bool pressure) override;
@@ -47,6 +48,7 @@ public:
     void setStabilizerLevel(const int level) override;
 
 private:
+    void drawPath(const QPainterPath& path, QPen pen, QBrush brush) override;
     void drawDab(const QPointF& point, float width, float feather, float opacity) override;
 
     QPointF mLastBrushPoint;

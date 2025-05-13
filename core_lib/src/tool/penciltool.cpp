@@ -195,10 +195,6 @@ void PencilTool::pointerReleaseEvent(PointerEvent *event)
         drawStroke();
     }
 
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer->type() == Layer::VECTOR) {
-        paintVectorStroke(layer);
-    }
     endStroke();
 
     StrokeTool::pointerReleaseEvent(event);
@@ -248,14 +244,7 @@ void PencilTool::drawStroke()
                  Qt::RoundCap,
                  Qt::RoundJoin);
 
-        if (p.size() == 4)
-        {
-            QPainterPath path(p[0]);
-            path.cubicTo(p[1],
-                         p[2],
-                         p[3]);
-            mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
-        }
+        doPath(mStrokeSegment, Qt::NoBrush, pen);
     }
 }
 
@@ -268,13 +257,13 @@ void PencilTool::drawDab(const QPointF& point, float width, float feather, float
                               opacity);
 }
 
-void PencilTool::paintVectorStroke(Layer* layer)
+void PencilTool::drawPath(const QPainterPath & path, QPen pen, QBrush brush)
 {
-    if (mStrokePoints.empty())
-        return;
+    mScribbleArea->drawPath(path, pen, brush, QPainter::CompositionMode_Source);
+}
 
-    // Clear the temporary pixel path
-    mScribbleArea->clearDrawingBuffer();
+void PencilTool::applyVectorBuffer(VectorImage* vectorImage)
+{
     qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
 
     BezierCurve curve(mStrokePoints, mStrokePressures, tol);
@@ -284,8 +273,7 @@ void PencilTool::paintVectorStroke(Layer* layer)
     curve.setInvisibility(true);
     curve.setVariableWidth(false);
     curve.setColorNumber(mEditor->color()->frontColorNumber());
-    VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-    if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
+
     vectorImage->addCurve(curve, qAbs(mEditor->view()->scaling()), properties.vectorMergeEnabled);
 
     if (properties.useFillContour)

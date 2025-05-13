@@ -72,7 +72,7 @@ public:
     void doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity, float dabSpacing);
     void doPath(const QList<QPointF>& points, QBrush brush, QPen pen);
 
-    void applyPaintedBuffer();
+    void applyKeyFrameBuffer();
 
 public slots:
     void onPreferenceChanged(SETTING setting);
@@ -89,6 +89,9 @@ protected:
     virtual void drawDab(const QPointF&, float, float, float) { }
     virtual void drawPath(const QPainterPath&, QPen, QBrush) { }
 
+    virtual void applyVectorBuffer(VectorImage* vectorImage);
+    virtual void applyBitmapBuffer(BitmapImage* bitmapImage);
+
     // dynamic cursor adjustment
     virtual bool startAdjusting(Qt::KeyboardModifiers modifiers);
     virtual void stopAdjusting();
@@ -100,6 +103,10 @@ protected:
     QHash<Qt::KeyboardModifiers, ToolPropertyType> mQuickSizingProperties;
     bool mFirstDraw = false;
 
+    // The segment we need to draw the current stroke
+    QList<QPointF> mStrokeSegment;
+
+    // The data points we need to recreate the stroke as a BezierCurve
     QList<QPointF> mStrokePoints;
     QList<qreal> mStrokePressures;
 
@@ -126,10 +133,6 @@ protected:
     StrokeInterpolator mInterpolator;
 
     const UndoSaveState* mUndoSaveState = nullptr;
-
-private:
-    void applyPaintedBuffer(VectorImage* vectorImage);
-    void applyPaintedBuffer(BitmapImage* bitmapImage);
 };
 
 #endif // STROKETOOL_H

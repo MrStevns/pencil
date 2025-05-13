@@ -43,6 +43,8 @@ public:
 
     void drawStroke();
 
+    void applyVectorBuffer(VectorImage *vectorImage) override;
+
     void setWidth( const qreal width ) override;
     void setFeather( const qreal feather ) override;
     void setPressure( const bool pressure ) override;

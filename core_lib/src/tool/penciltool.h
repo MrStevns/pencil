@@ -40,7 +40,8 @@ public:
 
     void drawStroke();
     void paintAt(QPointF point);
-    void paintVectorStroke(Layer* layer);
+
+    void applyVectorBuffer(VectorImage* image) override;
 
     void setWidth(const qreal width) override;
     void setFeather(const qreal feather) override;
@@ -52,7 +53,7 @@ public:
     void setUseFillContour(const bool useFillContour) override;
 
 private:
-
+    void drawPath(const QPainterPath & path, QPen pen, QBrush brush) override;
     void drawDab(const QPointF& point, float width, float feather, float opacity) override;
 
     QPointF mLastBrushPoint{ 0, 0 };

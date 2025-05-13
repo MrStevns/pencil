@@ -158,8 +158,6 @@ void PenTool::pointerReleaseEvent(PointerEvent *event)
 
     mEditor->backup(typeName());
 
-    Layer* layer = mEditor->layers()->currentLayer();
-
     qreal distance = QLineF(getCurrentPoint(), mMouseDownPoint).length();
     if (distance < 1)
     {
@@ -170,9 +168,6 @@ void PenTool::pointerReleaseEvent(PointerEvent *event)
         drawStroke();
     }
 
-    if (layer->type() == Layer::VECTOR) {
-        paintVectorStroke(layer);
-    }
     endStroke();
 
     StrokeTool::pointerReleaseEvent(event);
@@ -197,7 +192,6 @@ void PenTool::paintAt(QPointF point)
 void PenTool::drawStroke()
 {
     StrokeTool::drawStroke();
-    QList<QPointF> p = mInterpolator.interpolateStroke();
 
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -206,7 +200,7 @@ void PenTool::drawStroke()
         qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
         qreal brushWidth = properties.width * pressure;
 
-        doStroke(p, brushWidth, properties.feather, 1);
+        doStroke(mStrokeSegment, brushWidth, properties.feather, 1);
     }
     else if (layer->type() == Layer::VECTOR)
     {
@@ -219,12 +213,7 @@ void PenTool::drawStroke()
                  Qt::RoundCap,
                  Qt::RoundJoin);
 
-        if (p.size() == 4)
-        {
-            QPainterPath path(p[0]);
-            path.cubicTo(p[1], p[2], p[3]);
-            mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
-        }
+        doPath(mStrokeSegment, Qt::NoBrush, pen);
     }
 }
 
@@ -236,13 +225,13 @@ void PenTool::drawDab(const QPointF& point, float width, float feather, float op
                            properties.useAA);
 }
 
-void PenTool::paintVectorStroke(Layer* layer)
+void PenTool::drawPath(const QPainterPath& path, QPen pen, QBrush brush)
 {
-    if (mStrokePoints.empty())
-        return;
+    mScribbleArea->drawPath(path, pen, brush, QPainter::CompositionMode_Source);
+}
 
-    // Clear the temporary pixel path
-    mScribbleArea->clearDrawingBuffer();
+void PenTool::applyVectorBuffer(VectorImage* vectorImage)
+{
     qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
 
     BezierCurve curve(mStrokePoints, mStrokePressures, tol);
@@ -253,9 +242,6 @@ void PenTool::paintVectorStroke(Layer* layer)
     curve.setVariableWidth(properties.pressure);
     curve.setColorNumber(mEditor->color()->frontColorNumber());
 
-    auto pLayerVector = static_cast<LayerVector*>(layer);
-    VectorImage* vectorImage = pLayerVector->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-    if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
     vectorImage->addCurve(curve, mEditor->view()->scaling(), false);
 
     if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
@@ -265,5 +251,5 @@ void PenTool::paintVectorStroke(Layer* layer)
 
     vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
 
-    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+    StrokeTool::applyVectorBuffer(vectorImage);
 }

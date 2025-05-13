@@ -40,8 +40,9 @@ public:
     void pointerReleaseEvent(PointerEvent*) override;
 
     void drawStroke();
-    void paintVectorStroke(Layer* layer);
     void paintAt(QPointF point);
+
+    void applyVectorBuffer(VectorImage* image) override;
 
     void setWidth(const qreal width) override;
     void setFeather(const qreal feather) override;

@@ -816,7 +816,7 @@ void ScribbleArea::paintBitmapBuffer(BitmapImage* targetImage)
     update(rect);
 
     // layer->setModified(frameNumber, true);
-    mTiledBuffer.clear();
+    clearDrawingBuffer();
 }
 
 
@@ -1165,7 +1165,7 @@ void ScribbleArea::setGaussianGradient(QGradient &gradient, QColor color, qreal 
 
 void ScribbleArea::drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm)
 {
-    mTiledBuffer.drawPath(mEditor->view()->mapScreenToCanvas(path), pen, brush, cm, mPrefs->isOn(SETTING::ANTIALIAS));
+    mTiledBuffer.drawPath(path, pen, brush, cm, mPrefs->isOn(SETTING::ANTIALIAS));
 }
 
 void ScribbleArea::drawPen(QPointF thePoint, qreal brushWidth, QColor fillColor, bool useAA)
@@ -1217,6 +1217,8 @@ void ScribbleArea::drawPolyline(QPainterPath path, QPen pen, bool useAA)
 void ScribbleArea::endStroke()
 {
     onFrameModified(mEditor->currentFrame());
+
+    clearDrawingBuffer();
 }
 
 void ScribbleArea::flipSelection(bool flipVertical)

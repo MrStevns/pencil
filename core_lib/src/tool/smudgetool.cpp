@@ -279,26 +279,25 @@ void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
         if (layer->type() == Layer::BITMAP)
         {
             drawStroke();
-            endStroke();
         }
-        else if (layer->type() == Layer::VECTOR)
-        {
-            VectorImage *vectorImage = ((LayerVector *)layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-            if (vectorImage == nullptr) { return; }
-            vectorImage->applySelectionTransformation();
 
-            auto selectMan = mEditor->select();
-            selectMan->resetSelectionTransform();
-            for (int k = 0; k < selectMan->vectorSelection.curve.size(); k++)
-            {
-                int curveNumber = selectMan->vectorSelection.curve.at(k);
-                vectorImage->curve(curveNumber).smoothCurve();
-            }
-            mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-        }
+        endStroke();
     }
 
     StrokeTool::pointerReleaseEvent(event);
+}
+
+void SmudgeTool::applyVectorBuffer(VectorImage *vectorImage)
+{
+    vectorImage->applySelectionTransformation();
+
+    auto selectMan = mEditor->select();
+    selectMan->resetSelectionTransform();
+    for (int k = 0; k < selectMan->vectorSelection.curve.size(); k++)
+    {
+        int curveNumber = selectMan->vectorSelection.curve.at(k);
+        vectorImage->curve(curveNumber).smoothCurve();
+    }
 }
 
 void SmudgeTool::drawStroke()
@@ -341,7 +340,7 @@ void SmudgeTool::drawDab(const QPointF& point, float width, float feather, float
                                     getLastPoint(),
                                     point,
                                     brushWidth,
-                                    offset,
+                                    properties.feather,
                                     opacity);
     }
 }
