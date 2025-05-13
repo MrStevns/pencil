@@ -155,11 +155,7 @@ void SmudgeTool::pointerPressEvent(PointerEvent* event)
     if (event->button() == Qt::LeftButton)
     {
         startStroke(event->inputType());
-        if (layer->type() == Layer::BITMAP)
-        {
-            mLastBrushPoint = getCurrentPoint();
-        }
-        else if (layer->type() == Layer::VECTOR)
+        if (layer->type() == Layer::VECTOR)
         {
             const int currentFrame = mEditor->currentFrame();
             const float distanceFrom = selectMan->selectionTolerance();

@@ -57,7 +57,6 @@ private:
 
     QPointF offsetFromPressPos();
 
-    QPointF mLastBrushPoint;
 
     BitmapImage targetImage;
 };
