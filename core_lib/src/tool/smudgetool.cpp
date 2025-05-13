@@ -307,7 +307,7 @@ void SmudgeTool::drawStroke()
     if (sourceImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
 
     // TODO: Figure out a better way to copy the target image
-    targetImage = sourceImage->copy();
+    mTargetImage = sourceImage->copy();
     QList<QPointF> p = mInterpolator.interpolateStroke();
 
     qreal opacity = 1.0;
@@ -315,7 +315,7 @@ void SmudgeTool::drawStroke()
     qreal brushWidth = width + 0.0 * properties.feather;
     qreal offset = qMax(0.0, width - 0.5 * properties.feather) / brushWidth;
 
-    targetImage.paste(&mScribbleArea->mTiledBuffer);
+    mTargetImage.paste(&mScribbleArea->mTiledBuffer);
     doStroke(p, brushWidth, offset, opacity, 1);
 }
 
@@ -325,14 +325,14 @@ void SmudgeTool::drawDab(const QPointF& point, float width, float feather, float
     qreal offset = qMax(0.0, width - 0.5 * properties.feather) / brushWidth;
 
     if (toolMode == 0) {
-    mScribbleArea->blurBrush(&targetImage,
+    mScribbleArea->blurBrush(&mTargetImage,
                              getLastPoint(),
                              point,
                              brushWidth,
                              offset,
                              opacity);
     } else {
-        mScribbleArea->liquifyBrush(&targetImage,
+        mScribbleArea->liquifyBrush(&mTargetImage,
                                     getLastPoint(),
                                     point,
                                     brushWidth,

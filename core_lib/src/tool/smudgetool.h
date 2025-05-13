@@ -57,8 +57,7 @@ private:
 
     QPointF offsetFromPressPos();
 
-
-    BitmapImage targetImage;
+    BitmapImage mTargetImage;
 };
 
 #endif // SMUDGETOOL_H
