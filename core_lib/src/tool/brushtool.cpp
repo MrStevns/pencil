@@ -197,22 +197,20 @@ void BrushTool::paintAt(QPointF point)
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer->type() == Layer::BITMAP)
     {
-        qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
-        qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
-        qreal brushWidth = properties.width * pressure;
-        drawDab(point, brushWidth, properties.feather, opacity);
+        StrokeDynamics dynamics = createDynamics();
+        drawDab(point, dynamics);
     }
 }
 
-void BrushTool::drawDab(const QPointF& point, float width, float feather, float opacity)
+void BrushTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
 {
     mScribbleArea->drawBrush(point,
-                             width,
-                             feather,
-                             mEditor->color()->frontColor(),
-                             QPainter::CompositionMode_SourceOver,
-                             opacity,
-                             true);
+                             dynamics.width,
+                             dynamics.feather,
+                             dynamics.color,
+                             dynamics.blending,
+                             dynamics.opacity,
+                             dynamics.antiAliasingEnabled);
 }
 
 void BrushTool::drawPath(const QPainterPath& path, QPen pen, QBrush brush)
@@ -226,21 +224,16 @@ void BrushTool::drawStroke()
 
     Layer* layer = mEditor->layers()->currentLayer();
 
+    StrokeDynamics dynamics = createDynamics();
     if (layer->type() == Layer::BITMAP)
     {
-        qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
-        qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
-        qreal brushWidth = properties.width * pressure;
-
-        doStroke(mStrokeSegment, brushWidth, properties.feather, opacity);
+        doStroke(mStrokeSegment, dynamics);
     }
     else if (layer->type() == Layer::VECTOR)
     {
-        qreal pressure = (properties.pressure) ? mCurrentPressure : 1;
-        qreal brushWidth = properties.width * pressure;
 
-        QPen pen(mEditor->color()->frontColor(),
-                 brushWidth,
+        QPen pen(dynamics.color,
+                 dynamics.width,
                  Qt::SolidLine,
                  Qt::RoundCap,
                  Qt::RoundJoin);

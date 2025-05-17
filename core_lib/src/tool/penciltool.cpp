@@ -203,19 +203,12 @@ void PencilTool::pointerReleaseEvent(PointerEvent *event)
 // draw a single paint dab at the given location
 void PencilTool::paintAt(QPointF point)
 {
-    //qDebug() << "Made a single dab at " << point;
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer->type() == Layer::BITMAP)
     {
-        qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
-        qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
-        qreal brushWidth = properties.width * pressure;
-        qreal fixedBrushFeather = properties.feather;
-
+        StrokeDynamics dynamics = createDynamics();
         drawDab(point,
-                brushWidth,
-                fixedBrushFeather,
-                opacity);
+                dynamics);
     }
 }
 
@@ -227,18 +220,14 @@ void PencilTool::drawStroke()
 
     Layer* layer = mEditor->layers()->currentLayer();
 
+    StrokeDynamics dynamics = createDynamics();
     if (layer->type() == Layer::BITMAP)
     {
-        qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
-        qreal feather = properties.feather;
-        qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
-        qreal brushWidth = properties.width * pressure;
-
-        doStroke(p, brushWidth, feather, opacity);
+        doStroke(p, dynamics);
     }
     else if (layer->type() == Layer::VECTOR)
     {
-        QPen pen(mEditor->color()->frontColor(),
+        QPen pen(dynamics.color,
                  1,
                  Qt::DotLine,
                  Qt::RoundCap,
@@ -248,13 +237,13 @@ void PencilTool::drawStroke()
     }
 }
 
-void PencilTool::drawDab(const QPointF& point, float width, float feather, float opacity)
+void PencilTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
 {
     mScribbleArea->drawPencil(point,
-                              width,
-                              feather,
-                              mEditor->color()->frontColor(),
-                              opacity);
+                              dynamics.width,
+                              dynamics.feather,
+                              dynamics.color,
+                              dynamics.opacity);
 }
 
 void PencilTool::drawPath(const QPainterPath & path, QPen pen, QBrush brush)

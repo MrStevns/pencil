@@ -54,7 +54,7 @@ public:
 
 private:
     void drawPath(const QPainterPath & path, QPen pen, QBrush brush) override;
-    void drawDab(const QPointF& point, float width, float feather, float opacity) override;
+    void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
 
     QPointF mLastBrushPoint{ 0, 0 };
     QPointF mMouseDownPoint;

@@ -194,17 +194,23 @@ void EraserTool::pointerReleaseEvent(PointerEvent *event)
     StrokeTool::pointerReleaseEvent(event);
 }
 
+StrokeDynamics EraserTool::createDynamics() const
+{
+    StrokeDynamics dynamics = StrokeTool::createDynamics();
+
+    dynamics.color = Qt::white;
+
+    return dynamics;
+}
+
 // draw a single paint dab at the given location
 void EraserTool::paintAt(QPointF point)
 {
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer->type() == Layer::BITMAP)
     {
-        qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
-        qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
-        qreal brushWidth = properties.width * pressure;
-
-        drawDab(point, brushWidth, properties.feather, opacity);
+        StrokeDynamics dynamics = createDynamics();
+        drawDab(point, dynamics);
     }
 }
 
@@ -215,36 +221,27 @@ void EraserTool::drawStroke()
 
     Layer* layer = mEditor->layers()->currentLayer();
 
+    StrokeDynamics dynamics = createDynamics();
     if (layer->type() == Layer::BITMAP)
     {
-        qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
-        qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
-        qreal brushWidth = properties.width * pressure;
-
-        doStroke(p, brushWidth, properties.feather, opacity);
+        doStroke(p, dynamics);
     }
     else if (layer->type() == Layer::VECTOR)
     {
-        qreal brushWidth = properties.width;
-        if (properties.pressure)
-        {
-            brushWidth = (brushWidth + (mInterpolator.getPressure() * brushWidth)) * 0.5;
-        }
-
-        QPen pen(Qt::white, brushWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        QPen pen(Qt::white, dynamics.width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
         doPath(mStrokeSegment, Qt::NoBrush, pen);
     }
 }
 
-void EraserTool::drawDab(const QPointF& point, float brushWidth, float brushFeather, float brushOpacity)
+void EraserTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
 {
     mScribbleArea->drawBrush(point,
-                             brushWidth,
-                             brushFeather,
-                             Qt::white,
-                             QPainter::CompositionMode_SourceOver,
-                             brushOpacity,
+                             dynamics.width,
+                             dynamics.feather,
+                             dynamics.color,
+                             dynamics.blending,
+                             dynamics.opacity,
                              properties.useFeather,
                              properties.useAA == ON);
 }

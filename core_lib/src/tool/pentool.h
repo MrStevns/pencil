@@ -37,6 +37,8 @@ public:
     void pointerMoveEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
 
+    StrokeDynamics createDynamics() const override;
+
     void drawStroke();
     void paintAt(QPointF point);
 
@@ -49,7 +51,7 @@ public:
 
 private:
     void drawPath(const QPainterPath& path, QPen pen, QBrush brush) override;
-    void drawDab(const QPointF& point, float width, float feather, float opacity) override;
+    void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
 
     QPointF mLastBrushPoint;
     QPointF mMouseDownPoint;

@@ -43,6 +43,8 @@ public:
 
     void drawStroke();
 
+    StrokeDynamics createDynamics() const override;
+
     void applyVectorBuffer(VectorImage *vectorImage) override;
 
     void setWidth( const qreal width ) override;
@@ -53,7 +55,7 @@ protected:
     bool emptyFrameActionEnabled() override;
 
 private:
-    void drawDab(const QPointF& point, float width, float feather, float opacity) override;
+    void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
 
     QPointF offsetFromPressPos();
 

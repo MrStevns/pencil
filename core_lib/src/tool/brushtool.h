@@ -51,7 +51,7 @@ public:
     void setStabilizerLevel(const int level) override;
 
 private:
-    void drawDab(const QPointF& point, float width, float feather, float opacity) override;
+    void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
     void drawPath(const QPainterPath& path, QPen pen, QBrush brush) override;
 
 protected:

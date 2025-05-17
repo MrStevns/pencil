@@ -173,19 +173,26 @@ void PenTool::pointerReleaseEvent(PointerEvent *event)
     StrokeTool::pointerReleaseEvent(event);
 }
 
+StrokeDynamics PenTool::createDynamics() const
+{
+    StrokeDynamics dynamics = StrokeTool::createDynamics();
+    dynamics.opacity = 1.0;
+
+    return dynamics;
+}
+
 // draw a single paint dab at the given location
 void PenTool::paintAt(QPointF point)
 {
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer->type() == Layer::BITMAP)
     {
-        qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
-        qreal brushWidth = properties.width * pressure;
+        // qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
+        // qreal brushWidth = properties.width * pressure;
+        StrokeDynamics dynamics = createDynamics();
 
         drawDab(point,
-                brushWidth,
-                properties.feather,
-                1.0);
+                dynamics);
     }
 }
 
@@ -195,20 +202,16 @@ void PenTool::drawStroke()
 
     Layer* layer = mEditor->layers()->currentLayer();
 
+    StrokeDynamics dynamics = createDynamics();
     if (layer->type() == Layer::BITMAP)
     {
-        qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
-        qreal brushWidth = properties.width * pressure;
-
-        doStroke(mStrokeSegment, brushWidth, properties.feather, 1);
+        doStroke(mStrokeSegment, dynamics);
     }
     else if (layer->type() == Layer::VECTOR)
     {
-        qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
-        qreal brushWidth = properties.width * pressure;
 
-        QPen pen(mEditor->color()->frontColor(),
-                 brushWidth,
+        QPen pen(dynamics.color,
+                 dynamics.width,
                  Qt::SolidLine,
                  Qt::RoundCap,
                  Qt::RoundJoin);
@@ -217,11 +220,11 @@ void PenTool::drawStroke()
     }
 }
 
-void PenTool::drawDab(const QPointF& point, float width, float feather, float opacity)
+void PenTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
 {
     mScribbleArea->drawPen(point,
-                           width,
-                           mEditor->color()->frontColor(),
+                           dynamics.width,
+                           dynamics.color,
                            properties.useAA);
 }
 

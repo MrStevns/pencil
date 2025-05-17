@@ -198,6 +198,23 @@ void StrokeTool::endStroke()
     mScribbleArea->endStroke();
 }
 
+StrokeDynamics StrokeTool::createDynamics() const
+{
+    StrokeDynamics dynamics;
+    qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
+    qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
+    dynamics.blending = QPainter::CompositionMode_SourceOver;
+    dynamics.width = properties.width * pressure;
+    dynamics.pressure = pressure;
+    dynamics.opacity = opacity;
+    dynamics.dabSpacing = dynamics.width * 0.1;
+    dynamics.feather = properties.feather;
+    dynamics.color = mEditor->color()->frontColor();
+    dynamics.antiAliasingEnabled = properties.useAA;
+
+    return dynamics;
+}
+
 void StrokeTool::drawStroke()
 {
     QPointF pixel = getCurrentPixel();
@@ -212,7 +229,7 @@ void StrokeTool::drawStroke()
     }
 }
 
-void StrokeTool::doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity, float dabSpacing)
+void StrokeTool::doStroke(const QList<QPointF>& points, StrokeDynamics dynamics)
 {
     float leftOverDistance = mLeftOverDabDistance;
 
@@ -238,24 +255,24 @@ void StrokeTool::doStroke(const QList<QPointF>& points, float brushWidth, float 
         totalDistance = leftOverDistance + distance;
 
         // Draw dabs until totalDistance is less than dabSpacing
-        while (totalDistance >= dabSpacing)
+        while (totalDistance >= dynamics.dabSpacing)
         {
             // make sure to add potentially missed distance
             // to our offset
-            float dabDelta = dabSpacing;
+            float dabDelta = dynamics.dabSpacing;
             if (leftOverDistance > 0) {
                 dabDelta -= leftOverDistance;
-                leftOverDistance -= dabSpacing;
+                leftOverDistance -= dynamics.dabSpacing;
             }
             offsetX += dirX * dabDelta;
             offsetY += dirY * dabDelta;
 
             const QPointF& stampAt = QPointF(lastPoint.x()+offsetX, lastPoint.y()+offsetY);
 
-            drawDab(stampAt, brushWidth, brushFeather, brushOpacity);
+            drawDab(stampAt, dynamics);
 
             // remove the distance we've covered already
-            totalDistance -= dabSpacing;
+            totalDistance -= dynamics.dabSpacing;
         }
 
         leftOverDistance = totalDistance;
@@ -263,11 +280,6 @@ void StrokeTool::doStroke(const QList<QPointF>& points, float brushWidth, float 
 
     // set the remaining dabs for next stroke
     mLeftOverDabDistance = totalDistance;
-}
-
-void StrokeTool::doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity)
-{
-    doStroke(points, brushWidth, brushFeather, brushOpacity, brushWidth*0.1);
 }
 
 void StrokeTool::doPath(const QList<QPointF>& points, QBrush brush, QPen pen)

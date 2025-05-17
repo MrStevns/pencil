@@ -166,14 +166,6 @@ void SmudgeTool::pointerPressEvent(PointerEvent* event)
 ;
             if (selectMan->closestCurves().size() > 0 || selectMan->closestCurves().size() > 0)      // the user clicks near a vertex or a curve
             {
-                // Since startStroke() isn't called, handle empty frame behaviour here.
-                // Commented out for now - leads to segfault on mouse-release event.
-//                if(emptyFrameActionEnabled())
-//                {
-//                    mScribbleArea->handleDrawingOnEmptyFrame();
-//                }
-
-                //qDebug() << "closestCurves:" << closestCurves << " | closestVertices" << closestVertices;
                 if (event->modifiers() != Qt::ShiftModifier && !vectorImage->isSelected(selectMan->closestVertices()))
                 {
                     mEditor->deselectAll();
@@ -296,6 +288,18 @@ void SmudgeTool::applyVectorBuffer(VectorImage *vectorImage)
     }
 }
 
+StrokeDynamics SmudgeTool::createDynamics() const
+{
+    StrokeDynamics dynamics;
+
+    dynamics.dabSpacing = 1.0;
+    dynamics.width = properties.width;
+    dynamics.feather = qMax(0.0, dynamics.width - 0.5 * properties.feather) / dynamics.width;
+    dynamics.opacity = 1.0;
+
+    return dynamics;
+}
+
 void SmudgeTool::drawStroke()
 {
     StrokeTool::drawStroke();
@@ -310,34 +314,28 @@ void SmudgeTool::drawStroke()
     mTargetImage = sourceImage->copy();
     QList<QPointF> p = mInterpolator.interpolateStroke();
 
-    qreal opacity = 1.0;
-    qreal width = properties.width;
-    qreal brushWidth = width + 0.0 * properties.feather;
-    qreal offset = qMax(0.0, width - 0.5 * properties.feather) / brushWidth;
+    StrokeDynamics dynamics = createDynamics();
 
     mTargetImage.paste(&mScribbleArea->mTiledBuffer);
-    doStroke(p, brushWidth, offset, opacity, 1);
+    doStroke(p, dynamics);
 }
 
-void SmudgeTool::drawDab(const QPointF& point, float width, float feather, float opacity)
+void SmudgeTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
 {
-    qreal brushWidth = width + 0.0 * properties.feather;
-    qreal offset = qMax(0.0, width - 0.5 * properties.feather) / brushWidth;
-
     if (toolMode == 0) {
     mScribbleArea->blurBrush(&mTargetImage,
                              getLastPoint(),
                              point,
-                             brushWidth,
-                             offset,
-                             opacity);
+                             dynamics.width,
+                             dynamics.feather,
+                             dynamics.opacity);
     } else {
         mScribbleArea->liquifyBrush(&mTargetImage,
                                     getLastPoint(),
                                     point,
-                                    brushWidth,
-                                    properties.feather,
-                                    opacity);
+                                    dynamics.width,
+                                    dynamics.feather,
+                                    dynamics.opacity);
     }
 }
 

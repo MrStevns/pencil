@@ -32,6 +32,17 @@ GNU General Public License for more details.
 class VectorImage;
 class BitmapImage;
 
+struct StrokeDynamics {
+    qreal width;
+    qreal pressure;
+    qreal feather;
+    qreal opacity;
+    qreal dabSpacing;
+    bool antiAliasingEnabled;
+    QColor color;
+
+    QPainter::CompositionMode blending;
+};
 
 class StrokeTool : public BaseTool
 {
@@ -48,6 +59,8 @@ public:
     bool enteringThisTool() override;
 
     void updateCanvasCursor();
+
+    virtual StrokeDynamics createDynamics() const;
 
     static const qreal FEATHER_MIN;
     static const qreal FEATHER_MAX;
@@ -68,8 +81,7 @@ public:
 
     void paint(QPainter& painter, const QRect& blitRect) override;
 
-    void doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity);
-    void doStroke(const QList<QPointF>& points, float brushWidth, float brushFeather, float brushOpacity, float dabSpacing);
+    void doStroke(const QList<QPointF>& points, StrokeDynamics dynamics);
     void doPath(const QList<QPointF>& points, QBrush brush, QPen pen);
 
     void applyKeyFrameBuffer();
@@ -86,7 +98,7 @@ protected:
     QPointF getLastPixel() const;
     QPointF getLastPoint() const;
 
-    virtual void drawDab(const QPointF&, float, float, float) { }
+    virtual void drawDab(const QPointF& point, const StrokeDynamics& dynamics) { }
     virtual void drawPath(const QPainterPath&, QPen, QBrush) { }
 
     virtual void applyVectorBuffer(VectorImage* vectorImage);
@@ -124,6 +136,7 @@ protected:
     virtual bool emptyFrameActionEnabled();
 
     bool mCanvasCursorEnabled = false;
+    bool mCanSingleDab = false;
     QPointF mLastPixel { 0, 0 };
 
     QPointF mAdjustPosition;
