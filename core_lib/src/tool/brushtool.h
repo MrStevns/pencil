@@ -55,9 +55,6 @@ private:
     void drawPath(const QPainterPath& path, QPen pen, QBrush brush) override;
 
 protected:
-    QPointF mLastBrushPoint;
-    QPointF mMouseDownPoint;
-
     QColor mCurrentPressuredColor;
     qreal mOpacity = 1.0;
 };

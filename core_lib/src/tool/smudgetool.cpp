@@ -250,28 +250,6 @@ void SmudgeTool::pointerMoveEvent(PointerEvent* event)
 
 void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
 {
-    mInterpolator.pointerReleaseEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    if (event->inputType() != mCurrentInputType) return;
-
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer == nullptr) { return; }
-
-    if (event->button() == Qt::LeftButton)
-    {
-        mEditor->backup(typeName());
-
-        if (layer->type() == Layer::BITMAP)
-        {
-            drawStroke();
-        }
-
-        endStroke();
-    }
-
     StrokeTool::pointerReleaseEvent(event);
 }
 
@@ -293,6 +271,7 @@ StrokeDynamics SmudgeTool::createDynamics() const
     StrokeDynamics dynamics;
 
     dynamics.dabSpacing = 1.0;
+    dynamics.canSingleDab = false;
     dynamics.width = properties.width;
     dynamics.feather = qMax(0.0, dynamics.width - 0.5 * properties.feather) / dynamics.width;
     dynamics.opacity = 1.0;
@@ -314,10 +293,8 @@ void SmudgeTool::drawStroke()
     mTargetImage = sourceImage->copy();
     QList<QPointF> p = mInterpolator.interpolateStroke();
 
-    StrokeDynamics dynamics = createDynamics();
-
     mTargetImage.paste(&mScribbleArea->mTiledBuffer);
-    doStroke(p, dynamics);
+    doStroke();
 }
 
 void SmudgeTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)

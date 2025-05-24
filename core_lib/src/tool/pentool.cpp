@@ -119,9 +119,6 @@ void PenTool::pointerPressEvent(PointerEvent *event)
         return;
     }
 
-    mMouseDownPoint = getCurrentPoint();
-    mLastBrushPoint = getCurrentPoint();
-
     startStroke(event->inputType());
 
     StrokeTool::pointerPressEvent(event);
@@ -149,27 +146,6 @@ void PenTool::pointerMoveEvent(PointerEvent* event)
 
 void PenTool::pointerReleaseEvent(PointerEvent *event)
 {
-    mInterpolator.pointerReleaseEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    if (event->inputType() != mCurrentInputType) return;
-
-    mEditor->backup(typeName());
-
-    qreal distance = QLineF(getCurrentPoint(), mMouseDownPoint).length();
-    if (distance < 1)
-    {
-        paintAt(mMouseDownPoint);
-    }
-    else
-    {
-        drawStroke();
-    }
-
-    endStroke();
-
     StrokeTool::pointerReleaseEvent(event);
 }
 
@@ -202,14 +178,14 @@ void PenTool::drawStroke()
 
     Layer* layer = mEditor->layers()->currentLayer();
 
-    StrokeDynamics dynamics = createDynamics();
     if (layer->type() == Layer::BITMAP)
     {
-        doStroke(mStrokeSegment, dynamics);
+        doStroke();
     }
     else if (layer->type() == Layer::VECTOR)
     {
 
+        const StrokeDynamics& dynamics = createDynamics();
         QPen pen(dynamics.color,
                  dynamics.width,
                  Qt::SolidLine,

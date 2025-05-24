@@ -23,6 +23,8 @@ GNU General Public License for more details.
 #include "preferencesdef.h"
 #include "strokeinterpolator.h"
 #include "undoredomanager.h"
+#include "strokedynamics.h"
+#include "stroker.h"
 
 #include "canvascursorpainter.h"
 
@@ -31,18 +33,6 @@ GNU General Public License for more details.
 
 class VectorImage;
 class BitmapImage;
-
-struct StrokeDynamics {
-    qreal width;
-    qreal pressure;
-    qreal feather;
-    qreal opacity;
-    qreal dabSpacing;
-    bool antiAliasingEnabled;
-    QColor color;
-
-    QPainter::CompositionMode blending;
-};
 
 class StrokeTool : public BaseTool
 {
@@ -81,7 +71,7 @@ public:
 
     void paint(QPainter& painter, const QRect& blitRect) override;
 
-    void doStroke(const QList<QPointF>& points, StrokeDynamics dynamics);
+    void doStroke();
     void doPath(const QList<QPointF>& points, QBrush brush, QPen pen);
 
     void applyKeyFrameBuffer();
@@ -124,8 +114,6 @@ protected:
 
     qreal mCurrentPressure = 0.5;
 
-    float mLeftOverDabDistance = 0.0;
-
     PointerEvent::InputType mCurrentInputType = PointerEvent::Unknown;
 
     /// Whether to enable the "drawing on empty frame" preference.
@@ -137,13 +125,13 @@ protected:
 
     bool mCanvasCursorEnabled = false;
     bool mCanSingleDab = false;
-    QPointF mLastPixel { 0, 0 };
 
     QPointF mAdjustPosition;
 
     CanvasCursorPainter mCanvasCursorPainter;
 
     StrokeInterpolator mInterpolator;
+    Stroker mStroker;
 
     const UndoSaveState* mUndoSaveState = nullptr;
 };

@@ -140,13 +140,17 @@ void StrokeTool::startStroke(PointerEvent::InputType inputType)
     }
 
     mFirstDraw = true;
-    mLastPixel = getCurrentPixel();
 
     mStrokePoints.clear();
 
     //Experimental
-    QPointF startStroke = mInterpolator.interpolateStart(mLastPixel);
-    mStrokePoints << mEditor->view()->mapScreenToCanvas(startStroke);
+    QPointF startStroke = mInterpolator.interpolateStart(getCurrentPixel());
+    startStroke = mEditor->view()->mapScreenToCanvas(startStroke);
+    mStrokePoints << startStroke;
+
+    StrokeDynamics dynamics = createDynamics();
+
+    mStroker.begin(startStroke, dynamics);
 
     mStrokePressures.clear();
     mStrokePressures << mInterpolator.getPressure();
@@ -191,6 +195,8 @@ void StrokeTool::endStroke()
     mStrokePressures.clear();
     mStrokeSegment.clear();
 
+    mStroker.end();
+
     enableCoalescing();
 
     mEditor->setModified(mEditor->currentLayerIndex(), mEditor->currentFrame());
@@ -203,6 +209,7 @@ StrokeDynamics StrokeTool::createDynamics() const
     StrokeDynamics dynamics;
     qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
     qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
+    dynamics.canSingleDab = true;
     dynamics.blending = QPainter::CompositionMode_SourceOver;
     dynamics.width = properties.width * pressure;
     dynamics.pressure = pressure;
@@ -218,9 +225,15 @@ StrokeDynamics StrokeTool::createDynamics() const
 void StrokeTool::drawStroke()
 {
     QPointF pixel = getCurrentPixel();
-    if (pixel != mLastPixel || !mFirstDraw)
+    if (pixel != getLastPixel() || !mFirstDraw)
     {
         mStrokeSegment = mInterpolator.interpolateStroke();
+
+        for (QPointF& point : mStrokeSegment) {
+            point = mEditor->view()->mapScreenToCanvas(point);
+        }
+
+        mStroker.append(mStrokeSegment);
         mStrokePressures << mInterpolator.getPressure();
     }
     else
@@ -229,57 +242,11 @@ void StrokeTool::drawStroke()
     }
 }
 
-void StrokeTool::doStroke(const QList<QPointF>& points, StrokeDynamics dynamics)
+void StrokeTool::doStroke()
 {
-    float leftOverDistance = mLeftOverDabDistance;
-
-    float totalDistance = 0.f;
-
-    for (int i = 1; i < points.size(); i += 1) {
-        QPointF lastPoint = mEditor->view()->mapScreenToCanvas(points[i-1]);
-        QPointF currentPoint = mEditor->view()->mapScreenToCanvas(points[i]);
-
-        // calculate the euclidean distance
-        // to find the distance that we need to cover with dabs
-        float distance = QLineF(lastPoint, currentPoint).length();
-
-        // Calculate the unit direction vector
-        float dirX = (currentPoint.x() - lastPoint.x()) / distance;
-        float dirY = (currentPoint.y() - lastPoint.y()) / distance;
-
-        float offsetX = 0.0f;
-        float offsetY = 0.0f;
-
-        // since we want to dab at a specific interval,
-        // add the potentially missing leftover distance to the current distance
-        totalDistance = leftOverDistance + distance;
-
-        // Draw dabs until totalDistance is less than dabSpacing
-        while (totalDistance >= dynamics.dabSpacing)
-        {
-            // make sure to add potentially missed distance
-            // to our offset
-            float dabDelta = dynamics.dabSpacing;
-            if (leftOverDistance > 0) {
-                dabDelta -= leftOverDistance;
-                leftOverDistance -= dynamics.dabSpacing;
-            }
-            offsetX += dirX * dabDelta;
-            offsetY += dirY * dabDelta;
-
-            const QPointF& stampAt = QPointF(lastPoint.x()+offsetX, lastPoint.y()+offsetY);
-
-            drawDab(stampAt, dynamics);
-
-            // remove the distance we've covered already
-            totalDistance -= dynamics.dabSpacing;
-        }
-
-        leftOverDistance = totalDistance;
+    for (const QPointF& point : mStroker.strokedSegment()) {
+        drawDab(point, mStroker.dynamics());
     }
-
-    // set the remaining dabs for next stroke
-    mLeftOverDabDistance = totalDistance;
 }
 
 void StrokeTool::doPath(const QList<QPointF>& points, QBrush brush, QPen pen)
@@ -357,8 +324,30 @@ void StrokeTool::pointerMoveEvent(PointerEvent*)
     updateCanvasCursor();
 }
 
-void StrokeTool::pointerReleaseEvent(PointerEvent*)
+void StrokeTool::pointerReleaseEvent(PointerEvent* event)
 {
+    mInterpolator.pointerReleaseEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
+    if (event->inputType() != mCurrentInputType) return;
+
+    mEditor->backup(typeName());
+
+    qreal distance = QLineF(getCurrentPoint(), getCurrentPressPoint()).length();
+    const StrokeDynamics& dynamics = mStroker.dynamics();
+    if (distance < 1 && dynamics.canSingleDab)
+    {
+        drawDab(getCurrentPressPoint(), dynamics);
+    }
+    else
+    {
+        drawStroke();
+    }
+
+    endStroke();
+
     updateCanvasCursor();
 }
 

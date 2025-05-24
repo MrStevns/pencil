@@ -52,9 +52,6 @@ public:
 private:
     void drawPath(const QPainterPath& path, QPen pen, QBrush brush) override;
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
-
-    QPointF mLastBrushPoint;
-    QPointF mMouseDownPoint;
 };
 
 #endif // PENTOOL_H

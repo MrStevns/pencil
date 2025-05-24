@@ -142,8 +142,6 @@ void EraserTool::pointerPressEvent(PointerEvent *event)
     }
 
     startStroke(event->inputType());
-    mLastBrushPoint = getCurrentPoint();
-    mMouseDownPoint = getCurrentPoint();
 
     StrokeTool::pointerPressEvent(event);
 }
@@ -170,27 +168,6 @@ void EraserTool::pointerMoveEvent(PointerEvent* event)
 
 void EraserTool::pointerReleaseEvent(PointerEvent *event)
 {
-    mInterpolator.pointerReleaseEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    if (event->inputType() != mCurrentInputType) return;
-
-    mEditor->backup(typeName());
-
-    qreal distance = QLineF(getCurrentPoint(), mMouseDownPoint).length();
-    if (distance < 1)
-    {
-        paintAt(mMouseDownPoint);
-    }
-    else
-    {
-        drawStroke();
-    }
-
-    endStroke();
-
     StrokeTool::pointerReleaseEvent(event);
 }
 
@@ -221,13 +198,13 @@ void EraserTool::drawStroke()
 
     Layer* layer = mEditor->layers()->currentLayer();
 
-    StrokeDynamics dynamics = createDynamics();
     if (layer->type() == Layer::BITMAP)
     {
-        doStroke(p, dynamics);
+        doStroke();
     }
     else if (layer->type() == Layer::VECTOR)
     {
+        const StrokeDynamics& dynamics = createDynamics();
         QPen pen(Qt::white, dynamics.width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
         doPath(mStrokeSegment, Qt::NoBrush, pen);

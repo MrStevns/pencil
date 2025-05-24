@@ -54,10 +54,6 @@ public:
 private:
     void drawPath(const QPainterPath & path, QPen pen, QBrush brush) override;
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
-
-protected:
-    QPointF mLastBrushPoint;
-    QPointF mMouseDownPoint;
 };
 
 #endif // ERASERTOOL_H

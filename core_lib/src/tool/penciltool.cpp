@@ -142,9 +142,6 @@ void PencilTool::pointerPressEvent(PointerEvent *event)
         return;
     }
 
-    mMouseDownPoint = getCurrentPoint();
-    mLastBrushPoint = getCurrentPoint();
-
     startStroke(event->inputType());
 
     // note: why are we doing this on device press event?
@@ -177,26 +174,6 @@ void PencilTool::pointerMoveEvent(PointerEvent* event)
 
 void PencilTool::pointerReleaseEvent(PointerEvent *event)
 {
-    mInterpolator.pointerReleaseEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    if (event->inputType() != mCurrentInputType) return;
-
-    mEditor->backup(typeName());
-    qreal distance = QLineF(getCurrentPoint(), mMouseDownPoint).length();
-    if (distance < 1)
-    {
-        paintAt(mMouseDownPoint);
-    }
-    else
-    {
-        drawStroke();
-    }
-
-    endStroke();
-
     StrokeTool::pointerReleaseEvent(event);
 }
 
@@ -220,13 +197,13 @@ void PencilTool::drawStroke()
 
     Layer* layer = mEditor->layers()->currentLayer();
 
-    StrokeDynamics dynamics = createDynamics();
     if (layer->type() == Layer::BITMAP)
     {
-        doStroke(p, dynamics);
+        doStroke();
     }
     else if (layer->type() == Layer::VECTOR)
     {
+        const StrokeDynamics& dynamics = createDynamics();
         QPen pen(dynamics.color,
                  1,
                  Qt::DotLine,
