@@ -132,6 +132,7 @@ protected:
 
     StrokeInterpolator mInterpolator;
     Stroker mStroker;
+    StrokeDynamics mStrokeDynamics;
 
     const UndoSaveState* mUndoSaveState = nullptr;
 };

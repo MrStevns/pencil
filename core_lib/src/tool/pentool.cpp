@@ -133,7 +133,6 @@ void PenTool::pointerMoveEvent(PointerEvent* event)
 
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
-        mCurrentPressure = mInterpolator.getPressure();
         drawStroke();
         if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
         {
@@ -155,21 +154,6 @@ StrokeDynamics PenTool::createDynamics() const
     dynamics.opacity = 1.0;
 
     return dynamics;
-}
-
-// draw a single paint dab at the given location
-void PenTool::paintAt(QPointF point)
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer->type() == Layer::BITMAP)
-    {
-        // qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
-        // qreal brushWidth = properties.width * pressure;
-        StrokeDynamics dynamics = createDynamics();
-
-        drawDab(point,
-                dynamics);
-    }
 }
 
 void PenTool::drawStroke()

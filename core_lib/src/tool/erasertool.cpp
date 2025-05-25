@@ -155,7 +155,6 @@ void EraserTool::pointerMoveEvent(PointerEvent* event)
 
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
-        mCurrentPressure = mInterpolator.getPressure();
         updateStrokes();
         if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
         {
@@ -178,17 +177,6 @@ StrokeDynamics EraserTool::createDynamics() const
     dynamics.color = Qt::white;
 
     return dynamics;
-}
-
-// draw a single paint dab at the given location
-void EraserTool::paintAt(QPointF point)
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer->type() == Layer::BITMAP)
-    {
-        StrokeDynamics dynamics = createDynamics();
-        drawDab(point, dynamics);
-    }
 }
 
 void EraserTool::drawStroke()

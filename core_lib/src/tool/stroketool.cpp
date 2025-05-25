@@ -148,9 +148,7 @@ void StrokeTool::startStroke(PointerEvent::InputType inputType)
     startStroke = mEditor->view()->mapScreenToCanvas(startStroke);
     mStrokePoints << startStroke;
 
-    StrokeDynamics dynamics = createDynamics();
-
-    mStroker.begin(startStroke, dynamics);
+    mStroker.begin(startStroke);
 
     mStrokePressures.clear();
     mStrokePressures << mInterpolator.getPressure();
@@ -207,6 +205,7 @@ void StrokeTool::endStroke()
 StrokeDynamics StrokeTool::createDynamics() const
 {
     StrokeDynamics dynamics;
+
     qreal opacity = (properties.pressure) ? (mCurrentPressure * 0.5) : 1.0;
     qreal pressure = (properties.pressure) ? mCurrentPressure : 1.0;
     dynamics.canSingleDab = true;
@@ -244,8 +243,10 @@ void StrokeTool::drawStroke()
 
 void StrokeTool::doStroke()
 {
-    for (const QPointF& point : mStroker.strokedSegment()) {
-        drawDab(point, mStroker.dynamics());
+    mStrokeDynamics = createDynamics();
+    const StrokeDynamics& dynamics = mStrokeDynamics;
+    for (const QPointF& point : mStroker.strokedSegment(dynamics)) {
+        drawDab(point, dynamics);
     }
 }
 
@@ -319,8 +320,9 @@ void StrokeTool::pointerPressEvent(PointerEvent*)
     updateCanvasCursor();
 }
 
-void StrokeTool::pointerMoveEvent(PointerEvent*)
+void StrokeTool::pointerMoveEvent(PointerEvent* event)
 {
+    mCurrentPressure = event->pressure();
     updateCanvasCursor();
 }
 
@@ -336,7 +338,7 @@ void StrokeTool::pointerReleaseEvent(PointerEvent* event)
     mEditor->backup(typeName());
 
     qreal distance = QLineF(getCurrentPoint(), getCurrentPressPoint()).length();
-    const StrokeDynamics& dynamics = mStroker.dynamics();
+    const StrokeDynamics& dynamics = mStrokeDynamics;
     if (distance < 1 && dynamics.canSingleDab)
     {
         drawDab(getCurrentPressPoint(), dynamics);

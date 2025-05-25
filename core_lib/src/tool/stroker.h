@@ -30,13 +30,11 @@ public:
     Stroker();
 
     /// Begin a stroke at the given point and with the specified stroke dynamics
-    void begin(const QPointF& start, const StrokeDynamics& dynamics);
+    void begin(const QPointF& start);
 
     /// Append a list of points to be used to create the stroked segment
     void append(const QList<QPointF>& next);
-    const QList<QPointF> strokedSegment();
-
-    const StrokeDynamics& dynamics() const { return mDynamics; }
+    const QList<QPointF> strokedSegment(const StrokeDynamics& dynamics);
 
     /// Cleanup the stroke
     void end();
@@ -49,7 +47,6 @@ private:
     QList<QPointF> mStrokePoints;
     QList<qreal> mStrokePressures;
 
-    StrokeDynamics mDynamics;
     qreal mLeftOverDabDistance = 0.0;
 };
 

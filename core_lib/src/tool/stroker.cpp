@@ -23,10 +23,9 @@ Stroker::Stroker()
 {
 }
 
-void Stroker::begin(const QPointF &start, const StrokeDynamics& dynamics)
+void Stroker::begin(const QPointF &start)
 {
     mStrokeSegment << start;
-    mDynamics = dynamics;
 }
 
 void Stroker::append(const QList<QPointF>& points)
@@ -34,12 +33,11 @@ void Stroker::append(const QList<QPointF>& points)
     mStrokeSegment = points;
 }
 
-const QList<QPointF> Stroker::strokedSegment()
+const QList<QPointF> Stroker::strokedSegment(const StrokeDynamics& dynamics)
 {
     qreal leftOverDistance = mLeftOverDabDistance;
     qreal totalDistance = 0.f;
     int segmentSize = mStrokeSegment.size();
-    const StrokeDynamics& dynamics = mDynamics;
 
     QLineF line;
     for (int i = 1; i < segmentSize; i += 1) {

@@ -40,7 +40,6 @@ public:
     StrokeDynamics createDynamics() const override;
 
     void drawStroke();
-    void paintAt(QPointF point);
 
     void applyVectorBuffer(VectorImage* vectorImage) override;
 
