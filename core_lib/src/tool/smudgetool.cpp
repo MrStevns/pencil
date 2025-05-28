@@ -53,6 +53,7 @@ void SmudgeTool::loadSettings()
 
     info[StrokeSettings::WIDTH_VALUE] = { WIDTH_MIN, WIDTH_MAX, 24.0 };
     info[StrokeSettings::FEATHER_VALUE] = { FEATHER_MIN, FEATHER_MAX, 48.0 };
+    info[StrokeSettings::STABILIZATION_VALUE] = StabilizationLevel::SIMPLE;
 
     mStrokeSettings->load(typeName(), settings, info);
 
@@ -63,6 +64,8 @@ void SmudgeTool::loadSettings()
         settings.remove("smudgeWidth");
         settings.remove("smudgeFeather");
     }
+
+    mInterpolator.setStabilizerLevel(mStrokeSettings->stabilizerLevel());
 
     mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
     mQuickSizingProperties.insert(Qt::ControlModifier, StrokeSettings::FEATHER_VALUE);

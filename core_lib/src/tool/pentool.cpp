@@ -68,6 +68,8 @@ void PenTool::loadSettings()
         settings.remove("penLineStablization");
     }
 
+    mInterpolator.setStabilizerLevel(mStrokeSettings->stabilizerLevel());
+
     mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
 }
 

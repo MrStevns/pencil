@@ -71,6 +71,8 @@ void PencilTool::loadSettings()
         settings.remove("FillContour");
     }
 
+    mInterpolator.setStabilizerLevel(mStrokeSettings->stabilizerLevel());
+
     mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
 }
 

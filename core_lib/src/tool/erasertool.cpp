@@ -78,6 +78,8 @@ void EraserTool::loadSettings()
         settings.remove("eraserAA");
     }
 
+    mInterpolator.setStabilizerLevel(mStrokeSettings->stabilizerLevel());
+
     mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
     mQuickSizingProperties.insert(Qt::ControlModifier, StrokeSettings::FEATHER_VALUE);
 }

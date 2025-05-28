@@ -79,6 +79,8 @@ void BrushTool::loadSettings()
         settings.remove("brushLineStabilization");
     }
 
+    mInterpolator.setStabilizerLevel(mStrokeSettings->stabilizerLevel());
+
     mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
     mQuickSizingProperties.insert(Qt::ControlModifier, StrokeSettings::FEATHER_VALUE);
 }
