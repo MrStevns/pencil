@@ -163,10 +163,6 @@ void PencilTool::pointerMoveEvent(PointerEvent* event)
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         drawStroke();
-        if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
-        {
-            mInterpolator.setStabilizerLevel(properties.stabilizerLevel);
-        }
     }
     StrokeTool::pointerMoveEvent(event);
 }

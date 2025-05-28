@@ -156,10 +156,6 @@ void EraserTool::pointerMoveEvent(PointerEvent* event)
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         updateStrokes();
-        if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
-        {
-            mInterpolator.setStabilizerLevel(properties.stabilizerLevel);
-        }
     }
 
     StrokeTool::pointerMoveEvent(event);

@@ -118,6 +118,7 @@ void BrushTool::setPressure(const bool pressure)
 void BrushTool::setStabilizerLevel(const int level)
 {
     properties.stabilizerLevel = level;
+    mInterpolator.setStabilizerLevel(level);
 }
 
 QCursor BrushTool::cursor()
@@ -151,10 +152,6 @@ void BrushTool::pointerMoveEvent(PointerEvent* event)
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         drawStroke();
-        if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
-        {
-            mInterpolator.setStabilizerLevel(properties.stabilizerLevel);
-        }
     }
 
     StrokeTool::pointerMoveEvent(event);

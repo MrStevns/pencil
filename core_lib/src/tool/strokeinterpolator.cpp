@@ -42,7 +42,6 @@ void StrokeInterpolator::reset()
     pressure = 0.0f;
     mHasTangent = false;
     timer.stop();
-    mStabilizerLevel = -1;
 }
 
 void StrokeInterpolator::setPressure(float pressure)
