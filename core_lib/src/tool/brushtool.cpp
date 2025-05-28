@@ -39,7 +39,7 @@ BrushTool::BrushTool(QObject* parent) : StrokeTool(parent)
 {
 }
 
-ToolType BrushTool::type()
+ToolType BrushTool::type() const
 {
     return BRUSH;
 }
@@ -48,77 +48,39 @@ void BrushTool::loadSettings()
 {
     StrokeTool::loadSettings();
 
-    mPropertyEnabled[WIDTH] = true;
-    mPropertyEnabled[FEATHER] = true;
-    mPropertyEnabled[PRESSURE] = true;
-    mPropertyEnabled[INVISIBILITY] = true;
-    mPropertyEnabled[STABILIZATION] = true;
+    mPropertyUsed[StrokeSettings::WIDTH_VALUE] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeSettings::FEATHER_VALUE] = { Layer::BITMAP };
+    mPropertyUsed[StrokeSettings::PRESSURE_ENABLED] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeSettings::INVISIBILITY_ENABLED] = { Layer::VECTOR };
+    mPropertyUsed[StrokeSettings::STABILIZATION_VALUE] = { Layer::BITMAP, Layer::VECTOR };
 
     QSettings settings(PENCIL2D, PENCIL2D);
 
-    properties.width = settings.value("brushWidth", 24.0).toDouble();
-    properties.feather = settings.value("brushFeather", 48.0).toDouble();
-    properties.pressure = settings.value("brushPressure", true).toBool();
-    properties.invisibility = settings.value("brushInvisibility", false).toBool();
-    properties.preserveAlpha = OFF;
-    properties.stabilizerLevel = settings.value("brushLineStabilization", StabilizationLevel::STRONG).toInt();
-    properties.useAA = DISABLED;
+    QHash<int, PropertyInfo> info;
+    info[StrokeSettings::WIDTH_VALUE] = { 1.0, 100.0, 24.0 };
+    info[StrokeSettings::FEATHER_VALUE] = { 1.0, 99.0, 48.0 };
+    info[StrokeSettings::PRESSURE_ENABLED] = true;
+    info[StrokeSettings::INVISIBILITY_ENABLED] = false;
+    info[StrokeSettings::STABILIZATION_VALUE] = { StabilizationLevel::NONE, StabilizationLevel::STRONG, StabilizationLevel::STRONG } ;
 
-    if (properties.width <= 0) { setWidth(15); }
-    if (std::isnan(properties.feather)) { setFeather(15); }
+    mStrokeSettings->load(typeName(), settings, info);
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, WIDTH);
-    mQuickSizingProperties.insert(Qt::ControlModifier, FEATHER);
-}
+    if (mStrokeSettings->requireMigration(settings, 1)) {
+        mStrokeSettings->setBaseValue(StrokeSettings::WIDTH_VALUE, settings.value("brushWidth", 24.0).toReal());
+        mStrokeSettings->setBaseValue(StrokeSettings::FEATHER_VALUE, settings.value("brushFeather", 48.0).toReal());
+        mStrokeSettings->setBaseValue(StrokeSettings::PRESSURE_ENABLED, settings.value("brushPressure", true).toBool());
+        mStrokeSettings->setBaseValue(StrokeSettings::INVISIBILITY_ENABLED, settings.value("brushInvisibility", false).toBool());
+        mStrokeSettings->setBaseValue(StrokeSettings::STABILIZATION_VALUE, settings.value("brushLineStabilization", StabilizationLevel::STRONG).toInt());
 
-void BrushTool::saveSettings()
-{
-    QSettings settings(PENCIL2D, PENCIL2D);
+        settings.remove("brushWidth");
+        settings.remove("brushFeather");
+        settings.remove("brushPressure");
+        settings.remove("brushInvisibility");
+        settings.remove("brushLineStabilization");
+    }
 
-    settings.setValue("brushWidth", properties.width);
-    settings.setValue("brushFeather", properties.feather);
-    settings.setValue("brushPressure", properties.pressure);
-    settings.setValue("brushInvisibility", properties.invisibility);
-    settings.setValue("brushLineStabilization", properties.stabilizerLevel);
-
-    settings.sync();
-}
-
-void BrushTool::resetToDefault()
-{
-    setWidth(24.0);
-    setFeather(48.0);
-    setStabilizerLevel(StabilizationLevel::STRONG);
-}
-
-void BrushTool::setWidth(const qreal width)
-{
-    // Set current property
-    properties.width = width;
-}
-
-void BrushTool::setFeather(const qreal feather)
-{
-    // Set current property
-    properties.feather = feather;
-}
-
-void BrushTool::setInvisibility(const bool invisibility)
-{
-    // force value
-    properties.invisibility = invisibility;
-}
-
-void BrushTool::setPressure(const bool pressure)
-{
-    // Set current property
-    properties.pressure = pressure;
-}
-
-void BrushTool::setStabilizerLevel(const int level)
-{
-    properties.stabilizerLevel = level;
-    mInterpolator.setStabilizerLevel(level);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
+    mQuickSizingProperties.insert(Qt::ControlModifier, StrokeSettings::FEATHER_VALUE);
 }
 
 QCursor BrushTool::cursor()
@@ -209,11 +171,11 @@ void BrushTool::applyVectorBuffer(VectorImage* vectorImage)
     qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
 
     BezierCurve curve(mStrokePoints, mStrokePressures, tol);
-    curve.setWidth(properties.width);
-    curve.setFeather(properties.feather);
+    curve.setWidth(mStrokeSettings->width());
+    curve.setFeather(mStrokeSettings->feather());
     curve.setFilled(false);
-    curve.setInvisibility(properties.invisibility);
-    curve.setVariableWidth(properties.pressure);
+    curve.setInvisibility(mStrokeSettings->invisibilityEnabled());
+    curve.setVariableWidth(mStrokeSettings->pressureEnabled());
     curve.setColorNumber(mEditor->color()->frontColorNumber());
 
     vectorImage->addCurve(curve, mEditor->view()->scaling(), false);

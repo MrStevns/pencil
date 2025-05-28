@@ -26,10 +26,10 @@ class EraserTool : public StrokeTool
 
 public:
     explicit EraserTool(QObject* parent = nullptr);
-    ToolType type() override;
+    ToolType type() const override;
+    ToolCategory category() const override { return STROKETOOL; }
+
     void loadSettings() override;
-    void saveSettings() override;
-    void resetToDefault() override;
     QCursor cursor() override;
 
     void pointerMoveEvent(PointerEvent*) override;
@@ -42,13 +42,6 @@ public:
     void updateStrokes();
 
     void applyVectorBuffer(VectorImage* vectorImage) override;
-
-    void setWidth(const qreal width) override;
-    void setFeather(const qreal feather) override;
-    void setUseFeather(const bool usingFeather) override;
-    void setPressure(const bool pressure) override;
-    void setAA(const int aa) override;
-    void setStabilizerLevel(const int level) override;
 
 private:
     void drawPath(const QPainterPath & path, QPen pen, QBrush brush) override;
