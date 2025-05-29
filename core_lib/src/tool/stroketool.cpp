@@ -116,11 +116,6 @@ bool StrokeTool::enteringThisTool()
     return true;
 }
 
-bool StrokeTool::leavingThisTool()
-{
-    return BaseTool::leavingThisTool();
-}
-
 void StrokeTool::onPreferenceChanged(SETTING setting)
 {
     if (setting == SETTING::QUICK_SIZING) {

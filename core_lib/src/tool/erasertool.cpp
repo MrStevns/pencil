@@ -102,7 +102,6 @@ StrokeDynamics EraserTool::createDynamics() const
 void EraserTool::drawStroke()
 {
     StrokeTool::drawStroke();
-    QList<QPointF> p = mInterpolator.interpolateStroke();
 
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -146,8 +145,6 @@ void EraserTool::applyVectorBuffer(VectorImage* vectorImage)
     vectorImage->removeArea(getCurrentPoint());
     // Clear the temporary pixel path
     vectorImage->deleteSelectedPoints();
-
-    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
 
     StrokeTool::applyVectorBuffer(vectorImage);
 }

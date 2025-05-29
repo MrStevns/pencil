@@ -157,5 +157,5 @@ void BrushTool::applyVectorBuffer(VectorImage* vectorImage)
 
     vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
 
-    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+    StrokeTool::applyVectorBuffer(vectorImage);
 }

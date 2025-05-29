@@ -46,7 +46,6 @@ public:
     virtual void drawStroke();
     void endStroke();
 
-    bool leavingThisTool() override;
     bool enteringThisTool() override;
 
     void updateCanvasCursor();

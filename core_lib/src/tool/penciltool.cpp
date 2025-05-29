@@ -152,5 +152,5 @@ void PencilTool::applyVectorBuffer(VectorImage* vectorImage)
 
     // TODO: selection doesn't apply on enter
 
-    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+    StrokeTool::applyVectorBuffer(vectorImage);
 }
