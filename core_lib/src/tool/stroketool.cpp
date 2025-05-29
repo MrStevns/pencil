@@ -284,11 +284,11 @@ void StrokeTool::doPath(const QList<QPointF>& points, QBrush brush, QPen pen)
     if (points.size() < 4) { return; }
 
     QPainterPath path;
-    QPointF startPoint = mEditor->view()->mapScreenToCanvas(points[0]);
+    QPointF startPoint = points[0];
     path.moveTo(startPoint);
     mStrokePoints << startPoint;
     for (int i = 1; i < points.count(); i += 1) {
-        const QPointF& point = mEditor->view()->mapScreenToCanvas(points[i]);
+        const QPointF& point = points[i];
         path.lineTo(point);
         mStrokePoints << point;
     }
