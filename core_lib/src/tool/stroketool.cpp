@@ -278,7 +278,7 @@ void StrokeTool::doStroke()
 {
     mStrokeDynamics = createDynamics();
     const StrokeDynamics& dynamics = mStrokeDynamics;
-    for (const QPointF& point : mStroker.strokedSegment(dynamics)) {
+    for (const QPointF& point : mStroker.segment(dynamics)) {
         drawDab(point, dynamics);
     }
 }

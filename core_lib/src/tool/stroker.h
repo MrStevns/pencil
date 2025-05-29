@@ -34,7 +34,7 @@ public:
 
     /// Append a list of points to be used to create the stroked segment
     void append(const QList<QPointF>& next);
-    const QList<QPointF> strokedSegment(const StrokeDynamics& dynamics);
+    const QList<QPointF> segment(const StrokeDynamics& dynamics);
 
     /// Cleanup the stroke
     void end();
@@ -42,10 +42,6 @@ private:
 
     // The segment we need to draw the current stroke
     QList<QPointF> mStrokeSegment;
-
-    // The data points we need to recreate the stroke as a BezierCurve
-    QList<QPointF> mStrokePoints;
-    QList<qreal> mStrokePressures;
 
     qreal mLeftOverDabDistance = 0.0;
 };
