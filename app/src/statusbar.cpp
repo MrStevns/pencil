@@ -115,6 +115,9 @@ void StatusBar::updateToolStatus(ToolType tool)
         case SMUDGE:
             mToolLabel->setText(tr("Click to liquefy pixels or modify a vector line. Hold Alt to smooth."));
             break;
+        case NODE:
+            mToolLabel->setText(tr("Click to drag one more more nodes on a curve"));
+            break;
         case PEN:
             mToolLabel->setText(tr("Click to draw. Hold Ctrl and Shift to erase or Alt to select a color from the canvas."));
             break;

@@ -283,7 +283,13 @@ void ToolBoxWidget::brushOn()
 
 void ToolBoxWidget::smudgeOn()
 {
-    toolOn(SMUDGE, ui->smudgeButton);
+    // TODO(MrStevns): This logic should exist on the tool, not be part of our GUI layer
+    Layer* layer = editor()->layers()->currentLayer();
+    if (layer->type() == Layer::BITMAP) {
+        toolOn(SMUDGE, ui->smudgeButton);
+    } else if (layer->type() == Layer::VECTOR) {
+        toolOn(NODE, ui->smudgeButton);
+    }
 }
 
 void ToolBoxWidget::deselectAllTools()

@@ -894,6 +894,7 @@ void ScribbleArea::paintEvent(QPaintEvent* event)
                 switch (currentTool()->type())
                 {
                 case SMUDGE:
+                case NODE:
                 case HAND:
                 {
                     auto selectMan = mEditor->select();

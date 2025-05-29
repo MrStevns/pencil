@@ -37,6 +37,7 @@ QString BaseTool::TypeName(ToolType type)
         map[MOVE] = tr("Move");
         map[HAND] = tr("Hand");
         map[SMUDGE] = tr("Smudge");
+        map[NODE] = tr("Node");
         map[PEN] = tr("Pen");
         map[POLYLINE] = tr("Polyline");
         map[BUCKET] = tr("Bucket");

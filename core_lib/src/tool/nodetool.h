@@ -3,6 +3,7 @@
 Pencil2D - Traditional Animation Software
 Copyright (C) 2005-2007 Patrick Corrieri & Pascal Naidon
 Copyright (C) 2012-2020 Matthew Chiawen Chang
+Copyright (C) 2025-2099 Oliver S. larsen
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,40 +16,39 @@ GNU General Public License for more details.
 
 */
 
-#ifndef SMUDGETOOL_H
-#define SMUDGETOOL_H
+#ifndef NODETOOL_H
+#define NODETOOL_H
 
-#include "stroketool.h"
+#include "basetool.h"
 
-#include "bitmapimage.h"
+class VectorImage;
 
-class SmudgeTool : public StrokeTool
+class NodeTool : public BaseTool
 {
     Q_OBJECT
 public:
-    explicit SmudgeTool(QObject* parent = 0);
+    explicit NodeTool(QObject* parent = 0);
 
     ToolType type() const override;
-    ToolCategory category() const override { return STROKETOOL; }
+    ToolCategory category() const override { return BASETOOL; }
+    bool isActive() const override { return true; }
 
     void loadSettings() override;
+
     QCursor cursor() override;
 
-    bool keyPressEvent(QKeyEvent *) override;
-    bool keyReleaseEvent(QKeyEvent *) override;
+    void pointerPressEvent(PointerEvent *) override;
+    void pointerMoveEvent(PointerEvent *) override;
+    void pointerReleaseEvent(PointerEvent *) override;
 
-    void drawStroke() override;
+    void applyVectorBuffer(VectorImage *vectorImage);
 
-    StrokeDynamics createDynamics() const override;
-    
-protected:
-    bool emptyFrameActionEnabled() override;
+    void paint(QPainter &painter, const QRect &blitRect) override;
 
 private:
-    void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
+    QPointF offsetFromPressPos(const QPointF& point) const;
 
-    uint mToolMode;  // 0=normal/smooth 1=smudge
-    BitmapImage mTargetImage;
+    QPointF mPressPoint;
 };
 
-#endif // SMUDGETOOL_H
+#endif // NODETOOL_H
