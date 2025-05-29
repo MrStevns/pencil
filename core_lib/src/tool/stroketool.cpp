@@ -356,6 +356,17 @@ void StrokeTool::pointerPressEvent(PointerEvent*)
 void StrokeTool::pointerMoveEvent(PointerEvent* event)
 {
     mCurrentPressure = event->pressure();
+    mInterpolator.pointerMoveEvent(event);
+
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
+    if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
+    {
+        drawStroke();
+    }
+
     updateCanvasCursor();
 }
 

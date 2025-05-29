@@ -103,25 +103,6 @@ void PencilTool::pointerPressEvent(PointerEvent *event)
     StrokeTool::pointerPressEvent(event);
 }
 
-void PencilTool::pointerMoveEvent(PointerEvent* event)
-{
-    mInterpolator.pointerMoveEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
-    {
-        drawStroke();
-    }
-    StrokeTool::pointerMoveEvent(event);
-}
-
-void PencilTool::pointerReleaseEvent(PointerEvent *event)
-{
-    StrokeTool::pointerReleaseEvent(event);
-}
-
 void PencilTool::drawStroke()
 {
     StrokeTool::drawStroke();

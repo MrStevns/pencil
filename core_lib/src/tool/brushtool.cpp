@@ -106,26 +106,6 @@ void BrushTool::pointerPressEvent(PointerEvent *event)
     StrokeTool::pointerPressEvent(event);
 }
 
-void BrushTool::pointerMoveEvent(PointerEvent* event)
-{
-    mInterpolator.pointerMoveEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
-    {
-        drawStroke();
-    }
-
-    StrokeTool::pointerMoveEvent(event);
-}
-
-void BrushTool::pointerReleaseEvent(PointerEvent *event)
-{
-    StrokeTool::pointerReleaseEvent(event);
-}
-
 void BrushTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
 {
     mScribbleArea->drawBrush(point,

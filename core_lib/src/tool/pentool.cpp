@@ -94,26 +94,6 @@ void PenTool::pointerPressEvent(PointerEvent *event)
     StrokeTool::pointerPressEvent(event);
 }
 
-void PenTool::pointerMoveEvent(PointerEvent* event)
-{
-    mInterpolator.pointerMoveEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
-    {
-        drawStroke();
-    }
-
-    StrokeTool::pointerMoveEvent(event);
-}
-
-void PenTool::pointerReleaseEvent(PointerEvent *event)
-{
-    StrokeTool::pointerReleaseEvent(event);
-}
-
 StrokeDynamics PenTool::createDynamics() const
 {
     StrokeDynamics dynamics = StrokeTool::createDynamics();

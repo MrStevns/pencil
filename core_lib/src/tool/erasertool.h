@@ -32,13 +32,11 @@ public:
     void loadSettings() override;
     QCursor cursor() override;
 
-    void pointerMoveEvent(PointerEvent*) override;
     void pointerPressEvent(PointerEvent*) override;
-    void pointerReleaseEvent(PointerEvent*) override;
 
     StrokeDynamics createDynamics() const override;
 
-    void drawStroke();
+    void drawStroke() override;
     void updateStrokes();
 
     void applyVectorBuffer(VectorImage* vectorImage) override;

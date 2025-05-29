@@ -101,26 +101,6 @@ void EraserTool::pointerPressEvent(PointerEvent *event)
     StrokeTool::pointerPressEvent(event);
 }
 
-void EraserTool::pointerMoveEvent(PointerEvent* event)
-{
-    mInterpolator.pointerMoveEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
-    {
-        updateStrokes();
-    }
-
-    StrokeTool::pointerMoveEvent(event);
-}
-
-void EraserTool::pointerReleaseEvent(PointerEvent *event)
-{
-    StrokeTool::pointerReleaseEvent(event);
-}
-
 StrokeDynamics EraserTool::createDynamics() const
 {
     StrokeDynamics dynamics = StrokeTool::createDynamics();

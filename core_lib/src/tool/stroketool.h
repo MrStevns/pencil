@@ -43,7 +43,7 @@ public:
     ~StrokeTool();
 
     void startStroke(PointerEvent::InputType inputType);
-    void drawStroke();
+    virtual void drawStroke();
     void endStroke();
 
     bool leavingThisTool() override;

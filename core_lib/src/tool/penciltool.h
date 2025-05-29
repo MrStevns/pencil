@@ -36,10 +36,8 @@ public:
     QCursor cursor() override;
 
     void pointerPressEvent(PointerEvent*) override;
-    void pointerMoveEvent(PointerEvent*) override;
-    void pointerReleaseEvent(PointerEvent*) override;
 
-    void drawStroke();
+    void drawStroke() override;
 
     void applyVectorBuffer(VectorImage* image) override;
 

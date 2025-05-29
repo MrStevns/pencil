@@ -42,7 +42,7 @@ public:
     bool keyPressEvent(QKeyEvent *) override;
     bool keyReleaseEvent(QKeyEvent *) override;
 
-    void drawStroke();
+    void drawStroke() override;
 
     StrokeDynamics createDynamics() const override;
 
