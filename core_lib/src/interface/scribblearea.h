@@ -72,7 +72,6 @@ public:
 
     LayerVisibility getLayerVisibility() const { return mLayerVisibility; }
     qreal getCurveSmoothing() const { return mCurveSmoothingLevel; }
-    bool makeInvisible() const { return mMakeInvisible; }
 
     QPointF getCentralPoint();
 
@@ -131,7 +130,6 @@ signals:
 public slots:
     void clearImage();
     void setCurveSmoothing(int);
-    void toggleThinLines();
     void increaseLayerVisibilityIndex();
     void decreaseLayerVisibilityIndex();
     void setLayerVisibility(LayerVisibility visibility);
@@ -212,7 +210,6 @@ private:
     Editor* mEditor = nullptr;
 
     LayerVisibility mLayerVisibility = LayerVisibility::ALL;
-    bool mMakeInvisible = false;
     qreal mCurveSmoothingLevel = 0.0;
     int mDeltaFactor = 1;
 

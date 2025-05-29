@@ -85,8 +85,6 @@ bool ScribbleArea::init()
     const int curveSmoothingLevel = mPrefs->getInt(SETTING::CURVE_SMOOTHING);
     mCurveSmoothingLevel = curveSmoothingLevel / 20.0; // default value is 1.0
 
-    mMakeInvisible = false;
-
     mLayerVisibility = static_cast<LayerVisibility>(mPrefs->getInt(SETTING::LAYER_VISIBILITY));
 
     mDeltaFactor = mEditor->preference()->isOn(SETTING::INVERT_SCROLL_ZOOM_DIRECTION) ? -1 : 1;
@@ -1399,12 +1397,6 @@ void ScribbleArea::cancelTransformedSelection()
         mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
         updateFrame();
     }
-}
-
-void ScribbleArea::toggleThinLines()
-{
-    bool previousValue = mPrefs->isOn(SETTING::INVISIBLE_LINES);
-    setEffect(SETTING::INVISIBLE_LINES, !previousValue);
 }
 
 void ScribbleArea::setLayerVisibility(LayerVisibility visibility)

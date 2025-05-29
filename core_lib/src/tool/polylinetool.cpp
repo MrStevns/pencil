@@ -133,10 +133,6 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
                 VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
                 Q_CHECK_PTR(vectorImage);
                 vectorImage->deselectAll();
-                if (mScribbleArea->makeInvisible() && !mEditor->preference()->isOn(SETTING::INVISIBLE_LINES))
-                {
-                    mScribbleArea->toggleThinLines();
-                }
             }
             mPoints << getCurrentPoint();
             emit isActiveChanged(POLYLINE, true);
@@ -290,7 +286,7 @@ void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint)
         {
             if (mEditor->layers()->currentLayer()->type() == Layer::VECTOR)
             {
-                if (mScribbleArea->makeInvisible() == true)
+                if (mSettings->invisibilityEnabled())
                 {
                     pen.setWidth(0);
                     pen.setStyle(Qt::DotLine);
@@ -319,7 +315,7 @@ void PolylineTool::endPolyline(QList<QPointF> points)
     if (layer->type() == Layer::VECTOR)
     {
         BezierCurve curve = BezierCurve(points, mSettings->bezierPathEnabled());
-        if (mScribbleArea->makeInvisible() == true)
+        if (mSettings->invisibilityEnabled())
         {
             curve.setWidth(0);
         }
@@ -329,7 +325,7 @@ void PolylineTool::endPolyline(QList<QPointF> points)
         }
         curve.setColorNumber(mEditor->color()->frontColorNumber());
         curve.setVariableWidth(false);
-        curve.setInvisibility(mScribbleArea->makeInvisible());
+        curve.setInvisibility(mSettings->invisibilityEnabled());
 
         VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
         if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing

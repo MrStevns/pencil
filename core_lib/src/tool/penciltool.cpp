@@ -94,12 +94,6 @@ void PencilTool::pointerPressEvent(PointerEvent *event)
 
     startStroke(event->inputType());
 
-    // note: why are we doing this on device press event?
-    if (mEditor->layers()->currentLayer()->type() == Layer::VECTOR && !mEditor->preference()->isOn(SETTING::INVISIBLE_LINES))
-    {
-        mScribbleArea->toggleThinLines();
-    }
-
     StrokeTool::pointerPressEvent(event);
 }
 
