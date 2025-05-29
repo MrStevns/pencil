@@ -89,18 +89,6 @@ QCursor EraserTool::cursor()
     return QCursor(QPixmap(":icons/general/cross.png"), 10, 10);
 }
 
-void EraserTool::pointerPressEvent(PointerEvent *event)
-{
-    mInterpolator.pointerPressEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    startStroke(event->inputType());
-
-    StrokeTool::pointerPressEvent(event);
-}
-
 StrokeDynamics EraserTool::createDynamics() const
 {
     StrokeDynamics dynamics = StrokeTool::createDynamics();

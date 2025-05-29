@@ -348,8 +348,15 @@ bool StrokeTool::handleQuickSizing(PointerEvent* event)
     return false;
 }
 
-void StrokeTool::pointerPressEvent(PointerEvent*)
+void StrokeTool::pointerPressEvent(PointerEvent* event)
 {
+    mInterpolator.pointerPressEvent(event);
+    if (handleQuickSizing(event)) {
+        return;
+    }
+
+    startStroke(event->inputType());
+
     updateCanvasCursor();
 }
 

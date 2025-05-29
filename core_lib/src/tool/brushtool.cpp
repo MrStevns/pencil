@@ -94,18 +94,6 @@ QCursor BrushTool::cursor()
     return QCursor(QPixmap(":icons/general/cross.png"), 10, 10);
 }
 
-void BrushTool::pointerPressEvent(PointerEvent *event)
-{
-    mInterpolator.pointerPressEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    startStroke(event->inputType());
-
-    StrokeTool::pointerPressEvent(event);
-}
-
 void BrushTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
 {
     mScribbleArea->drawBrush(point,

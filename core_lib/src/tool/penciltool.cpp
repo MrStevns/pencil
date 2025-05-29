@@ -85,18 +85,6 @@ QCursor PencilTool::cursor()
     return QCursor(QPixmap(":icons/general/cross.png"), 10, 10);
 }
 
-void PencilTool::pointerPressEvent(PointerEvent *event)
-{
-    mInterpolator.pointerPressEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    startStroke(event->inputType());
-
-    StrokeTool::pointerPressEvent(event);
-}
-
 void PencilTool::drawStroke()
 {
     StrokeTool::drawStroke();

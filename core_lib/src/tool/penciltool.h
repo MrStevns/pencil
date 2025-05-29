@@ -35,8 +35,6 @@ public:
     void loadSettings() override;
     QCursor cursor() override;
 
-    void pointerPressEvent(PointerEvent*) override;
-
     void drawStroke() override;
 
     void applyVectorBuffer(VectorImage* image) override;

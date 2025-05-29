@@ -82,18 +82,6 @@ QCursor PenTool::cursor()
     return QCursor(QPixmap(":icons/general/cross.png"), 10, 10);
 }
 
-void PenTool::pointerPressEvent(PointerEvent *event)
-{
-    mInterpolator.pointerPressEvent(event);
-    if (handleQuickSizing(event)) {
-        return;
-    }
-
-    startStroke(event->inputType());
-
-    StrokeTool::pointerPressEvent(event);
-}
-
 StrokeDynamics PenTool::createDynamics() const
 {
     StrokeDynamics dynamics = StrokeTool::createDynamics();

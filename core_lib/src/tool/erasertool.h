@@ -32,8 +32,6 @@ public:
     void loadSettings() override;
     QCursor cursor() override;
 
-    void pointerPressEvent(PointerEvent*) override;
-
     StrokeDynamics createDynamics() const override;
 
     void drawStroke() override;
