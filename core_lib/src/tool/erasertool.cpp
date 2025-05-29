@@ -94,6 +94,7 @@ StrokeDynamics EraserTool::createDynamics() const
     StrokeDynamics dynamics = StrokeTool::createDynamics();
 
     dynamics.color = Qt::white;
+    dynamics.blending = QPainter::CompositionMode_DestinationOut;
 
     return dynamics;
 }
