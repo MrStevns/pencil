@@ -67,6 +67,7 @@ public:
     bool handleQuickSizing(PointerEvent* event);
 
     void paint(QPainter& painter, const QRect& blitRect) override;
+    QPainter::CompositionMode compositionMode() const override;
 
     virtual void setStablizationLevel(int level);
     virtual void setWidth(qreal width);

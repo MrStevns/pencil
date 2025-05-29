@@ -135,6 +135,11 @@ void StrokeTool::onViewUpdated()
     updateCanvasCursor();
 }
 
+QPainter::CompositionMode StrokeTool::compositionMode() const
+{
+    return mStrokeDynamics.blending;
+}
+
 QPointF StrokeTool::getCurrentPressPixel() const
 {
     return mInterpolator.getCurrentPressPixel();
@@ -325,7 +330,7 @@ void StrokeTool::applyVectorBuffer(VectorImage*)
 
 void StrokeTool::applyBitmapBuffer(BitmapImage* bitmapImage)
 {
-    mScribbleArea->paintBitmapBuffer(bitmapImage);
+    bitmapImage->paste(&mScribbleArea->mTiledBuffer, mStrokeDynamics.blending);
 }
 
 bool StrokeTool::handleQuickSizing(PointerEvent* event)

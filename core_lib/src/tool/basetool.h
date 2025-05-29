@@ -101,6 +101,8 @@ public:
     bool isPropertyEnabled(int rawType);
     bool isDrawingTool();
 
+    virtual QPainter::CompositionMode compositionMode() const;
+
 signals:
     bool isActiveChanged(ToolType, bool);
 

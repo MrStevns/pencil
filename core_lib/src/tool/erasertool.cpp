@@ -125,7 +125,11 @@ void EraserTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
                              dynamics.width,
                              dynamics.feather,
                              dynamics.color,
-                             dynamics.blending,
+                             // This is deliberately not using dynamics blending
+                             // because the stroke is drawn in two passes..
+                             // Once with an opaque color here, and the second pass is when
+                             // the tiled buffer is composited onto the image.
+                             QPainter::CompositionMode_SourceOver,
                              dynamics.opacity,
                              mStrokeSettings->featherEnabled(),
                              mStrokeSettings->AntiAliasingEnabled() == ON);

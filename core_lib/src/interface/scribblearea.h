@@ -163,7 +163,6 @@ public:
     void blurBrush(BitmapImage *bmiSource_, QPointF srcPoint_, QPointF thePoint_, qreal brushWidth_, qreal offset_, qreal opacity_);
     void liquifyBrush(BitmapImage *bmiSource_, QPointF srcPoint_, QPointF thePoint_, qreal brushWidth_, qreal offset_, qreal opacity_);
 
-    void paintBitmapBuffer(BitmapImage* targetImage);
     void clearDrawingBuffer();
     void setGaussianGradient(QGradient &gradient, QColor color, qreal opacity, qreal offset);
 

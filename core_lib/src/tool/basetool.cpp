@@ -151,3 +151,8 @@ bool BaseTool::isActive() const
 {
     return false;
 }
+
+QPainter::CompositionMode BaseTool::compositionMode() const
+{
+    return QPainter::CompositionMode_SourceOver;
+}
