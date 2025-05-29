@@ -30,6 +30,7 @@ GNU General Public License for more details.
 #include "viewmanager.h"
 #include "selectionmanager.h"
 #include "undoredomanager.h"
+#include "playbackmanager.h"
 
 #include "layervector.h"
 #include "blitrect.h"
@@ -166,8 +167,68 @@ QPointF NodeTool::offsetFromPressPos(const QPointF& point) const
     return point - mPressPoint;
 }
 
-void NodeTool::paint(QPainter &painter, const QRect &blitRect)
+void NodeTool::paint(QPainter& painter, const QRect& blitRect)
 {
-    painter.drawRect(blitRect);
+    Q_UNUSED(blitRect)
+
+    if (editor()->playback()->isPlaying())
+    {
+        return;
+    }
+    auto selectMan = mEditor->select();
+    painter.save();
+    painter.setWorldMatrixEnabled(false);
+    painter.setRenderHint(QPainter::Antialiasing, false);
+    // ----- paints the edited elements
+    QPen pen2(Qt::black, 0.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    painter.setPen(pen2);
+    QColor color;
+    // ------------ vertices of the edited curves
+    color = QColor(200, 200, 200);
+    painter.setBrush(color);
+
+    LayerVector* vectorLayer = static_cast<LayerVector*>(mEditor->layers()->currentLayer());
+    VectorImage* vectorImage = vectorLayer->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+
+    if (!vectorImage) { return; }
+
+    VectorSelection vectorSelection = selectMan->vectorSelection;
+    for (int k = 0; k < vectorSelection.curve.size(); k++)
+    {
+        int curveNumber = vectorSelection.curve.at(k);
+
+        for (int vertexNumber = -1; vertexNumber < vectorImage->getCurveSize(curveNumber); vertexNumber++)
+        {
+            QPointF vertexPoint = vectorImage->getVertex(curveNumber, vertexNumber);
+            QRectF rectangle(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
+            painter.drawRect(rectangle);
+        }
+    }
+    // ------------ selected vertices of the edited curves
+    color = QColor(100, 100, 255);
+    painter.setBrush(color);
+    for (int k = 0; k < vectorSelection.vertex.size(); k++)
+    {
+        VertexRef vertexRef = vectorSelection.vertex.at(k);
+        QPointF vertexPoint = vectorImage->getVertex(vertexRef);
+        QRectF rectangle0 = QRectF(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
+        painter.drawRect(rectangle0);
+    }
+    // ----- paints the closest vertices
+    color = QColor(255, 0, 0);
+    painter.setBrush(color);
+    QList<VertexRef> closestVertices = selectMan->closestVertices();
+    if (vectorSelection.curve.size() > 0)
+    {
+        for (int k = 0; k < closestVertices.size(); k++)
+        {
+            VertexRef vertexRef = closestVertices.at(k);
+            QPointF vertexPoint = vectorImage->getVertex(vertexRef);
+
+            QRectF rectangle = QRectF(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
+            painter.drawRect(rectangle);
+        }
+    }
+    painter.restore();
 }
 

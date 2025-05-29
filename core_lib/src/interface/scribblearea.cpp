@@ -883,82 +883,8 @@ void ScribbleArea::paintEvent(QPaintEvent* event)
 
     currentTool()->paint(painter, event->rect());
 
-    if (!editor()->playback()->isPlaying())    // we don't need to display the following when the animation is playing
+    if (!editor()->playback()->isPlaying()) // we don't need to display the following when the animation is playing
     {
-        Layer* layer = mEditor->layers()->currentLayer();
-        if (layer->type() == Layer::VECTOR)
-        {
-            VectorImage* vectorImage = currentVectorImage(layer);
-            if (vectorImage != nullptr)
-            {
-                switch (currentTool()->type())
-                {
-                case SMUDGE:
-                case NODE:
-                case HAND:
-                {
-                    auto selectMan = mEditor->select();
-                    painter.save();
-                    painter.setWorldMatrixEnabled(false);
-                    painter.setRenderHint(QPainter::Antialiasing, false);
-                    // ----- paints the edited elements
-                    QPen pen2(Qt::black, 0.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-                    painter.setPen(pen2);
-                    QColor color;
-                    // ------------ vertices of the edited curves
-                    color = QColor(200, 200, 200);
-                    painter.setBrush(color);
-                    VectorSelection vectorSelection = selectMan->vectorSelection;
-                    for (int k = 0; k < vectorSelection.curve.size(); k++)
-                    {
-                        int curveNumber = vectorSelection.curve.at(k);
-
-                        for (int vertexNumber = -1; vertexNumber < vectorImage->getCurveSize(curveNumber); vertexNumber++)
-                        {
-                            QPointF vertexPoint = vectorImage->getVertex(curveNumber, vertexNumber);
-                            QRectF rectangle(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
-                            if (rect().contains(mEditor->view()->mapCanvasToScreen(vertexPoint).toPoint()))
-                            {
-                                painter.drawRect(rectangle);
-                            }
-                        }
-                    }
-                    // ------------ selected vertices of the edited curves
-                    color = QColor(100, 100, 255);
-                    painter.setBrush(color);
-                    for (int k = 0; k < vectorSelection.vertex.size(); k++)
-                    {
-                        VertexRef vertexRef = vectorSelection.vertex.at(k);
-                        QPointF vertexPoint = vectorImage->getVertex(vertexRef);
-                        QRectF rectangle0 = QRectF(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
-                        painter.drawRect(rectangle0);
-                    }
-                    // ----- paints the closest vertices
-                    color = QColor(255, 0, 0);
-                    painter.setBrush(color);
-                    QList<VertexRef> closestVertices = selectMan->closestVertices();
-                    if (vectorSelection.curve.size() > 0)
-                    {
-                        for (int k = 0; k < closestVertices.size(); k++)
-                        {
-                            VertexRef vertexRef = closestVertices.at(k);
-                            QPointF vertexPoint = vectorImage->getVertex(vertexRef);
-
-                            QRectF rectangle = QRectF(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
-                            painter.drawRect(rectangle);
-                        }
-                    }
-                    painter.restore();
-                    break;
-                }
-                default:
-                {
-                    break;
-                }
-                } // end switch
-            }
-        }
-
         mOverlayPainter.paint(painter, rect());
 
         // paints the selection outline
