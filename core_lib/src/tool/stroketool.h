@@ -93,7 +93,7 @@ signals:
     void stabilizationLevelChanged(int level);
     
 public slots:
-    void onPreferenceChanged(SETTING setting);
+    void onPreferenceChanged(SETTING setting) override;
     void onViewUpdated();
 
 protected:

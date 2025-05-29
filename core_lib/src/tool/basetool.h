@@ -26,6 +26,7 @@ GNU General Public License for more details.
 #include <QSet>
 #include <QEvent>
 #include "pencildef.h"
+#include "preferencesdef.h"
 #include "toolsettings.h"
 #include "layer.h"
 
@@ -105,6 +106,9 @@ public:
 
 signals:
     bool isActiveChanged(ToolType, bool);
+
+public slots:
+    virtual void onPreferenceChanged(SETTING) { }
 
 protected:
 

@@ -60,6 +60,10 @@ void BaseTool::initialize(Editor* editor)
     createSettings(nullptr);
 
     loadSettings();
+
+    /// Given the way that we update preferences currently, this connection should not be removed
+    /// when the tool is not active.
+    connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &BaseTool::onPreferenceChanged);
 }
 
 void BaseTool::createSettings(ToolSettings* settings)

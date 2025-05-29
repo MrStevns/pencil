@@ -104,10 +104,6 @@ void StrokeTool::loadSettings()
     info[StrokeSettings::FILLCONTOUR_ENABLED] = false;
 
     mStrokeSettings->load(typeName(), settings, info);
-
-    /// Given the way that we update preferences currently, this connection should not be removed
-    /// when the tool is not active.
-    connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &StrokeTool::onPreferenceChanged);
 }
 
 bool StrokeTool::enteringThisTool()
