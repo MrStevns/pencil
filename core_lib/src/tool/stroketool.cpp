@@ -104,6 +104,8 @@ void StrokeTool::loadSettings()
     info[StrokeSettings::FILLCONTOUR_ENABLED] = false;
 
     mStrokeSettings->load(typeName(), settings, info);
+
+    mStrokeDynamics = createDynamics();
 }
 
 bool StrokeTool::enteringThisTool()
@@ -167,6 +169,8 @@ void StrokeTool::startStroke(PointerEvent::InputType inputType)
     {
         mScribbleArea->handleDrawingOnEmptyFrame();
     }
+
+    mStrokeDynamics = createDynamics();
 
     mFirstDraw = true;
 
@@ -253,6 +257,7 @@ StrokeDynamics StrokeTool::createDynamics() const
 void StrokeTool::drawStroke()
 {
     QPointF pixel = getCurrentPixel();
+    mStrokeDynamics = createDynamics();
     if (pixel != getLastPixel() || !mFirstDraw)
     {
         mStrokeSegment = mInterpolator.interpolateStroke();
@@ -272,7 +277,6 @@ void StrokeTool::drawStroke()
 
 void StrokeTool::doStroke()
 {
-    mStrokeDynamics = createDynamics();
     const StrokeDynamics& dynamics = mStrokeDynamics;
     for (const QPointF& point : mStroker.segment(dynamics)) {
         drawDab(point, dynamics);

@@ -110,7 +110,7 @@ bool SmudgeTool::keyReleaseEvent(QKeyEvent *event)
 
 StrokeDynamics SmudgeTool::createDynamics() const
 {
-    StrokeDynamics dynamics;
+    StrokeDynamics dynamics = StrokeTool::createDynamics();
 
     dynamics.dabSpacing = 1.0;
     dynamics.canSingleDab = false;
