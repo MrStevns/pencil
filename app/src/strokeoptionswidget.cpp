@@ -102,12 +102,6 @@ void StrokeOptionsWidget::updateUI()
     if (strokeTool->isPropertyEnabled(StrokeSettings::FILLCONTOUR_ENABLED)) {
         setFillContourEnabled(p->fillContourEnabled());
     }
-
-    if (strokeTool->type() == POLYLINE) {
-        const PolylineSettings* polyP = static_cast<const PolylineSettings*>(strokeTool->settings());
-        setClosedPathEnabled(polyP->closedPathEnabled());
-        setBezierPathEnabled(polyP->bezierPathEnabled());
-    }
 }
 
 void StrokeOptionsWidget::updateToolConnections(BaseTool* tool)
@@ -132,27 +126,12 @@ void StrokeOptionsWidget::makeConnectionFromModelToUI(StrokeTool* strokeTool)
     connect(strokeTool, &StrokeTool::antiAliasingEnabledChanged, this, &StrokeOptionsWidget::setAntiAliasingEnabled);
     connect(strokeTool, &StrokeTool::fillContourEnabledChanged, this, &StrokeOptionsWidget::setFillContourEnabled);
     connect(strokeTool, &StrokeTool::InvisibleStrokeEnabledChanged, this, &StrokeOptionsWidget::setPenInvisibilityEnabled);
-
-    if (strokeTool->type() == POLYLINE) {
-        PolylineTool* polyline = static_cast<PolylineTool*>(strokeTool);
-        connect(polyline, &PolylineTool::bezierPathEnabledChanged, this, &StrokeOptionsWidget::setBezierPathEnabled);
-        connect(polyline, &PolylineTool::closePathChanged, this, &StrokeOptionsWidget::setClosedPathEnabled);
-    }
 }
 
 void StrokeOptionsWidget::makeConnectionFromUIToModel()
 {
     auto spinboxValueChanged = static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged);
 
-    connect(ui->useBezierBox, &QCheckBox::clicked, [=](bool enabled) {
-        PolylineTool* tool = static_cast<PolylineTool*>(mCurrentTool);
-        tool->setUseBezier(enabled);
-    });
-
-    connect(ui->useClosedPathBox, &QCheckBox::clicked, [=](bool enabled) {
-        PolylineTool* tool = static_cast<PolylineTool*>(mCurrentTool);
-        tool->setClosePath(enabled);
-    });
     connect(ui->usePressureBox, &QCheckBox::clicked, [=](bool enabled) {
         mCurrentTool->setPressureEnabled(enabled);
     });
@@ -210,8 +189,6 @@ void StrokeOptionsWidget::setVisibility(BaseTool* tool)
     ui->stabilizerLabel->setVisible(tool->isPropertyEnabled(StrokeSettings::STABILIZATION_VALUE));
     ui->inpolLevelsCombo->setVisible(tool->isPropertyEnabled(StrokeSettings::STABILIZATION_VALUE));
     ui->fillContourBox->setVisible(tool->isPropertyEnabled(StrokeSettings::FILLCONTOUR_ENABLED));
-    ui->useBezierBox->setVisible(tool->isPropertyEnabled(PolylineSettings::BEZIERPATH_ENABLED));
-    ui->useClosedPathBox->setVisible(tool->isPropertyEnabled(PolylineSettings::CLOSEDPATH_ENABLED));
 }
 
 void StrokeOptionsWidget::setWidthValue(qreal width)
@@ -266,18 +243,6 @@ void StrokeOptionsWidget::setFillContourEnabled(bool enabled)
 {
     QSignalBlocker b(ui->fillContourBox);
     ui->fillContourBox->setChecked(enabled);
-}
-
-void StrokeOptionsWidget::setBezierPathEnabled(bool enabled)
-{
-    QSignalBlocker b(ui->useBezierBox);
-    ui->useBezierBox->setChecked(enabled);
-}
-
-void StrokeOptionsWidget::setClosedPathEnabled(bool enabled)
-{
-    QSignalBlocker b(ui->useClosedPathBox);
-    ui->useClosedPathBox->setChecked(enabled);
 }
 
 StrokeTool* StrokeOptionsWidget::strokeTool()

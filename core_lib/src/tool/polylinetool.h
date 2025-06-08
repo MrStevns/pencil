@@ -20,21 +20,23 @@ GNU General Public License for more details.
 
 #include <QPointF>
 
-#include "stroketool.h"
+#include "basetool.h"
 
-class PolylineTool : public StrokeTool
+class PolylineTool : public BaseTool
 {
     Q_OBJECT
 public:
     explicit PolylineTool(QObject* parent = 0);
 
     ToolType type() const override;
-    ToolCategory category() const override { return STROKETOOL; }
+    ToolCategory category() const override { return BASETOOL; }
 
     void createSettings(ToolSettings *) override;
     void loadSettings() override;
     QCursor cursor() override;
 
+    void setWidth(qreal width);
+    void setAntiAliasingEnabled(bool enabled);
     void setUseBezier(bool useBezier);
     void setClosePath(bool closePath);
 
@@ -55,12 +57,18 @@ public:
 signals:
     void bezierPathEnabledChanged(bool useBezier);
     void closePathChanged(bool closePath);
-
+    void widthChanged(qreal value);
+    void antiAliasingEnabledChanged(bool enabled);
 
 private:
     PolylineSettings* mSettings = nullptr;
     QList<QPointF> mPoints;
     bool mClosedPathOverrideEnabled = false;
+
+    QPointF mCurrentPoint;
+
+    const qreal WIDTH_MIN = 1.;
+    const qreal WIDTH_MAX = 200.;
 
     void drawPolyline(QList<QPointF> points, QPointF endPoint);
     void removeLastPolylineSegment();

@@ -41,8 +41,6 @@ private:
     void setAntiAliasingEnabled(bool);
     void setStabilizerLevel(int);
     void setFillContourEnabled(bool);
-    void setBezierPathEnabled(bool);
-    void setClosedPathEnabled(bool);
 
     void setVisibility(BaseTool*);
 

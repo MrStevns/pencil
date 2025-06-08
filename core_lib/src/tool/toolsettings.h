@@ -382,18 +382,17 @@ struct StrokeSettings: public ToolSettings
     bool fillContourEnabled() const { return mProps[FILLCONTOUR_ENABLED].boolValue(); }
 };
 
-/// This struct is an example of how we can
-/// share settings among tools rather than duplicating logic, eg. polyline uses settings from StrokeSettings.
-/// The same could be done for PencilTool, BrushTool, Eraser etc...
-struct PolylineSettings: public StrokeSettings
+struct PolylineSettings: public ToolSettings
 {
     enum Type {
         START               = 200,
 
-        CLOSEDPATH_ENABLED  = START,
-        BEZIERPATH_ENABLED  = 201,
+        WIDTH_VALUE            = START,
+        CLOSEDPATH_ENABLED     = 201,
+        BEZIERPATH_ENABLED     = 202,
+        ANTI_ALIASING_ENABLED  = 203,
 
-        END                 = 299,
+        END                    = 299,
     };
 
     QString identifier(int typeRaw) const override {
@@ -407,17 +406,23 @@ struct PolylineSettings: public StrokeSettings
         case BEZIERPATH_ENABLED:
             propertyID = "BezierPathEnabled";
             break;
-        default:
-            propertyID = StrokeSettings::identifier(typeRaw);
+        case WIDTH_VALUE:
+            propertyID = "Width";
+            break;
+        case ANTI_ALIASING_ENABLED:
+            propertyID = "AntiAliasingEnabled";
+            break;
+        case END:
+            break;
         }
 
         return propertyID;
     }
 
-    qreal width() const { return mProps[StrokeSettings::WIDTH_VALUE].realValue(); }
+    qreal width() const { return mProps[WIDTH_VALUE].realValue(); }
     bool closedPathEnabled() const { return mProps[CLOSEDPATH_ENABLED].boolValue(); }
     bool bezierPathEnabled() const { return mProps[BEZIERPATH_ENABLED].boolValue(); }
-    bool AntiAliasingEnabled() const { return mProps[StrokeSettings::ANTI_ALIASING_ENABLED].boolValue(); }
+    bool AntiAliasingEnabled() const { return mProps[ANTI_ALIASING_ENABLED].boolValue(); }
 };
 
 struct BucketSettings: public ToolSettings

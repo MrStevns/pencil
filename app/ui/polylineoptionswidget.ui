@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PolylineOptionsWidget</class>
+ <widget class="QWidget" name="PolylineOptionsWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>95</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="sizeConstraint">
+    <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="SpinSlider" name="sizeSlider" native="true">
+       <property name="toolTip">
+        <string>Set Stroke Width &lt;br&gt;&lt;b&gt;[SHIFT]+drag&lt;/b&gt;&lt;br&gt;for quick adjustment</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="sizeSpinBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="minimum">
+        <double>0.500000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>200.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>1.500000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QCheckBox" name="useClosedPathBox">
+       <property name="toolTip">
+        <string>Close Polyline path (hold Ctrl to temporarily invert)</string>
+       </property>
+       <property name="text">
+        <string>Closed Path</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="useBezierBox">
+       <property name="toolTip">
+        <string>Use Bézier curves to create curved lines</string>
+       </property>
+       <property name="text">
+        <string comment="Tool options">Bézier</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="useAABox">
+       <property name="toolTip">
+        <string>Use anti-aliasing to create smooth edges</string>
+       </property>
+       <property name="text">
+        <string comment="Brush AA">Anti-Aliasing</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SpinSlider</class>
+   <extends>QWidget</extends>
+   <header>spinslider.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
