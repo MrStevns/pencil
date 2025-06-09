@@ -321,6 +321,9 @@ void PolylineTool::endPolyline(QList<QPointF> points)
     if (layer->type() == Layer::BITMAP)
     {
         drawPolyline(points, points.last());
+        BitmapImage* currentImage = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(mEditor->currentFrame());
+        if (currentImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
+        currentImage->paste(&mScribbleArea->mTiledBuffer);
     }
 
     mScribbleArea->endStroke();
