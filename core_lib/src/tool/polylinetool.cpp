@@ -74,7 +74,16 @@ void PolylineTool::loadSettings()
         settings.remove("closedPolylinePath");
     }
 
-    // mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
+    mSizingTool.setup(Qt::ShiftModifier, PolylineSettings::WIDTH_VALUE, true);
+
+    connect(&mSizingTool, &CanvasCursorSizingTool::sizeChanged, this, &PolylineTool::setWidth);
+    connect(&mSizingTool, &CanvasCursorSizingTool::blitRectChanged, this, &PolylineTool::updateCanvas);
+}
+
+void PolylineTool::updateCanvas(const QRect &blitRect)
+{
+    // qDebug() << blitRect;
+    mScribbleArea->update(mEditor->view()->getView().mapRect(blitRect));
 }
 
 bool PolylineTool::leavingThisTool()
@@ -118,6 +127,11 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
     //     return;
     // }
 
+    mSizingTool.setWidth(mSettings->width());
+    if (mSizingTool.pointerEvent(event)) {
+        return;
+    }
+
     mCurrentPoint = event->canvasPos();
 
     Layer* layer = mEditor->layers()->currentLayer();
@@ -149,6 +163,10 @@ void PolylineTool::pointerMoveEvent(PointerEvent* event)
     //     return;
     // }
 
+    if (mSizingTool.pointerEvent(event)) {
+        return;
+    }
+
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR)
     {
@@ -156,17 +174,19 @@ void PolylineTool::pointerMoveEvent(PointerEvent* event)
     }
 
     BaseTool::pointerMoveEvent(event);
-    // StrokeTool::pointerMoveEvent(event);
 }
 
 void PolylineTool::pointerReleaseEvent(PointerEvent* event)
 {
+
+    if (mSizingTool.pointerEvent(event)) {
+        return;
+    }
     // mInterpolator.pointerReleaseEvent(event);
     // if (handleQuickSizing(event)) {
     //     return;
     // }
 
-    // StrokeTool::pointerReleaseEvent(event);
     BaseTool::pointerReleaseEvent(event);
 }
 
@@ -252,6 +272,14 @@ bool PolylineTool::keyReleaseEvent(QKeyEvent* event)
     }
 
     return BaseTool::keyReleaseEvent(event);
+}
+
+void PolylineTool::paint(QPainter &painter, const QRect &blitRect)
+{
+    painter.save();
+    painter.setTransform(mEditor->view()->getView());
+    mSizingTool.paint(painter, blitRect);
+    painter.restore();
 }
 
 void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint)
@@ -347,6 +375,9 @@ void PolylineTool::setClosePath(bool closePath)
 void PolylineTool::setWidth(qreal width)
 {
     mSettings->setBaseValue(PolylineSettings::WIDTH_VALUE, width);
+
+    // We use settings here because it's ranged.
+    mSizingTool.setWidth(mSettings->width());
     emit widthChanged(width);
 }
 

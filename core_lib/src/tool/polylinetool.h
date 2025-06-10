@@ -21,6 +21,7 @@ GNU General Public License for more details.
 #include <QPointF>
 
 #include "basetool.h"
+#include "canvascursorsizingtool.h"
 
 class PolylineTool : public BaseTool
 {
@@ -40,6 +41,8 @@ public:
     void setUseBezier(bool useBezier);
     void setClosePath(bool closePath);
 
+    void paint(QPainter& painter, const QRect& blitRect) override;
+
     void pointerPressEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
     void pointerMoveEvent(PointerEvent* event) override;
@@ -47,6 +50,8 @@ public:
 
     bool keyPressEvent(QKeyEvent* event) override;
     bool keyReleaseEvent(QKeyEvent* event) override;
+
+    void updateCanvas(const QRect& blitRect);
 
     void clearToolData() override;
 
@@ -61,6 +66,9 @@ signals:
     void antiAliasingEnabledChanged(bool enabled);
 
 private:
+
+    CanvasCursorSizingTool mSizingTool;
+
     PolylineSettings* mSettings = nullptr;
     QList<QPointF> mPoints;
     bool mClosedPathOverrideEnabled = false;

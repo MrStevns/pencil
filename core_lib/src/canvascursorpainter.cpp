@@ -18,6 +18,7 @@ GNU General Public License for more details.
 
 #include <QPainter>
 #include <QtMath>
+#include <QDebug>
 
 CanvasCursorPainter::CanvasCursorPainter()
 {
@@ -33,11 +34,12 @@ void CanvasCursorPainter::setupPen()
 
 void CanvasCursorPainter::paint(QPainter& painter, const QRect& blitRect)
 {
+    // painter.drawRect(blitRect);
     if (mOptions.isAdjusting || mOptions.showCursor) {
-        if (mOptions.useFeather) {
-            paintFeatherCursor(painter, blitRect, mOptions.widthRect, mOptions.featherRect);
-        }
-        paintWidthCursor(painter, blitRect, mOptions.widthRect);
+        // if (mOptions.useFeather) {
+        //     paintFeatherCursor(painter, blitRect, mOptions.widthRect, mOptions.featherRect);
+        // }
+        paintWidthCursor(painter, blitRect, mOptions.circleRect);
         mIsDirty = true;
     }
 }
@@ -46,15 +48,20 @@ void CanvasCursorPainter::preparePainter(const CanvasCursorPainterOptions& paint
 {
     mOptions = painterOptions;
     if (mOptions.isAdjusting || mOptions.showCursor) {
-        // Apply full transform to center of widthRect, but only apply scale to the rect as a whole
+        // Apply full transform to center of circleRect, but only apply scale to the rect as a whole
         // Otherwise, view rotations will result in an incorrect rect size
-        QPointF newCenter = viewTransform.map(mOptions.widthRect.center());
+        QPointF newCenter = viewTransform.map(mOptions.circleRect.center());
         qreal scale = qSqrt(qPow(viewTransform.m11(), 2) + qPow(viewTransform.m21(), 2));
-        mOptions.widthRect.setSize(mOptions.widthRect.size() * scale);
-        mOptions.widthRect.moveCenter(newCenter);
+        mOptions.circleRect.setSize(mOptions.circleRect.size() * scale);
+        mOptions.circleRect.moveCenter(newCenter);
         mOptions.featherRect.setSize(mOptions.featherRect.size() * scale);
         mOptions.featherRect.moveCenter(newCenter);
     }
+}
+
+void CanvasCursorPainter::preparePainter(const CanvasCursorPainterOptions& painterOptions)
+{
+    mOptions = painterOptions;
 }
 
 void CanvasCursorPainter::paintFeatherCursor(QPainter& painter, const QRect& blitRect, const QRectF& widthCircleBounds, const QRectF& featherCircleBounds)
@@ -79,13 +86,13 @@ void CanvasCursorPainter::paintWidthCursor(QPainter& painter, const QRect& blitR
 {
     painter.save();
 
-    painter.setClipRect(blitRect);
+    painter.setClipRect(painter.transform().inverted().mapRect(blitRect));
     painter.setPen(mCursorPen);
 
     painter.setCompositionMode(QPainter::RasterOp_SourceXorDestination);
 
     // Only draw the cross when the width is bigger than the cross itself
-    if (widthCircleBounds.width() > 8) {
+    if (widthCircleBounds.width() > 8 && mOptions.showCross) {
         const QPointF& pos = widthCircleBounds.center();
         painter.drawLine(QPointF(pos.x() - 2, pos.y()), QPointF(pos.x() + 2, pos.y()));
         painter.drawLine(QPointF(pos.x(), pos.y() - 2), QPointF(pos.x(), pos.y() + 2));
@@ -94,8 +101,10 @@ void CanvasCursorPainter::paintWidthCursor(QPainter& painter, const QRect& blitR
     painter.drawEllipse(widthCircleBounds);
     painter.restore();
 
+    // qDebug() << "w c b: " << widthCircleBounds;
     mDirtyRect = widthCircleBounds.toAlignedRect();
 }
+
 
 void CanvasCursorPainter::clearDirty()
 {

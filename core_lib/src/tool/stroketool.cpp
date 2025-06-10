@@ -432,11 +432,11 @@ void StrokeTool::updateCanvasCursor()
     const QPointF& cursorOffset = QPointF(cursorPos.x() - cursorRad, cursorPos.y() - cursorRad);
 
     CanvasCursorPainterOptions options;
-    options.widthRect = QRectF(cursorOffset, QSizeF(brushWidth, brushWidth));
+    options.circleRect = QRectF(cursorOffset, QSizeF(brushWidth, brushWidth));
 
     const qreal featherWidthFactor = MathUtils::normalize(brushFeather, 0.0, FEATHER_MAX);
-    options.featherRect = QRectF(options.widthRect.center().x() - (cursorRad * featherWidthFactor),
-                                 options.widthRect.center().y() - (cursorRad * featherWidthFactor),
+    options.featherRect = QRectF(options.circleRect.center().x() - (cursorRad * featherWidthFactor),
+                                 options.circleRect.center().y() - (cursorRad * featherWidthFactor),
                                  brushWidth * featherWidthFactor,
                                  brushWidth * featherWidthFactor);
     options.showCursor = mCanvasCursorEnabled;

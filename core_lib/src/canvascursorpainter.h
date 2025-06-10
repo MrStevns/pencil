@@ -23,11 +23,14 @@ class QPainter;
 
 struct CanvasCursorPainterOptions
 {
-    QRectF widthRect;
+    QRectF circleRect;
     QRectF featherRect;
     bool isAdjusting = false;
     bool useFeather = false;
     bool showCursor = false;
+    bool showCross = false;
+
+    // qreal radius;
 };
 
 class CanvasCursorPainter
@@ -36,8 +39,10 @@ class CanvasCursorPainter
 public:
     CanvasCursorPainter();
     void paint(QPainter& painter, const QRect& blitRect);
+    // void paintCursor(QPainter& painter, const QRect& blitRect);
 
     void preparePainter(const CanvasCursorPainterOptions& painterOptions, const QTransform& viewTransform);
+    void preparePainter(const CanvasCursorPainterOptions& painterOptions);
 
     const QRect dirtyRect() { return mDirtyRect; }
     bool isDirty() const { return mIsDirty; }
