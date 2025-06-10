@@ -26,7 +26,7 @@ public:
     void adjust(PointerEvent* event);
     void paint(QPainter& painter, const QRect& blitRect);
 
-    void updateCursor(const QPointF& point);
+    void updateCursor();
 
 signals:
     void sizeChanged(qreal newSize);

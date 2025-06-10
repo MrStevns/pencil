@@ -23,7 +23,7 @@ void CanvasCursorSizingTool::setup(Qt::KeyboardModifiers modifiers, int toolSett
 
 bool CanvasCursorSizingTool::pointerEvent(PointerEvent* event)
 {
-    updateCursor(event->canvasPos());
+    // updateCursor();
     if (event->eventType() == PointerEvent::Press) {
         // if (mQuickSizingEnabled) {
             return startAdjusting(event);
@@ -54,7 +54,7 @@ void CanvasCursorSizingTool::adjust(PointerEvent* event)
 
     emit sizeChanged(newValue);
 
-    updateCursor(event->canvasPos());
+    updateCursor();
 }
 
 bool CanvasCursorSizingTool::startAdjusting(PointerEvent* event)
@@ -73,7 +73,7 @@ bool CanvasCursorSizingTool::startAdjusting(PointerEvent* event)
     mAdjustPoint = line.p2(); // Adjusted point on circle boundary
 
     mIsAdjusting = true;
-    updateCursor(event->canvasPos());
+    updateCursor();
     return true;
 }
 
@@ -82,10 +82,10 @@ void CanvasCursorSizingTool::stopAdjusting(PointerEvent* event)
     mIsAdjusting = false;
     mAdjustPoint = QPointF();
 
-    updateCursor(event->canvasPos());
+    updateCursor();
 }
 
-void CanvasCursorSizingTool::updateCursor(const QPointF& point)
+void CanvasCursorSizingTool::updateCursor()
 {
     const qreal cursorRad = mWidth * 0.5;
     const QPointF& circleTopLeft = QPointF(mAdjustPoint.x() - cursorRad, mAdjustPoint.y() - cursorRad);
@@ -110,5 +110,4 @@ void CanvasCursorSizingTool::updateCursor(const QPointF& point)
 void CanvasCursorSizingTool::paint(QPainter& painter, const QRect &blitRect)
 {
     mCanvasCursorPainter.paint(painter, blitRect);
-    mCanvasCursorPainter.clearDirty();
 }

@@ -378,7 +378,7 @@ void PolylineTool::setWidth(qreal width)
 
     // We use settings here because it's ranged.
     mSizingTool.setWidth(mSettings->width());
-    emit widthChanged(width);
+    emit widthChanged(mSettings->width());
 }
 
 void PolylineTool::setAntiAliasingEnabled(bool enabled)
