@@ -21,7 +21,8 @@ GNU General Public License for more details.
 #include <QPointF>
 
 #include "basetool.h"
-#include "canvascursorsizingtool.h"
+#include "radialoffsettool.h"
+#include "canvascursorpainter.h"
 
 class PolylineTool : public BaseTool
 {
@@ -41,7 +42,11 @@ public:
     void setUseBezier(bool useBezier);
     void setClosePath(bool closePath);
 
+    void onPreferenceChanged(SETTING setting) override;
+
     void paint(QPainter& painter, const QRect& blitRect) override;
+
+    bool handleQuickSizingEvent(PointerEvent* event);
 
     void pointerPressEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
@@ -66,23 +71,27 @@ signals:
     void antiAliasingEnabledChanged(bool enabled);
 
 private:
-
-    CanvasCursorSizingTool mSizingTool;
-
-    PolylineSettings* mSettings = nullptr;
-    QList<QPointF> mPoints;
-    bool mClosedPathOverrideEnabled = false;
-
-    QPointF mCurrentPoint;
-
-    const qreal WIDTH_MIN = 1.;
-    const qreal WIDTH_MAX = 200.;
-
+    void updateCanvasCursor(const QPointF& currentPoint);
     void drawPolyline(QList<QPointF> points, QPointF endPoint);
     void removeLastPolylineSegment();
     void cancelPolyline();
     void endPolyline(QList<QPointF> points);
 
+    QHash<Qt::KeyboardModifiers, int> mQuickSizingProperties;
+
+    bool mQuickSizingEnabled = false;
+    bool mClosedPathOverrideEnabled = false;
+
+    CanvasCursorPainter mCursorPainter;
+    RadialOffsetTool mSizingTool;
+
+    PolylineSettings* mSettings = nullptr;
+    QList<QPointF> mPoints;
+
+    QPointF mCurrentPoint;
+
+    const qreal WIDTH_MIN = 1.;
+    const qreal WIDTH_MAX = 200.;
 };
 
 #endif // POLYLINETOOL_H

@@ -27,6 +27,7 @@ GNU General Public License for more details.
 #include "stroker.h"
 
 #include "canvascursorpainter.h"
+#include "radialoffsettool.h"
 
 #include <QList>
 #include <QPointF>
@@ -110,15 +111,9 @@ protected:
     virtual void applyVectorBuffer(VectorImage* vectorImage);
     virtual void applyBitmapBuffer(BitmapImage* bitmapImage);
 
-    // dynamic cursor adjustment
-    virtual bool startAdjusting(Qt::KeyboardModifiers modifiers);
-    virtual void stopAdjusting();
-    virtual void adjustCursor(Qt::KeyboardModifiers modifiers);
-
     static bool mQuickSizingEnabled;
-    static bool msIsAdjusting;
-
     QHash<Qt::KeyboardModifiers, int> mQuickSizingProperties;
+
     bool mFirstDraw = false;
 
     // The segment we need to draw the current stroke
@@ -142,10 +137,6 @@ protected:
     bool mCanvasCursorEnabled = false;
     bool mCanSingleDab = false;
 
-    QPointF mAdjustPosition;
-
-    CanvasCursorPainter mCanvasCursorPainter;
-
     StrokeInterpolator mInterpolator;
     Stroker mStroker;
     StrokeDynamics mStrokeDynamics;
@@ -158,6 +149,15 @@ protected:
     static const qreal FEATHER_MAX;
     static const qreal WIDTH_MIN;
     static const qreal WIDTH_MAX;
+
+private:
+    CanvasCursorPainter mWidthCursorPainter;
+    CanvasCursorPainter mFeatherCursorPainter;
+
+    RadialOffsetTool mWidthSizingTool;
+    RadialOffsetTool mFeatherSizingTool;
+
+    QRectF cursorRect(StrokeSettings::Type settingType, const QPointF& point);
 };
 
 #endif // STROKETOOL_H

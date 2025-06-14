@@ -74,16 +74,22 @@ void PolylineTool::loadSettings()
         settings.remove("closedPolylinePath");
     }
 
-    mSizingTool.setup(Qt::ShiftModifier, PolylineSettings::WIDTH_VALUE, true);
+    mSizingTool.setup(Qt::ShiftModifier);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, PolylineSettings::WIDTH_VALUE);
 
-    connect(&mSizingTool, &CanvasCursorSizingTool::sizeChanged, this, &PolylineTool::setWidth);
-    connect(&mSizingTool, &CanvasCursorSizingTool::blitRectChanged, this, &PolylineTool::updateCanvas);
+    mQuickSizingEnabled = mEditor->preference()->isOn(SETTING::QUICK_SIZING);
+
+    connect(&mSizingTool, &RadialOffsetTool::offsetChanged, this, [=](qreal offset) {
+        setWidth(offset * 2.0);
+    });
+    connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &PolylineTool::onPreferenceChanged);
 }
 
-void PolylineTool::updateCanvas(const QRect &blitRect)
+void PolylineTool::onPreferenceChanged(SETTING setting)
 {
-    // qDebug() << blitRect;
-    mScribbleArea->update(mEditor->view()->getView().mapRect(blitRect));
+    if (setting == SETTING::QUICK_SIZING) {
+        mQuickSizingEnabled = mEditor->preference()->isOn(setting);
+    }
 }
 
 bool PolylineTool::leavingThisTool()
@@ -121,18 +127,34 @@ void PolylineTool::clearToolData()
     mCurrentPoint = QPointF();
 }
 
-void PolylineTool::pointerPressEvent(PointerEvent* event)
+bool PolylineTool::handleQuickSizingEvent(PointerEvent* event)
 {
-    // if (handleQuickSizing(event)) {
-    //     return;
-    // }
-
-    mSizingTool.setWidth(mSettings->width());
-    if (mSizingTool.pointerEvent(event)) {
-        return;
+    if (!mQuickSizingEnabled || !mQuickSizingProperties.contains(event->modifiers())) {
+        return false;
     }
 
+    if (event->eventType() == PointerEvent::Press) {
+        switch (mQuickSizingProperties.value(event->modifiers())) {
+            case StrokeSettings::WIDTH_VALUE: {
+                mSizingTool.setOffset(mSettings->width() * 0.5);
+                break;
+            }
+        }
+    }
+
+    mSizingTool.pointerEvent(event);
+    updateCanvasCursor(event->canvasPos());
+
+    return true;
+}
+
+void PolylineTool::pointerPressEvent(PointerEvent* event)
+{
     mCurrentPoint = event->canvasPos();
+
+    if (handleQuickSizingEvent(event)) {
+        return;
+    }
 
     Layer* layer = mEditor->layers()->currentLayer();
 
@@ -153,17 +175,16 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
         }
     }
 
+    updateCanvasCursor(event->canvasPos());
+
     BaseTool::pointerPressEvent(event);
 }
 
 void PolylineTool::pointerMoveEvent(PointerEvent* event)
 {
-    // mInterpolator.pointerMoveEvent(event);
-    // if (handleQuickSizing(event)) {
-    //     return;
-    // }
+    mCurrentPoint = event->canvasPos();
 
-    if (mSizingTool.pointerEvent(event)) {
+    if (handleQuickSizingEvent(event)) {
         return;
     }
 
@@ -173,19 +194,20 @@ void PolylineTool::pointerMoveEvent(PointerEvent* event)
         drawPolyline(mPoints, event->canvasPos());
     }
 
+    updateCanvasCursor(event->canvasPos());
+
     BaseTool::pointerMoveEvent(event);
 }
 
 void PolylineTool::pointerReleaseEvent(PointerEvent* event)
 {
+    mCurrentPoint = event->canvasPos();
 
-    if (mSizingTool.pointerEvent(event)) {
+    if (handleQuickSizingEvent(event)) {
         return;
     }
-    // mInterpolator.pointerReleaseEvent(event);
-    // if (handleQuickSizing(event)) {
-    //     return;
-    // }
+
+    updateCanvasCursor(event->canvasPos());
 
     BaseTool::pointerReleaseEvent(event);
 }
@@ -274,11 +296,33 @@ bool PolylineTool::keyReleaseEvent(QKeyEvent* event)
     return BaseTool::keyReleaseEvent(event);
 }
 
+void PolylineTool::updateCanvasCursor(const QPointF& currentPoint)
+{
+    const qreal cursorRad = mSettings->width() * 0.5;
+    const QPointF& point = mSizingTool.isAdjusting() ? mSizingTool.offsetPoint() : currentPoint;
+    const QPointF& circleTopLeft = QPointF(point.x() - cursorRad, point.y() - cursorRad);
+
+    CanvasCursorPainterOptions options;
+    const qreal cursorWidth = mSettings->width();
+    options.circleRect = QRectF(circleTopLeft, QSizeF(cursorWidth, cursorWidth));
+
+    options.showCursor = true;
+    options.showCross = true;
+
+    mCursorPainter.preparePainter(options);
+
+    const QRect& dirtyRect = mCursorPainter.dirtyRect();
+    const QRect& updateRect = options.circleRect.toAlignedRect();
+
+    mScribbleArea->update(mEditor->view()->getView().mapRect(updateRect.united(dirtyRect).adjusted(-2, -2, 2, 2)));
+    mCursorPainter.clearDirty();
+}
+
 void PolylineTool::paint(QPainter &painter, const QRect &blitRect)
 {
     painter.save();
     painter.setTransform(mEditor->view()->getView());
-    mSizingTool.paint(painter, blitRect);
+    mCursorPainter.paint(painter, blitRect);
     painter.restore();
 }
 
@@ -375,9 +419,6 @@ void PolylineTool::setClosePath(bool closePath)
 void PolylineTool::setWidth(qreal width)
 {
     mSettings->setBaseValue(PolylineSettings::WIDTH_VALUE, width);
-
-    // We use settings here because it's ranged.
-    mSizingTool.setWidth(mSettings->width());
     emit widthChanged(mSettings->width());
 }
 

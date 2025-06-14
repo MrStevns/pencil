@@ -34,52 +34,15 @@ void CanvasCursorPainter::setupPen()
 
 void CanvasCursorPainter::paint(QPainter& painter, const QRect& blitRect)
 {
-    // painter.drawRect(blitRect);
-    if (mOptions.isAdjusting || mOptions.showCursor) {
-        // if (mOptions.useFeather) {
-        //     paintFeatherCursor(painter, blitRect, mOptions.widthRect, mOptions.featherRect);
-        // }
+    if (mOptions.showCursor) {
         paintWidthCursor(painter, blitRect, mOptions.circleRect);
         mIsDirty = true;
-    }
-}
-
-void CanvasCursorPainter::preparePainter(const CanvasCursorPainterOptions& painterOptions, const QTransform& viewTransform)
-{
-    mOptions = painterOptions;
-    if (mOptions.isAdjusting || mOptions.showCursor) {
-        // Apply full transform to center of circleRect, but only apply scale to the rect as a whole
-        // Otherwise, view rotations will result in an incorrect rect size
-        QPointF newCenter = viewTransform.map(mOptions.circleRect.center());
-        qreal scale = qSqrt(qPow(viewTransform.m11(), 2) + qPow(viewTransform.m21(), 2));
-        mOptions.circleRect.setSize(mOptions.circleRect.size() * scale);
-        mOptions.circleRect.moveCenter(newCenter);
-        mOptions.featherRect.setSize(mOptions.featherRect.size() * scale);
-        mOptions.featherRect.moveCenter(newCenter);
     }
 }
 
 void CanvasCursorPainter::preparePainter(const CanvasCursorPainterOptions& painterOptions)
 {
     mOptions = painterOptions;
-}
-
-void CanvasCursorPainter::paintFeatherCursor(QPainter& painter, const QRect& blitRect, const QRectF& widthCircleBounds, const QRectF& featherCircleBounds)
-{
-    // When the circles are too close to each other, the rendering will appear dotted or almost
-    // invisible at certain zoom levels.
-    if (widthCircleBounds.width() - featherCircleBounds.width() <= 1) {
-        return;
-    }
-
-    painter.save();
-
-    painter.setClipRect(blitRect);
-    painter.setPen(mCursorPen);
-    painter.setCompositionMode(QPainter::RasterOp_SourceXorDestination);
-    painter.drawEllipse(featherCircleBounds);
-
-    painter.restore();
 }
 
 void CanvasCursorPainter::paintWidthCursor(QPainter& painter, const QRect& blitRect, const QRectF& widthCircleBounds)
@@ -101,7 +64,6 @@ void CanvasCursorPainter::paintWidthCursor(QPainter& painter, const QRect& blitR
     painter.drawEllipse(widthCircleBounds);
     painter.restore();
 
-    // qDebug() << "w c b: " << widthCircleBounds;
     mDirtyRect = widthCircleBounds.toAlignedRect();
 }
 

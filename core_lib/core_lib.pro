@@ -77,7 +77,6 @@ HEADERS +=  \
     src/tool/brushtool.h \
     src/tool/buckettool.h \
     src/tool/cameratool.h \
-    src/tool/canvascursorsizingtool.h \
     src/tool/erasertool.h \
     src/tool/eyedroppertool.h \
     src/tool/handtool.h \
@@ -86,6 +85,7 @@ HEADERS +=  \
     src/tool/penciltool.h \
     src/tool/pentool.h \
     src/tool/polylinetool.h \
+    src/tool/radialoffsettool.h \
     src/tool/selecttool.h \
     src/tool/smudgetool.h \
     src/tool/strokedynamics.h \
@@ -171,7 +171,6 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/brushtool.cpp \
     src/tool/buckettool.cpp \
     src/tool/cameratool.cpp \
-    src/tool/canvascursorsizingtool.cpp \
     src/tool/erasertool.cpp \
     src/tool/eyedroppertool.cpp \
     src/tool/handtool.cpp \
@@ -180,6 +179,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/penciltool.cpp \
     src/tool/pentool.cpp \
     src/tool/polylinetool.cpp \
+    src/tool/radialoffsettool.cpp \
     src/tool/selecttool.cpp \
     src/tool/smudgetool.cpp \
     src/tool/strokeinterpolator.cpp \

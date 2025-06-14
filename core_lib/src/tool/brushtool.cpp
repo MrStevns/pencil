@@ -58,12 +58,14 @@ void BrushTool::loadSettings()
 
     QHash<int, PropertyInfo> info;
     info[StrokeSettings::WIDTH_VALUE] = { 1.0, 100.0, 24.0 };
+    info[StrokeSettings::FEATHER_ENABLED] = true;
     info[StrokeSettings::FEATHER_VALUE] = { 1.0, 99.0, 48.0 };
     info[StrokeSettings::PRESSURE_ENABLED] = true;
     info[StrokeSettings::INVISIBILITY_ENABLED] = false;
     info[StrokeSettings::STABILIZATION_VALUE] = { StabilizationLevel::NONE, StabilizationLevel::STRONG, StabilizationLevel::STRONG } ;
 
     mStrokeSettings->load(typeName(), settings, info);
+    mStrokeSettings->setBaseValue(StrokeSettings::FEATHER_ENABLED, true);
 
     if (mStrokeSettings->requireMigration(settings, 1)) {
         mStrokeSettings->setBaseValue(StrokeSettings::WIDTH_VALUE, settings.value("brushWidth", 24.0).toReal());
