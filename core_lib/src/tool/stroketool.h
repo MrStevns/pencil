@@ -105,7 +105,7 @@ protected:
     QPointF getLastPixel() const;
     QPointF getLastPoint() const;
 
-    virtual void drawDab(const QPointF& point, const StrokeDynamics& dynamics) { }
+    virtual void drawDab(const QPointF& point, const StrokeDynamics& dynamics) = 0;
     virtual void drawPath(const QPainterPath&, QPen, QBrush) { }
 
     virtual void applyVectorBuffer(VectorImage* vectorImage);
