@@ -21,7 +21,6 @@ GNU General Public License for more details.
 #include "pointerevent.h"
 
 #include <QDebug>
-#include <QPainter>
 
 RadialOffsetTool::RadialOffsetTool(QObject* parent) : QObject(parent)
 {
@@ -40,6 +39,7 @@ void RadialOffsetTool::setup(Qt::KeyboardModifiers modifiers)
 void RadialOffsetTool::pointerEvent(PointerEvent* event)
 {
     if (event->modifiers() != mKbModifiers || event->modifiers() == Qt::NoModifier) {
+        stopAdjusting(event);
         return;
     }
 
