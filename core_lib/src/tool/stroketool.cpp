@@ -106,12 +106,6 @@ void StrokeTool::loadSettings()
 
     mStrokeDynamics = createDynamics();
 
-    mWidthSizingTool.setup(Qt::ShiftModifier);
-
-    if (mStrokeSettings->featherEnabled()) {
-        mFeatherSizingTool.setup(Qt::ControlModifier);
-    }
-
     connect(&mWidthSizingTool, &RadialOffsetTool::offsetChanged, this, [=](qreal offset) {
         setWidth(offset * 2.0);
     });
@@ -352,12 +346,17 @@ void StrokeTool::applyBitmapBuffer(BitmapImage* bitmapImage)
 
 bool StrokeTool::handleQuickSizing(PointerEvent* event)
 {
-    if (!mQuickSizingEnabled || !mQuickSizingProperties.contains(event->modifiers())) {
+    if (!mQuickSizingEnabled) { return false; }
+
+    if (!mQuickSizingProperties.contains(event->modifiers())) {
+        mWidthSizingTool.stopAdjusting();
+        mFeatherSizingTool.stopAdjusting();
         return false;
     }
 
+    StrokeSettings::Type setting = static_cast<StrokeSettings::Type>(mQuickSizingProperties[event->modifiers()]);
     if (event->eventType() == PointerEvent::Press) {
-        switch (mQuickSizingProperties.value(event->modifiers())) {
+        switch (setting) {
             case StrokeSettings::WIDTH_VALUE: {
                 mWidthSizingTool.setOffset(mStrokeSettings->width() * 0.5);
                 break;
@@ -366,17 +365,27 @@ bool StrokeTool::handleQuickSizing(PointerEvent* event)
                 const qreal factor = 0.5;
                 const qreal cursorRad = mStrokeSettings->width() * factor;
                 auto info = mStrokeSettings->getInfo(StrokeSettings::FEATHER_VALUE);
+
+                // Pull feather handle closer to center as feather increases
                 const qreal featherWidthFactor = 1 - MathUtils::normalize(mStrokeSettings->feather(), info.minReal(), info.maxReal());
                 const qreal offset = (cursorRad * featherWidthFactor);
                 mFeatherSizingTool.setOffset(offset);
                 break;
             }
+            default: break;
         }
     }
 
-    mWidthSizingTool.pointerEvent(event);
-    if (mStrokeSettings->featherEnabled()) {
-        mFeatherSizingTool.pointerEvent(event);
+    switch (setting) {
+        case StrokeSettings::WIDTH_VALUE: {
+          mWidthSizingTool.pointerEvent(event);
+          break;
+        }
+        case StrokeSettings::FEATHER_VALUE: {
+            mFeatherSizingTool.pointerEvent(event);
+            break;
+        }
+        default: break;
     }
 
     updateCanvasCursor();

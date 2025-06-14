@@ -20,6 +20,7 @@ GNU General Public License for more details.
 
 #include "pointerevent.h"
 
+#include <QLineF>
 #include <QDebug>
 
 RadialOffsetTool::RadialOffsetTool(QObject* parent) : QObject(parent)
@@ -31,18 +32,8 @@ RadialOffsetTool::~RadialOffsetTool()
 {
 }
 
-void RadialOffsetTool::setup(Qt::KeyboardModifiers modifiers)
-{
-    mKbModifiers = modifiers;
-}
-
 void RadialOffsetTool::pointerEvent(PointerEvent* event)
 {
-    if (event->modifiers() != mKbModifiers || event->modifiers() == Qt::NoModifier) {
-        stopAdjusting(event);
-        return;
-    }
-
     if (event->eventType() == PointerEvent::Press) {
         startAdjusting(event);
     } else if (event->eventType() == PointerEvent::Move) {
@@ -50,7 +41,7 @@ void RadialOffsetTool::pointerEvent(PointerEvent* event)
             adjust(event);
         }
     } else if (event->eventType() == PointerEvent::Release && mIsAdjusting) {
-        stopAdjusting(event);
+        stopAdjusting();
     }
 }
 
@@ -65,8 +56,14 @@ bool RadialOffsetTool::startAdjusting(PointerEvent* event)
 {
     const qreal rad = mOffset;
 
-    QPointF direction(-1, -1); // 45 deg back
-    QLineF line(event->canvasPos(), event->canvasPos() + direction);
+    QPointF directionDelta;
+    if (mAdjustPoint.isNull()) {
+        directionDelta = QPointF(-1, -1); // 45 deg back
+    } else {
+        directionDelta = -(event->canvasPos() - mAdjustPoint);
+    }
+
+    QLineF line(event->canvasPos(), event->canvasPos() + directionDelta);
     line.setLength(rad);
 
     mAdjustPoint = line.p2(); // Adjusted point on circle boundary
@@ -75,9 +72,7 @@ bool RadialOffsetTool::startAdjusting(PointerEvent* event)
     return true;
 }
 
-void RadialOffsetTool::stopAdjusting(PointerEvent* event)
+void RadialOffsetTool::stopAdjusting()
 {
-    Q_UNUSED(event)
     mIsAdjusting = false;
-    mAdjustPoint = QPointF();
 }

@@ -74,9 +74,7 @@ void PolylineTool::loadSettings()
         settings.remove("closedPolylinePath");
     }
 
-    mSizingTool.setup(Qt::ShiftModifier);
     mQuickSizingProperties.insert(Qt::ShiftModifier, PolylineSettings::WIDTH_VALUE);
-
     mQuickSizingEnabled = mEditor->preference()->isOn(SETTING::QUICK_SIZING);
 
     connect(&mSizingTool, &RadialOffsetTool::offsetChanged, this, [=](qreal offset) {
@@ -129,20 +127,34 @@ void PolylineTool::clearToolData()
 
 bool PolylineTool::handleQuickSizingEvent(PointerEvent* event)
 {
-    if (!mQuickSizingEnabled || !mQuickSizingProperties.contains(event->modifiers())) {
+    if (!mQuickSizingEnabled) {
         return false;
     }
 
+    if (!mQuickSizingProperties.contains(event->modifiers())) {
+        mSizingTool.stopAdjusting();
+        return false;
+    }
+
+    PolylineSettings::Type setting = static_cast<PolylineSettings::Type>(mQuickSizingProperties[event->modifiers()]);
     if (event->eventType() == PointerEvent::Press) {
-        switch (mQuickSizingProperties.value(event->modifiers())) {
-            case StrokeSettings::WIDTH_VALUE: {
+        switch (setting) {
+            case PolylineSettings::WIDTH_VALUE: {
                 mSizingTool.setOffset(mSettings->width() * 0.5);
                 break;
             }
+            default: break;
         }
     }
 
-    mSizingTool.pointerEvent(event);
+    switch (setting) {
+        case PolylineSettings::WIDTH_VALUE: {
+          mSizingTool.pointerEvent(event);
+          break;
+        }
+        default: break;
+    }
+
     updateCanvasCursor(event->canvasPos());
 
     return true;

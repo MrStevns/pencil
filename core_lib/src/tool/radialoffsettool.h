@@ -19,8 +19,7 @@ GNU General Public License for more details.
 #define RADIALOFFSETTOOL_H
 
 #include <QObject>
-#include <QPainterPath>
-#include <QKeyEvent>
+#include <QPointF>
 
 class PointerEvent;
 
@@ -31,12 +30,10 @@ public:
     RadialOffsetTool(QObject* parent = nullptr);
     ~RadialOffsetTool();
 
-    /// Setup which modifier the tool should identity with
-    void setup(Qt::KeyboardModifiers modifiers);
-
     void setOffset(qreal offset) { mOffset = offset; }
     void pointerEvent(PointerEvent* event);
 
+    void stopAdjusting();
     bool isAdjusting() const { return mIsAdjusting; }
 
     const QPointF& offsetPoint() const { return mAdjustPoint; }
@@ -47,10 +44,7 @@ signals:
 private:
 
     bool startAdjusting(PointerEvent* event);
-    void stopAdjusting(PointerEvent* event);
     void adjust(PointerEvent* event);
-
-    Qt::KeyboardModifiers mKbModifiers;
 
     bool mIsAdjusting = false;
     qreal mOffset = 0.;
