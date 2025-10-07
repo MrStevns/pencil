@@ -16,7 +16,9 @@ GNU General Public License for more details.
 */
 #include "selectionmanager.h"
 #include "editor.h"
+#include "layer.h"
 
+#include "bitmapimage.h"
 #include "vectorimage.h"
 
 #include "mathutils.h"
@@ -48,28 +50,78 @@ Status SelectionManager::save(Object*)
     return Status::OK;
 }
 
-void SelectionManager::workingLayerChanged(Layer *)
+void SelectionManager::workingLayerChanged(Layer* workingLayer)
 {
+    mWorkingLayer = workingLayer;
 }
 
-void SelectionManager::resetSelectionTransformProperties()
-{
-    mRotatedAngle = 0;
-    mTranslation = QPointF(0, 0);
-    mScaleX = 1;
-    mScaleY = 1;
-    mAnchorPoint = QPoint();
-    mSelectionTransform.reset();
-}
+// void SelectionManager::resetSelectionTransformProperties()
+// {
+//     switch (mWorkingLayer->type())
+//     {
+//     case Layer::BITMAP:
+//         bitmapSelection.resetSelectionProperties();
+//     case Layer::VECTOR:
+//         // vectorSelection
+//     default:
+//         Q_ASSERT(false);
+//     }
+//     // mRotatedAngle = 0;
+//     // mTranslation = QPointF(0, 0);
+//     // mScaleX = 1;
+//     // mScaleY = 1;
+//     // mAnchorPoint = QPoint();
+//     // mSelectionTransform.reset();
+// }
 
 void SelectionManager::resetSelectionTransform()
 {
     mSelectionTransform.reset();
 }
 
+void SelectionManager::setTranslation(const QPointF& translation)
+{
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.setTranslation(translation);
+    default:
+        return;
+    }
+}
+
+void SelectionManager::setRotation(qreal angle)
+{
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.setRotation(angle);
+    default:
+        return;
+    }
+}
+
+void SelectionManager::setScale(qreal scaleX, qreal scaleY)
+{
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.setScale(scaleX, scaleY);
+    default:
+        return;
+    }
+}
+
 bool SelectionManager::isOutsideSelectionArea(const QPointF& point) const
 {
-    return (!mSelectionTransform.map(mSelectionPolygon).containsPoint(point, Qt::WindingFill)) && mMoveMode == MoveMode::NONE;
+    // return (!mSelectionTransform.map(mSelectionPolygon).containsPoint(point, Qt::WindingFill)) && mMoveMode == MoveMode::NONE;
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.isOutsideSelectionArea(point);
+    default:
+        return true;
+    }
 }
 
 void SelectionManager::deleteSelection()
@@ -84,180 +136,131 @@ qreal SelectionManager::selectionTolerance() const
 
 QPointF SelectionManager::getSelectionAnchorPoint() const
 {
-    QPointF anchorPoint;
-    if (mSelectionPolygon.count() < 3) { return anchorPoint; }
-
-    if (mMoveMode == MoveMode::BOTTOMRIGHT)
+    switch (mWorkingLayer->type())
     {
-        anchorPoint = mSelectionPolygon[0];
+    case Layer::BITMAP:
+        return bitmapSelection.getSelectionAnchorPoint();
+    default:
+        return QPointF();
     }
-    else if (mMoveMode == MoveMode::BOTTOMLEFT)
-    {
-        anchorPoint = mSelectionPolygon[1];
-    }
-    else if (mMoveMode == MoveMode::TOPLEFT)
-    {
-        anchorPoint = mSelectionPolygon[2];
-    }
-    else if (mMoveMode == MoveMode::TOPRIGHT)
-    {
-        anchorPoint = mSelectionPolygon[3];
-    } else {
-        anchorPoint = QLineF(mSelectionPolygon[0], mSelectionPolygon[2]).pointAt(.5);
-    }
-    return anchorPoint;
 }
 
-
-void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)
+QPolygonF SelectionManager::getSelectionPolygon() const
 {
-    if (mSelectionPolygon.count() < 4)
+    switch (mWorkingLayer->type())
     {
-        mMoveMode = MoveMode::NONE;
-        return;
+    case Layer::BITMAP:
+        return bitmapSelection.state().selectionPolygon;
+    default:
+        return QPolygonF();
+    }
+}
+
+MoveMode SelectionManager::resolveMoveModeForPoint(const QPointF& point)
+{
+    QPolygonF selectionPolygon = getSelectionPolygon();
+    if (selectionPolygon.count() < 4)
+    {
+        return MoveMode::NONE;
     }
 
-    QPolygonF projectedPolygon = mapToSelection(mSelectionPolygon);
+    QPolygonF projectedPolygon = mapToSelection(selectionPolygon);
 
     const double calculatedSelectionTol = selectionTolerance();
 
+    MoveMode moveMode = MoveMode::NONE;
     if (QLineF(point, projectedPolygon[0]).length() < calculatedSelectionTol)
     {
-        mMoveMode = MoveMode::TOPLEFT;
+        moveMode = MoveMode::TOPLEFT;
     }
     else if (QLineF(point, projectedPolygon[1]).length() < calculatedSelectionTol)
     {
-        mMoveMode = MoveMode::TOPRIGHT;
+        moveMode = MoveMode::TOPRIGHT;
     }
     else if (QLineF(point, projectedPolygon[2]).length() < calculatedSelectionTol)
     {
-        mMoveMode = MoveMode::BOTTOMRIGHT;
+        moveMode = MoveMode::BOTTOMRIGHT;
     }
     else if (QLineF(point, projectedPolygon[3]).length() < calculatedSelectionTol)
     {
-        mMoveMode = MoveMode::BOTTOMLEFT;
+        moveMode = MoveMode::BOTTOMLEFT;
     }
     else if (projectedPolygon.containsPoint(point, Qt::WindingFill))
     {
-        mMoveMode = MoveMode::MIDDLE;
+        moveMode = MoveMode::MIDDLE;
     }
     else
     {
-        mMoveMode = MoveMode::NONE;
+        moveMode = MoveMode::NONE;
+    }
+
+    return moveMode;
+}
+
+void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)
+{
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.setMoveMode(resolveMoveModeForPoint(point));
+    default:
+        return;
+    }
+}
+void SelectionManager::adjustSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
+{
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.adjustCurrentSelection(currentPoint, offset, rotationOffset, rotationIncrement);
+    default:
+        return;
     }
 }
 
-void SelectionManager::adjustSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
+bool SelectionManager::somethingSelected() const
 {
-    switch (mMoveMode)
+    switch (mWorkingLayer->type() == Layer::BITMAP)
     {
-    case MoveMode::MIDDLE: {
-        QPointF newOffset = currentPoint - mDragOrigin;
-
-        if (mLockAxis) {
-            mTranslation = offset + alignPositionToAxis(newOffset);
-        } else {
-            mTranslation = offset + newOffset;
-        }
-        break;
-    }
-    case MoveMode::TOPLEFT:
-    case MoveMode::TOPRIGHT:
-    case MoveMode::BOTTOMRIGHT:
-    case MoveMode::BOTTOMLEFT: {
-
-        QPolygonF projectedPolygon = mapToSelection(mSelectionPolygon);
-        QVector2D currentPVec = QVector2D(currentPoint);
-
-        qreal originWidth = mSelectionPolygon[1].x() - mSelectionPolygon[0].x();
-        qreal originHeight = mSelectionPolygon[3].y() - mSelectionPolygon[0].y();
-
-        QVector2D staticXAnchor;
-        QVector2D staticYAnchor;
-        QVector2D movingAnchor;
-        if (mMoveMode == MoveMode::TOPLEFT) {
-            movingAnchor = QVector2D(projectedPolygon[0]);
-            staticXAnchor = QVector2D(projectedPolygon[1]);
-            staticYAnchor = QVector2D(projectedPolygon[3]);
-        } else if (mMoveMode == MoveMode::TOPRIGHT) {
-            movingAnchor = QVector2D(projectedPolygon[1]);
-            staticXAnchor = QVector2D(projectedPolygon[0]);
-            staticYAnchor = QVector2D(projectedPolygon[2]);
-        } else if (mMoveMode == MoveMode::BOTTOMRIGHT) {
-            movingAnchor = QVector2D(projectedPolygon[2]);
-            staticXAnchor = QVector2D(projectedPolygon[3]);
-            staticYAnchor = QVector2D(projectedPolygon[1]);
-        } else {
-            movingAnchor = QVector2D(projectedPolygon[3]);
-            staticXAnchor = QVector2D(projectedPolygon[2]);
-            staticYAnchor = QVector2D(projectedPolygon[0]);
-        }
-
-        QVector2D directionVecX = staticXAnchor - currentPVec;
-        QVector2D directionVecY = staticYAnchor - currentPVec;
-
-        // Calculates the signed distance
-        qreal distanceX = QVector2D::dotProduct(directionVecX, (staticXAnchor - movingAnchor).normalized());
-        qreal distanceY = QVector2D::dotProduct(directionVecY, (staticYAnchor - movingAnchor).normalized());
-
-        qreal scaleX = distanceX / originWidth;
-        qreal scaleY = distanceY / originHeight;
-        if (mAspectRatioFixed) {
-            scaleY = scaleX;
-        }
-
-        scale(scaleX, scaleY);
-
-        break;
-    }
-    case MoveMode::ROTATION: {
-        rotate(rotationOffset, rotationIncrement);
-        break;
-    }
+    case Layer::BITMAP:
+        return bitmapSelection.somethingSelected();
     default:
-        break;
+        return false;
     }
-    calculateSelectionTransformation();
 }
 
 void SelectionManager::translate(QPointF newPos)
 {
-    mTranslation += newPos;
+    switch (mWorkingLayer->type() == Layer::BITMAP)
+    {
+    case Layer::BITMAP:
+        bitmapSelection.translate(newPos);
+    default:
+        break;
+    }
 }
 
 void SelectionManager::rotate(qreal angle, qreal lockedAngle)
 {
-    if (lockedAngle > 0) {
-        mRotatedAngle = constrainRotationToAngle(angle, lockedAngle);
-    } else {
-        mRotatedAngle = angle;
+    switch (mWorkingLayer->type() == Layer::BITMAP)
+    {
+    case Layer::BITMAP:
+        bitmapSelection.rotate(angle, lockedAngle);
+    default:
+        break;
     }
+
 }
 
 void SelectionManager::scale(qreal sX, qreal sY)
 {
-    // Enforce negative scaling when
-    // deliberately trying to transform in negative space
-    if (mScaleX < 0) {
-        sX = -sX;
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        bitmapSelection.scale(sX, sY);
+    default:
+        break;
     }
-    if (qFuzzyIsNull(sX)) {
-        // Scale must not become 0
-        sX = 0.0001;
-    }
-
-    // Enforce negative scaling when
-    // deliberately trying to transform in negative space
-    if (mScaleY < 0) {
-        sY = -sY;
-    }
-    if (qFuzzyIsNull(sY)) {
-        // Scale must not become 0
-        sY = 0.0001;
-    }
-
-    mScaleX = sX;
-    mScaleY = sY;
 }
 
 int SelectionManager::constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const
@@ -270,55 +273,50 @@ qreal SelectionManager::angleFromPoint(const QPointF& point, const QPointF& anch
     return qRadiansToDegrees(MathUtils::getDifferenceAngle(mSelectionTransform.map(anchorPoint), point));
 }
 
-void SelectionManager::setSelection(QRectF rect, bool roundPixels)
+void SelectionManager::setSelection(const QRectF& rect)
 {
-    resetSelectionTransformProperties();
-    if (roundPixels)
+    switch (mWorkingLayer->type())
     {
-        rect = rect.toAlignedRect();
+    case Layer::BITMAP:
+        bitmapSelection.setSelection(static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame())), rect.toRect());
+    default:
+        break;
     }
-    mSelectionPolygon = rect;
-    mOriginalRect = rect;
-    mScaleX = 1;
-    mScaleY = 1;
-    mRotatedAngle = 0;
 
     emit selectionChanged();
 }
 
 void SelectionManager::setTransformAnchor(const QPointF& point)
 {
-    QPointF newPos = mapToSelection(point);
-    QPointF oldPos = mapToSelection(mAnchorPoint);
-
-    // Adjust translation based on anchor point to avoid moving the selection
-    mTranslation = mTranslation - oldPos + newPos;
-    mAnchorPoint = point;
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        bitmapSelection.setTransformAnchor(point);
+    default:
+        break;
+    }
 }
 
 void SelectionManager::calculateSelectionTransformation()
 {
-    QTransform t;
-    t.translate(-mAnchorPoint.x(), -mAnchorPoint.y());
-    QTransform t2;
-    t2.translate(mTranslation.x(), mTranslation.y());
-
-    QTransform r;
-    r.rotate(mRotatedAngle);
-    QTransform s;
-    s.scale(mScaleX, mScaleY);
-    mSelectionTransform = t * s * r * t2;
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        bitmapSelection.calculateSelectionTransformation();
+    default:
+        break;
+    }
 }
 
 QPointF SelectionManager::alignPositionToAxis(QPointF currentPoint) const
 {
-    if (qAbs(currentPoint.y()) > qAbs(currentPoint.x())) {
-        // Align to y axis
-        return QPointF(0, currentPoint.y());
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.alignPositionToAxis(currentPoint);
+    default:
+        return QPointF();
     }
-
-    // Align to x axis
-    return QPointF(currentPoint.x(), 0);
 }
 
 /**
@@ -327,24 +325,25 @@ QPointF SelectionManager::alignPositionToAxis(QPointF currentPoint) const
 */
 void SelectionManager::flipSelection(bool flipVertical)
 {
-    if (flipVertical)
+    switch (mWorkingLayer->type())
     {
-        mScaleY = -mScaleY;
+    case Layer::BITMAP:
+        return bitmapSelection.flipSelection(flipVertical);
+    default:
+        return;
     }
-    else
-    {
-        mScaleX = -mScaleX;
-    }
-    setTransformAnchor(mOriginalRect.center());
-    calculateSelectionTransformation();
     emit selectionChanged();
 }
 
 void SelectionManager::resetSelectionProperties()
 {
-    resetSelectionTransformProperties();
-    mSelectionPolygon = QPolygonF();
-    mOriginalRect = QRectF();
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.resetSelectionProperties();
+    default:
+        return;
+    }
     emit selectionChanged();
 }
 

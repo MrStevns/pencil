@@ -117,7 +117,7 @@ void SelectTool::beginSelection(Layer* currentLayer, const QPointF& pos)
     }
     else
     {
-        selectMan->setSelection(QRectF(pos.x(), pos.y(), 1, 1), mEditor->layers()->currentLayer()->type() == Layer::BITMAP);
+        selectMan->setSelection(QRectF(pos.x(), pos.y(), 1, 1));
         mAnchorOriginPoint = pos;
     }
 
@@ -218,7 +218,7 @@ void SelectTool::keepSelection(Layer* currentLayer)
         VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
         if (vectorImage == nullptr) { return; }
         auto selectMan = mEditor->select();
-        selectMan->setSelection(vectorImage->getSelectionRect(), false);
+        selectMan->setSelection(vectorImage->getSelectionRect());
     }
 }
 
@@ -243,7 +243,7 @@ void SelectTool::controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint)
 
         rect = rect.normalized();
         if (rect.isValid()) {
-            mEditor->select()->setSelection(rect, true);
+            mEditor->select()->setSelection(rect);
         }
     } else {
         manageSelectionOrigin(currentPoint, anchorPoint);

@@ -30,6 +30,7 @@ HEADERS +=  \
     src/corelib-pch.h \
     src/graphics/bitmap/bitmapbucket.h \
     src/graphics/bitmap/bitmapimage.h \
+    src/graphics/bitmap/selectionbitmapeditor.h \
     src/graphics/bitmap/tile.h \
     src/graphics/bitmap/tiledbuffer.h \
     src/graphics/vector/bezierarea.h \
@@ -70,6 +71,8 @@ HEADERS +=  \
     src/structure/layersound.h \
     src/structure/layervector.h \
     src/structure/pegbaraligner.h \
+    src/structure/selectioneditor.h \
+    src/structure/selectionstate.h \
     src/structure/soundclip.h \
     src/structure/object.h \
     src/structure/objectdata.h \
@@ -122,6 +125,7 @@ HEADERS +=  \
 SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/canvascursorpainter.cpp \
     src/graphics/bitmap/bitmapbucket.cpp \
+    src/graphics/bitmap/selectionbitmapeditor.cpp \
     src/graphics/bitmap/tile.cpp \
     src/graphics/bitmap/tiledbuffer.cpp \
     src/graphics/vector/bezierarea.cpp \
@@ -160,6 +164,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/structure/layervector.cpp \
     src/structure/object.cpp \
     src/structure/pegbaraligner.cpp \
+    src/structure/selectioneditor.cpp \
     src/structure/soundclip.cpp \
     src/structure/objectdata.cpp \
     src/structure/filemanager.cpp \

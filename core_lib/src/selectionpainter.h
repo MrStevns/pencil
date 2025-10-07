@@ -27,7 +27,7 @@ class BaseTool;
 
 struct TransformParameters
 {
-    QRectF originalSelectionRectF;
+    QPolygonF originalSelectionPolygon;
 
     QTransform viewTransform;
     QTransform selectionTransform;
@@ -41,7 +41,7 @@ public:
     void paint(QPainter& painter, const Object* object, int layerIndex, BaseTool* tool, TransformParameters& transformParameters);
 
 private:
-    void paintSelectionInfo(QPainter& painter, const QTransform& mergedTransform, const QTransform& viewTransform, const QRectF& selectionRect, const QPolygonF& projectedPolygonF);
+    void paintSelectionInfo(QPainter& painter, const QTransform& selectionTransform, const QPolygon& selectionPolygon, const QPolygonF& projectedPolygonF);
 
     const static int HANDLE_WIDTH = 6;
 };

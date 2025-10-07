@@ -73,8 +73,8 @@ bool ScribbleArea::init()
     connect(mDoubleClickTimer, &QTimer::timeout, this, &ScribbleArea::handleDoubleClick);
     connect(mMouseFilterTimer, &QTimer::timeout, this, &ScribbleArea::tabletReleaseEventFired);
 
-    connect(mEditor->select(), &SelectionManager::selectionChanged, this, &ScribbleArea::onSelectionChanged);
-    connect(mEditor->select(), &SelectionManager::needDeleteSelection, this, &ScribbleArea::deleteSelection);
+    // connect(mEditor->select(), &SelectionManager::selectionChanged, this, &ScribbleArea::onSelectionChanged);
+    // connect(mEditor->select(), &SelectionManager::needDeleteSelection, this, &ScribbleArea::deleteSelection);
 
     connect(&mTiledBuffer, &TiledBuffer::tileUpdated, this, &ScribbleArea::onTileUpdated);
     connect(&mTiledBuffer, &TiledBuffer::tileCreated, this, &ScribbleArea::onTileCreated);
@@ -1043,11 +1043,11 @@ void ScribbleArea::paintSelectionVisuals(QPainter &painter)
 
     auto selectMan = mEditor->select();
 
-    QRectF currentSelectionRect = selectMan->mySelectionRect();
+    QPolygonF currentSelectionPoly = selectMan->getSelectionPolygon();
 
-    if (currentSelectionRect.isEmpty()) { return; }
+    if (currentSelectionPoly.isEmpty()) { return; }
 
-    TransformParameters params = { currentSelectionRect, editor()->view()->getView(), selectMan->selectionTransform() };
+    TransformParameters params = { currentSelectionPoly, editor()->view()->getView(), selectMan->selectionTransform() };
     mSelectionPainter.paint(painter, object, mEditor->currentLayerIndex(), currentTool(), params);
     emit selectionUpdated();
 }
@@ -1128,7 +1128,7 @@ void ScribbleArea::prepCanvas(int frame)
     ViewManager* vm = mEditor->view();
     SelectionManager* sm = mEditor->select();
     mCanvasPainter.setViewTransform(vm->getView(), vm->getViewInverse());
-    mCanvasPainter.setTransformedSelection(sm->mySelectionRect().toRect(), sm->selectionTransform());
+    // mCanvasPainter.setTransformedSelection(sm->mySelectionRect().toRect(), sm->selectionTransform());
 
     mCanvasPainter.setPaintSettings(object, mEditor->layers()->currentLayerIndex(), frame, &mTiledBuffer);
 }
@@ -1364,7 +1364,7 @@ void ScribbleArea::applyTransformedSelection()
             BitmapImage transformedImage = bitmapImage->transformed(selectMan->mySelectionRect().toRect(), selectMan->selectionTransform(), useAA);
 
 
-            bitmapImage->clear(selectMan->mySelectionRect());
+            bitmapImage->clearSelectedArea();
             bitmapImage->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
         }
         else if (layer->type() == Layer::VECTOR)

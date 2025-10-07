@@ -35,7 +35,7 @@ void SelectionPainter::paint(QPainter& painter,
     if (layer == nullptr) { return; }
 
     QTransform transform = tParams.selectionTransform * tParams.viewTransform;
-    QPolygonF projectedSelectionPolygon = transform.map(tParams.originalSelectionRectF);
+    QPolygonF projectedSelectionPolygon = transform.map(tParams.originalSelectionPolygon);
 
     if (layer->type() == Layer::BITMAP)
     {
@@ -81,23 +81,23 @@ void SelectionPainter::paint(QPainter& painter,
     }
 
     if (tool->properties.showSelectionInfo) {
-        paintSelectionInfo(painter, transform, tParams.viewTransform, tParams.originalSelectionRectF, projectedSelectionPolygon);
+        paintSelectionInfo(painter, transform, tParams.originalSelectionPolygon.toPolygon(), projectedSelectionPolygon);
     }
 }
 
-void SelectionPainter::paintSelectionInfo(QPainter& painter, const QTransform& mergedTransform, const QTransform& viewTransform, const QRectF& selectionRect, const QPolygonF& projectedPolygonF)
+void SelectionPainter::paintSelectionInfo(QPainter& painter, const QTransform& selectionTransform, const QPolygon& selectionPolygon, const QPolygonF& projectedPolygonF)
 {
-    QRect projectedSelectionRect = mergedTransform.mapRect(selectionRect).toAlignedRect();
-    QRect originalSelectionRect = viewTransform.mapRect(selectionRect).toAlignedRect();
+    QRect boundingBox = selectionPolygon.boundingRect();
+    QRect projectedSelectionRect = selectionTransform.mapRect(boundingBox);
     QPolygon projectedPolygon = projectedPolygonF.toPolygon();
 
     QPoint projectedCenter = projectedSelectionRect.center();
-    QPoint originalCenter = originalSelectionRect.center();
+    QPoint originalCenter = boundingBox.center();
     int diffX = static_cast<int>(projectedCenter.x() - originalCenter.x());
-    int diffY = static_cast<int>(originalCenter.y() - projectedCenter.y());
+    int diffY = static_cast<int>(projectedCenter.y() - originalCenter.y());
     painter.drawText(projectedPolygon[0] - QPoint(HANDLE_WIDTH, HANDLE_WIDTH),
-                    QString("Size: %1x%2. Diff: %3, %4.").arg(QString::number(selectionRect.width()),
-                                                      QString::number(selectionRect.height()),
+                    QString("Size: %1x%2. Diff: %3, %4.").arg(QString::number(projectedSelectionRect.width()),
+                                                      QString::number(projectedSelectionRect.height()),
                                                       QString::number(diffX),
                                                       QString::number(diffY)));
 }

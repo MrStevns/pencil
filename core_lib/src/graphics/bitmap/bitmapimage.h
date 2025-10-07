@@ -22,6 +22,8 @@ GNU General Public License for more details.
 #include <QtMath>
 #include <QHash>
 
+#include "selectionstate.h"
+
 class TiledBuffer;
 
 class BitmapImage : public KeyFrame
@@ -56,6 +58,7 @@ public:
 
     BitmapImage copy();
     BitmapImage copy(QRect rectangle);
+    BitmapImage copy(const QRect& rect, const QPolygon& clipToPolygon) const;
     void paste(BitmapImage*, QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver);
     void paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver);
 
@@ -80,8 +83,7 @@ public:
     QRgb constScanLine(int x, int y) const;
     void scanLine(int x, int y, QRgb color);
     void clear();
-    void clear(QRect rectangle);
-    void clear(QRectF rectangle) { clear(rectangle.toRect()); }
+    void clearSelectedArea();
 
     static bool floodFill(BitmapImage** replaceImage, const BitmapImage* targetImage, const QRect& cameraRect, const QPoint& point, const QRgb& fillColor, int tolerance, const int expandValue);
     static bool* floodFillPoints(const BitmapImage* targetImage,
@@ -170,6 +172,9 @@ public:
 
         return isSimilar;
     }
+
+    /// keeps the current selection state
+    SelectionBitmapState mSelectionState;
 
 protected:
     void updateBounds(QRect rectangle);

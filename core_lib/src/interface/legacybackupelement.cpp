@@ -53,7 +53,7 @@ void BackupLegacyBitmapElement::restore(Editor* editor)
     }
 
     auto selectMan = editor->select();
-    selectMan->setSelection(mySelection, true);
+    selectMan->setSelection(mySelection);
     selectMan->setTransformAnchor(selectionAnchor);
     selectMan->setRotation(rotationAngle);
     selectMan->setScale(scaleX, scaleY);
@@ -103,7 +103,7 @@ void BackupLegacyVectorElement::restore(Editor* editor)
     }
 
     auto selectMan = editor->select();
-    selectMan->setSelection(mySelection, false);
+    selectMan->setSelection(mySelection);
     selectMan->setTransformAnchor(selectionAnchor);
     selectMan->setRotation(rotationAngle);
     selectMan->setScale(scaleX, scaleY);

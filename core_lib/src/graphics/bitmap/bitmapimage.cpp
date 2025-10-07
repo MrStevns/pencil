@@ -39,6 +39,7 @@ BitmapImage::BitmapImage(const BitmapImage& a) : KeyFrame(a)
     mEnableAutoCrop = a.mEnableAutoCrop;
     mOpacity = a.mOpacity;
     mImage = a.mImage;
+    mSelectionState = a.mSelectionState;
 }
 
 BitmapImage::BitmapImage(const QRect& rectangle, const QColor& color)
@@ -91,6 +92,7 @@ BitmapImage& BitmapImage::operator=(const BitmapImage& a)
     mMinBound = a.mMinBound;
     mOpacity = a.mOpacity;
     mImage = a.mImage;
+    mSelectionState = a.mSelectionState;
     modification();
     return *this;
 }
@@ -190,6 +192,27 @@ BitmapImage BitmapImage::copy(QRect rectangle)
 
     BitmapImage result(rectangle.topLeft(), image()->copy(intersection2));
     return result;
+}
+
+BitmapImage BitmapImage::copy(const QRect& rect, const QPolygon& clipToPolygon) const
+{
+    QRect newRect = rect.normalized();
+    BitmapImage copyImage = BitmapImage(newRect, Qt::transparent);
+
+    // // This creates a copy of the current image and adds it to copyImage
+    QPainter painter(copyImage.image());
+    painter.translate(-newRect.topLeft());
+    painter.setRenderHint(QPainter::Antialiasing);
+    if (clipToPolygon.count() > 0) {
+        QPainterPath clipPath;
+        clipPath.addPolygon(clipToPolygon);
+        painter.setClipPath(clipPath);
+        painter.setClipping(true);
+    }
+    painter.drawImage(mBounds.topLeft(), mImage);
+    painter.end();
+
+    return copyImage;
 }
 
 void BitmapImage::paste(BitmapImage* bitmapImage, QPainter::CompositionMode cm)
@@ -880,6 +903,25 @@ void BitmapImage::clear(QRect rectangle)
     painter.end();
 
     modification();
+}
+
+void BitmapImage::clearSelectedArea()
+{
+    // QRect boundingBox = polygon.boundingRect();
+    // QRect clearRectangle = mBounds.intersected(boundingBox);
+    // clearRectangle.moveTopLeft(clearRectangle.topLeft() - mBounds.topLeft());
+
+    // setCompositionModeBounds(clearRectangle, true, QPainter::CompositionMode_Clear);
+    QPolygon polygon = mSelectionState.selectionPolygon;
+
+    QPainter painter(image());
+    painter.translate(-mBounds.topLeft());
+    painter.setCompositionMode(QPainter::CompositionMode_Clear);
+    QPainterPath fillPath;
+    fillPath.addPolygon(polygon);
+    painter.setBrush(Qt::white);
+    painter.drawPath(fillPath);
+    painter.end();
 }
 
 bool BitmapImage::floodFill(BitmapImage** replaceImage,

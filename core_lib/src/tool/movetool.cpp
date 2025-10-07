@@ -291,7 +291,7 @@ void MoveTool::setCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers 
             applyTransformation();
         }
         vectorImage->setSelected(selectMan->closestCurves(), true);
-        selectMan->setSelection(vectorImage->getSelectionRect(), false);
+        selectMan->setSelection(vectorImage->getSelectionRect());
     }
 }
 
@@ -305,7 +305,7 @@ void MoveTool::setAreaSelected(const QPointF& pos, VectorImage* vectorImage, Qt:
             applyTransformation();
         }
         vectorImage->setAreaSelected(areaNumber, true);
-        mEditor->select()->setSelection(vectorImage->getSelectionRect(), false);
+        mEditor->select()->setSelection(vectorImage->getSelectionRect());
     }
 }
 

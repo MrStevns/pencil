@@ -822,7 +822,7 @@ void Editor::selectAll() const
             rect = vectorImage->getSelectionRect();
         }
     }
-    select()->setSelection(rect, false);
+    select()->setSelection(rect);
 }
 
 void Editor::deselectAll() const
