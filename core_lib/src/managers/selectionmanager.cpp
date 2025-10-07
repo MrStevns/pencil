@@ -220,7 +220,7 @@ void SelectionManager::adjustSelection(const QPointF& currentPoint, const QPoint
 
 bool SelectionManager::somethingSelected() const
 {
-    switch (mWorkingLayer->type() == Layer::BITMAP)
+    switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
         return bitmapSelection.somethingSelected();
@@ -231,7 +231,7 @@ bool SelectionManager::somethingSelected() const
 
 void SelectionManager::translate(QPointF newPos)
 {
-    switch (mWorkingLayer->type() == Layer::BITMAP)
+    switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
         bitmapSelection.translate(newPos);
@@ -242,7 +242,7 @@ void SelectionManager::translate(QPointF newPos)
 
 void SelectionManager::rotate(qreal angle, qreal lockedAngle)
 {
-    switch (mWorkingLayer->type() == Layer::BITMAP)
+    switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
         bitmapSelection.rotate(angle, lockedAngle);
@@ -263,6 +263,100 @@ void SelectionManager::scale(qreal sX, qreal sY)
     }
 }
 
+QRectF SelectionManager::mySelectionRect() const {
+    switch (mWorkingLayer->type())
+    {
+        case Layer::BITMAP:
+            return bitmapSelection.mySelectionRect();
+        default:
+            return QRectF();
+    }
+}
+
+qreal SelectionManager::myRotation() const {
+    switch (mWorkingLayer->type())
+    {
+        case Layer::BITMAP:
+            return bitmapSelection.myRotation();
+        default:
+        return 0;
+    }
+}
+
+qreal SelectionManager::myScaleX() const {
+    switch (mWorkingLayer->type())
+    {
+        case Layer::BITMAP:
+            return bitmapSelection.myScaleX();
+        default:
+        return 0;
+    }
+}
+
+qreal SelectionManager::myScaleY() const {
+    switch (mWorkingLayer->type())
+    {
+        case Layer::BITMAP:
+            return bitmapSelection.myScaleY();
+        default:
+        return 0;
+    }
+}
+
+QPointF SelectionManager::myTranslation() const {
+    switch (mWorkingLayer->type())
+    {
+        case Layer::BITMAP:
+            return bitmapSelection.myTranslation();
+        default:
+        return QPointF();
+    }
+}
+
+QPointF SelectionManager::mapToSelection(const QPointF& point) const
+{
+    switch (mWorkingLayer->type())
+    {
+        case Layer::BITMAP:
+            return bitmapSelection.mapToSelection(point);
+        default:
+        return QPointF();
+    }
+}
+
+QPointF SelectionManager::mapFromLocalSpace(const QPointF& point) const
+{
+    switch (mWorkingLayer->type())
+    {
+        case Layer::BITMAP:
+            return bitmapSelection.mapFromLocalSpace(point);
+        default:
+        return QPointF();
+    }
+}
+
+QPolygonF SelectionManager::mapToSelection(const QPolygonF& polygon) const
+{
+    switch (mWorkingLayer->type())
+    {
+        case Layer::BITMAP:
+            return bitmapSelection.mapToSelection(polygon);
+        default:
+        return QPolygonF();
+    }
+}
+
+QPolygonF SelectionManager::mapFromLocalSpace(const QPolygonF& polygon) const
+{
+    switch (mWorkingLayer->type())
+    {
+        case Layer::BITMAP:
+            return bitmapSelection.mapFromLocalSpace(polygon);
+        default:
+        return QPolygonF();
+    }
+}
+
 int SelectionManager::constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const
 {
     return qRound(rotatedAngle / rotationIncrement) * rotationIncrement;
@@ -270,7 +364,14 @@ int SelectionManager::constrainRotationToAngle(const qreal rotatedAngle, const i
 
 qreal SelectionManager::angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const
 {
-    return qRadiansToDegrees(MathUtils::getDifferenceAngle(mSelectionTransform.map(anchorPoint), point));
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.angleFromPoint(point, anchorPoint);
+    default:
+        return -1;
+    }
+    // return qRadiansToDegrees(MathUtils::getDifferenceAngle(mSelectionTransform.map(anchorPoint), point));
 }
 
 void SelectionManager::setSelection(const QRectF& rect)
@@ -313,7 +414,7 @@ QPointF SelectionManager::alignPositionToAxis(QPointF currentPoint) const
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.alignPositionToAxis(currentPoint);
+        return bitmapSelection.alignedPositionToAxis(currentPoint);
     default:
         return QPointF();
     }

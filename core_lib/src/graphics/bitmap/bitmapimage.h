@@ -83,7 +83,9 @@ public:
     QRgb constScanLine(int x, int y) const;
     void scanLine(int x, int y, QRgb color);
     void clear();
-    void clearSelectedArea();
+    void clear(QRect rectangle);
+    void clear(QRectF rectangle) { clear(rectangle.toRect()); }
+    void clear(const QPolygon& polygon);
 
     static bool floodFill(BitmapImage** replaceImage, const BitmapImage* targetImage, const QRect& cameraRect, const QPoint& point, const QRgb& fillColor, int tolerance, const int expandValue);
     static bool* floodFillPoints(const BitmapImage* targetImage,

@@ -905,14 +905,13 @@ void BitmapImage::clear(QRect rectangle)
     modification();
 }
 
-void BitmapImage::clearSelectedArea()
+void BitmapImage::clear(const QPolygon& polygon)
 {
     // QRect boundingBox = polygon.boundingRect();
     // QRect clearRectangle = mBounds.intersected(boundingBox);
     // clearRectangle.moveTopLeft(clearRectangle.topLeft() - mBounds.topLeft());
 
     // setCompositionModeBounds(clearRectangle, true, QPainter::CompositionMode_Clear);
-    QPolygon polygon = mSelectionState.selectionPolygon;
 
     QPainter painter(image());
     painter.translate(-mBounds.topLeft());

@@ -33,80 +33,77 @@ class SelectionEditor
 public:
 
     explicit SelectionEditor();
-    SelectionEditor(SelectionEditor& editor);
-    virtual ~SelectionEditor();
+    ~SelectionEditor();
 
-    void flipSelection(bool flipVertical);
-    void deselect();
+    void flipSelection(SelectionState& state, bool flipVertical);
+    void deselect(SelectionState& state);
 
-    /** @brief SelectionManager::resetSelectionTransformProperties
-     * should be used whenever translate, rotate, transform, scale
-     * has been applied to a selection, but don't want to reset size nor position
-     */
-    virtual void resetSelectionTransformProperties();
-    /// The point from where the dragging will be based of inside the selection area.
-    /// Not to be confused with the selection origin
-    virtual void setDragOrigin(const QPointF& point) = 0;
+    // /** @brief SelectionManager::resetSelectionTransformProperties
+    //  * should be used whenever translate, rotate, transform, scale
+    //  * has been applied to a selection, but don't want to reset size nor position
+    //  */
+    // void resetSelectionTransformProperties();
+    // /// The point from where the dragging will be based of inside the selection area.
+    // /// Not to be confused with the selection origin
+    // void setDragOrigin(const QPointF& point) = 0;
 
-    virtual QPointF getSelectionAnchorPoint() const = 0;
-    virtual bool somethingSelected() const = 0;
+    // QPointF getSelectionAnchorPoint() const = 0;
+    // bool somethingSelected() const = 0;
 
-    virtual void resetSelectionProperties();
-    virtual bool isOutsideSelectionArea(const QPointF& point) const = 0;
+    // Replaces resetSelectionProperties();
+    void resetState(SelectionState& state);
+    // bool isOutsideSelectionArea(const QPointF& point) const = 0;
 
-    virtual void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement) = 0;
+    // void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement) = 0;
 
-    virtual void deleteSelection() = 0;
+    // void deleteSelection() = 0;
 
-    virtual void commitChanges() = 0;
-    virtual void discardChanges() = 0;
+    // void commitChanges() = 0;
+    // void discardChanges() = 0;
 
-    QPointF currentTransformAnchor() const { return mCommonState.anchorPoint; }
+    // QPointF currentTransformAnchor() const { return mCommonState.anchorPoint; }
 
-    void translate(QPointF point);
-    void rotate(qreal angle, qreal lockedAngle);
-    void scale(qreal sX, qreal sY);
+    void translate(SelectionState& state, QPointF point);
+    void rotate(SelectionState& state, qreal angle, qreal lockedAngle);
+    void scale(SelectionState& state, qreal sX, qreal sY);
     void maintainAspectRatio(bool state) { mAspectRatioFixed = state; }
 
     /** @brief Locks movement either horizontally or vertically depending on drag direction
      *  @param state */
-    void alignPositionToAxis(bool state) { mLockAxis = state; }
+    void alignedPositionToAxis(bool state) { mLockAxis = state; }
     /** @brief Aligns the input position to the nearest axis.
      *  Eg. draggin along the x axis, will keep the selection to that axis.
      * @param currentPosition the position of the cursor
      * @return A point that is either horizontally or vertically aligned with the current position.
      */
-    QPointF alignPositionToAxis(QPointF currentPoint) const;
+    QPointF alignedPositionToAxis(QPointF currentPoint) const;
 
     MoveMode getMoveMode() const { return mMoveMode; }
     void setMoveMode(const MoveMode moveMode) { mMoveMode = moveMode; }
 
-    QTransform selectionTransform() const { return mCommonState.selectionTransform; }
-    void setSelectionTransform(const QTransform& transform) { mCommonState.selectionTransform = transform; }
-    void resetSelectionTransform();
+    // QTransform selectionTransform() const { return mCommonState.selectionTransform; }
+    // void setSelectionTransform(const QTransform& transform) { mCommonState.selectionTransform = transform; }
+    // void resetSelectionTransform();
 
     qreal selectionTolerance() const;
 
-    void setTransformAnchor(const QPointF& point);
+    void setTransformAnchor(SelectionState& state, const QPointF& point);
 
     // SelectionState selectionState() { return mCommonState; }
 
-    void setRotation(const qreal& rotation) { mCommonState.rotatedAngle = rotation; }
-    void setScale(const qreal scaleX, const qreal scaleY) { mCommonState.scaleX = scaleX; mCommonState.scaleY = scaleY; }
-    void setTranslation(const QPointF& translation) { mCommonState.translation = translation; }
+    void setRotation(SelectionState& state, const qreal& rotation) { state.rotatedAngle = rotation; }
+    void setScale(SelectionState& state, const qreal scaleX, const qreal scaleY) { state.scaleX = scaleX; state.scaleY = scaleY; }
+    void setTranslation(SelectionState& state, const QPointF& translation) { state.translation = translation; }
 
-    qreal angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const;
+    qreal angleFromPoint(SelectionState& state, const QPointF& point, const QPointF& anchorPoint) const;
 
-    QPointF mapToSelection(const QPointF& point) const { return mCommonState.selectionTransform.map(point); }
-    QPointF mapFromLocalSpace(const QPointF& point) const { return mCommonState.selectionTransform.inverted().map(point); }
-    QPolygonF mapToSelection(const QPolygonF& polygon) const { return mCommonState.selectionTransform.map(polygon); }
-    QPolygonF mapFromLocalSpace(const QPolygonF& polygon) const { return mCommonState.selectionTransform.inverted().map(polygon); }
-
-    void invalidateCache() { mCacheInvalidated = true; }
-    bool isCacheInvalidated() const { return mCacheInvalidated; }
+    QPointF mapToSelection(const SelectionState& state, const QPointF& point) const { return state.selectionTransform.map(point); }
+    QPointF mapFromLocalSpace(const SelectionState& state, const QPointF& point) const { return state.selectionTransform.inverted().map(point); }
+    QPolygonF mapToSelection(const SelectionState& state, const QPolygonF& polygon) const { return state.selectionTransform.map(polygon); }
+    QPolygonF mapFromLocalSpace(const SelectionState& state, const QPolygonF& polygon) const { return state.selectionTransform.inverted().map(polygon); }
 
     /// This should be called to update the selection transform
-    void calculateSelectionTransformation();
+    void calculateSelectionTransformation(SelectionState& state);
 
     typedef std::function<void(SelectionEvent)> SelectionEventCallback;
 
@@ -114,27 +111,23 @@ public:
     void onEvent(SelectionEvent event) const;
     void notify(SelectionEvent event) const;
 
-protected:
-    void adjustCurrentSelection(const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
-
+    void adjustCurrentSelection(SelectionState& state, const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
     QPointF getSelectionAnchorPoint(const QPolygonF& selectionPolygon) const;
-
-    MoveMode mMoveMode = MoveMode::NONE;
-    QPointF mDragOrigin;
-    bool mCacheInvalidated = true;
 
 private:
     int constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const;
 
 private:
-    // SelectionState mCommonState;
-
     QList<SelectionEventCallback> mObservers;
 
+    MoveMode mMoveMode = MoveMode::NONE;
+    QPointF mDragOrigin;
+
+    bool mIsValid = false;
     bool mAspectRatioFixed = false;
     bool mLockAxis = false;
 
-    const qreal mSelectionTolerance = 10.0;
+    qreal mSelectionTolerance = 10.0;
 };
 
 #endif // SELECTIONEDITOR_H

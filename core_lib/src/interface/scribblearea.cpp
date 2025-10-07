@@ -1364,7 +1364,7 @@ void ScribbleArea::applyTransformedSelection()
             BitmapImage transformedImage = bitmapImage->transformed(selectMan->mySelectionRect().toRect(), selectMan->selectionTransform(), useAA);
 
 
-            bitmapImage->clearSelectedArea();
+            bitmapImage->clear(bitmapImage->mSelectionState.selectionPolygon);
             bitmapImage->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
         }
         else if (layer->type() == Layer::VECTOR)
@@ -1403,7 +1403,7 @@ void ScribbleArea::cancelTransformedSelection()
             }
         }
 
-        mEditor->select()->setSelection(selectMan->mySelectionRect(), false);
+        mEditor->select()->setSelection(selectMan->mySelectionRect());
 
         selectMan->resetSelectionProperties();
         mOriginalPolygonF = QPolygonF();

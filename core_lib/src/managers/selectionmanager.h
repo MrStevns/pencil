@@ -94,11 +94,11 @@ public:
 
     MoveMode resolveMoveModeForPoint(const QPointF& point);
 
-    // const QRectF& mySelectionRect() const { return mOriginalRect; }
-    // const qreal& myRotation() const { return mRotatedAngle; }
-    // const qreal& myScaleX() const { return mScaleX; }
-    // const qreal& myScaleY() const { return mScaleY; }
-    // const QPointF& myTranslation() const { return mTranslation; }
+    QRectF mySelectionRect() const;
+    qreal myRotation() const;
+    qreal myScaleX() const;
+    qreal myScaleY() const;
+    QPointF myTranslation() const;
 
     void setTranslation(const QPointF& translation);
     void setRotation(qreal rotation);

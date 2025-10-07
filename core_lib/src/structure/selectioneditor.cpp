@@ -24,16 +24,16 @@ SelectionEditor::SelectionEditor()
 {
 }
 
-SelectionEditor::SelectionEditor(SelectionEditor& editor)
-{
-    mCommonState = editor.mCommonState;
+// SelectionEditor::SelectionEditor(SelectionState& state)
+// {
+//     mCommonState = editor.mCommonState;
 
-    mAspectRatioFixed = editor.mAspectRatioFixed;
-    mLockAxis = editor.mLockAxis;
-    mMoveMode = editor.mMoveMode;
-    mMoveMode = editor.mMoveMode;
-    mDragOrigin = editor.mDragOrigin;
-}
+//     mAspectRatioFixed = editor.mAspectRatioFixed;
+//     mLockAxis = editor.mLockAxis;
+//     mMoveMode = editor.mMoveMode;
+//     mMoveMode = editor.mMoveMode;
+//     mDragOrigin = editor.mDragOrigin;
+// }
 
 SelectionEditor::~SelectionEditor()
 {
@@ -44,14 +44,9 @@ SelectionEditor::~SelectionEditor()
     }
 }
 
-void SelectionEditor::resetSelectionTransformProperties()
+void SelectionEditor::resetState(SelectionState& state)
 {
-    mCommonState = SelectionState();
-}
-
-void SelectionEditor::resetSelectionTransform()
-{
-    mCommonState.selectionTransform.reset();
+    state = SelectionState();
 }
 
 qreal SelectionEditor::selectionTolerance() const
@@ -85,7 +80,7 @@ QPointF SelectionEditor::getSelectionAnchorPoint(const QPolygonF& selectionPolyg
     return anchorPoint;
 }
 
-void SelectionEditor::adjustCurrentSelection(const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
+void SelectionEditor::adjustCurrentSelection(SelectionState& state, const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
 {
     switch (mMoveMode)
     {
@@ -93,9 +88,9 @@ void SelectionEditor::adjustCurrentSelection(const QPolygonF& selectionPolygon, 
         QPointF newOffset = currentPoint - mDragOrigin;
 
         if (mLockAxis) {
-            mCommonState.translation = offset + alignPositionToAxis(newOffset);
+            state.translation = offset + alignedPositionToAxis(newOffset);
         } else {
-            mCommonState.translation = offset + newOffset;
+            state.translation = offset + newOffset;
         }
         break;
     }
@@ -104,7 +99,7 @@ void SelectionEditor::adjustCurrentSelection(const QPolygonF& selectionPolygon, 
     case MoveMode::BOTTOMRIGHT:
     case MoveMode::BOTTOMLEFT: {
 
-        QPolygonF projectedPolygon = mapToSelection(selectionPolygon);
+        QPolygonF projectedPolygon = mapToSelection(state, selectionPolygon);
         QVector2D currentPVec = QVector2D(currentPoint);
 
         qreal originWidth = selectionPolygon[1].x() - selectionPolygon[0].x();
@@ -144,39 +139,39 @@ void SelectionEditor::adjustCurrentSelection(const QPolygonF& selectionPolygon, 
             scaleY = scaleX;
         }
 
-        scale(scaleX, scaleY);
+        scale(state, scaleX, scaleY);
 
         break;
     }
     case MoveMode::ROTATION: {
-        rotate(rotationOffset, rotationIncrement);
+        rotate(state, rotationOffset, rotationIncrement);
         break;
     }
     default:
         break;
     }
-    calculateSelectionTransformation();
+    calculateSelectionTransformation(state);
 }
 
-void SelectionEditor::translate(QPointF newPos)
+void SelectionEditor::translate(SelectionState& state, QPointF newPos)
 {
-    mCommonState.translation += newPos;
+    state.translation += newPos;
 }
 
-void SelectionEditor::rotate(qreal angle, qreal lockedAngle)
+void SelectionEditor::rotate(SelectionState& state, qreal angle, qreal lockedAngle)
 {
     if (lockedAngle > 0) {
-        mCommonState.rotatedAngle = constrainRotationToAngle(angle, lockedAngle);
+        state.rotatedAngle = constrainRotationToAngle(angle, lockedAngle);
     } else {
-        mCommonState.rotatedAngle = angle;
+        state.rotatedAngle = angle;
     }
 }
 
-void SelectionEditor::scale(qreal sX, qreal sY)
+void SelectionEditor::scale(SelectionState& state, qreal sX, qreal sY)
 {
     // Enforce negative scaling when
     // deliberately trying to transform in negative space
-    if (mCommonState.scaleX < 0) {
+    if (state.scaleX < 0) {
         sX = -sX;
     }
     if (qFuzzyIsNull(sX)) {
@@ -186,7 +181,7 @@ void SelectionEditor::scale(qreal sX, qreal sY)
 
     // Enforce negative scaling when
     // deliberately trying to transform in negative space
-    if (mCommonState.scaleY < 0) {
+    if (state.scaleY < 0) {
         sY = -sY;
     }
     if (qFuzzyIsNull(sY)) {
@@ -194,8 +189,8 @@ void SelectionEditor::scale(qreal sX, qreal sY)
         sY = 0.0001;
     }
 
-    mCommonState.scaleX = sX;
-    mCommonState.scaleY = sY;
+    state.scaleX = sX;
+    state.scaleY = sY;
 }
 
 int SelectionEditor::constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const
@@ -203,9 +198,9 @@ int SelectionEditor::constrainRotationToAngle(const qreal rotatedAngle, const in
     return qRound(rotatedAngle / rotationIncrement) * rotationIncrement;
 }
 
-qreal SelectionEditor::angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const
+qreal SelectionEditor::angleFromPoint(SelectionState& state, const QPointF& point, const QPointF& anchorPoint) const
 {
-    return qRadiansToDegrees(MathUtils::getDifferenceAngle(mCommonState.selectionTransform.map(anchorPoint), point));
+    return qRadiansToDegrees(MathUtils::getDifferenceAngle(state.selectionTransform.map(anchorPoint), point));
 }
 
 // void SelectionEditor::setSelection(const QRectF& rect)
@@ -220,27 +215,29 @@ qreal SelectionEditor::angleFromPoint(const QPointF& point, const QPointF& ancho
 //     onEvent(SelectionEvent::CHANGED);
 // }
 
-void SelectionEditor::deselect()
+void SelectionEditor::deselect(SelectionState& state)
 {
-    resetSelectionProperties();
+    resetState(state);
     mMoveMode = MoveMode::NONE;
+    mIsValid = false;
+    mAspectRatioFixed = false;
+    mLockAxis = false;
     onEvent(SelectionEvent::CHANGED);
 }
 
-void SelectionEditor::setTransformAnchor(const QPointF& point)
+void SelectionEditor::setTransformAnchor(SelectionState& state, const QPointF& point)
 {
-    const QPointF& oldAnchorPoint = mCommonState.anchorPoint;
-    QPointF newPos = mapToSelection(point);
-    QPointF oldPos = mapToSelection(oldAnchorPoint);
+    const QPointF& oldAnchorPoint = state.anchorPoint;
+    QPointF newPos = mapToSelection(state, point);
+    QPointF oldPos = mapToSelection(state, oldAnchorPoint);
 
     // Adjust translation based on anchor point to avoid moving the selection
-    mCommonState.translation = mCommonState.translation - oldPos + newPos;
-    mCommonState.anchorPoint = point;
+    state.translation = state.translation - oldPos + newPos;
+    state.anchorPoint = point;
 }
 
-void SelectionEditor::calculateSelectionTransformation()
+void SelectionEditor::calculateSelectionTransformation(SelectionState& state)
 {
-    auto state = mCommonState;
     QTransform t;
     t.translate(-state.anchorPoint.x(), -state.anchorPoint.y());
     QTransform t2;
@@ -254,7 +251,7 @@ void SelectionEditor::calculateSelectionTransformation()
     onEvent(SelectionEvent::CHANGED);
 }
 
-QPointF SelectionEditor::alignPositionToAxis(QPointF currentPoint) const
+QPointF SelectionEditor::alignedPositionToAxis(QPointF currentPoint) const
 {
     if (qAbs(currentPoint.y()) > qAbs(currentPoint.x())) {
         // Align to y axis
@@ -269,25 +266,19 @@ QPointF SelectionEditor::alignPositionToAxis(QPointF currentPoint) const
  * @brief ScribbleArea::flipSelection
  * flip selection along the X or Y axis
 */
-void SelectionEditor::flipSelection(bool flipVertical)
+void SelectionEditor::flipSelection(SelectionState& state, bool flipVertical)
 {
     if (flipVertical)
     {
-        mCommonState.scaleY = -mCommonState.scaleY;
+        state.scaleY = -state.scaleY;
     }
     else
     {
-        mCommonState.scaleX = -mCommonState.scaleX;
+        state.scaleX = -state.scaleX;
     }
     // TODO (MrStevns): Why is this needed, The transform anchor shouldn't be any different?
     // setTransformAnchor(mOriginalRect.center());
-    calculateSelectionTransformation();
-    onEvent(SelectionEvent::CHANGED);
-}
-
-void SelectionEditor::resetSelectionProperties()
-{
-    resetSelectionTransformProperties();
+    calculateSelectionTransformation(state);
     onEvent(SelectionEvent::CHANGED);
 }
 
