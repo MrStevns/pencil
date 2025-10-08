@@ -19,39 +19,86 @@ GNU General Public License for more details.
 
 #include <QPolygon>
 
-
 SelectionEditor::SelectionEditor()
 {
+    mIsValid = false;
 }
 
-// SelectionEditor::SelectionEditor(SelectionState& state)
-// {
-//     mCommonState = editor.mCommonState;
-
-//     mAspectRatioFixed = editor.mAspectRatioFixed;
-//     mLockAxis = editor.mLockAxis;
-//     mMoveMode = editor.mMoveMode;
-//     mMoveMode = editor.mMoveMode;
-//     mDragOrigin = editor.mDragOrigin;
-// }
+SelectionEditor::SelectionEditor(SelectionState* state) : mState(state)
+{
+    // The Editor is valid when it has been created with a SelectionState and the ptr is valid
+    mIsValid = true;
+}
 
 SelectionEditor::~SelectionEditor()
 {
     qDebug() << "SelectionEditor destroyed";
+
+    invalidate();
+}
+
+void SelectionEditor::invalidate()
+{
+    mIsValid = false;
+    mState = nullptr;
 
     if (mObservers.count() > 0) {
         mObservers.clear();
     }
 }
 
-void SelectionEditor::resetState(SelectionState& state)
+void SelectionEditor::resetState()
 {
-    state = SelectionState();
+    if (!mState) { return; }
+    *mState = SelectionState();
 }
 
-qreal SelectionEditor::selectionTolerance() const
+void SelectionEditor::resetTransformation()
 {
-    return qAbs(mSelectionTolerance/* * editor()->viewScaleInversed()*/);
+    mState->selectionTransform.reset();
+}
+
+void SelectionEditor::setTransform(const QTransform& transform)
+{
+    mState->selectionTransform = transform;
+}
+
+MoveMode SelectionEditor::resolveMoveModeForAnchorInRange(const QPointF &point, const QPolygonF& polygon, qreal selectionTolerance) const
+{
+    if (polygon.count() < 4)
+    {
+        return MoveMode::NONE;
+    }
+
+    QPolygonF projectedPolygon = mapToSelection(polygon);
+
+    MoveMode moveMode = MoveMode::NONE;
+    if (QLineF(point, projectedPolygon[0]).length() < selectionTolerance)
+    {
+        moveMode = MoveMode::TOPLEFT;
+    }
+    else if (QLineF(point, projectedPolygon[1]).length() < selectionTolerance)
+    {
+        moveMode = MoveMode::TOPRIGHT;
+    }
+    else if (QLineF(point, projectedPolygon[2]).length() < selectionTolerance)
+    {
+        moveMode = MoveMode::BOTTOMRIGHT;
+    }
+    else if (QLineF(point, projectedPolygon[3]).length() < selectionTolerance)
+    {
+        moveMode = MoveMode::BOTTOMLEFT;
+    }
+    else if (projectedPolygon.containsPoint(point, Qt::WindingFill))
+    {
+        moveMode = MoveMode::MIDDLE;
+    }
+    else
+    {
+        moveMode = MoveMode::NONE;
+    }
+
+    return moveMode;
 }
 
 QPointF SelectionEditor::getSelectionAnchorPoint(const QPolygonF& selectionPolygon) const
@@ -80,7 +127,7 @@ QPointF SelectionEditor::getSelectionAnchorPoint(const QPolygonF& selectionPolyg
     return anchorPoint;
 }
 
-void SelectionEditor::adjustCurrentSelection(SelectionState& state, const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
+void SelectionEditor::adjustCurrentSelection(const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
 {
     switch (mMoveMode)
     {
@@ -88,9 +135,9 @@ void SelectionEditor::adjustCurrentSelection(SelectionState& state, const QPolyg
         QPointF newOffset = currentPoint - mDragOrigin;
 
         if (mLockAxis) {
-            state.translation = offset + alignedPositionToAxis(newOffset);
+            mState->translation = offset + alignedPositionToAxis(newOffset);
         } else {
-            state.translation = offset + newOffset;
+            mState->translation = offset + newOffset;
         }
         break;
     }
@@ -99,7 +146,7 @@ void SelectionEditor::adjustCurrentSelection(SelectionState& state, const QPolyg
     case MoveMode::BOTTOMRIGHT:
     case MoveMode::BOTTOMLEFT: {
 
-        QPolygonF projectedPolygon = mapToSelection(state, selectionPolygon);
+        QPolygonF projectedPolygon = mapToSelection(selectionPolygon);
         QVector2D currentPVec = QVector2D(currentPoint);
 
         qreal originWidth = selectionPolygon[1].x() - selectionPolygon[0].x();
@@ -139,39 +186,39 @@ void SelectionEditor::adjustCurrentSelection(SelectionState& state, const QPolyg
             scaleY = scaleX;
         }
 
-        scale(state, scaleX, scaleY);
+        scale(scaleX, scaleY);
 
         break;
     }
     case MoveMode::ROTATION: {
-        rotate(state, rotationOffset, rotationIncrement);
+        rotate(rotationOffset, rotationIncrement);
         break;
     }
     default:
         break;
     }
-    calculateSelectionTransformation(state);
+    calculateSelectionTransformation();
 }
 
-void SelectionEditor::translate(SelectionState& state, QPointF newPos)
+void SelectionEditor::translate(QPointF newPos)
 {
-    state.translation += newPos;
+    mState->translation += newPos;
 }
 
-void SelectionEditor::rotate(SelectionState& state, qreal angle, qreal lockedAngle)
+void SelectionEditor::rotate(qreal angle, qreal lockedAngle)
 {
     if (lockedAngle > 0) {
-        state.rotatedAngle = constrainRotationToAngle(angle, lockedAngle);
+        mState->rotatedAngle = constrainRotationToAngle(angle, lockedAngle);
     } else {
-        state.rotatedAngle = angle;
+        mState->rotatedAngle = angle;
     }
 }
 
-void SelectionEditor::scale(SelectionState& state, qreal sX, qreal sY)
+void SelectionEditor::scale(qreal sX, qreal sY)
 {
     // Enforce negative scaling when
     // deliberately trying to transform in negative space
-    if (state.scaleX < 0) {
+    if (mState->scaleX < 0) {
         sX = -sX;
     }
     if (qFuzzyIsNull(sX)) {
@@ -181,7 +228,7 @@ void SelectionEditor::scale(SelectionState& state, qreal sX, qreal sY)
 
     // Enforce negative scaling when
     // deliberately trying to transform in negative space
-    if (state.scaleY < 0) {
+    if (mState->scaleY < 0) {
         sY = -sY;
     }
     if (qFuzzyIsNull(sY)) {
@@ -189,8 +236,8 @@ void SelectionEditor::scale(SelectionState& state, qreal sX, qreal sY)
         sY = 0.0001;
     }
 
-    state.scaleX = sX;
-    state.scaleY = sY;
+    mState->scaleX = sX;
+    mState->scaleY = sY;
 }
 
 int SelectionEditor::constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const
@@ -198,26 +245,14 @@ int SelectionEditor::constrainRotationToAngle(const qreal rotatedAngle, const in
     return qRound(rotatedAngle / rotationIncrement) * rotationIncrement;
 }
 
-qreal SelectionEditor::angleFromPoint(SelectionState& state, const QPointF& point, const QPointF& anchorPoint) const
+qreal SelectionEditor::angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const
 {
-    return qRadiansToDegrees(MathUtils::getDifferenceAngle(state.selectionTransform.map(anchorPoint), point));
+    return qRadiansToDegrees(MathUtils::getDifferenceAngle(mState->selectionTransform.map(anchorPoint), point));
 }
 
-// void SelectionEditor::setSelection(const QRectF& rect)
-// {
-//     Q_UNUSED(rect)
-//     onEvent(SelectionEvent::CHANGED);
-// }
-
-// void SelectionEditor::setSelection(const QPolygonF &polygon)
-// {
-//     Q_UNUSED(polygon)
-//     onEvent(SelectionEvent::CHANGED);
-// }
-
-void SelectionEditor::deselect(SelectionState& state)
+void SelectionEditor::deselect()
 {
-    resetState(state);
+    resetState();
     mMoveMode = MoveMode::NONE;
     mIsValid = false;
     mAspectRatioFixed = false;
@@ -225,29 +260,29 @@ void SelectionEditor::deselect(SelectionState& state)
     onEvent(SelectionEvent::CHANGED);
 }
 
-void SelectionEditor::setTransformAnchor(SelectionState& state, const QPointF& point)
+void SelectionEditor::setTransformAnchor(const QPointF& point)
 {
-    const QPointF& oldAnchorPoint = state.anchorPoint;
-    QPointF newPos = mapToSelection(state, point);
-    QPointF oldPos = mapToSelection(state, oldAnchorPoint);
+    const QPointF& oldAnchorPoint = mState->anchorPoint;
+    QPointF newPos = mapToSelection(point);
+    QPointF oldPos = mapToSelection(oldAnchorPoint);
 
     // Adjust translation based on anchor point to avoid moving the selection
-    state.translation = state.translation - oldPos + newPos;
-    state.anchorPoint = point;
+    mState->translation = mState->translation - oldPos + newPos;
+    mState->anchorPoint = point;
 }
 
-void SelectionEditor::calculateSelectionTransformation(SelectionState& state)
+void SelectionEditor::calculateSelectionTransformation()
 {
     QTransform t;
-    t.translate(-state.anchorPoint.x(), -state.anchorPoint.y());
+    t.translate(-mState->anchorPoint.x(), -mState->anchorPoint.y());
     QTransform t2;
-    t2.translate(state.translation.x(), state.translation.y());
+    t2.translate(mState->translation.x(), mState->translation.y());
 
     QTransform r;
-    r.rotate(state.rotatedAngle);
+    r.rotate(mState->rotatedAngle);
     QTransform s;
-    s.scale(state.scaleX, state.scaleY);
-    state.selectionTransform = t * s * r * t2;
+    s.scale(mState->scaleX, mState->scaleY);
+    mState->selectionTransform = t * s * r * t2;
     onEvent(SelectionEvent::CHANGED);
 }
 
@@ -266,19 +301,19 @@ QPointF SelectionEditor::alignedPositionToAxis(QPointF currentPoint) const
  * @brief ScribbleArea::flipSelection
  * flip selection along the X or Y axis
 */
-void SelectionEditor::flipSelection(SelectionState& state, bool flipVertical)
+void SelectionEditor::flipSelection(bool flipVertical)
 {
     if (flipVertical)
     {
-        state.scaleY = -state.scaleY;
+        mState->scaleY = -mState->scaleY;
     }
     else
     {
-        state.scaleX = -state.scaleX;
+        mState->scaleX = -mState->scaleX;
     }
     // TODO (MrStevns): Why is this needed, The transform anchor shouldn't be any different?
     // setTransformAnchor(mOriginalRect.center());
-    calculateSelectionTransformation(state);
+    calculateSelectionTransformation();
     onEvent(SelectionEvent::CHANGED);
 }
 

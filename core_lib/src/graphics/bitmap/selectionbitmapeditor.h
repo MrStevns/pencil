@@ -20,6 +20,7 @@ public:
     void setTranslation(const QPointF& point);
     void setRotation(qreal rotationAngle);
     void setScale(qreal scaleX, qreal scaleY);
+    void setTransform(const QTransform& transform);
 
     void translate(const QPointF& point);
     void rotate(qreal rotationAngle, qreal lockedAngle);
@@ -33,15 +34,23 @@ public:
 
     QPolygonF mapFromLocalSpace(const QPolygonF& polygon) const;
 
+    void maintainAspectRatio(const bool state);
+    void lockMovementToAxis(const bool state);
+
     QRect mySelectionRect() const;
     qreal myRotation() const;
     qreal myScaleX() const;
     qreal myScaleY() const;
     QPointF myTranslation() const;
+    QTransform myTransform() const;
 
     void flipSelection(bool flipVertical);
 
     void setMoveMode(MoveMode mode);
+    MoveMode moveMode() const;
+    MoveMode resolveMoveModeForAnchorInRange(const QPointF& point, qreal selectionTolerance) const;
+
+    QPointF currentAnchorPoint() const;
     void setTransformAnchor(const QPointF& anchorPoint);
 
     QPointF alignedPositionToAxis(QPointF currentPoint) const;
@@ -54,15 +63,15 @@ public:
 
     SelectionBitmapState state() const;
 
-    // void setDragOrigin(const QPointF& point) { mDragOrigin = point.toPoint(); }
+    void setDragOrigin(const QPointF& point);
 
-    // void setSelectionRect(const QRectF& selectionRect) { mOriginalRect = selectionRect.toAlignedRect(); }
     QPointF getSelectionAnchorPoint() const;
 
     qreal angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const;
 
     // BitmapImage transformedEditor();
 
+    void resetTransformation();
     void resetSelectionProperties();
 
     void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
@@ -78,7 +87,6 @@ public:
     // void clearFloatingImage() { mFloatingImage = SelectionBitmapImage(); }
 
 private:
-    // SelectionBitmapState& mState;
     bool mCacheInvalidated = true;
     SelectionEditor commonEditor;
 

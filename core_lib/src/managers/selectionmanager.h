@@ -50,28 +50,22 @@ public:
     void translate(QPointF point);
     void rotate(qreal angle, qreal lockedAngle);
     void scale(qreal sX, qreal sY);
-    void maintainAspectRatio(bool state) { mAspectRatioFixed = state; }
+    void maintainAspectRatio(bool state);
 
     /** @brief Locks movement either horizontally or vertically depending on drag direction
      *  @param state */
-    void alignPositionToAxis(bool state) { mLockAxis = state; }
-    /** @brief Aligns the input position to the nearest axis.
-     *  Eg. draggin along the x axis, will keep the selection to that axis.
-     * @param currentPosition the position of the cursor
-     * @return A point that is either horizontally or vertically aligned with the current position.
-     */
-    QPointF alignPositionToAxis(QPointF currentPoint) const;
+    void lockMovementToAxis(bool state);
 
     void setMoveModeForAnchorInRange(const QPointF& point);
-    MoveMode getMoveMode() const { return mMoveMode; }
-    void setMoveMode(const MoveMode moveMode) { mMoveMode = moveMode; }
+
+    MoveMode getMoveMode() const;
+    void setMoveMode(const MoveMode moveMode);
 
     bool somethingSelected() const;
 
     void adjustSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement = 0);
 
-    QTransform selectionTransform() const { return mSelectionTransform; }
-    void setSelectionTransform(const QTransform& transform) { mSelectionTransform = transform; }
+    void setSelectionTransform(const QTransform& transform);
     void resetSelectionTransform();
 
     /** @brief SelectionManager::resetSelectionTransformProperties
@@ -87,18 +81,19 @@ public:
 
     qreal selectionTolerance() const;
 
-    QPointF currentTransformAnchor() const { return mAnchorPoint; }
+    QPointF currentTransformAnchor() const;
     QPointF getSelectionAnchorPoint() const;
 
     void setTransformAnchor(const QPointF& point);
 
-    MoveMode resolveMoveModeForPoint(const QPointF& point);
+    MoveMode resolveMoveModeForPoint(const QPointF& point) const;
 
     QRectF mySelectionRect() const;
     qreal myRotation() const;
     qreal myScaleX() const;
     qreal myScaleY() const;
     QPointF myTranslation() const;
+    QTransform selectionTransform() const;
 
     void setTranslation(const QPointF& translation);
     void setRotation(qreal rotation);
@@ -113,7 +108,17 @@ public:
 
     QPolygonF getSelectionPolygon() const;
 
-    // Vector selection
+    /// The point from where the dragging will be based of inside the selection area.
+    /// Not to be confused with the selection origin
+    void setDragOrigin(const QPointF& point);
+
+    /// This should be called to update the selection transform
+    void calculateSelectionTransformation();
+
+    // SelectionBitmapEditor bitmapEditor() { return bitmapSelection; }
+    // SelectionVectorEditor vectorEditor() { return vectorSelection; }
+
+    // Vector methods
     VectorSelection vectorSelection;
 
     void setCurves(const QList<int>& curves) { mClosestCurves = curves; }
@@ -122,18 +127,8 @@ public:
     void clearCurves() { mClosestCurves.clear(); }
     void clearVertices() { mClosestVertices.clear(); }
 
-    /// The point from where the dragging will be based of inside the selection area.
-    /// Not to be confused with the selection origin
-    void setDragOrigin(const QPointF point) { mDragOrigin = point; }
-
     const QList<int> closestCurves() const { return mClosestCurves; }
     const QList<VertexRef> closestVertices() const { return mClosestVertices; }
-
-    /// This should be called to update the selection transform
-    void calculateSelectionTransformation();
-
-    // SelectionBitmapEditor bitmapEditor() { return bitmapSelection; }
-    // SelectionVectorEditor vectorEditor() { return vectorSelection; }
 
 signals:
     void selectionChanged();
@@ -141,35 +136,16 @@ signals:
     void needDeleteSelection();
 
 private:
-    int constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const;
-
-    bool mAspectRatioFixed = false;
-    bool mLockAxis = false;
-    // QPolygonF mSelectionPolygon;
-    // QRectF mOriginalRect;
-
-    // qreal mScaleX;
-    // qreal mScaleY;
-    // QPointF mTranslation;
-    // qreal mRotatedAngle = 0.0;
-
     QList<int> mClosestCurves;
     QList<VertexRef> mClosestVertices;
 
-    QPointF mDragOrigin;
-
-    MoveMode mMoveMode = MoveMode::NONE;
-    QTransform mSelectionTransform;
-    const qreal mSelectionTolerance = 10.0;
-
-    QPointF mAnchorPoint;
-
-    SelectionBitmapEditor bitmapSelection;
-
-    Layer* mWorkingLayer = nullptr;
+    qreal mSelectionTolerance = 10.0;
 
     // TODO: implement
     // SelectionVectorEditor vectorSelection;
+    SelectionBitmapEditor bitmapSelection;
+
+    Layer* mWorkingLayer = nullptr;
 };
 
 #endif // SELECTIONMANAGER_H

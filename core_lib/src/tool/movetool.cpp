@@ -202,7 +202,7 @@ void MoveTool::transformSelection(const QPointF& pos, Qt::KeyboardModifiers keyM
         }
 
         selectMan->maintainAspectRatio(keyMod == Qt::ShiftModifier);
-        selectMan->alignPositionToAxis(keyMod == Qt::ShiftModifier);
+        selectMan->lockMovementToAxis(keyMod == Qt::ShiftModifier);
 
         qreal newAngle = 0;
         if (selectMan->getMoveMode() == MoveMode::ROTATION) {
