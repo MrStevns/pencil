@@ -83,6 +83,8 @@ public:
     void invalidate();
 
 private:
+    // When this value is valid, is means that all state should memory wise be intact
+    // for example when the Editor has been created with a valid BitmapImage ptr.
     bool mIsValid = false;
     bool mCacheInvalidated = true;
     SelectionEditor mCommonEditor;

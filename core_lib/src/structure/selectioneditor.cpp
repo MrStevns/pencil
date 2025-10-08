@@ -26,6 +26,10 @@ SelectionEditor::SelectionEditor()
 
 SelectionEditor::SelectionEditor(SelectionState* state) : mState(state)
 {
+    if (!state) {
+        invalidate(); return;
+    }
+
     // The Editor is valid when it has been created with a SelectionState and the ptr is valid
     mIsValid = true;
 }
