@@ -158,7 +158,7 @@ QPolygonF SelectionManager::getSelectionPolygon() const
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.state().selectionPolygon;
+        return bitmapSelection.mySelectionPolygon();
     default:
         return QPolygonF();
     }
@@ -418,7 +418,8 @@ void SelectionManager::setSelection(const QRectF& rect)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        bitmapSelection.setSelection(static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame())), rect.toRect());
+        bitmapSelection = SelectionBitmapEditor(static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame())));
+        bitmapSelection.setSelection(rect.toRect());
     default:
         break;
     }

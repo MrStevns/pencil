@@ -127,6 +127,11 @@ QPointF SelectionEditor::getSelectionAnchorPoint(const QPolygonF& selectionPolyg
     return anchorPoint;
 }
 
+bool SelectionEditor::isOutsideSelection(const QPointF &point, const QPolygonF& polygon) const
+{
+    return (!mapToSelection(polygon).containsPoint(point.toPoint(), Qt::WindingFill)) && getMoveMode() == MoveMode::NONE;
+}
+
 void SelectionEditor::adjustCurrentSelection(const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
 {
     switch (mMoveMode)

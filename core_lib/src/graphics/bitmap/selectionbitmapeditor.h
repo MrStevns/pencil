@@ -10,12 +10,13 @@ class BitmapImage;
 class SelectionBitmapEditor
 {
 public:
-    explicit SelectionBitmapEditor();
+    SelectionBitmapEditor();
+    SelectionBitmapEditor(BitmapImage* bitmapImage);
     // SelectionBitmapEditor(SelectionBitmapEditor& editor, BitmapImage* bitmapImage);
     ~SelectionBitmapEditor();
 
-    void setSelection(BitmapImage* image, const QRect& rect);
-    void setSelection(BitmapImage* image, const QPolygon& polygon);
+    void setSelection(const QRect& rect);
+    void setSelection(const QPolygon& polygon);
 
     void setTranslation(const QPointF& point);
     void setRotation(qreal rotationAngle);
@@ -38,6 +39,7 @@ public:
     void lockMovementToAxis(const bool state);
 
     QRect mySelectionRect() const;
+    QPolygon mySelectionPolygon() const;
     qreal myRotation() const;
     qreal myScaleX() const;
     qreal myScaleY() const;
@@ -61,8 +63,6 @@ public:
 
     void calculateSelectionTransformation();
 
-    SelectionBitmapState state() const;
-
     void setDragOrigin(const QPointF& point);
 
     QPointF getSelectionAnchorPoint() const;
@@ -76,26 +76,24 @@ public:
 
     void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
 
-    // const QRectF mySelectionRect() const { return mOriginalRect; }
-
     bool somethingSelected() const;
     bool isOutsideSelectionArea(const QPointF& point) const;
 
-    // void setFloatingEditor(BitmapEditor* bitmapEditor);
-    // SelectionBitmapImage floatingImage() const { return mFloatingImage; }
-    // void setFloatingImage(const QImage& floatingImage, const QRect& bounds);
-    // void clearFloatingImage() { mFloatingImage = SelectionBitmapImage(); }
+    bool isValid() { return mIsValid; }
+    void invalidate();
 
 private:
+    bool mIsValid = false;
     bool mCacheInvalidated = true;
-    SelectionEditor commonEditor;
+    SelectionEditor mCommonEditor;
 
     /// Creates a copy of the editor based on the selection that was set
     void createImageCache();
 
+    SelectionBitmapState* mState = nullptr;
     BitmapImage* mBitmapImage = nullptr;
 
-    std::unique_ptr<BitmapImage> mTransformCopyImage;
+    // std::unique_ptr<BitmapImage> mTransformCopyImage;
 };
 
 #endif // SELECTIONBITMAPEDITOR_H

@@ -71,6 +71,8 @@ public:
 
     void setDragOrigin(const QPointF& point) { mDragOrigin = point; }
 
+    bool isOutsideSelection(const QPointF& point, const QPolygonF& polygon) const;
+
     qreal myRotation() const { return mState->rotatedAngle; }
     qreal myScaleX() const { return mState->scaleX; }
     qreal myScaleY() const { return mState->scaleY; }
