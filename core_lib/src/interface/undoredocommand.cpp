@@ -142,12 +142,12 @@ TransformCommand::TransformCommand(const QRectF& undoSelectionRect,
     this->undoScaleY = undoScaleY;
 
     auto selectMan = editor->select();
-    // redoSelectionRect = selectMan->mySelectionRect();
-    // redoAnchor = selectMan->currentTransformAnchor();
-    // redoTranslation = selectMan->myTranslation();
-    // redoRotationAngle = selectMan->myRotation();
-    // redoScaleX = selectMan->myScaleX();
-    // redoScaleY = selectMan->myScaleY();
+    redoSelectionRect = selectMan->mySelectionRect();
+    redoAnchor = selectMan->currentTransformAnchor();
+    redoTranslation = selectMan->myTranslation();
+    redoRotationAngle = selectMan->myRotation();
+    redoScaleX = selectMan->myScaleX();
+    redoScaleY = selectMan->myScaleY();
 
     setText(description);
 }
@@ -186,11 +186,11 @@ void TransformCommand::apply(const QRectF& selectionRect,
                              const bool roundPixels)
 {
     auto selectMan = editor()->select();
-    // selectMan->setSelection(selectionRect, roundPixels);
-    // selectMan->setTransformAnchor(selectionAnchor);
-    // selectMan->setTranslation(translation);
-    // selectMan->setRotation(rotationAngle);
-    // selectMan->setScale(scaleX, scaleY);
+    selectMan->setSelection(selectionRect);
+    selectMan->setTransformAnchor(selectionAnchor);
+    selectMan->setTranslation(translation);
+    selectMan->setRotation(rotationAngle);
+    selectMan->setScale(scaleX, scaleY);
 
     selectMan->calculateSelectionTransformation();
 }
