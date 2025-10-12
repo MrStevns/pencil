@@ -57,6 +57,8 @@ public:
 
     QPointF alignedPositionToAxis(QPointF currentPoint) const;
 
+    void updateTransformedSelection();
+
     void commitChanges();
     void discardChanges();
     void deleteSelection();
@@ -81,10 +83,14 @@ public:
 
     bool isValid() { return mIsValid; }
     void invalidate();
+    void invalidateBitmapCache();
 
 private:
+    // QRect computeTransformedBounds(const QRect sourceBounds, const QTransform& transform);
+
     // When this value is valid, is means that all state should memory wise be intact
     // for example when the Editor has been created with a valid BitmapImage ptr.
+    bool mSmoothTransform = true;
     bool mIsValid = false;
     bool mCacheInvalidated = true;
     SelectionEditor mCommonEditor;

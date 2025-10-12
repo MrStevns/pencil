@@ -4,6 +4,7 @@
 #include <QPointF>
 #include <QTransform>
 #include <QPolygonF>
+#include <QImage>
 
 struct SelectionState {
     qreal scaleX = 1;
@@ -20,6 +21,9 @@ struct SelectionBitmapState {
     QRect originalRect;
 
     SelectionState commonState;
+
+    QImage transformedImage;
+    QRect transformedRect;
 };
 
 #endif // SELECTIONSTATE_H

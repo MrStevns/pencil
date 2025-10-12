@@ -29,6 +29,7 @@ GNU General Public License for more details.
 
 #include "onionskinpainteroptions.h"
 #include "onionskinsubpainter.h"
+#include "selectionbitmapeditor.h"
 
 
 class TiledBuffer;
@@ -89,7 +90,7 @@ private:
 
     void paintCurrentFrame(QPainter& painter, const QRect& blitRect, int startLayer, int endLayer);
 
-    void paintTransformedSelection(QPainter& painter, BitmapImage* bitmapImage, const QRect& selection) const;
+    void paintTransformedSelection(QPainter& painter, const SelectionBitmapState& selectionState) const;
 
     void paintBitmapOnionSkinFrame(QPainter& painter, const QRect& blitRect, Layer* layer, int nFrame, bool colorize);
     void paintVectorOnionSkinFrame(QPainter& painter, const QRect& blitRect, Layer* layer, int nFrame, bool colorize);

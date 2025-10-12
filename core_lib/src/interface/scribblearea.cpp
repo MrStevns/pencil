@@ -1361,7 +1361,7 @@ void ScribbleArea::applyTransformedSelection()
             handleDrawingOnEmptyFrame();
             BitmapImage* bitmapImage = currentBitmapImage(layer);
             if (bitmapImage == nullptr) { return; }
-            BitmapImage transformedImage = bitmapImage->transformed(selectMan->mySelectionRect().toRect(), selectMan->selectionTransform(), useAA);
+            BitmapImage transformedImage = BitmapImage(bitmapImage->selectionState().transformedRect.topLeft(), bitmapImage->selectionState().transformedImage);
 
 
             bitmapImage->clear(bitmapImage->mSelectionState.selectionPolygon);

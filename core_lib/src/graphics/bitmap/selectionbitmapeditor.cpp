@@ -31,11 +31,20 @@ SelectionBitmapEditor::~SelectionBitmapEditor()
 
 void SelectionBitmapEditor::invalidate()
 {
+    invalidateBitmapCache();
+    mBitmapImage->mSelectionState = SelectionBitmapState();
     mBitmapImage = nullptr;
     mState = nullptr;
     mCommonEditor.invalidate();
     mIsValid = false;
-    // mTransformCopyImage.reset();
+}
+
+void SelectionBitmapEditor::invalidateBitmapCache()
+{
+    if (mState->transformedImage.isNull()) { return; }
+
+    // delete mState->transformedImage;
+    // mState->transformedImage = nullptr;
     mCacheInvalidated = true;
 }
 
@@ -202,6 +211,7 @@ void SelectionBitmapEditor::calculateSelectionTransformation()
 {
     if (!mIsValid) { return; }
     mCommonEditor.calculateSelectionTransformation();
+    updateTransformedSelection();
 }
 
 qreal SelectionBitmapEditor::angleFromPoint(const QPointF &point, const QPointF &anchorPoint) const
@@ -237,9 +247,10 @@ void SelectionBitmapEditor::createImageCache()
         return;
     }
 
-    // if (mCacheInvalidated || !mTransformCopyImage || mTransformCopyImage.get()->bounds().size() != mState->originalRect.size()) {
-    //     mTransformCopyImage.reset(new BitmapImage(mBitmapImage->copy(mState->originalRect, mState->selectionPolygon)));
-    // }
+    if (mCacheInvalidated) {
+        invalidateBitmapCache();
+        updateTransformedSelection();
+    }
     mCacheInvalidated = false;
 }
 
@@ -369,4 +380,82 @@ void SelectionBitmapEditor::adjustCurrentSelection(const QPointF &currentPoint, 
     if (!mIsValid) { return; }
     auto selectionState = mBitmapImage->mSelectionState;
     mCommonEditor.adjustCurrentSelection(selectionState.selectionPolygon, currentPoint, offset, rotationOffset, rotationIncrement);
+    updateTransformedSelection();
+}
+
+// QRect SelectionBitmapEditor::computeTransformedBounds(const QRect sourceBounds, const QTransform& transform)
+// {
+
+//     QPolygon sourcePolygon = QPolygon(sourceBounds);
+//     QRectF boundingRect = transform.map(sourcePolygon).boundingRect();
+//     // The bounding box of a qpolygon is always 1 pixel larger
+//     // eg. 1x1 polygon becomes 2x2 boundingRect
+//     boundingRect = boundingRect.adjusted(0, 0,-1,-1);
+
+//     QRectF floatingRect = transform.map(QPolygonF(imagePolygon)).boundingRect();
+//     QRect alignedRect = QRect(
+//                             qFloor(boundingRect.x()),
+//                             qFloor(boundingRect.y()),
+//                             qCeil(boundingRect.width()),
+//                             qCeil(boundingRect.height());
+
+//     return
+// }
+
+void SelectionBitmapEditor::updateTransformedSelection()
+{
+    const QRect& imageBounds = mBitmapImage->bounds();
+    const QPolygon& imagePolygon = QPolygon(imageBounds);
+    QTransform transform = mState->commonState.selectionTransform;
+
+    QRectF boundingRect = transform.map(imagePolygon).boundingRect();
+    // // The bounding box of a qpolygon is always 1 pixel larger
+    // // eg. 1x1 polygon becomes 2x2 boundingRect
+    boundingRect = boundingRect.adjusted(0, 0,-1,-1);
+
+    QRect transformedImageBounds = QRect(
+                                       qFloor(boundingRect.x()),
+                                       qFloor(boundingRect.y()),
+                                       qCeil(boundingRect.width()),
+                                       qCeil(boundingRect.height())
+                                   );
+
+    QRectF bRectF = transform.map(QPolygonF(imagePolygon)).boundingRect();
+
+    QImage transformedImage = QImage(QSize(transformedImageBounds.width(), transformedImageBounds.height()), QImage::Format_ARGB32_Premultiplied);
+    transformedImage.fill(Qt::transparent);
+
+    QPainter imagePainter(&transformedImage);
+
+    QPointF preciseCenter = QPointF(bRectF.width() * 0.5, bRectF.height() * 0.5);
+
+    // Move origin to the center of the initial selection rect
+    QTransform centeredTransform;
+    centeredTransform.translate(preciseCenter.x(), preciseCenter.y());
+
+    // Apply the selection transform
+    centeredTransform *= transform;
+
+    // Translate Back to the oldCenter of the
+    centeredTransform.translate(-preciseCenter.x(), -preciseCenter.y());
+
+    if (mSmoothTransform) {
+        imagePainter.setRenderHint(QPainter::SmoothPixmapTransform);
+        imagePainter.setRenderHint(QPainter::Antialiasing);
+    }
+    imagePainter.setTransform(centeredTransform);
+
+    const QPointF& copiedImageCenter = QPointF(imageBounds.width() * 0.5, imageBounds.height() * 0.5);
+
+    QPointF pixelCorrectionOffset = bRectF.topLeft() - transformedImageBounds.topLeft();
+    QPointF centerInSourceCoords = centeredTransform.inverted().map(preciseCenter + pixelCorrectionOffset);
+
+    QPointF imageDrawPoint = centerInSourceCoords - copiedImageCenter;
+
+    imagePainter.drawImage(imageDrawPoint, *mBitmapImage->image());
+
+    imagePainter.end();
+
+    mState->transformedImage = transformedImage;
+    mState->transformedRect = transformedImageBounds;
 }

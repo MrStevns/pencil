@@ -169,7 +169,7 @@ MoveMode SelectionManager::resolveMoveModeForPoint(const QPointF& point) const
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.resolveMoveModeForAnchorInRange(point, mSelectionTolerance);
+        return bitmapSelection.resolveMoveModeForAnchorInRange(point, mSelectionTolerance * editor()->viewScaleInversed());
     default:
         return MoveMode::NONE;
     }

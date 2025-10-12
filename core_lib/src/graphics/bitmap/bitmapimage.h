@@ -175,6 +175,8 @@ public:
         return isSimilar;
     }
 
+    const SelectionBitmapState& selectionState() { return mSelectionState; }
+
     /// keeps the current selection state
     SelectionBitmapState mSelectionState;
 

@@ -313,6 +313,11 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
     currentBitmapPainter.drawImage(paintedImage->topLeft(), *paintedImage->image());
 
+    const SelectionBitmapState& state = paintedImage->selectionState();
+    // We do not wish to draw selection transformations on anything but the current layer
+    Q_ASSERT(!isDrawing || state.commonState.selectionTransform.isIdentity());
+    paintTransformedSelection(currentBitmapPainter, state);
+
     if (isCurrentLayer && isDrawing)
     {
         currentBitmapPainter.setCompositionMode(mOptions.cmBufferBlendMode);
@@ -320,12 +325,6 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
         for (const Tile* tile : tiles) {
             currentBitmapPainter.drawPixmap(tile->posF(), tile->pixmap());
         }
-    }
-
-    // We do not wish to draw selection transformations on anything but the current layer
-    Q_ASSERT(!isDrawing || mSelectionTransform.isIdentity());
-    if (isCurrentLayer && mRenderTransform && !isDrawing) {
-        paintTransformedSelection(currentBitmapPainter, paintedImage, mSelection);
     }
 
     painter.drawPixmap(mPointZero, mCurrentLayerPixmap);
@@ -370,37 +369,74 @@ void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blit
     painter.drawPixmap(mPointZero, mCurrentLayerPixmap);
 }
 
-void CanvasPainter::paintTransformedSelection(QPainter& painter, BitmapImage* bitmapImage, const QRect& selection) const
+void CanvasPainter::paintTransformedSelection(QPainter& painter, const SelectionBitmapState& selectionState) const
 {
-    // Make sure there is something selected
-    if (selection.width() == 0 && selection.height() == 0)
+    // // Make sure there is something selected
+    if (selectionState.originalRect.width() == 0 && selectionState.originalRect.height() == 0)
         return;
 
-    QPixmap transformedPixmap = QPixmap(mSelection.size());
-    transformedPixmap.fill(Qt::transparent);
-
-    QPainter imagePainter(&transformedPixmap);
-    imagePainter.translate(-selection.topLeft());
-    imagePainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
-    imagePainter.end();
+    const QPolygonF& selectionPolygon = selectionState.selectionPolygon;
+    const QTransform& selectionTransform = selectionState.commonState.selectionTransform;
 
     painter.save();
+        painter.setTransform(mViewTransform);
 
-    painter.setTransform(mViewTransform);
+        // Clear the painted area to make it look like the content has been erased
+        painter.save();
+            painter.setCompositionMode(QPainter::CompositionMode_Clear);
+            QPainterPath path;
+            path.addPolygon(selectionPolygon);
+            painter.fillPath(path, QColor(255,255,255,255));
+        painter.restore();
 
-    // Clear the painted area to make it look like the content has been erased
-    painter.save();
-    painter.setCompositionMode(QPainter::CompositionMode_Clear);
-    painter.fillRect(selection, QColor(255,255,255,255));
+        // Draw the selection image separately and on top
+        painter.save();
+
+            // Multiply the selection and view matrix to get proper rotation and scale values
+            // So we can clip the image properly.
+            painter.setTransform(selectionTransform*mViewTransform);
+            painter.setClipPath(path);
+            painter.setClipping(true);
+
+            // The tiled buffer should not be transformed based on the selection
+            painter.setTransform(mViewTransform);
+            painter.setCompositionMode(mOptions.cmBufferBlendMode);
+
+            const QImage& transformedImage = selectionState.transformedImage;
+            painter.drawImage(selectionState.transformedRect, transformedImage);
+
+            const auto tiles = mTiledBuffer->tiles();
+            for (const Tile* tile : tiles) {
+                painter.drawPixmap(tile->posF(), tile->pixmap());
+            }
+        painter.restore();
     painter.restore();
 
-    // Multiply the selection and view matrix to get proper rotation and scale values
-    // Now the image origin will be topleft
-    painter.setTransform(mSelectionTransform*mViewTransform);
+    // // QPixmap transformedPixmap = QPixmap(selectionState.originalRect.size());
+    // // transformedPixmap.fill(Qt::transparent);
 
-    // Draw the selection image separately and on top
-    painter.drawPixmap(selection, transformedPixmap);
-    painter.restore();
+    // QPainter imagePainter(&transformedPixmap);
+    // imagePainter.translate(-selectionState.originalRect.topLeft());
+    // imagePainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
+    // imagePainter.end();
+
+    // painter.save();
+
+    // painter.setTransform(mViewTransform);
+
+    // // Clear the painted area to make it look like the content has been erased
+    // painter.save();
+    // painter.setCompositionMode(QPainter::CompositionMode_Clear);
+    // painter.fillRect(selectionState.originalRect, QColor(255,255,255,255));
+    // painter.restore();
+
+    // // Multiply the selection and view matrix to get proper rotation and scale values
+    // // Now the image origin will be topleft
+    // painter.setTransform(selectionState.commonState.selectionTransform*mViewTransform);
+
+    // // Draw the selection image separately and on top
+    // painter.drawPixmap(selectionState.originalRect, transformedPixmap);
+    // painter.restore();
 }
 
 /** Paints layers within the specified range for the current frame.
