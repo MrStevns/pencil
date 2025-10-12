@@ -383,79 +383,73 @@ void SelectionBitmapEditor::adjustCurrentSelection(const QPointF &currentPoint, 
     updateTransformedSelection();
 }
 
-// QRect SelectionBitmapEditor::computeTransformedBounds(const QRect sourceBounds, const QTransform& transform)
-// {
+void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBounds,
+                                   const QTransform& transform,
+                                   QRect& outAlignedRect, QRectF& outPreciseRect) const
+{
+    QPolygon boundsPolygon(sourceBounds);
 
-//     QPolygon sourcePolygon = QPolygon(sourceBounds);
-//     QRectF boundingRect = transform.map(sourcePolygon).boundingRect();
-//     // The bounding box of a qpolygon is always 1 pixel larger
-//     // eg. 1x1 polygon becomes 2x2 boundingRect
-//     boundingRect = boundingRect.adjusted(0, 0,-1,-1);
+    QRectF boundingRect = transform.map(boundsPolygon).boundingRect();
+    boundingRect = boundingRect.adjusted(0, 0, -1, -1);
 
-//     QRectF floatingRect = transform.map(QPolygonF(imagePolygon)).boundingRect();
-//     QRect alignedRect = QRect(
-//                             qFloor(boundingRect.x()),
-//                             qFloor(boundingRect.y()),
-//                             qCeil(boundingRect.width()),
-//                             qCeil(boundingRect.height());
+    outPreciseRect = transform.map(QPolygonF(boundsPolygon)).boundingRect();
 
-//     return
-// }
+    outAlignedRect = QRect(
+        qFloor(boundingRect.x()),
+        qFloor(boundingRect.y()),
+        qCeil(boundingRect.width()),
+        qCeil(boundingRect.height())
+    );
+}
+
 
 void SelectionBitmapEditor::updateTransformedSelection()
 {
     const QRect& imageBounds = mBitmapImage->bounds();
-    const QPolygon& imagePolygon = QPolygon(imageBounds);
+
+    QRect transformedImageBounds;
+    QRectF bRectF;
     QTransform transform = mState->commonState.selectionTransform;
 
-    QRectF boundingRect = transform.map(imagePolygon).boundingRect();
-    // // The bounding box of a qpolygon is always 1 pixel larger
-    // // eg. 1x1 polygon becomes 2x2 boundingRect
-    boundingRect = boundingRect.adjusted(0, 0,-1,-1);
+    computeTransformedImageBounds(imageBounds, transform, transformedImageBounds, bRectF);
 
-    QRect transformedImageBounds = QRect(
-                                       qFloor(boundingRect.x()),
-                                       qFloor(boundingRect.y()),
-                                       qCeil(boundingRect.width()),
-                                       qCeil(boundingRect.height())
-                                   );
+    mState->transformedImage = transformedImage(*mBitmapImage->image(), transform, transformedImageBounds, bRectF, mSmoothTransform);
+    mState->transformedRect = transformedImageBounds;
+}
 
-    QRectF bRectF = transform.map(QPolygonF(imagePolygon)).boundingRect();
+QImage SelectionBitmapEditor::transformedImage(const QImage& src,
+                                               const QTransform& transform,
+                                               const QRect& alignedRect,
+                                               const QRectF& preciseRect,
+                                               bool smooth)
+{
+    QImage result(QSize(alignedRect.width(), alignedRect.height()),
+                  QImage::Format_ARGB32_Premultiplied);
+    result.fill(Qt::transparent);
 
-    QImage transformedImage = QImage(QSize(transformedImageBounds.width(), transformedImageBounds.height()), QImage::Format_ARGB32_Premultiplied);
-    transformedImage.fill(Qt::transparent);
+    QPainter painter(&result);
+    if (smooth) {
+        painter.setRenderHint(QPainter::SmoothPixmapTransform);
+        painter.setRenderHint(QPainter::Antialiasing);
+    }
 
-    QPainter imagePainter(&transformedImage);
+    QPointF preciseCenter(preciseRect.width() * 0.5, preciseRect.height() * 0.5);
 
-    QPointF preciseCenter = QPointF(bRectF.width() * 0.5, bRectF.height() * 0.5);
-
-    // Move origin to the center of the initial selection rect
     QTransform centeredTransform;
     centeredTransform.translate(preciseCenter.x(), preciseCenter.y());
-
-    // Apply the selection transform
     centeredTransform *= transform;
-
-    // Translate Back to the oldCenter of the
     centeredTransform.translate(-preciseCenter.x(), -preciseCenter.y());
 
-    if (mSmoothTransform) {
-        imagePainter.setRenderHint(QPainter::SmoothPixmapTransform);
-        imagePainter.setRenderHint(QPainter::Antialiasing);
-    }
-    imagePainter.setTransform(centeredTransform);
+    painter.setTransform(centeredTransform);
 
-    const QPointF& copiedImageCenter = QPointF(imageBounds.width() * 0.5, imageBounds.height() * 0.5);
+    // Calculates the sub pixel position offset in order to account for the image being integer based.
+    QPointF pixelCorrectionOffset = preciseRect.topLeft() - alignedRect.topLeft();
+    QPointF centerInSource = centeredTransform.inverted().map(preciseCenter + pixelCorrectionOffset);
+    QPointF copiedCenter(src.width() * 0.5, src.height() * 0.5);
+    QPointF drawPoint = centerInSource - copiedCenter;
 
-    QPointF pixelCorrectionOffset = bRectF.topLeft() - transformedImageBounds.topLeft();
-    QPointF centerInSourceCoords = centeredTransform.inverted().map(preciseCenter + pixelCorrectionOffset);
+    painter.drawImage(drawPoint, src);
+    painter.end();
 
-    QPointF imageDrawPoint = centerInSourceCoords - copiedImageCenter;
-
-    imagePainter.drawImage(imageDrawPoint, *mBitmapImage->image());
-
-    imagePainter.end();
-
-    mState->transformedImage = transformedImage;
-    mState->transformedRect = transformedImageBounds;
+    return result;
 }
