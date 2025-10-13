@@ -57,7 +57,7 @@ public:
 
     QPointF alignedPositionToAxis(QPointF currentPoint) const;
 
-    void updateTransformedSelection();
+    void updateTransformedSelectionState();
 
     void commitChanges();
     void discardChanges();
@@ -100,7 +100,7 @@ private:
                             const QTransform& transform,
                             const QRect& alignedRect,
                             const QRectF& preciseRect,
-                            bool smooth);
+                            bool smooth) const;
 
     // When this value is valid, is means that all state should memory wise be intact
     // for example when the Editor has been created with a valid BitmapImage ptr.
@@ -114,6 +114,8 @@ private:
 
     SelectionBitmapState* mState = nullptr;
     BitmapImage* mBitmapImage = nullptr;
+
+    QImage mSelectionImage;
 
     // std::unique_ptr<BitmapImage> mTransformCopyImage;
 };

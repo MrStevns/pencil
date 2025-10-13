@@ -43,8 +43,8 @@ void SelectionBitmapEditor::invalidateBitmapCache()
 {
     if (mState->transformedImage.isNull()) { return; }
 
-    // delete mState->transformedImage;
-    // mState->transformedImage = nullptr;
+    mState->transformedImage = QImage();
+    mSelectionImage = QImage();
     mCacheInvalidated = true;
 }
 
@@ -211,7 +211,7 @@ void SelectionBitmapEditor::calculateSelectionTransformation()
 {
     if (!mIsValid) { return; }
     mCommonEditor.calculateSelectionTransformation();
-    updateTransformedSelection();
+    updateTransformedSelectionState();
 }
 
 qreal SelectionBitmapEditor::angleFromPoint(const QPointF &point, const QPointF &anchorPoint) const
@@ -249,9 +249,11 @@ void SelectionBitmapEditor::createImageCache()
 
     if (mCacheInvalidated) {
         invalidateBitmapCache();
-        updateTransformedSelection();
     }
+    mSelectionImage = *mBitmapImage->copy(mState->originalRect, mState->selectionPolygon).image();
     mCacheInvalidated = false;
+
+    updateTransformedSelectionState();
 }
 
 void SelectionBitmapEditor::resetTransformation()
@@ -380,7 +382,7 @@ void SelectionBitmapEditor::adjustCurrentSelection(const QPointF &currentPoint, 
     if (!mIsValid) { return; }
     auto selectionState = mBitmapImage->mSelectionState;
     mCommonEditor.adjustCurrentSelection(selectionState.selectionPolygon, currentPoint, offset, rotationOffset, rotationIncrement);
-    updateTransformedSelection();
+    updateTransformedSelectionState();
 }
 
 void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBounds,
@@ -403,17 +405,17 @@ void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBou
 }
 
 
-void SelectionBitmapEditor::updateTransformedSelection()
+void SelectionBitmapEditor::updateTransformedSelectionState()
 {
-    const QRect& imageBounds = mBitmapImage->bounds();
+    const QRect& originalBounds = mState->originalRect;
 
     QRect transformedImageBounds;
     QRectF bRectF;
     QTransform transform = mState->commonState.selectionTransform;
 
-    computeTransformedImageBounds(imageBounds, transform, transformedImageBounds, bRectF);
+    computeTransformedImageBounds(originalBounds, transform, transformedImageBounds, bRectF);
 
-    mState->transformedImage = transformedImage(*mBitmapImage->image(), transform, transformedImageBounds, bRectF, mSmoothTransform);
+    mState->transformedImage = transformedImage(mSelectionImage, transform, transformedImageBounds, bRectF, mSmoothTransform);
     mState->transformedRect = transformedImageBounds;
 }
 
@@ -421,7 +423,7 @@ QImage SelectionBitmapEditor::transformedImage(const QImage& src,
                                                const QTransform& transform,
                                                const QRect& alignedRect,
                                                const QRectF& preciseRect,
-                                               bool smooth)
+                                               bool smooth) const
 {
     QImage result(QSize(alignedRect.width(), alignedRect.height()),
                   QImage::Format_ARGB32_Premultiplied);
