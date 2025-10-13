@@ -129,6 +129,14 @@ void SelectionBitmapEditor::setTransform(const QTransform& transform)
     mCommonEditor.setTransform(transform);
 }
 
+void SelectionBitmapEditor::setSmoothTransform(bool smooth)
+{
+    if (!mIsValid) { return; }
+    mSmoothTransform = smooth;
+
+    updateTransformedSelectionState();
+}
+
 MoveMode SelectionBitmapEditor::moveMode() const
 {
     if (!mIsValid) { return MoveMode::NONE; }

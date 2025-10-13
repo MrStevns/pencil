@@ -113,6 +113,8 @@ void MoveTool::pointerPressEvent(PointerEvent* event)
     Layer* currentLayer = currentPaintableLayer();
     if (currentLayer == nullptr) return;
 
+    mEditor->select()->setSmoothTransform(properties.useAA);
+
     if (mEditor->select()->somethingSelected())
     {
         beginInteraction(event->canvasPos(), event->modifiers(), currentLayer);
@@ -365,6 +367,15 @@ void MoveTool::setShowSelectionInfo(const bool b)
     QSettings settings(PENCIL2D, PENCIL2D);
     settings.setValue("ShowSelectionInfo", b);
 
+}
+
+void MoveTool::setAA(const int useAA)
+{
+    properties.useAA = useAA;
+
+    mEditor->select()->setSmoothTransform(useAA);
+    QSettings settings(PENCIL2D, PENCIL2D);
+    settings.setValue("moveAA", useAA);
 }
 
 Layer* MoveTool::currentPaintableLayer()

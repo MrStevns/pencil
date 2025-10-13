@@ -438,6 +438,19 @@ void SelectionManager::setTransformAnchor(const QPointF& point)
     }
 }
 
+void SelectionManager::setSmoothTransform(bool smoothTransform)
+{
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        bitmapSelection.setSmoothTransform(smoothTransform);
+    default:
+        break;
+    }
+
+    emit selectionChanged();
+}
+
 void SelectionManager::calculateSelectionTransformation()
 {
     switch (mWorkingLayer->type())

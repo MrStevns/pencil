@@ -47,6 +47,7 @@ public:
 
     void resetToDefault() override;
     void setShowSelectionInfo(const bool b) override;
+    void setAA(const int useAA) override;
 
 private:
     void applyTransformation();

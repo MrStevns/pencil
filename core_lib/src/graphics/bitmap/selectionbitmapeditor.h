@@ -71,8 +71,6 @@ public:
 
     qreal angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const;
 
-    // BitmapImage transformedEditor();
-
     void resetTransformation();
     void resetSelectionProperties();
 
@@ -80,6 +78,8 @@ public:
 
     bool somethingSelected() const;
     bool isOutsideSelectionArea(const QPointF& point) const;
+
+    void setSmoothTransform(bool smooth);
 
     bool isValid() { return mIsValid; }
     void invalidate();

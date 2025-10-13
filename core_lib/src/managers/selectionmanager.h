@@ -98,6 +98,7 @@ public:
     void setTranslation(const QPointF& translation);
     void setRotation(qreal rotation);
     void setScale(qreal scaleX, qreal scaleY);
+    void setSmoothTransform(bool smoothTransform);
 
     qreal angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const;
 
