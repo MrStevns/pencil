@@ -392,7 +392,6 @@ void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBou
     QPolygon boundsPolygon(sourceBounds);
 
     QRectF boundingRect = transform.map(boundsPolygon).boundingRect();
-    boundingRect = boundingRect.adjusted(0, 0, -1, -1);
 
     outPreciseRect = transform.map(QPolygonF(boundsPolygon)).boundingRect();
 
