@@ -331,7 +331,9 @@ void MoveTool::applyTransformation()
 
     // When the selection has been applied, a new rect is applied based on the bounding box.
     // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
-    selectMan->setSelection(selectMan->mapToSelection(QPolygonF(selectMan->mySelectionRect())).boundingRect());
+    if (selectMan->somethingSelected()) {
+        selectMan->setSelection(selectMan->mapToSelection(QPolygonF(selectMan->mySelectionRect())).boundingRect());
+    }
     mRotatedAngle = 0;
 }
 
