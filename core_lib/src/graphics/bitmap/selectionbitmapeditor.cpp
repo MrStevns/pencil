@@ -32,8 +32,10 @@ SelectionBitmapEditor::~SelectionBitmapEditor()
 void SelectionBitmapEditor::invalidate()
 {
     invalidateBitmapCache();
-    mBitmapImage->mSelectionState = SelectionBitmapState();
-    mBitmapImage = nullptr;
+    if (mBitmapImage) {
+        mBitmapImage->mSelectionState = SelectionBitmapState();
+        mBitmapImage = nullptr;
+    }
     mState = nullptr;
     mCommonEditor.invalidate();
     mIsValid = false;
@@ -274,10 +276,6 @@ void SelectionBitmapEditor::resetSelectionProperties()
 {
     if (!mIsValid) { return; }
 
-    if (mBitmapImage) {
-        mBitmapImage->mSelectionState = SelectionBitmapState();
-        mCommonEditor.invalidate();
-    }
     invalidate();
 }
 
