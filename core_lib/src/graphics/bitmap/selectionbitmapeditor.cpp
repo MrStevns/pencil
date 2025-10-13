@@ -41,7 +41,7 @@ void SelectionBitmapEditor::invalidate()
 
 void SelectionBitmapEditor::invalidateBitmapCache()
 {
-    if (mState->transformedImage.isNull()) { return; }
+    if (!mState || mState->transformedImage.isNull()) { return; }
 
     mState->transformedImage = QImage();
     mSelectionImage = QImage();
