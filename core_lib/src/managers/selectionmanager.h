@@ -62,6 +62,7 @@ public:
     void setMoveMode(const MoveMode moveMode);
 
     bool somethingSelected() const;
+    bool isSelectionValid() const;
 
     void adjustSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement = 0);
 

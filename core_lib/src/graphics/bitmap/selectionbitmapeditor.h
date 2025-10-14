@@ -77,6 +77,7 @@ public:
     void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
 
     bool somethingSelected() const;
+    bool isSelectionValid() const;
     bool isOutsideSelectionArea(const QPointF& point) const;
 
     void setSmoothTransform(bool smooth);

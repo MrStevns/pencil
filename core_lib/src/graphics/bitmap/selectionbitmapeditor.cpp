@@ -291,6 +291,13 @@ bool SelectionBitmapEditor::somethingSelected() const
     return mState->selectionPolygon.count() > 0;
 }
 
+bool SelectionBitmapEditor::isSelectionValid() const
+{
+    if (!mIsValid) { return false; }
+
+    return somethingSelected() && (mState->originalRect.width() >= 1 && mState->originalRect.height() >= 1);
+}
+
 void SelectionBitmapEditor::flipSelection(bool flipVertical)
 {
     if (!mIsValid) { return; }

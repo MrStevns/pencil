@@ -177,10 +177,7 @@ void SelectTool::pointerReleaseEvent(PointerEvent* event)
     if (currentLayer == nullptr) return;
     if (event->button() != Qt::LeftButton) return;
 
-    // if there's a small very small distance between current and last point
-    // discard the selection...
-    // TODO: improve by adding a timer to check if the user is deliberately selecting
-    if (QLineF(mAnchorOriginPoint, event->canvasPos()).length() < 5.0)
+    if (!mEditor->select()->isSelectionValid())
     {
         mEditor->deselectAll();
     }

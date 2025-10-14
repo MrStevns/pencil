@@ -218,6 +218,17 @@ bool SelectionManager::somethingSelected() const
     }
 }
 
+bool SelectionManager::isSelectionValid() const
+{
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.isSelectionValid();
+    default:
+        return false;
+    }
+}
+
 void SelectionManager::maintainAspectRatio(bool state)
 {
     switch (mWorkingLayer->type())
