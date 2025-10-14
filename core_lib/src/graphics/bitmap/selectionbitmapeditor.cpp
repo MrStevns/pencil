@@ -262,7 +262,7 @@ void SelectionBitmapEditor::createImageCache()
         return;
     }
 
-    if (mCacheInvalidated) {
+    if (!mCacheInvalidated) {
         invalidateBitmapCache();
     }
     mSelectionImage = *mBitmapImage->copy(mState->originalRect, mState->selectionPolygon).image();
