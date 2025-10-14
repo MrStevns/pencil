@@ -12,7 +12,6 @@ class SelectionBitmapEditor
 public:
     SelectionBitmapEditor();
     SelectionBitmapEditor(BitmapImage* bitmapImage);
-    // SelectionBitmapEditor(SelectionBitmapEditor& editor, BitmapImage* bitmapImage);
     ~SelectionBitmapEditor();
 
     void setSelection(const QRect& rect);

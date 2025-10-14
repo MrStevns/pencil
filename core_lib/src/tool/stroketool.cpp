@@ -178,10 +178,10 @@ void StrokeTool::endStroke()
 
     enableCoalescing();
 
-    mEditor->setModified(mEditor->currentLayerIndex(), mEditor->currentFrame());
     mScribbleArea->endStroke();
 
     mEditor->undoRedo()->record(mUndoSaveState, typeName());
+    mEditor->setModified(mEditor->currentLayerIndex(), mEditor->currentFrame());
 }
 
 void StrokeTool::drawStroke()

@@ -424,11 +424,16 @@ void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBou
 
 void SelectionBitmapEditor::updateTransformedSelectionState()
 {
+    if (!mIsValid) { return; }
     const QRect& originalBounds = mState->originalRect;
 
     QRect transformedImageBounds;
     QRectF bRectF;
     QTransform transform = mState->commonState.selectionTransform;
+
+    if (mCacheInvalidated) {
+        createImageCache();
+    }
 
     computeTransformedImageBounds(originalBounds, transform, transformedImageBounds, bRectF);
 
