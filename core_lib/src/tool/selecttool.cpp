@@ -117,7 +117,7 @@ void SelectTool::beginSelection(Layer* currentLayer, const QPointF& pos)
     }
     else
     {
-        selectMan->setSelection(QRectF(pos.x(), pos.y(), 1, 1));
+        selectMan->setSelection(QRectF(pos.x(), pos.y(), 0, 0));
         mAnchorOriginPoint = pos;
     }
 
