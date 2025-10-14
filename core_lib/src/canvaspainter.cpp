@@ -391,14 +391,6 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
 
         // Draw the selection image separately and on top
         painter.save();
-
-            // Multiply the selection and view matrix to get proper rotation and scale values
-            // So we can clip the image properly.
-            painter.setTransform(selectionTransform*mViewTransform);
-            painter.setClipPath(path);
-            painter.setClipping(true);
-
-            // The tiled buffer should not be transformed based on the selection
             painter.setTransform(mViewTransform);
 
             const QImage& transformedImage = selectionState.transformedImage;
