@@ -1347,8 +1347,6 @@ void ScribbleArea::applyTransformedSelection()
 
     Layer* layer = mEditor->layers()->currentLayer();
 
-    bool useAA = mEditor->tools()->currentTool()->properties.useAA;
-
     if (layer == nullptr) { return; }
 
     auto selectMan = mEditor->select();

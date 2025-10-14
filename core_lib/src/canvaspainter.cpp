@@ -404,39 +404,8 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
 
             const QImage& transformedImage = selectionState.transformedImage;
             painter.drawImage(selectionState.transformedRect, transformedImage);
-
-            const auto tiles = mTiledBuffer->tiles();
-            for (const Tile* tile : tiles) {
-                painter.drawPixmap(tile->posF(), tile->pixmap());
-            }
         painter.restore();
     painter.restore();
-
-    // // QPixmap transformedPixmap = QPixmap(selectionState.originalRect.size());
-    // // transformedPixmap.fill(Qt::transparent);
-
-    // QPainter imagePainter(&transformedPixmap);
-    // imagePainter.translate(-selectionState.originalRect.topLeft());
-    // imagePainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
-    // imagePainter.end();
-
-    // painter.save();
-
-    // painter.setTransform(mViewTransform);
-
-    // // Clear the painted area to make it look like the content has been erased
-    // painter.save();
-    // painter.setCompositionMode(QPainter::CompositionMode_Clear);
-    // painter.fillRect(selectionState.originalRect, QColor(255,255,255,255));
-    // painter.restore();
-
-    // // Multiply the selection and view matrix to get proper rotation and scale values
-    // // Now the image origin will be topleft
-    // painter.setTransform(selectionState.commonState.selectionTransform*mViewTransform);
-
-    // // Draw the selection image separately and on top
-    // painter.drawPixmap(selectionState.originalRect, transformedPixmap);
-    // painter.restore();
 }
 
 /** Paints layers within the specified range for the current frame.

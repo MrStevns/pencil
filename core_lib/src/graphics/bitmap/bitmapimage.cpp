@@ -905,24 +905,6 @@ void BitmapImage::clear(QRect rectangle)
     modification();
 }
 
-void BitmapImage::clear(const QPolygon& polygon)
-{
-    QRect boundingBox = polygon.boundingRect();
-    QRect clearRectangle = mBounds.intersected(boundingBox);
-    clearRectangle.moveTopLeft(clearRectangle.topLeft() - mBounds.topLeft());
-
-    setCompositionModeBounds(clearRectangle, true, QPainter::CompositionMode_Clear);
-
-    QPainter painter(image());
-    painter.translate(-mBounds.topLeft());
-    painter.setCompositionMode(QPainter::CompositionMode_Clear);
-    QPainterPath fillPath;
-    fillPath.addPolygon(polygon);
-    painter.setBrush(Qt::white);
-    painter.drawPath(fillPath);
-    painter.end();
-}
-
 bool BitmapImage::floodFill(BitmapImage** replaceImage,
                             const BitmapImage* targetImage,
                             const QRect& cameraRect,
