@@ -375,7 +375,7 @@ void SelectionBitmapEditor::deleteSelection()
     if (!mIsValid) { return; }
     if (somethingSelected())
     {
-        mBitmapImage->clear(mState->selectionPolygon);
+        mBitmapImage->clear(mState->originalRect);
     }
 }
 
