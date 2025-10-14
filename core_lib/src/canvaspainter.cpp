@@ -400,7 +400,6 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
 
             // The tiled buffer should not be transformed based on the selection
             painter.setTransform(mViewTransform);
-            painter.setCompositionMode(mOptions.cmBufferBlendMode);
 
             const QImage& transformedImage = selectionState.transformedImage;
             painter.drawImage(selectionState.transformedRect, transformedImage);
