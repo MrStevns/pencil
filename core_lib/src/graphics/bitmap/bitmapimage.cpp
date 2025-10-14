@@ -907,11 +907,11 @@ void BitmapImage::clear(QRect rectangle)
 
 void BitmapImage::clear(const QPolygon& polygon)
 {
-    // QRect boundingBox = polygon.boundingRect();
-    // QRect clearRectangle = mBounds.intersected(boundingBox);
-    // clearRectangle.moveTopLeft(clearRectangle.topLeft() - mBounds.topLeft());
+    QRect boundingBox = polygon.boundingRect();
+    QRect clearRectangle = mBounds.intersected(boundingBox);
+    clearRectangle.moveTopLeft(clearRectangle.topLeft() - mBounds.topLeft());
 
-    // setCompositionModeBounds(clearRectangle, true, QPainter::CompositionMode_Clear);
+    setCompositionModeBounds(clearRectangle, true, QPainter::CompositionMode_Clear);
 
     QPainter painter(image());
     painter.translate(-mBounds.topLeft());

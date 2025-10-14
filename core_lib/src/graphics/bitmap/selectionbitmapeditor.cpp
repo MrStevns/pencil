@@ -58,6 +58,11 @@ void SelectionBitmapEditor::setSelection(const QRect& rect)
 void SelectionBitmapEditor::setSelection(const QPolygon& polygon)
 {
     mState->selectionPolygon = polygon;
+
+    // QRect is peculiar for the right() and bottom() functions,
+    // because they always return left+width-1
+    // and top+height-1 for historical reasons.
+    // as such in order to get same bound, we need to subtract from the right and bottom
     mState->originalRect = polygon.boundingRect().adjusted(0, 0,-1,-1);
 
     createImageCache();
