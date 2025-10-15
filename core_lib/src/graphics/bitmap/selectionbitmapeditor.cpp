@@ -459,16 +459,11 @@ QImage SelectionBitmapEditor::transformedImage(const QImage& src,
 
     QPointF preciseCenter(preciseRect.width() * 0.5, preciseRect.height() * 0.5);
 
-    QTransform centeredTransform;
-    centeredTransform.translate(preciseCenter.x(), preciseCenter.y());
-    centeredTransform *= transform;
-    centeredTransform.translate(-preciseCenter.x(), -preciseCenter.y());
-
-    painter.setTransform(centeredTransform);
+    painter.setTransform(transform);
 
     // Calculates the sub pixel position offset in order to account for the image being integer based.
     QPointF pixelCorrectionOffset = preciseRect.topLeft() - alignedRect.topLeft();
-    QPointF centerInSource = centeredTransform.inverted().map(preciseCenter + pixelCorrectionOffset);
+    QPointF centerInSource = transform.inverted().map(preciseCenter + pixelCorrectionOffset);
     QPointF copiedCenter(src.width() * 0.5, src.height() * 0.5);
     QPointF drawPoint = centerInSource - copiedCenter;
 
