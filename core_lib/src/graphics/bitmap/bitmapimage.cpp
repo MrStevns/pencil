@@ -234,7 +234,12 @@ void BitmapImage::paste(BitmapImage* bitmapImage, QPainter::CompositionMode cm)
     modification();
 }
 
-void BitmapImage::paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMode cm)
+void BitmapImage::paste(const TiledBuffer *tiledBuffer, QPainter::CompositionMode cm)
+{
+    paste(tiledBuffer, QTransform(), cm);
+}
+
+void BitmapImage::paste(const TiledBuffer* tiledBuffer, const QTransform& transform, QPainter::CompositionMode cm)
 {
     if(tiledBuffer->bounds().width() <= 0 || tiledBuffer->bounds().height() <= 0)
     {
@@ -246,10 +251,12 @@ void BitmapImage::paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMod
 
     painter.setCompositionMode(cm);
     auto const tiles = tiledBuffer->tiles();
+    painter.translate(-mBounds.topLeft());
+    painter.setTransform(transform, true);
     for (const Tile* item : tiles) {
         const QPixmap& tilePixmap = item->pixmap();
         const QPoint& tilePos = item->pos();
-        painter.drawPixmap(tilePos-mBounds.topLeft(), tilePixmap);
+        painter.drawPixmap(tilePos, tilePixmap);
     }
     painter.end();
 

@@ -808,7 +808,12 @@ void ScribbleArea::paintBitmapBuffer()
         default: //nothing
             break;
         }
-        targetImage->paste(&mTiledBuffer, cm);
+
+        if (mEditor->select()->isSelectionValid()) {
+            targetImage->paste(&mTiledBuffer, mEditor->select()->selectionTransform().inverted(), cm);
+        } else {
+            targetImage->paste(&mTiledBuffer, cm);
+        }
     }
 
     QRect rect = mEditor->view()->mapCanvasToScreen(mTiledBuffer.bounds()).toRect();
@@ -1191,6 +1196,14 @@ void ScribbleArea::drawBrush(QPointF thePoint, qreal brushWidth, qreal mOffset, 
     {
         brush = QBrush(fillColor, Qt::SolidPattern);
     }
+
+    if (mEditor->select()->isSelectionValid()) {
+        mTiledBuffer.setClipPolygon(mEditor->select()->selectionTransform().map(mEditor->select()->getSelectionPolygon()).toPolygon());
+        mTiledBuffer.setClippingEnabled(true);
+    } else {
+        mTiledBuffer.setClippingEnabled(false);
+    }
+
     mTiledBuffer.drawBrush(thePoint, brushWidth, Qt::NoPen, brush, compMode, useAA);
 }
 

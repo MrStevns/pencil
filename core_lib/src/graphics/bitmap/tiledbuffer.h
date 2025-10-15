@@ -70,6 +70,9 @@ public:
 
     const QRect& bounds() const { return mTileBounds; }
 
+    void setClipPolygon(QPolygon polygon) { mClipPolygon = polygon; }
+    void setClippingEnabled(bool enabled) { mClippingEnabled = enabled; }
+
 signals:
     void tileUpdated(TiledBuffer* tiledBuffer, Tile* tile);
     void tileCreated(TiledBuffer* tiledBuffer, Tile* tile);
@@ -82,6 +85,8 @@ private:
 
     const int UNIFORM_TILE_SIZE = 64;
 
+    bool mClippingEnabled = false;
+    QPolygon mClipPolygon;
     BlitRect mTileBounds;
 
     QHash<TileIndex, Tile*> mTiles;

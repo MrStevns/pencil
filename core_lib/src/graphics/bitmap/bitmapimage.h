@@ -60,6 +60,7 @@ public:
     BitmapImage copy(QRect rectangle);
     BitmapImage copy(const QRect& rect, const QPolygon& clipToPolygon) const;
     void paste(BitmapImage*, QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver);
+    void paste(const TiledBuffer* tiledBuffer, const QTransform& transform, QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver);
     void paste(const TiledBuffer* tiledBuffer, QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver);
 
     void moveTopLeft(QPoint point);

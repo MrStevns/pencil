@@ -84,6 +84,12 @@ void TiledBuffer::drawBrush(QPointF point, qreal brushWidth, QPen pen, QBrush br
             painter.setPen(pen);
             painter.setBrush(brush);
             painter.setCompositionMode(cm);
+
+            if (mClippingEnabled) {
+                QPainterPath path;
+                path.addPolygon(mClipPolygon);
+                painter.setClipPath(path);
+            }
             if (drawPoint) {
                 painter.drawPoint(point);
             } else {
