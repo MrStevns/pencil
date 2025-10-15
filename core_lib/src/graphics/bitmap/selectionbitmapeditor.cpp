@@ -183,7 +183,7 @@ void SelectionBitmapEditor::setTransformAnchor(const QPointF& anchorPoint)
 void SelectionBitmapEditor::translate(const QPointF& point)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.translate(point);
+    mCommonEditor.translate(point.toPoint());
 }
 
 void SelectionBitmapEditor::rotate(qreal rotationAngle, qreal lockedAngle)
@@ -399,7 +399,7 @@ void SelectionBitmapEditor::adjustCurrentSelection(const QPointF &currentPoint, 
 {
     if (!mIsValid) { return; }
     auto selectionState = mBitmapImage->mSelectionState;
-    mCommonEditor.adjustCurrentSelection(selectionState.selectionPolygon, currentPoint, offset, rotationOffset, rotationIncrement);
+    mCommonEditor.adjustCurrentSelection(selectionState.selectionPolygon, currentPoint.toPoint(), offset.toPoint(), rotationOffset, rotationIncrement);
     updateTransformedSelectionState();
 }
 
