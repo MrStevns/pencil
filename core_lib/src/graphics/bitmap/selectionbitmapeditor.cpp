@@ -1,6 +1,7 @@
 #include "selectionbitmapeditor.h"
 
 #include "bitmapimage.h"
+#include "tile.h"
 
 #include <QRectF>
 #include <QDebug>
@@ -421,6 +422,26 @@ void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBou
     );
 }
 
+void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
+{
+    if (!mIsValid) { return; }
+
+    QPainter painter(&mState->transformedImage);
+    QTransform transform = mState->commonState.selectionTransform;
+    auto const tiles = tiledBuffer.tiles();
+    painter.translate(-transform.map(mState->selectionPolygon).boundingRect().topLeft());
+    for (const Tile* item : tiles) {
+        const QPixmap& tilePixmap = item->pixmap();
+        const QPoint& tilePos = item->pos();
+        painter.drawPixmap(tilePos, tilePixmap);
+    }
+    painter.end();
+
+    // mSelectionImage = mState->transformedImage;
+
+    // modification();
+}
+
 
 void SelectionBitmapEditor::updateTransformedSelectionState()
 {
@@ -438,6 +459,7 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
     computeTransformedImageBounds(originalBounds, transform, transformedImageBounds, bRectF);
 
     mState->transformedImage = transformedImage(mSelectionImage, transform, transformedImageBounds, bRectF, mSmoothTransform);
+
     mState->transformedRect = transformedImageBounds;
 }
 

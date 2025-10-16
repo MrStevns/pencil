@@ -810,7 +810,8 @@ void ScribbleArea::paintBitmapBuffer()
         }
 
         if (mEditor->select()->isSelectionValid()) {
-            targetImage->paste(&mTiledBuffer, mEditor->select()->selectionTransform().inverted(), cm);
+            // targetImage->paste(&mTiledBuffer, mEditor->select()->selectionTransform().inverted(), cm);
+            mEditor->select()->bitmapSelection.paste(mTiledBuffer);
         } else {
             targetImage->paste(&mTiledBuffer, cm);
         }
@@ -1197,14 +1198,15 @@ void ScribbleArea::drawBrush(QPointF thePoint, qreal brushWidth, qreal mOffset, 
         brush = QBrush(fillColor, Qt::SolidPattern);
     }
 
-    if (mEditor->select()->isSelectionValid()) {
-        mTiledBuffer.setClipPolygon(mEditor->select()->selectionTransform().map(mEditor->select()->getSelectionPolygon()).toPolygon());
-        mTiledBuffer.setClippingEnabled(true);
-    } else {
-        mTiledBuffer.setClippingEnabled(false);
-    }
-
-    mTiledBuffer.drawBrush(thePoint, brushWidth, Qt::NoPen, brush, compMode, useAA);
+    // if (mEditor->select()->isSelectionValid()) {
+    //     // mEditor->select()->bitmapSelection.paste(mTiledBuffer);
+    //     // mTiledBuffer.setClipPolygon(mEditor->select()->selectionTransform().map(mEditor->select()->getSelectionPolygon()).toPolygon());
+    //     // mTiledBuffer.setClippingEnabled(true);
+    //     update();
+    // } else {
+        mTiledBuffer.drawBrush(thePoint, brushWidth, Qt::NoPen, brush, compMode, useAA);
+        // mTiledBuffer.setClippingEnabled(false);
+    // }
 }
 
 void ScribbleArea::drawPolyline(QPainterPath path, QPen pen, bool useAA)

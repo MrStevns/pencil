@@ -2,6 +2,7 @@
 #define SELECTIONBITMAPEDITOR_H
 
 #include "selectioneditor.h"
+#include "tiledbuffer.h"
 
 #include <QImage>
 
@@ -84,6 +85,8 @@ public:
     bool isValid() { return mIsValid; }
     void invalidate();
     void invalidateBitmapCache();
+
+    void paste(TiledBuffer& tiledBuffer);
 
 private:
     /// Computes two rectangles, a rectangle for the aligned bounds of the image used to create the image

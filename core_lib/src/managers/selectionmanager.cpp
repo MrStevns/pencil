@@ -29,14 +29,14 @@ GNU General Public License for more details.
 SelectionManager::SelectionManager(Editor* editor) : BaseManager(editor, __FUNCTION__)
 {
     connect(editor, &Editor::frameModified, this, [=] {
-        switch (mWorkingLayer->type())
-        {
-        case Layer::BITMAP:
-            bitmapSelection.invalidateBitmapCache();
-            bitmapSelection.updateTransformedSelectionState();
-        default:
-            return;
-        }
+        // switch (mWorkingLayer->type())
+        // {
+        // case Layer::BITMAP:
+        //     bitmapSelection.invalidateBitmapCache();
+        //     bitmapSelection.updateTransformedSelectionState();
+        // default:
+        //     return;
+        // }
     });
 }
 

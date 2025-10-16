@@ -22,6 +22,8 @@ struct SelectionBitmapState {
 
     SelectionState commonState;
 
+    QImage uncomittedImage;
+
     QImage transformedImage;
     QRect transformedRect;
 };

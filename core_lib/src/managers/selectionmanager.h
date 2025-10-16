@@ -132,6 +132,7 @@ public:
     const QList<int> closestCurves() const { return mClosestCurves; }
     const QList<VertexRef> closestVertices() const { return mClosestVertices; }
 
+    SelectionBitmapEditor bitmapSelection;
 signals:
     void selectionChanged();
     void selectionReset();
@@ -145,7 +146,7 @@ private:
 
     // TODO: implement
     // SelectionVectorEditor vectorSelection;
-    SelectionBitmapEditor bitmapSelection;
+    // SelectionBitmapEditor bitmapSelection;
 
     Layer* mWorkingLayer = nullptr;
 };
