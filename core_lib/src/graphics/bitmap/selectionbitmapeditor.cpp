@@ -6,6 +6,7 @@
 #include <QRectF>
 #include <QDebug>
 #include <QImage>
+#include <QPainterPath>
 
 SelectionBitmapEditor::SelectionBitmapEditor()
 {
@@ -426,10 +427,26 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
 {
     if (!mIsValid) { return; }
 
-    QPainter painter(&mState->transformedImage);
+    if (mState->uncomittedImage.isNull() || mState->uncomittedImage.size() != mState->transformedRect.size()) {
+        mState->uncomittedImage = QImage(mState->transformedRect.size(), QImage::Format_ARGB32_Premultiplied);
+        mState->uncomittedImage.fill(Qt::transparent);
+    }
+
+    QRect alignedRect;
+    QRectF preciseRect;
+    computeTransformedImageBounds(mState->originalRect, mState->commonState.selectionTransform, alignedRect, preciseRect);
+    // QImage buffer = QImage()
+
+    QPainter painter(&mState->uncomittedImage);
     QTransform transform = mState->commonState.selectionTransform;
     auto const tiles = tiledBuffer.tiles();
-    painter.translate(-transform.map(mState->selectionPolygon).boundingRect().topLeft());
+    QPolygonF mappedPolygon = transform.map(mState->selectionPolygon);
+    painter.translate(-mappedPolygon.boundingRect().topLeft());
+
+    QPainterPath path;
+    path.addPolygon(mappedPolygon);
+    painter.setClipPath(path);
+    painter.setClipping(true);
     for (const Tile* item : tiles) {
         const QPixmap& tilePixmap = item->pixmap();
         const QPoint& tilePos = item->pos();
@@ -437,9 +454,7 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
     }
     painter.end();
 
-    // mSelectionImage = mState->transformedImage;
-
-    // modification();
+    updateTransformedSelectionState();
 }
 
 
@@ -459,8 +474,11 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
     computeTransformedImageBounds(originalBounds, transform, transformedImageBounds, bRectF);
 
     mState->transformedImage = transformedImage(mSelectionImage, transform, transformedImageBounds, bRectF, mSmoothTransform);
-
     mState->transformedRect = transformedImageBounds;
+
+    // QPainter painter(&mState->transformedImage);
+
+    // painter.drawImage(QPoint(), mState->uncomittedImage);
 }
 
 QImage SelectionBitmapEditor::transformedImage(const QImage& src,

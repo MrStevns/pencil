@@ -314,14 +314,23 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     currentBitmapPainter.drawImage(paintedImage->topLeft(), *paintedImage->image());
 
     const SelectionBitmapState& state = paintedImage->selectionState();
-    paintTransformedSelection(currentBitmapPainter, state);
 
-    if (isCurrentLayer && isDrawing)
-    {
-        currentBitmapPainter.setCompositionMode(mOptions.cmBufferBlendMode);
-        const auto tiles = mTiledBuffer->tiles();
-        for (const Tile* tile : tiles) {
-            currentBitmapPainter.drawPixmap(tile->posF(), tile->pixmap());
+    if (state.originalRect.isValid()) {
+        paintTransformedSelection(currentBitmapPainter, state);
+    } else {
+
+        if (isCurrentLayer && isDrawing)
+        {
+            // Multiply the selection and view matrix to get proper rotation and scale values
+            // So we can clip the image properly.
+            currentBitmapPainter.save();
+
+            currentBitmapPainter.setCompositionMode(mOptions.cmBufferBlendMode);
+            const auto tiles = mTiledBuffer->tiles();
+            for (const Tile* tile : tiles) {
+                currentBitmapPainter.drawPixmap(tile->posF(), tile->pixmap());
+            }
+            currentBitmapPainter.restore();
         }
     }
 
@@ -389,10 +398,28 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
 
         // Draw the selection image separately and on top
         painter.save();
+
             painter.setTransform(mViewTransform);
 
             const QImage& transformedImage = selectionState.transformedImage;
             painter.drawImage(selectionState.transformedRect, transformedImage);
+
+            // Multiply the selection and view matrix to get proper rotation and scale values
+            // So we can clip the image properly.
+            painter.save();
+
+            painter.setTransform(selectionTransform*mViewTransform);
+            painter.setClipPath(path);
+            painter.setClipping(true);
+
+            painter.setTransform(mViewTransform);
+            painter.setCompositionMode(mOptions.cmBufferBlendMode);
+            const auto tiles = mTiledBuffer->tiles();
+            for (const Tile* tile : tiles) {
+                painter.drawPixmap(tile->posF(), tile->pixmap());
+            }
+            painter.restore();
+
         painter.restore();
     painter.restore();
 }
