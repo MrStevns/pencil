@@ -46,14 +46,17 @@ ToolType MoveTool::type()
 
 void MoveTool::loadSettings()
 {
+    QSettings settings(PENCIL2D, PENCIL2D);
+
     properties.width = -1;
     properties.feather = -1;
     properties.useFeather = false;
     properties.stabilizerLevel = -1;
+    properties.useAA = settings.value("moveAA").toBool();
     mRotationIncrement = mEditor->preference()->getInt(SETTING::ROTATION_INCREMENT);
-    QSettings settings(PENCIL2D, PENCIL2D);
     properties.showSelectionInfo = settings.value("ShowSelectionInfo").toBool();
     mPropertyEnabled[SHOWSELECTIONINFO] = true;
+    mPropertyEnabled[ANTI_ALIASING] = true;
 
     connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &MoveTool::updateSettings);
 }
@@ -63,6 +66,7 @@ void MoveTool::saveSettings()
     QSettings settings(PENCIL2D, PENCIL2D);
 
     settings.setValue("ShowSelectionInfo", properties.showSelectionInfo);
+    settings.setValue("moveAA", properties.useAA);
 
     settings.sync();
 }
@@ -337,6 +341,9 @@ bool MoveTool::leavingThisTool()
     {
         applyTransformation();
     }
+
+    saveSettings();
+
     return true;
 }
 
@@ -348,6 +355,7 @@ bool MoveTool::isActive() const {
 void MoveTool::resetToDefault()
 {
     setShowSelectionInfo(false);
+    setAA(true);
 }
 
 void MoveTool::setShowSelectionInfo(const bool b)
@@ -357,6 +365,14 @@ void MoveTool::setShowSelectionInfo(const bool b)
     QSettings settings(PENCIL2D, PENCIL2D);
     settings.setValue("ShowSelectionInfo", b);
 
+}
+
+void MoveTool::setAA(const bool b)
+{
+    properties.useAA = b;
+
+    QSettings settings(PENCIL2D, PENCIL2D);
+    settings.setValue("moveAA", b);
 }
 
 Layer* MoveTool::currentPaintableLayer()

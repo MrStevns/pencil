@@ -1301,10 +1301,10 @@ void ScribbleArea::applyTransformedSelection()
     mCanvasPainter.ignoreTransformedSelection();
 
     Layer* layer = mEditor->layers()->currentLayer();
-    if (layer == nullptr)
-    {
-        return;
-    }
+
+    bool useAA = mEditor->tools()->currentTool()->properties.useAA;
+
+    if (layer == nullptr) { return; }
 
     auto selectMan = mEditor->select();
     if (selectMan->somethingSelected())
@@ -1316,9 +1316,11 @@ void ScribbleArea::applyTransformedSelection()
             handleDrawingOnEmptyFrame();
             BitmapImage* bitmapImage = currentBitmapImage(layer);
             if (bitmapImage == nullptr) { return; }
-            BitmapImage transformed = currentBitmapImage(layer)->transformed(selectMan->mySelectionRect().toRect(), selectMan->selectionTransform(), true);
+            BitmapImage transformedImage = bitmapImage->transformed(selectMan->mySelectionRect().toRect(), selectMan->selectionTransform(), useAA);
+
+
             bitmapImage->clear(selectMan->mySelectionRect());
-            bitmapImage->paste(&transformed, QPainter::CompositionMode_SourceOver);
+            bitmapImage->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
         }
         else if (layer->type() == Layer::VECTOR)
         {

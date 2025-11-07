@@ -83,6 +83,8 @@ PRECOMPILED_HEADER = src/app-pch.h
 HEADERS += \
     src/addtransparencytopaperdialog.h \
     src/app-pch.h \
+    src/appearance.h \
+    src/buttonappearancewatcher.h \
     src/brushsettingeditwidget.h \
     src/inlineslider.h \
     src/lineeditwidget.h \
@@ -112,7 +114,9 @@ HEADERS += \
     src/generalpage.h \
     src/shortcutspage.h \
     src/timelinepage.h \
+    src/toolboxwidget.h \
     src/toolspage.h \
+    src/titlebarwidget.h \
     src/basedockwidget.h \
     src/colorbox.h \
     src/colorinspector.h \
@@ -150,8 +154,7 @@ HEADERS += \
 
 SOURCES += \
     src/addtransparencytopaperdialog.cpp \
-    src/inlineslider.cpp \
-    src/lineeditwidget.cpp \
+    src/buttonappearancewatcher.cpp \
     src/layeropacitydialog.cpp \
     src/brushsettingeditwidget.cpp \
     src/brushsettingitem.cpp \
@@ -166,6 +169,8 @@ SOURCES += \
     src/mpbrushpresetswidget.cpp \
     src/mpbrushpreview.cpp \
     src/mpbrushselector.cpp \
+    src/inlineslider.cpp \
+    src/lineeditwidget.cpp \
     src/main.cpp \
     src/mainwindow2.cpp \
     src/onionskinwidget.cpp \
@@ -180,7 +185,9 @@ SOURCES += \
     src/generalpage.cpp \
     src/shortcutspage.cpp \
     src/timelinepage.cpp \
+    src/toolboxwidget.cpp \
     src/toolspage.cpp \
+    src/titlebarwidget.cpp \
     src/basedockwidget.cpp \
     src/colorbox.cpp \
     src/colorinspector.cpp \

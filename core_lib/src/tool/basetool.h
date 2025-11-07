@@ -49,6 +49,7 @@ public:
     bool  bezier_state = false;
     bool  closedPolylinePath = false;
     bool  useFeather = true;
+    int   useAA = 0;
     int   fillMode = 0;
     int   stabilizerLevel = 0;
     qreal tolerance = 0;
