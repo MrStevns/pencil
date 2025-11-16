@@ -117,10 +117,6 @@ private:
 
     SelectionBitmapState* mState = nullptr;
     BitmapImage* mBitmapImage = nullptr;
-
-    QImage mSelectionImage;
-
-    // std::unique_ptr<BitmapImage> mTransformCopyImage;
 };
 
 #endif // SELECTIONBITMAPEDITOR_H

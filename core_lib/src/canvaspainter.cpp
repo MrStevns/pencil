@@ -382,7 +382,7 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
     if (selectionState.originalRect.width() == 0 && selectionState.originalRect.height() == 0)
         return;
 
-    const QPolygonF& selectionPolygon = selectionState.selectionPolygon;
+    // const QPolygonF& selectionPolygon = selectionState.selectionRect;
     const QTransform& selectionTransform = selectionState.commonState.selectionTransform;
 
     painter.save();
@@ -392,7 +392,7 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
         painter.save();
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
             QPainterPath path;
-            path.addPolygon(selectionPolygon);
+            path.addRect(selectionState.originalRect);
             painter.fillPath(path, QColor(255,255,255,255));
         painter.restore();
 
@@ -401,7 +401,8 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
 
             painter.setTransform(mViewTransform);
 
-            const QImage& transformedImage = selectionState.transformedImage;
+            QImage transformedImage = selectionState.transformedImage;
+            // transformedImage.fill(Qt::blue);
             painter.drawImage(selectionState.transformedRect, transformedImage);
 
             // Multiply the selection and view matrix to get proper rotation and scale values
@@ -411,6 +412,15 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
             painter.setTransform(selectionTransform*mViewTransform);
             painter.setClipPath(path);
             painter.setClipping(true);
+
+            // painter.save();
+            // painter.setPen(Qt::green);
+            // painter.drawRect(selectionState.originalRect);
+            // painter.setPen(Qt::blue);
+            // painter.drawPolygon(selectionState.selectionPolygon);
+            // painter.setPen(Qt::red);
+            // painter.drawRect(selectionState.transformedRect);
+            // painter.restore();
 
             painter.setTransform(mViewTransform);
             painter.setCompositionMode(mOptions.cmBufferBlendMode);

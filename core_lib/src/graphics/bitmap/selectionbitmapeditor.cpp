@@ -48,7 +48,7 @@ void SelectionBitmapEditor::invalidateBitmapCache()
     if (!mState || mState->transformedImage.isNull()) { return; }
 
     mState->transformedImage = QImage();
-    mSelectionImage = QImage();
+    mState->selectionImage = QImage();
     mCacheInvalidated = true;
 }
 
@@ -143,7 +143,7 @@ void SelectionBitmapEditor::setSmoothTransform(bool smooth)
     if (!mIsValid) { return; }
     mSmoothTransform = smooth;
 
-    updateTransformedSelectionState();
+    // updateTransformedSelectionState();
 }
 
 MoveMode SelectionBitmapEditor::moveMode() const
@@ -267,7 +267,7 @@ void SelectionBitmapEditor::createImageCache()
     if (!mCacheInvalidated) {
         invalidateBitmapCache();
     }
-    mSelectionImage = *mBitmapImage->copy(mState->originalRect, mState->selectionPolygon).image();
+    mState->selectionImage = *mBitmapImage->copy(mState->originalRect, mState->selectionPolygon).image();
     mCacheInvalidated = false;
 
     updateTransformedSelectionState();
@@ -427,20 +427,14 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
 {
     if (!mIsValid) { return; }
 
-    if (mState->uncomittedImage.isNull() || mState->uncomittedImage.size() != mState->transformedRect.size()) {
-        mState->uncomittedImage = QImage(mState->transformedRect.size(), QImage::Format_ARGB32_Premultiplied);
-        mState->uncomittedImage.fill(Qt::transparent);
-    }
-
     QRect alignedRect;
     QRectF preciseRect;
     computeTransformedImageBounds(mState->originalRect, mState->commonState.selectionTransform, alignedRect, preciseRect);
-    // QImage buffer = QImage()
 
-    QPainter painter(&mState->uncomittedImage);
+    QPainter painter(&mState->transformedImage);
     QTransform transform = mState->commonState.selectionTransform;
     auto const tiles = tiledBuffer.tiles();
-    QPolygonF mappedPolygon = transform.map(mState->selectionPolygon);
+    QPolygonF mappedPolygon = transform.map(QRectF(mState->originalRect));
     painter.translate(-mappedPolygon.boundingRect().topLeft());
 
     QPainterPath path;
@@ -454,7 +448,11 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
     }
     painter.end();
 
-    updateTransformedSelectionState();
+    mState->selectionImage = mState->transformedImage;
+    mState->selectionPolygon = mappedPolygon.toPolygon();
+    mState->originalRect = preciseRect.toRect();
+    mCommonEditor.resetState();
+    mCacheInvalidated = false;
 }
 
 
@@ -467,13 +465,13 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
     QRectF bRectF;
     QTransform transform = mState->commonState.selectionTransform;
 
-    if (mCacheInvalidated) {
-        createImageCache();
-    }
+    // if (mCacheInvalidated) {
+    //     createImageCache();
+    // }
 
     computeTransformedImageBounds(originalBounds, transform, transformedImageBounds, bRectF);
 
-    mState->transformedImage = transformedImage(mSelectionImage, transform, transformedImageBounds, bRectF, mSmoothTransform);
+    mState->transformedImage = transformedImage(mState->selectionImage, transform, transformedImageBounds, bRectF, mSmoothTransform);
     mState->transformedRect = transformedImageBounds;
 
     // QPainter painter(&mState->transformedImage);

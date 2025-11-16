@@ -17,23 +17,21 @@ struct SelectionState {
 };
 
 struct SelectionBitmapState {
-    QPolygon selectionPolygon;
+    // The rect that belongs to the initial selection
     QRect originalRect;
+
+    /// the state before being transformed
+    // QRect selectionRect;
+    QImage selectionImage;
+    QPolygon selectionPolygon;
+    ///
 
     SelectionState commonState;
 
-    // The uncomitted image contains data which hasn't been committed anywhere.
-    // We use it to handle drawing on the floating selection.
-    QImage uncomittedImage;
-
-    // The transformed image contains the image data from the bitmap image,
-    // after it's been transformed
+    /// The state after being transformed
     QImage transformedImage;
     QRect transformedRect;
-
-    // The finished image, which contains both the transformed iamge and the uncomitted image.
-    QImage compositedImage;
-    QRect compositedRect;
+    ///
 };
 
 #endif // SELECTIONSTATE_H

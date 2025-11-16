@@ -1367,7 +1367,7 @@ void ScribbleArea::applyTransformedSelection()
     auto selectMan = mEditor->select();
     if (selectMan->somethingSelected())
     {
-        if (selectMan->mySelectionRect().isEmpty() || selectMan->selectionTransform().isIdentity()) { return; }
+        if (selectMan->mySelectionRect().isEmpty()) { return; }
 
         if (layer->type() == Layer::BITMAP)
         {
@@ -1377,6 +1377,8 @@ void ScribbleArea::applyTransformedSelection()
             BitmapImage transformedImage = BitmapImage(bitmapImage->selectionState().transformedRect.topLeft(), bitmapImage->selectionState().transformedImage);
 
 
+            qDebug() << "2 mstate is: " << &bitmapImage->selectionState();
+            bitmapImage->selectionState().transformedImage.save("/Users/CandyFace/Desktop/transformedImage2.png");
             bitmapImage->clear(bitmapImage->mSelectionState.originalRect);
             bitmapImage->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
         }
