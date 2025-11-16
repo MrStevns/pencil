@@ -61,11 +61,12 @@ void SelectionBitmapEditor::setSelection(const QPolygon& polygon)
 {
     mState->selectionPolygon = polygon;
 
-    // QRect is peculiar for the right() and bottom() functions,
+    // QRect's right() and bottom() are slightly different from QRectF,
     // because they always return left+width-1
     // and top+height-1 for historical reasons.
-    // as such in order to get same bound, we need to subtract from the right and bottom
-    mState->originalRect = polygon.boundingRect().adjusted(0, 0,-1,-1);
+    // as such in order to get the same bound, we need to subtract from the right and bottom
+    mState->selectionRect = polygon.boundingRect().adjusted(0, 0,-1,-1);
+    mState->originalRect = mState->selectionRect;
 
     createImageCache();
 }
@@ -73,7 +74,7 @@ void SelectionBitmapEditor::setSelection(const QPolygon& polygon)
 QRect SelectionBitmapEditor::mySelectionRect() const
 {
     if (!mIsValid) { return QRect(); }
-    return mState->originalRect;
+    return mState->selectionRect;
 }
 
 QPolygon SelectionBitmapEditor::mySelectionPolygon() const
@@ -260,14 +261,14 @@ void SelectionBitmapEditor::createImageCache()
     if (!mIsValid) { return; }
 
     // Make sure the selection is valid before creating a cache
-    if (!mState->originalRect.isValid()) {
+    if (!mState->selectionRect.isValid()) {
         return;
     }
 
     if (!mCacheInvalidated) {
         invalidateBitmapCache();
     }
-    mState->selectionImage = *mBitmapImage->copy(mState->originalRect, mState->selectionPolygon).image();
+    mState->selectionImage = *mBitmapImage->copy(mState->selectionRect, mState->selectionPolygon).image();
     mCacheInvalidated = false;
 
     updateTransformedSelectionState();
@@ -297,7 +298,7 @@ bool SelectionBitmapEditor::isSelectionValid() const
 {
     if (!mIsValid) { return false; }
 
-    return somethingSelected() && (mState->originalRect.width() >= 1 && mState->originalRect.height() >= 1);
+    return somethingSelected() && (mState->selectionRect.width() >= 1 && mState->selectionRect.height() >= 1);
 }
 
 void SelectionBitmapEditor::flipSelection(bool flipVertical)
@@ -377,7 +378,7 @@ void SelectionBitmapEditor::deleteSelection()
     if (!mIsValid) { return; }
     if (somethingSelected())
     {
-        mBitmapImage->clear(mState->originalRect);
+        mBitmapImage->clear(mState->selectionRect);
     }
 }
 
@@ -429,16 +430,17 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
 
     QRect alignedRect;
     QRectF preciseRect;
-    computeTransformedImageBounds(mState->originalRect, mState->commonState.selectionTransform, alignedRect, preciseRect);
+    computeTransformedImageBounds(mState->selectionRect, mState->commonState.selectionTransform, alignedRect, preciseRect);
 
     QPainter painter(&mState->transformedImage);
     QTransform transform = mState->commonState.selectionTransform;
     auto const tiles = tiledBuffer.tiles();
-    QPolygonF mappedPolygon = transform.map(QRectF(mState->originalRect));
-    painter.translate(-mappedPolygon.boundingRect().topLeft());
+    QRectF transformedSelectionRect = transform.mapRect(QRectF(mState->selectionRect));
+    painter.translate(-transformedSelectionRect.topLeft());
 
     QPainterPath path;
-    path.addPolygon(mappedPolygon);
+    QPolygonF transformedPolygon = transform.map(mState->selectionPolygon);
+    path.addPolygon(transformedPolygon);
     painter.setClipPath(path);
     painter.setClipping(true);
     for (const Tile* item : tiles) {
@@ -448,9 +450,9 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
     }
     painter.end();
 
-    mState->selectionImage = mState->transformedImage;
-    mState->selectionPolygon = mappedPolygon.toPolygon();
-    mState->originalRect = preciseRect.toRect();
+    mState->selectionImage = mState->transformedImage;;
+    mState->selectionPolygon = transformedPolygon.toPolygon();
+    mState->selectionRect = preciseRect.toRect();
     mCommonEditor.resetState();
     mCacheInvalidated = false;
 }
@@ -459,7 +461,7 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
 void SelectionBitmapEditor::updateTransformedSelectionState()
 {
     if (!mIsValid) { return; }
-    const QRect& originalBounds = mState->originalRect;
+    const QRect& originalBounds = mState->selectionRect;
 
     QRect transformedImageBounds;
     QRectF bRectF;
@@ -473,10 +475,6 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
 
     mState->transformedImage = transformedImage(mState->selectionImage, transform, transformedImageBounds, bRectF, mSmoothTransform);
     mState->transformedRect = transformedImageBounds;
-
-    // QPainter painter(&mState->transformedImage);
-
-    // painter.drawImage(QPoint(), mState->uncomittedImage);
 }
 
 QImage SelectionBitmapEditor::transformedImage(const QImage& src,

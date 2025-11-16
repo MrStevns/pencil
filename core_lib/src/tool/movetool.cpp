@@ -343,7 +343,7 @@ bool MoveTool::leavingThisTool()
 
     if (currentPaintableLayer())
     {
-        applyTransformation();
+        // applyTransformation();
     }
 
     saveSettings();

@@ -315,7 +315,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
     const SelectionBitmapState& state = paintedImage->selectionState();
 
-    if (state.originalRect.isValid()) {
+    if (state.selectionRect.isValid()) {
         paintTransformedSelection(currentBitmapPainter, state);
     } else {
 
@@ -379,10 +379,9 @@ void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blit
 void CanvasPainter::paintTransformedSelection(QPainter& painter, const SelectionBitmapState& selectionState) const
 {
     // // Make sure there is something selected
-    if (selectionState.originalRect.width() == 0 && selectionState.originalRect.height() == 0)
+    if (selectionState.selectionRect.width() == 0 && selectionState.selectionRect.height() == 0)
         return;
 
-    // const QPolygonF& selectionPolygon = selectionState.selectionRect;
     const QTransform& selectionTransform = selectionState.commonState.selectionTransform;
 
     painter.save();
@@ -391,9 +390,9 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
         // Clear the painted area to make it look like the content has been erased
         painter.save();
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
-            QPainterPath path;
-            path.addRect(selectionState.originalRect);
-            painter.fillPath(path, QColor(255,255,255,255));
+            QPainterPath erasePath;
+            erasePath.addRect(selectionState.originalRect);
+            painter.fillPath(erasePath, QColor(255,255,255,255));
         painter.restore();
 
         // Draw the selection image separately and on top
@@ -409,8 +408,11 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
             // So we can clip the image properly.
             painter.save();
 
+            QPainterPath clipPath;
+            clipPath.addPolygon(selectionState.selectionPolygon);
+
             painter.setTransform(selectionTransform*mViewTransform);
-            painter.setClipPath(path);
+            painter.setClipPath(clipPath);
             painter.setClipping(true);
 
             // painter.save();
