@@ -35,9 +35,9 @@ BucketOptionsWidget::BucketOptionsWidget(Editor* editor, QWidget* parent) :
 {
     ui->setupUi(this);
 
-    ui->colorToleranceSlider->init(tr("Color tolerance"), SpinSlider::GROWTH_TYPE::LINEAR, SpinSlider::VALUE_TYPE::INTEGER, 0, MAX_COLOR_TOLERANCE);
-    ui->expandSlider->init(tr("Expand fill"), SpinSlider::GROWTH_TYPE::LINEAR, SpinSlider::VALUE_TYPE::INTEGER, 0, MAX_EXPAND);
-    ui->strokeThicknessSlider->init(tr("Stroke thickness"), SpinSlider::GROWTH_TYPE::LOG, SpinSlider::VALUE_TYPE::FLOAT, 1, MAX_STROKE_THICKNESS);
+    ui->colorToleranceSlider->init(tr("Color tolerance"), SpinSlider::GROWTH_TYPE::LINEAR, 0, MAX_COLOR_TOLERANCE);
+    ui->expandSlider->init(tr("Expand fill"), SpinSlider::GROWTH_TYPE::LINEAR, 0, MAX_EXPAND);
+    ui->strokeThicknessSlider->init(tr("Stroke thickness"), SpinSlider::GROWTH_TYPE::LOG, 1, MAX_STROKE_THICKNESS);
 
     QSettings settings(PENCIL2D, PENCIL2D);
 

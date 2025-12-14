@@ -57,11 +57,11 @@ void ToolOptionWidget::initUI()
 
     QSettings settings(PENCIL2D, PENCIL2D);
 
-    ui->sizeSlider->init(tr("Width"), SpinSlider::EXPONENT, SpinSlider::INTEGER, StrokeTool::WIDTH_MIN, StrokeTool::WIDTH_MAX);
+    ui->sizeSlider->init(tr("Width"), SpinSlider::EXPONENT, StrokeTool::WIDTH_MIN, StrokeTool::WIDTH_MAX);
     ui->sizeSlider->setValue(settings.value("brushWidth", "3").toDouble());
     ui->brushSpinBox->setValue(settings.value("brushWidth", "3").toDouble());
 
-    ui->featherSlider->init(tr("Feather"), SpinSlider::LOG, SpinSlider::INTEGER, StrokeTool::FEATHER_MIN, StrokeTool::FEATHER_MAX);
+    ui->featherSlider->init(tr("Feather"), SpinSlider::LOG, StrokeTool::FEATHER_MIN, StrokeTool::FEATHER_MAX);
     ui->featherSlider->setValue(settings.value("brushFeather", "5").toDouble());
     ui->featherSpinBox->setValue(settings.value("brushFeather", "5").toDouble());
 }
