@@ -288,7 +288,7 @@ QList<QPointF> StrokeInterpolator::catmulInpolOp(const QList<QPointF>& points)
         const int subdivisions = 8;
         for (int j = 0; j <= subdivisions; ++j)
         {
-            float t = float(j) / subdivisions;
+            float t = float(j) / float(subdivisions);
             QPointF pt = catmullRomInterpolate(p0, p1, p2, p3, t);
             result.append(pt);
         }

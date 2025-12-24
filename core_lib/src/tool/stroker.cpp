@@ -40,6 +40,7 @@ const QList<QPointF> Stroker::segment(const StrokeDynamics& dynamics)
     int segmentSize = mStrokeSegment.size();
 
     QLineF line;
+    QList<QPointF> interpolatedSegment;
     for (int i = 1; i < segmentSize; i += 1) {
         const QPointF& lastPoint = mStrokeSegment[i-1];
         const QPointF& currentPoint = mStrokeSegment[i];
@@ -74,7 +75,7 @@ const QList<QPointF> Stroker::segment(const StrokeDynamics& dynamics)
             offsetX += dirX * dabDelta;
             offsetY += dirY * dabDelta;
 
-            mStrokeSegment << QPointF(lastPoint.x()+offsetX, lastPoint.y()+offsetY);
+            interpolatedSegment << QPointF(lastPoint.x()+offsetX, lastPoint.y()+offsetY);
 
             // remove the distance we've covered already
             totalDistance -= dynamics.dabSpacing;
@@ -85,7 +86,7 @@ const QList<QPointF> Stroker::segment(const StrokeDynamics& dynamics)
 
     // set the remaining dabs for next stroke
     mLeftOverDabDistance = totalDistance;
-    return mStrokeSegment;
+    return interpolatedSegment;
 
 }
 
