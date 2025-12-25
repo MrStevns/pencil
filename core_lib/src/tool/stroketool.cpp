@@ -197,7 +197,7 @@ void StrokeTool::startStroke(PointerEvent::InputType inputType)
     startStroke = mEditor->view()->mapScreenToCanvas(startStroke);
     mStrokePoints << startStroke;
 
-    mStroker.begin(startStroke);
+    // mStroker.begin(startStroke);
 
     mStrokePressures.clear();
     mStrokePressures << mInterpolator.getPressure();
@@ -242,8 +242,6 @@ void StrokeTool::endStroke()
     mStrokePressures.clear();
     mStrokeSegment.clear();
 
-    mStroker.end();
-
     enableCoalescing();
 
     mEditor->setModified(mEditor->currentLayerIndex(), mEditor->currentFrame());
@@ -282,7 +280,6 @@ void StrokeTool::drawStroke()
             point = mEditor->view()->mapScreenToCanvas(point);
         }
 
-        mStroker.append(mStrokeSegment);
         mStrokePressures << mInterpolator.getPressure();
     }
     else
@@ -294,8 +291,11 @@ void StrokeTool::drawStroke()
 void StrokeTool::doStroke()
 {
     const StrokeDynamics& dynamics = mStrokeDynamics;
-    for (const QPointF& point : mStroker.segment(dynamics)) {
-        drawDab(point, dynamics);
+    QPointF dabPoint;
+
+    mStroker.begin(mStrokeSegment);
+    while (mStroker.next(dynamics, dabPoint)) {
+        drawDab(dabPoint, dynamics);
     }
 }
 

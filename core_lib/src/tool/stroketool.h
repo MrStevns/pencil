@@ -92,7 +92,7 @@ signals:
     void fillContourEnabledChanged(bool enabled);
     void InvisibleStrokeEnabledChanged(bool enabled);
     void stabilizationLevelChanged(int level);
-    
+
 public slots:
     void onPreferenceChanged(SETTING setting) override;
     void onViewUpdated();

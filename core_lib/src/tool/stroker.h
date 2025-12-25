@@ -21,7 +21,7 @@ GNU General Public License for more details.
 
 #include "strokedynamics.h"
 
-#include <QList>
+#include <QVector>
 #include <QPointF>
 
 class Stroker
@@ -29,21 +29,18 @@ class Stroker
 public:
     Stroker();
 
-    /// Begin a stroke at the given point and with the specified stroke dynamics
-    void begin(const QPointF& start);
+    void begin(QVector<QPointF> strokePoints);
 
-    /// Append a list of points to be used to create the stroked segment
-    void append(const QList<QPointF>& next);
-    const QList<QPointF> segment(const StrokeDynamics& dynamics);
+    bool next(const StrokeDynamics& dynamics, QPointF& outPoint);
 
-    /// Cleanup the stroke
-    void end();
 private:
 
     // The segment we need to draw the current stroke
-    QList<QPointF> mStrokeSegment;
+    QVector<QPointF> mStrokeSegment;
 
     qreal mLeftOverDabDistance = 0.0;
+    qreal mSegmentOffset = 0.0;
+    int mIndex = 0;
 };
 
 #endif // STROKER_H

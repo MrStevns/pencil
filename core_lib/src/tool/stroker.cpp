@@ -23,74 +23,47 @@ Stroker::Stroker()
 {
 }
 
-void Stroker::begin(const QPointF& start)
+void Stroker::begin(QVector<QPointF> strokePoints)
 {
-    mStrokeSegment << start;
+    this->mStrokeSegment = strokePoints;
+    this->mIndex = 0;
 }
 
-void Stroker::append(const QList<QPointF>& points)
+bool Stroker::next(const StrokeDynamics& dynamics, QPointF& outPoint)
 {
-    mStrokeSegment = points;
-}
+    if (mStrokeSegment.size() <= 0) { return false; }
 
-const QList<QPointF> Stroker::segment(const StrokeDynamics& dynamics)
-{
-    qreal leftOverDistance = mLeftOverDabDistance;
-    qreal totalDistance = 0.f;
-    int segmentSize = mStrokeSegment.size();
+    for (; mIndex < mStrokeSegment.size() - 1; mIndex += 1) {
 
-    QLineF line;
-    QList<QPointF> interpolatedSegment;
-    for (int i = 1; i < segmentSize; i += 1) {
-        const QPointF& lastPoint = mStrokeSegment[i-1];
-        const QPointF& currentPoint = mStrokeSegment[i];
+        const QPointF& a = mStrokeSegment[mIndex];
+        const QPointF& b = mStrokeSegment[mIndex + 1];
 
-        // calculate the euclidean distance
-        // to find the distance that we need to cover with dabs
-        line.setP1(lastPoint);
-        line.setP2(currentPoint);
-        qreal distance = line.length();
+        const qreal segmentLength = QLineF(a,b).length();
 
-        // Calculate the unit direction vector
-        qreal dirX = (currentPoint.x() - lastPoint.x()) / distance;
-        qreal dirY = (currentPoint.y() - lastPoint.y()) / distance;
-
-        qreal offsetX = 0.0f;
-        qreal offsetY = 0.0f;
-
-        // since we want to dab at a specific interval,
-        // add the potentially missing leftover distance to the current distance
-        totalDistance = leftOverDistance + distance;
-
-        // Draw dabs until totalDistance is less than dabSpacing
-        while (totalDistance >= dynamics.dabSpacing)
-        {
-            // make sure to add potentially missed distance
-            // to our offset
-            qreal dabDelta = dynamics.dabSpacing;
-            if (leftOverDistance > 0) {
-                dabDelta -= leftOverDistance;
-                leftOverDistance -= dynamics.dabSpacing;
-            }
-            offsetX += dirX * dabDelta;
-            offsetY += dirY * dabDelta;
-
-            interpolatedSegment << QPointF(lastPoint.x()+offsetX, lastPoint.y()+offsetY);
-
-            // remove the distance we've covered already
-            totalDistance -= dynamics.dabSpacing;
+        if (segmentLength <= 0.0) {
+            mSegmentOffset = 0.0;
+            continue;
         }
 
-        leftOverDistance = totalDistance;
+        const QPointF dir = (b - a) / segmentLength;
+        const qreal remaining = segmentLength - mSegmentOffset;
+        qreal totalDistance = mLeftOverDabDistance + remaining;
+
+        if (totalDistance >= dynamics.dabSpacing) {
+            const qreal dabDelta = dynamics.dabSpacing - mLeftOverDabDistance;
+
+            mSegmentOffset += dabDelta;
+            outPoint = a + dir * mSegmentOffset;
+
+            mLeftOverDabDistance = 0.0;
+            return true;
+        }
+
+        // no dab yet, accumulate and move on
+        mLeftOverDabDistance = totalDistance;
+        mSegmentOffset = 0.0;
     }
 
-    // set the remaining dabs for next stroke
-    mLeftOverDabDistance = totalDistance;
-    return interpolatedSegment;
+    return false;
 
-}
-
-void Stroker::end()
-{
-    mStrokeSegment.clear();
 }
