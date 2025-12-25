@@ -135,7 +135,6 @@ protected:
     virtual bool emptyFrameActionEnabled();
 
     bool mCanvasCursorEnabled = false;
-    bool mCanSingleDab = false;
 
     StrokeInterpolator mInterpolator;
     Stroker mStroker;
