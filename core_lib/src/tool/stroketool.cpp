@@ -294,7 +294,7 @@ void StrokeTool::doStroke()
     QPointF dabPoint;
 
     mStroker.begin(mStrokeSegment);
-    while (mStroker.next(dynamics, dabPoint)) {
+    while (mStroker.nextDab(dynamics, dabPoint)) {
         drawDab(dabPoint, dynamics);
     }
 }

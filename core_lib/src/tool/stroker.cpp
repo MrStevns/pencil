@@ -17,8 +17,6 @@ GNU General Public License for more details.
 */
 #include "stroker.h"
 
-#include <QDebug>
-
 Stroker::Stroker()
 {
 }
@@ -29,7 +27,7 @@ void Stroker::begin(QVector<QPointF> strokePoints)
     this->mIndex = 0;
 }
 
-bool Stroker::next(const StrokeDynamics& dynamics, QPointF& outPoint)
+bool Stroker::nextDab(const StrokeDynamics& dynamics, QPointF& outPoint)
 {
     if (mStrokeSegment.size() <= 0) { return false; }
 
@@ -41,27 +39,22 @@ bool Stroker::next(const StrokeDynamics& dynamics, QPointF& outPoint)
         const qreal segmentLength = QLineF(a,b).length();
 
         if (segmentLength <= 0.0) {
-            mSegmentOffset = 0.0;
             continue;
         }
 
         const QPointF dir = (b - a) / segmentLength;
-        const qreal remaining = segmentLength - mSegmentOffset;
-        qreal totalDistance = mLeftOverDabDistance + remaining;
+        qreal totalDistance = mLeftOverDabDistance + segmentLength;
 
         if (totalDistance >= dynamics.dabSpacing) {
             const qreal dabDelta = dynamics.dabSpacing - mLeftOverDabDistance;
+            mLeftOverDabDistance -= dynamics.dabSpacing;
 
-            mSegmentOffset += dabDelta;
-            outPoint = a + dir * mSegmentOffset;
-
-            mLeftOverDabDistance = 0.0;
+            outPoint = a + dir * dabDelta;
             return true;
         }
 
         // no dab yet, accumulate and move on
         mLeftOverDabDistance = totalDistance;
-        mSegmentOffset = 0.0;
     }
 
     return false;

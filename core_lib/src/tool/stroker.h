@@ -31,7 +31,7 @@ public:
 
     void begin(QVector<QPointF> strokePoints);
 
-    bool next(const StrokeDynamics& dynamics, QPointF& outPoint);
+    bool nextDab(const StrokeDynamics& dynamics, QPointF& outPoint);
 
 private:
 
@@ -39,7 +39,6 @@ private:
     QVector<QPointF> mStrokeSegment;
 
     qreal mLeftOverDabDistance = 0.0;
-    qreal mSegmentOffset = 0.0;
     int mIndex = 0;
 };
 
