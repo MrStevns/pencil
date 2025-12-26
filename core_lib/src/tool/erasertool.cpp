@@ -131,7 +131,7 @@ void EraserTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
                              QPainter::CompositionMode_SourceOver,
                              dynamics.opacity,
                              mStrokeSettings->featherEnabled(),
-                             mStrokeSettings->AntiAliasingEnabled() == ON);
+                             mStrokeSettings->AntiAliasingEnabled());
 }
 
 void EraserTool::drawPath(const QPainterPath& path, QPen pen, QBrush brush)

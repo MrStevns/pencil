@@ -104,6 +104,7 @@ void BrushTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
                              dynamics.color,
                              dynamics.blending,
                              dynamics.opacity,
+                             mStrokeSettings->featherEnabled(),
                              dynamics.antiAliasingEnabled);
 }
 
