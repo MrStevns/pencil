@@ -46,9 +46,6 @@ private:
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
 
 private:
-    QPointF mLastBrushPoint{ 0, 0 };
-    QPointF mMouseDownPoint;
-
     StrokeToolProperties mSettings;
 };
 

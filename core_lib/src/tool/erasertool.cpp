@@ -149,24 +149,3 @@ void EraserTool::applyVectorBuffer(VectorImage* vectorImage)
 
     StrokeTool::applyVectorBuffer(vectorImage);
 }
-
-void EraserTool::updateStrokes()
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR)
-    {
-        drawStroke();
-    }
-
-    if (layer->type() == Layer::VECTOR)
-    {
-        qreal radius = mSettings.width() / 2;
-
-        VectorImage* currKey = static_cast<VectorImage*>(layer->getLastKeyFrameAtPosition(mEditor->currentFrame()));
-        QList<VertexRef> nearbyVertices = currKey->getVerticesCloseTo(getCurrentPoint(), radius);
-        for (auto nearbyVertice : nearbyVertices)
-        {
-            currKey->setSelected(nearbyVertice, true);
-        }
-    }
-}

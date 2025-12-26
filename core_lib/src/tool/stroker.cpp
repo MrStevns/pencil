@@ -21,7 +21,7 @@ Stroker::Stroker()
 {
 }
 
-void Stroker::begin(QVector<QPointF> strokePoints)
+void Stroker::begin(QList<QPointF> strokePoints)
 {
     this->mStrokeSegment = strokePoints;
     this->mIndex = 0;

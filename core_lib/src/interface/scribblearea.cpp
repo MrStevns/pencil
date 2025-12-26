@@ -761,49 +761,6 @@ void ScribbleArea::showLayerNotVisibleWarning()
                          QMessageBox::Ok);
 }
 
-// void ScribbleArea::paintBitmapBuffer()
-// {
-//     LayerBitmap* layer = static_cast<LayerBitmap*>(mEditor->layers()->currentLayer());
-//     Q_ASSERT(layer);
-//     Q_ASSERT(layer->type() == Layer::BITMAP);
-
-//     int frameNumber = mEditor->currentFrame();
-
-//     // If there is no keyframe at or before the current position,
-//     // just return (since we have nothing to paint on).
-//     if (layer->getLastKeyFrameAtPosition(frameNumber) == nullptr)
-//     {
-//         updateFrame();
-//         return;
-//     }
-
-//     BitmapImage* targetImage = currentBitmapImage(layer);
-//     if (targetImage != nullptr)
-//     {
-//         QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver;
-//         switch (currentTool()->type())
-//         {
-//         case ERASER:
-//             cm = QPainter::CompositionMode_DestinationOut;
-//             break;
-//         case BRUSH:
-//         case PEN:
-//         case PENCIL:
-//             break;
-//         default: //nothing
-//             break;
-//         }
-//         targetImage->paste(&mTiledBuffer, cm);
-//     }
-
-//     QRect rect = mEditor->view()->mapCanvasToScreen(mTiledBuffer.bounds()).toRect();
-
-//     update(rect);
-
-//     layer->setModified(frameNumber, true);
-//     mTiledBuffer.clear();
-// }
-
 void ScribbleArea::clearDrawingBuffer()
 {
     mTiledBuffer.clear();

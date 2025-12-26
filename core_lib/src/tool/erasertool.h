@@ -37,7 +37,6 @@ public:
     StrokeDynamics createDynamics() const override;
 
     void drawStroke() override;
-    void updateStrokes();
 
     void applyVectorBuffer(VectorImage* vectorImage) override;
 
@@ -46,9 +45,6 @@ private:
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
 
 protected:
-    QPointF mLastBrushPoint;
-    QPointF mMouseDownPoint;
-
     StrokeToolProperties mSettings;
 };
 

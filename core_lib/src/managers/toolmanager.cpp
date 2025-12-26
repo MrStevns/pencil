@@ -32,7 +32,6 @@ GNU General Public License for more details.
 #include "selecttool.h"
 #include "smudgetool.h"
 #include "cameratool.h"
-#include "nodetool.h"
 #include "editor.h"
 
 

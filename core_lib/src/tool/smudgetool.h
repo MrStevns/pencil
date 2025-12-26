@@ -49,8 +49,6 @@ protected:
 private:
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
 
-    QPointF offsetFromPressPos();
-    QPointF mLastBrushPoint;
     uint toolMode;  // 0=normal/smooth 1=smudge - todo: move to basetool? could be useful
     BitmapImage mTargetImage;
 
