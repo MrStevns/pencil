@@ -43,17 +43,19 @@ public:
     explicit StrokeTool(QObject* parent);
     ~StrokeTool();
 
+    virtual const StrokeToolProperties& strokeToolProperties() const = 0;
+
     void startStroke(PointerEvent::InputType inputType);
     virtual void drawStroke();
     void endStroke();
 
+    bool leavingThisTool() override;
     bool enteringThisTool() override;
 
     void updateCanvasCursor();
 
     virtual StrokeDynamics createDynamics() const;
 
-    void createSettings(ToolSettings* settings) override;
     void loadSettings() override;
     bool isActive() const override { return mInterpolator.isActive(); }
 
@@ -67,6 +69,7 @@ public:
     bool handleQuickSizing(PointerEvent* event);
 
     void paint(QPainter& painter, const QRect& blitRect) override;
+
     QPainter::CompositionMode compositionMode() const override;
 
     virtual void setStablizationLevel(int level);
@@ -90,11 +93,11 @@ signals:
     void featherEnabledChanged(bool enabled);
     void antiAliasingEnabledChanged(bool enabled);
     void fillContourEnabledChanged(bool enabled);
-    void InvisibleStrokeEnabledChanged(bool enabled);
+    void invisibleStrokeEnabledChanged(bool enabled);
     void stabilizationLevelChanged(int level);
 
 public slots:
-    void onPreferenceChanged(SETTING setting) override;
+    void onPreferenceChanged(SETTING setting);
     void onViewUpdated();
 
 protected:
@@ -111,18 +114,21 @@ protected:
     virtual void applyVectorBuffer(VectorImage* vectorImage);
     virtual void applyBitmapBuffer(BitmapImage* bitmapImage);
 
-    static bool mQuickSizingEnabled;
-    QHash<Qt::KeyboardModifiers, int> mQuickSizingProperties;
 
+    QRectF cursorRect(StrokeToolProperties::Type settingType, const QPointF& point);
+
+    static bool mQuickSizingEnabled;
+
+    QHash<Qt::KeyboardModifiers, int> mQuickSizingProperties;
     bool mFirstDraw = false;
+
+    QList<QPointF> mStrokePoints;
+    QList<qreal> mStrokePressures;
 
     // The segment we need to draw the current stroke
     QList<QPointF> mStrokeSegment;
 
-    // The data points we need to recreate the stroke as a BezierCurve
-    QList<QPointF> mStrokePoints;
-    QList<qreal> mStrokePressures;
-
+    qreal mCurrentWidth    = 0.0;
     qreal mCurrentPressure = 0.5;
 
     PointerEvent::InputType mCurrentInputType = PointerEvent::Unknown;
@@ -135,14 +141,13 @@ protected:
     virtual bool emptyFrameActionEnabled();
 
     bool mCanvasCursorEnabled = false;
+    QPointF mLastPixel { 0, 0 };
 
     StrokeInterpolator mInterpolator;
     Stroker mStroker;
     StrokeDynamics mStrokeDynamics;
 
     const UndoSaveState* mUndoSaveState = nullptr;
-
-    StrokeSettings* mStrokeSettings = nullptr;
 
     static const qreal FEATHER_MIN;
     static const qreal FEATHER_MAX;
@@ -155,8 +160,6 @@ private:
 
     RadialOffsetTool mWidthSizingTool;
     RadialOffsetTool mFeatherSizingTool;
-
-    QRectF cursorRect(StrokeSettings::Type settingType, const QPointF& point);
 };
 
 #endif // STROKETOOL_H

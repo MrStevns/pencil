@@ -77,12 +77,13 @@ HEADERS += \
     src/addtransparencytopaperdialog.h \
     src/app-pch.h \
     src/basewidget.h \
+    src/appearance.h \
+    src/buttonappearancewatcher.h \
     src/importlayersdialog.h \
     src/importpositiondialog.h \
     src/layeropacitydialog.h \
     src/mainwindow2.h \
     src/onionskinwidget.h \
-    src/polylineoptionswidget.h \
     src/predefinedsetmodel.h \
     src/pegbaralignmentdialog.h \
     src/shortcutfilter.h \
@@ -93,7 +94,9 @@ HEADERS += \
     src/shortcutspage.h \
     src/strokeoptionswidget.h \
     src/timelinepage.h \
+    src/toolboxwidget.h \
     src/toolspage.h \
+    src/titlebarwidget.h \
     src/basedockwidget.h \
     src/colorbox.h \
     src/colorinspector.h \
@@ -132,13 +135,13 @@ HEADERS += \
 SOURCES += \
     src/addtransparencytopaperdialog.cpp \
     src/basewidget.cpp \
+    src/buttonappearancewatcher.cpp \
     src/importlayersdialog.cpp \
     src/importpositiondialog.cpp \
     src/layeropacitydialog.cpp \
     src/main.cpp \
     src/mainwindow2.cpp \
     src/onionskinwidget.cpp \
-    src/polylineoptionswidget.cpp \
     src/predefinedsetmodel.cpp \
     src/pegbaralignmentdialog.cpp \
     src/shortcutfilter.cpp \
@@ -149,7 +152,9 @@ SOURCES += \
     src/shortcutspage.cpp \
     src/strokeoptionswidget.cpp \
     src/timelinepage.cpp \
+    src/toolboxwidget.cpp \
     src/toolspage.cpp \
+    src/titlebarwidget.cpp \
     src/basedockwidget.cpp \
     src/colorbox.cpp \
     src/colorinspector.cpp \
@@ -186,8 +191,7 @@ SOURCES += \
     src/transformoptionswidget.cpp
 
 FORMS += \
-    src/transformoptionswidget.ui \
-    ui/polylineoptionswidget.ui \
+    ui/transformoptionswidget.ui \
     ui/strokeoptionswidget.ui \
     ui/addtransparencytopaperdialog.ui \
     ui/cameraoptionswidget.ui \

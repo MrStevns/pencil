@@ -30,7 +30,9 @@ public:
     explicit PencilTool(QObject* parent);
 
     ToolType type() const override { return PENCIL; }
-    ToolCategory category() const override { return STROKETOOL; }
+
+    ToolProperties& toolProperties() override { return mSettings.toolProperties(); }
+    const StrokeToolProperties& strokeToolProperties() const override { return mSettings; }
 
     void loadSettings() override;
     QCursor cursor() override;
@@ -42,6 +44,12 @@ public:
 private:
     void drawPath(const QPainterPath & path, QPen pen, QBrush brush) override;
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
+
+private:
+    QPointF mLastBrushPoint{ 0, 0 };
+    QPointF mMouseDownPoint;
+
+    StrokeToolProperties mSettings;
 };
 
 #endif // PENCILTOOL_H

@@ -27,7 +27,9 @@ class EraserTool : public StrokeTool
 public:
     explicit EraserTool(QObject* parent = nullptr);
     ToolType type() const override;
-    ToolCategory category() const override { return STROKETOOL; }
+
+    ToolProperties& toolProperties() override { return mSettings.toolProperties(); }
+    const StrokeToolProperties& strokeToolProperties() const override { return mSettings; }
 
     void loadSettings() override;
     QCursor cursor() override;
@@ -42,6 +44,12 @@ public:
 private:
     void drawPath(const QPainterPath & path, QPen pen, QBrush brush) override;
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
+
+protected:
+    QPointF mLastBrushPoint;
+    QPointF mMouseDownPoint;
+
+    StrokeToolProperties mSettings;
 };
 
 #endif // ERASERTOOL_H

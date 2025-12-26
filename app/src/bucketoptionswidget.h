@@ -24,7 +24,8 @@ GNU General Public License for more details.
 class Editor;
 class Layer;
 class BucketTool;
-struct BucketSettings;
+
+#include "toolproperties.h"
 
 namespace Ui {
 class BucketOptionsWidget;
@@ -38,6 +39,7 @@ public:
     explicit BucketOptionsWidget(Editor* editor, QWidget* parent);
     ~BucketOptionsWidget();
 
+    void initUI() override;
     void updateUI() override;
 
     void setStrokeWidth(qreal value);
@@ -55,7 +57,7 @@ private:
     void updatePropertyVisibility();
 
     BucketTool* mBucketTool = nullptr;
-    const BucketSettings* mSettings = nullptr;
+    BucketToolProperties mSettings;
     Ui::BucketOptionsWidget *ui;
     Editor* mEditor = nullptr;
 };

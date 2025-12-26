@@ -24,7 +24,6 @@ GNU General Public License for more details.
 #include "bucketoptionswidget.h"
 #include "strokeoptionswidget.h"
 #include "transformoptionswidget.h"
-#include "polylineoptionswidget.h"
 #include "spinslider.h"
 #include "editor.h"
 #include "util.h"
@@ -54,15 +53,16 @@ void ToolOptionWidget::initUI()
 {
     mBucketOptionsWidget = new BucketOptionsWidget(editor(), this);
     mCameraOptionsWidget = new CameraOptionsWidget(editor(), this);
+
+    mBucketOptionsWidget->setHidden(true);
+    mCameraOptionsWidget->setHidden(true);
+    
     mStrokeOptionsWidget = new StrokeOptionsWidget(editor(), this);
     mTransformOptionsWidget = new TransformOptionsWidget(editor(), this);
-    mPolylineOptionsWidget = new PolylineOptionsWidget(editor(), this);
-
     ui->scrollAreaWidgetContents->layout()->addWidget(mBucketOptionsWidget);
     ui->scrollAreaWidgetContents->layout()->addWidget(mCameraOptionsWidget);
     ui->scrollAreaWidgetContents->layout()->addWidget(mStrokeOptionsWidget);
     ui->scrollAreaWidgetContents->layout()->addWidget(mTransformOptionsWidget);
-    ui->scrollAreaWidgetContents->layout()->addWidget(mPolylineOptionsWidget);
     ui->scrollAreaWidgetContents->layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Expanding));
 
     makeConnectionToEditor(editor());
@@ -96,10 +96,9 @@ void ToolOptionWidget::setWidgetVisibility(BaseWidget* widget, bool isVisible)
 void ToolOptionWidget::updateUIForTool(BaseTool* tool)
 {
     setWidgetVisibility(mBucketOptionsWidget, tool->type() == BUCKET);
-    setWidgetVisibility(mPolylineOptionsWidget, tool->type() == POLYLINE);
     setWidgetVisibility(mCameraOptionsWidget, tool->type() == CAMERA);
-    setWidgetVisibility(mStrokeOptionsWidget, tool->category() == STROKETOOL);
-    setWidgetVisibility(mTransformOptionsWidget, tool->category() == TRANSFORMTOOL);
+    setWidgetVisibility(mStrokeOptionsWidget, editor()->tools()->isStrokeTool(tool));
+    setWidgetVisibility(mTransformOptionsWidget, editor()->tools()->isTransformTool(tool));
 }
 
 void ToolOptionWidget::onLayerChanged(int layerIndex)

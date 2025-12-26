@@ -37,7 +37,6 @@ QString BaseTool::TypeName(ToolType type)
         map[MOVE] = tr("Move");
         map[HAND] = tr("Hand");
         map[SMUDGE] = tr("Smudge");
-        map[NODE] = tr("Node");
         map[PEN] = tr("Pen");
         map[POLYLINE] = tr("Polyline");
         map[BUCKET] = tr("Bucket");
@@ -52,43 +51,26 @@ BaseTool::BaseTool(QObject* parent) : QObject(parent)
 {
 }
 
+BaseTool::~BaseTool() {}
+
 void BaseTool::initialize(Editor* editor)
 {
     Q_ASSERT(editor);
     mEditor = editor;
     mScribbleArea = editor->getScribbleArea();
     Q_ASSERT(mScribbleArea);
-    createSettings(nullptr);
-
     loadSettings();
-
-    /// Given the way that we update preferences currently, this connection should not be removed
-    /// when the tool is not active.
-    connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &BaseTool::onPreferenceChanged);
-}
-
-void BaseTool::createSettings(ToolSettings* settings)
-{
-    if (settings == nullptr) {
-        mSettings = new ToolSettings();
-    } else {
-        mSettings = settings;
-    }
 }
 
 void BaseTool::saveSettings()
 {
-    if (settings()) {
-        QSettings storedSettings(PENCIL2D, PENCIL2D);
-        settings()->save(storedSettings);
-    }
+    QSettings storedSettings(PENCIL2D, PENCIL2D);
+    toolProperties().storeTo(storedSettings);
 }
 
 void BaseTool::resetSettings()
 {
-    if (settings()) {
-        settings()->setDefaults();
-    }
+    toolProperties().restoreProperties();
 }
 
 bool BaseTool::isPropertyEnabled(int rawType)

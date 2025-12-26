@@ -48,43 +48,41 @@ void BrushTool::loadSettings()
 {
     StrokeTool::loadSettings();
 
-    mPropertyUsed[StrokeSettings::WIDTH_VALUE] = { Layer::BITMAP, Layer::VECTOR };
-    mPropertyUsed[StrokeSettings::FEATHER_VALUE] = { Layer::BITMAP };
-    mPropertyUsed[StrokeSettings::PRESSURE_ENABLED] = { Layer::BITMAP, Layer::VECTOR };
-    mPropertyUsed[StrokeSettings::INVISIBILITY_ENABLED] = { Layer::VECTOR };
-    mPropertyUsed[StrokeSettings::STABILIZATION_VALUE] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::WIDTH_VALUE] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::FEATHER_VALUE] = { Layer::BITMAP };
+    mPropertyUsed[StrokeToolProperties::PRESSURE_ENABLED] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::INVISIBILITY_ENABLED] = { Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::STABILIZATION_VALUE] = { Layer::BITMAP, Layer::VECTOR };
 
-    QSettings settings(PENCIL2D, PENCIL2D);
+    QSettings pencilSettings(PENCIL2D, PENCIL2D);
 
     QHash<int, PropertyInfo> info;
-    info[StrokeSettings::WIDTH_VALUE] = { 1.0, 100.0, 24.0 };
-    info[StrokeSettings::FEATHER_ENABLED] = true;
-    info[StrokeSettings::FEATHER_VALUE] = { 1.0, 99.0, 48.0 };
-    info[StrokeSettings::PRESSURE_ENABLED] = true;
-    info[StrokeSettings::INVISIBILITY_ENABLED] = false;
-    info[StrokeSettings::STABILIZATION_VALUE] = { StabilizationLevel::NONE, StabilizationLevel::STRONG, StabilizationLevel::STRONG } ;
+    info[StrokeToolProperties::WIDTH_VALUE] = { WIDTH_MIN, WIDTH_MAX, 24.0 };
+    info[StrokeToolProperties::FEATHER_VALUE] = { FEATHER_MIN, FEATHER_MAX, 48.0 };
+    info[StrokeToolProperties::FEATHER_ENABLED] = true;
+    info[StrokeToolProperties::PRESSURE_ENABLED] = true;
+    info[StrokeToolProperties::INVISIBILITY_ENABLED] = false;
+    info[StrokeToolProperties::STABILIZATION_VALUE] = { StabilizationLevel::NONE, StabilizationLevel::STRONG, StabilizationLevel::STRONG } ;
 
-    mStrokeSettings->load(typeName(), settings, info);
-    mStrokeSettings->setBaseValue(StrokeSettings::FEATHER_ENABLED, true);
+    toolProperties().insertProperties(info);
+    toolProperties().loadFrom(typeName(), pencilSettings);
 
-    if (mStrokeSettings->requireMigration(settings, 1)) {
-        mStrokeSettings->setBaseValue(StrokeSettings::WIDTH_VALUE, settings.value("brushWidth", 24.0).toReal());
-        mStrokeSettings->setBaseValue(StrokeSettings::FEATHER_VALUE, settings.value("brushFeather", 48.0).toReal());
-        mStrokeSettings->setBaseValue(StrokeSettings::PRESSURE_ENABLED, settings.value("brushPressure", true).toBool());
-        mStrokeSettings->setBaseValue(StrokeSettings::INVISIBILITY_ENABLED, settings.value("brushInvisibility", false).toBool());
-        mStrokeSettings->setBaseValue(StrokeSettings::STABILIZATION_VALUE, settings.value("brushLineStabilization", StabilizationLevel::STRONG).toInt());
+    if (toolProperties().requireMigration(pencilSettings, ToolProperties::VERSION_1)) {
+        toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, pencilSettings.value("brushWidth", 24.0).toReal());
+        toolProperties().setBaseValue(StrokeToolProperties::FEATHER_VALUE, pencilSettings.value("brushFeather", 48.0).toReal());
+        toolProperties().setBaseValue(StrokeToolProperties::PRESSURE_ENABLED, pencilSettings.value("brushPressure", true).toBool());
+        toolProperties().setBaseValue(StrokeToolProperties::INVISIBILITY_ENABLED, pencilSettings.value("brushInvisibility", false).toBool());
+        toolProperties().setBaseValue(StrokeToolProperties::STABILIZATION_VALUE, pencilSettings.value("brushLineStabilization", StabilizationLevel::STRONG).toInt());
 
-        settings.remove("brushWidth");
-        settings.remove("brushFeather");
-        settings.remove("brushPressure");
-        settings.remove("brushInvisibility");
-        settings.remove("brushLineStabilization");
+        pencilSettings.remove("brushWidth");
+        pencilSettings.remove("brushFeather");
+        pencilSettings.remove("brushPressure");
+        pencilSettings.remove("brushInvisibility");
+        pencilSettings.remove("brushLineStabilization");
     }
 
-    mInterpolator.setStabilizerLevel(mStrokeSettings->stabilizerLevel());
-
-    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
-    mQuickSizingProperties.insert(Qt::ControlModifier, StrokeSettings::FEATHER_VALUE);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeToolProperties::WIDTH_VALUE);
+    mQuickSizingProperties.insert(Qt::ControlModifier, StrokeToolProperties::FEATHER_VALUE);
 }
 
 QCursor BrushTool::cursor()
@@ -104,7 +102,7 @@ void BrushTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
                              dynamics.color,
                              dynamics.blending,
                              dynamics.opacity,
-                             mStrokeSettings->featherEnabled(),
+                             mSettings.featherEnabled(),
                              dynamics.antiAliasingEnabled);
 }
 
@@ -137,18 +135,16 @@ void BrushTool::drawStroke()
     }
 }
 
-// This function uses the points from DrawStroke
-// and turns them into vector lines.
 void BrushTool::applyVectorBuffer(VectorImage* vectorImage)
 {
     qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
 
     BezierCurve curve(mStrokePoints, mStrokePressures, tol);
-    curve.setWidth(mStrokeSettings->width());
-    curve.setFeather(mStrokeSettings->feather());
+    curve.setWidth(mSettings.width());
+    curve.setFeather(mSettings.feather());
     curve.setFilled(false);
-    curve.setInvisibility(mStrokeSettings->invisibilityEnabled());
-    curve.setVariableWidth(mStrokeSettings->pressureEnabled());
+    curve.setInvisibility(mSettings.invisibilityEnabled());
+    curve.setVariableWidth(mSettings.pressureEnabled());
     curve.setColorNumber(mEditor->color()->frontColorNumber());
 
     vectorImage->addCurve(curve, mEditor->view()->scaling(), false);
@@ -162,3 +158,4 @@ void BrushTool::applyVectorBuffer(VectorImage* vectorImage)
 
     StrokeTool::applyVectorBuffer(vectorImage);
 }
+

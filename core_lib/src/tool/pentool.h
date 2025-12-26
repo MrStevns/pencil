@@ -29,20 +29,27 @@ public:
     PenTool(QObject* parent = 0);
 
     ToolType type() const override { return PEN; }
-    ToolCategory category() const override { return STROKETOOL; }
+
+    ToolProperties& toolProperties() override { return mSettings.toolProperties(); }
+    const StrokeToolProperties& strokeToolProperties() const override { return mSettings; }
+
+    StrokeDynamics createDynamics() const override;
 
     void loadSettings() override;
     QCursor cursor() override;
 
-    StrokeDynamics createDynamics() const override;
-
     void drawStroke() override;
-
+    
     void applyVectorBuffer(VectorImage* vectorImage) override;
 
 private:
     void drawPath(const QPainterPath& path, QPen pen, QBrush brush) override;
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
+    
+    QPointF mLastBrushPoint;
+    QPointF mMouseDownPoint;
+
+    StrokeToolProperties mSettings;
 };
 
 #endif // PENTOOL_H

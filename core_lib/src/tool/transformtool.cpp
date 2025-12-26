@@ -27,19 +27,9 @@ TransformTool::~TransformTool()
 {
 }
 
-void TransformTool::createSettings(ToolSettings* settings)
-{
-    if (settings == nullptr) {
-        mTransformSettings = new TransformSettings();
-    } else {
-        mTransformSettings = static_cast<TransformSettings*>(settings);
-    }
-    BaseTool::createSettings(mTransformSettings);
-}
-
 void TransformTool::setShowSelectionInfo(bool enabled)
 {
-    mSettings->setBaseValue(TransformSettings::SHOWSELECTIONINFO_ENABLED, enabled);
+    toolProperties().setBaseValue(TransformToolProperties::SHOWSELECTIONINFO_ENABLED, enabled);
     emit showSelectionInfoChanged(enabled);
 
     mEditor->updateFrame();
@@ -47,6 +37,6 @@ void TransformTool::setShowSelectionInfo(bool enabled)
 
 void TransformTool::setAntiAliasingEnabled(bool enabled)
 {
-    mSettings->setBaseValue(TransformSettings::ANTI_ALIASING_ENABLED, enabled);
+    toolProperties().setBaseValue(TransformToolProperties::ANTI_ALIASING_ENABLED, enabled);
     emit antiAliasingChanged(enabled);
 }

@@ -21,7 +21,6 @@ GNU General Public License for more details.
 #include "pointerevent.h"
 
 #include <QLineF>
-#include <QDebug>
 
 RadialOffsetTool::RadialOffsetTool(QObject* parent) : QObject(parent)
 {

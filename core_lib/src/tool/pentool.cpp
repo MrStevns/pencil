@@ -40,37 +40,36 @@ void PenTool::loadSettings()
 {
     StrokeTool::loadSettings();
 
-    QSettings settings(PENCIL2D, PENCIL2D);
+    QSettings pencilSettings(PENCIL2D, PENCIL2D);
 
-    mPropertyUsed[StrokeSettings::WIDTH_VALUE] = { Layer::BITMAP, Layer::VECTOR };
-    mPropertyUsed[StrokeSettings::PRESSURE_ENABLED] = { Layer::BITMAP, Layer::VECTOR };
-    mPropertyUsed[StrokeSettings::ANTI_ALIASING_ENABLED] = { Layer::BITMAP };
-    mPropertyUsed[StrokeSettings::STABILIZATION_VALUE] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::WIDTH_VALUE] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::PRESSURE_ENABLED] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::ANTI_ALIASING_ENABLED] = { Layer::BITMAP };
+    mPropertyUsed[StrokeToolProperties::STABILIZATION_VALUE] = { Layer::BITMAP, Layer::VECTOR };
 
     QHash<int, PropertyInfo> info;
 
-    info[StrokeSettings::WIDTH_VALUE] = { WIDTH_MIN, WIDTH_MAX, 12.0 };
-    info[StrokeSettings::PRESSURE_ENABLED] = true;
-    info[StrokeSettings::ANTI_ALIASING_ENABLED] = true;
-    info[StrokeSettings::STABILIZATION_VALUE] = { StabilizationLevel::NONE, StabilizationLevel::STRONG, StabilizationLevel::STRONG };
+    info[StrokeToolProperties::WIDTH_VALUE] = { WIDTH_MIN, WIDTH_MAX, 12.0 };
+    info[StrokeToolProperties::PRESSURE_ENABLED] = true;
+    info[StrokeToolProperties::ANTI_ALIASING_ENABLED] = true;
+    info[StrokeToolProperties::STABILIZATION_VALUE] = { StabilizationLevel::NONE, StabilizationLevel::STRONG, StabilizationLevel::STRONG };
 
-    mStrokeSettings->load(typeName(), settings, info);
+    toolProperties().insertProperties(info);
+    toolProperties().loadFrom(typeName(), pencilSettings);
 
-    if (mStrokeSettings->requireMigration(settings, 1)) {
-        mStrokeSettings->setBaseValue(StrokeSettings::WIDTH_VALUE, settings.value("penWidth", 12.0).toReal());
-        mStrokeSettings->setBaseValue(StrokeSettings::PRESSURE_ENABLED, settings.value("penPressure", true).toBool());
-        mStrokeSettings->setBaseValue(StrokeSettings::ANTI_ALIASING_ENABLED, settings.value("penAA", true).toBool());
-        mStrokeSettings->setBaseValue(StrokeSettings::STABILIZATION_VALUE, settings.value("penLineStablization", StabilizationLevel::STRONG).toInt());
+    if (toolProperties().requireMigration(pencilSettings, ToolProperties::VERSION_1)) {
+        toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, pencilSettings.value("penWidth", 12.0).toReal());
+        toolProperties().setBaseValue(StrokeToolProperties::PRESSURE_ENABLED, pencilSettings.value("penPressure", true).toBool());
+        toolProperties().setBaseValue(StrokeToolProperties::ANTI_ALIASING_ENABLED, pencilSettings.value("penAA", true).toBool());
+        toolProperties().setBaseValue(StrokeToolProperties::STABILIZATION_VALUE, pencilSettings.value("penLineStablization", StabilizationLevel::STRONG).toInt());
 
-        settings.remove("penWidth");
-        settings.remove("penPressure");
-        settings.remove("penAA");
-        settings.remove("penLineStablization");
+        pencilSettings.remove("penWidth");
+        pencilSettings.remove("penPressure");
+        pencilSettings.remove("penAA");
+        pencilSettings.remove("penLineStablization");
     }
 
-    mInterpolator.setStabilizerLevel(mStrokeSettings->stabilizerLevel());
-
-    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeToolProperties::WIDTH_VALUE);
 }
 
 QCursor PenTool::cursor()
@@ -119,7 +118,7 @@ void PenTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
     mScribbleArea->drawPen(point,
                            dynamics.width,
                            dynamics.color,
-                           mStrokeSettings->AntiAliasingEnabled());
+                           mSettings.AntiAliasingEnabled());
 }
 
 void PenTool::drawPath(const QPainterPath& path, QPen pen, QBrush brush)
@@ -132,11 +131,11 @@ void PenTool::applyVectorBuffer(VectorImage* vectorImage)
     qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
 
     BezierCurve curve(mStrokePoints, mStrokePressures, tol);
-    curve.setWidth(mStrokeSettings->width());
-    curve.setFeather(mStrokeSettings->feather());
+    curve.setWidth(mSettings.width());
+    curve.setFeather(mSettings.feather());
     curve.setFilled(false);
-    curve.setInvisibility(mStrokeSettings->invisibilityEnabled());
-    curve.setVariableWidth(mStrokeSettings->pressureEnabled());
+    curve.setInvisibility(mSettings.invisibilityEnabled());
+    curve.setVariableWidth(mSettings.pressureEnabled());
     curve.setColorNumber(mEditor->color()->frontColorNumber());
 
     vectorImage->addCurve(curve, mEditor->view()->scaling(), false);

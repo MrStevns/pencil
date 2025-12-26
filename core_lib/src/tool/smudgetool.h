@@ -29,7 +29,9 @@ public:
     explicit SmudgeTool(QObject* parent = 0);
 
     ToolType type() const override;
-    ToolCategory category() const override { return STROKETOOL; }
+
+    ToolProperties& toolProperties() override { return mSettings.toolProperties(); }
+    const StrokeToolProperties& strokeToolProperties() const override { return mSettings; }
 
     void loadSettings() override;
     QCursor cursor() override;
@@ -47,8 +49,12 @@ protected:
 private:
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
 
-    uint mToolMode;  // 0=normal/smooth 1=smudge
+    QPointF offsetFromPressPos();
+    QPointF mLastBrushPoint;
+    uint toolMode;  // 0=normal/smooth 1=smudge - todo: move to basetool? could be useful
     BitmapImage mTargetImage;
+
+    StrokeToolProperties mSettings;
 };
 
 #endif // SMUDGETOOL_H

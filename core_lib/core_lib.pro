@@ -44,6 +44,7 @@ HEADERS +=  \
     src/interface/recentfilemenu.h \
     src/interface/scribblearea.h \
     src/interface/backgroundwidget.h \
+    src/interface/toolboxlayout.h \
     src/interface/undoredocommand.h \
     src/managers/basemanager.h \
     src/managers/overlaymanager.h \
@@ -81,7 +82,6 @@ HEADERS +=  \
     src/tool/eyedroppertool.h \
     src/tool/handtool.h \
     src/tool/movetool.h \
-    src/tool/nodetool.h \
     src/tool/penciltool.h \
     src/tool/pentool.h \
     src/tool/polylinetool.h \
@@ -92,7 +92,7 @@ HEADERS +=  \
     src/tool/strokeinterpolator.h \
     src/tool/stroker.h \
     src/tool/stroketool.h \
-    src/tool/toolsettings.h \
+    src/tool/toolproperties.h \
     src/tool/transformtool.h \
     src/util/blitrect.h \
     src/util/cameraeasingtype.h \
@@ -141,6 +141,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/interface/recentfilemenu.cpp \
     src/interface/scribblearea.cpp \
     src/interface/backgroundwidget.cpp \
+    src/interface/toolboxlayout.cpp \
     src/interface/undoredocommand.cpp \
     src/managers/basemanager.cpp \
     src/managers/overlaymanager.cpp \
@@ -175,7 +176,6 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/eyedroppertool.cpp \
     src/tool/handtool.cpp \
     src/tool/movetool.cpp \
-    src/tool/nodetool.cpp \
     src/tool/penciltool.cpp \
     src/tool/pentool.cpp \
     src/tool/polylinetool.cpp \

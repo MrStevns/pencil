@@ -38,52 +38,47 @@ BucketTool::BucketTool(QObject* parent) : BaseTool(parent)
 {
 }
 
-void BucketTool::createSettings(ToolSettings*)
-{
-    mSettings = new BucketSettings();
-    BaseTool::createSettings(mSettings);
-}
-
 void BucketTool::loadSettings()
 {
-    mPropertyUsed[BucketSettings::FILLTHICKNESS_VALUE] = { Layer::VECTOR };
-    mPropertyUsed[BucketSettings::COLORTOLERANCE_VALUE] = { Layer::BITMAP };
-    mPropertyUsed[BucketSettings::COLORTOLERANCE_ENABLED] = { Layer::BITMAP };
-    mPropertyUsed[BucketSettings::FILLEXPAND_VALUE] = { Layer::BITMAP };
-    mPropertyUsed[BucketSettings::FILLEXPAND_ENABLED] = { Layer::BITMAP };
-    mPropertyUsed[BucketSettings::FILLLAYERREFERENCEMODE_VALUE] = { Layer::BITMAP };
-    mPropertyUsed[BucketSettings::FILLMODE_VALUE] = { Layer::BITMAP };
+    mPropertyUsed[BucketToolProperties::FILLTHICKNESS_VALUE] = { Layer::VECTOR };
+    mPropertyUsed[BucketToolProperties::COLORTOLERANCE_VALUE] = { Layer::BITMAP };
+    mPropertyUsed[BucketToolProperties::COLORTOLERANCE_ENABLED] = { Layer::BITMAP };
+    mPropertyUsed[BucketToolProperties::FILLEXPAND_VALUE] = { Layer::BITMAP };
+    mPropertyUsed[BucketToolProperties::FILLEXPAND_ENABLED] = { Layer::BITMAP };
+    mPropertyUsed[BucketToolProperties::FILLLAYERREFERENCEMODE_VALUE] = { Layer::BITMAP };
+    mPropertyUsed[BucketToolProperties::FILLMODE_VALUE] = { Layer::BITMAP };
 
-    QSettings settings(PENCIL2D, PENCIL2D);
+    QSettings pencilSettings(PENCIL2D, PENCIL2D);
 
     QHash<int, PropertyInfo> info;
 
-    info[BucketSettings::FILLTHICKNESS_VALUE] = { 1.0, 100.0, 4.0 };
-    info[BucketSettings::COLORTOLERANCE_VALUE] = { 1, 100, 32 };
-    info[BucketSettings::COLORTOLERANCE_ENABLED] = false;
-    info[BucketSettings::FILLEXPAND_VALUE] = { 1, 25, 2 };
-    info[BucketSettings::FILLEXPAND_ENABLED] = true;
-    info[BucketSettings::FILLLAYERREFERENCEMODE_VALUE] = { 0, 1, 0 };
-    info[BucketSettings::FILLMODE_VALUE] = { 0, 2, 0 };
+    info[BucketToolProperties::FILLTHICKNESS_VALUE] = { 1.0, 100.0, 4.0 };
+    info[BucketToolProperties::COLORTOLERANCE_VALUE] = { 1, 100, 32 };
+    info[BucketToolProperties::COLORTOLERANCE_ENABLED] = false;
+    info[BucketToolProperties::FILLEXPAND_VALUE] = { 1, 25, 2 };
+    info[BucketToolProperties::FILLEXPAND_ENABLED] = true;
+    info[BucketToolProperties::FILLLAYERREFERENCEMODE_VALUE] = { 0, 1, 0 };
+    info[BucketToolProperties::FILLMODE_VALUE] = { 0, 2, 0 };
 
-    mSettings->load(typeName(), settings, info);
+    toolProperties().insertProperties(info);
+    toolProperties().loadFrom(typeName(), pencilSettings);
 
-    if (mSettings->requireMigration(settings, 1)) {
-        mSettings->setBaseValue(BucketSettings::FILLTHICKNESS_VALUE, settings.value("fillThickness", 4.0).toReal());
-        mSettings->setBaseValue(BucketSettings::COLORTOLERANCE_VALUE, settings.value("Tolerance", 32).toInt());
-        mSettings->setBaseValue(BucketSettings::COLORTOLERANCE_ENABLED, settings.value("BucketToleranceEnabled", false).toBool());
-        mSettings->setBaseValue(BucketSettings::FILLEXPAND_VALUE, settings.value("BucketFillExpand", 2).toInt());
-        mSettings->setBaseValue(BucketSettings::FILLEXPAND_ENABLED, settings.value("BucketFillExpandEnabled", true).toBool());
-        mSettings->setBaseValue(BucketSettings::FILLLAYERREFERENCEMODE_VALUE, settings.value("BucketFillReferenceMode", 0).toInt());
-        mSettings->setBaseValue(BucketSettings::FILLMODE_VALUE, settings.value("FillMode", 0).toInt());
+    if (toolProperties().requireMigration(pencilSettings, ToolProperties::VERSION_1)) {
+        toolProperties().setBaseValue(BucketToolProperties::FILLTHICKNESS_VALUE, pencilSettings.value("fillThickness", 4.0).toReal());
+        toolProperties().setBaseValue(BucketToolProperties::COLORTOLERANCE_VALUE, pencilSettings.value("Tolerance", 32).toInt());
+        toolProperties().setBaseValue(BucketToolProperties::COLORTOLERANCE_ENABLED, pencilSettings.value("BucketToleranceEnabled", false).toBool());
+        toolProperties().setBaseValue(BucketToolProperties::FILLEXPAND_VALUE, pencilSettings.value("BucketFillExpand", 2).toInt());
+        toolProperties().setBaseValue(BucketToolProperties::FILLEXPAND_ENABLED, pencilSettings.value("BucketFillExpandEnabled", true).toBool());
+        toolProperties().setBaseValue(BucketToolProperties::FILLLAYERREFERENCEMODE_VALUE, pencilSettings.value("BucketFillReferenceMode", 0).toInt());
+        toolProperties().setBaseValue(BucketToolProperties::FILLMODE_VALUE, pencilSettings.value("FillMode", 0).toInt());
 
-        settings.remove("fillThickness");
-        settings.remove("Tolerance");
-        settings.remove("BucketToleranceEnabled");
-        settings.remove("BucketFillExpand");
-        settings.remove("BucketFillExpandEnabled");
-        settings.remove("BucketFillReferenceMode");
-        settings.remove("FillMode");
+        pencilSettings.remove("fillThickness");
+        pencilSettings.remove("Tolerance");
+        pencilSettings.remove("BucketToleranceEnabled");
+        pencilSettings.remove("BucketFillExpand");
+        pencilSettings.remove("BucketFillExpandEnabled");
+        pencilSettings.remove("BucketFillReferenceMode");
+        pencilSettings.remove("FillMode");
     }
 }
 
@@ -114,7 +109,7 @@ void BucketTool::pointerPressEvent(PointerEvent* event)
                                  mEditor->color()->frontColor(),
                                  layerCam ? layerCam->getViewAtFrame(mEditor->currentFrame()).inverted().mapRect(layerCam->getViewRect()) : QRect(),
                                  getCurrentPoint(),
-                                 *mSettings);
+                                 mSettings);
 
     // Because we can change layer to on the fly, but we do not act reactively
     // on it, it's necessary to invalidate layer cache on press event.
@@ -186,7 +181,7 @@ void BucketTool::paintVector(Layer* layer)
         vectorImage->fillSelectedPath(mEditor->color()->frontColorNumber());
     }
 
-    vectorImage->applyWidthToSelection(mSettings->fillThickness());
+    vectorImage->applyWidthToSelection(mSettings.fillThickness());
     vectorImage->applyColorToSelectedCurve(mEditor->color()->frontColorNumber());
     vectorImage->applyColorToSelectedArea(mEditor->color()->frontColorNumber());
 
@@ -202,43 +197,43 @@ void BucketTool::applyChanges()
 
 void BucketTool::setStrokeThickness(qreal width)
 {
-    mSettings->setBaseValue(BucketSettings::FILLTHICKNESS_VALUE, width);
+    toolProperties().setBaseValue(BucketToolProperties::FILLTHICKNESS_VALUE, width);
     emit strokeThicknessChanged(width);
 }
 
 void BucketTool::setColorTolerance(int tolerance)
 {
-    mSettings->setBaseValue(BucketSettings::COLORTOLERANCE_VALUE, tolerance);
+    toolProperties().setBaseValue(BucketToolProperties::COLORTOLERANCE_VALUE, tolerance);
     emit toleranceChanged(tolerance);
 }
 
 void BucketTool::setColorToleranceEnabled(bool enabled)
 {
-    mSettings->setBaseValue(BucketSettings::COLORTOLERANCE_ENABLED, enabled);
+    toolProperties().setBaseValue(BucketToolProperties::COLORTOLERANCE_ENABLED, enabled);
     emit toleranceEnabledChanged(enabled);
 }
 
 void BucketTool::setFillExpand(int fillExpandValue)
 {
-    mSettings->setBaseValue(BucketSettings::FILLEXPAND_VALUE, fillExpandValue);
+    toolProperties().setBaseValue(BucketToolProperties::FILLEXPAND_VALUE, fillExpandValue);
     emit fillExpandChanged(fillExpandValue);
 }
 
 void BucketTool::setFillExpandEnabled(bool enabled)
 {
-    mSettings->setBaseValue(BucketSettings::FILLEXPAND_ENABLED, enabled);
+    toolProperties().setBaseValue(BucketToolProperties::FILLEXPAND_ENABLED, enabled);
     emit fillExpandEnabledChanged(enabled);
 }
 
 void BucketTool::setFillReferenceMode(int referenceMode)
 {
-    mSettings->setBaseValue(BucketSettings::FILLLAYERREFERENCEMODE_VALUE, referenceMode);
+    toolProperties().setBaseValue(BucketToolProperties::FILLLAYERREFERENCEMODE_VALUE, referenceMode);
     emit fillReferenceModeChanged(referenceMode);
 }
 
 void BucketTool::setFillMode(int mode)
 {
-    mSettings->setBaseValue(BucketSettings::FILLMODE_VALUE, mode);
+    toolProperties().setBaseValue(BucketToolProperties::FILLMODE_VALUE, mode);
     emit fillModeChanged(mode);
 }
 

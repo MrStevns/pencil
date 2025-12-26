@@ -31,7 +31,7 @@ class ColorPaletteWidget;
 class OnionSkinWidget;
 class ToolOptionWidget;
 class TimeLine;
-class ToolBoxWidget;
+class ToolBoxDockWidget;
 class PreferencesDialog;
 class PreviewWidget;
 class ColorBox;
@@ -150,14 +150,15 @@ private:
     void makeConnections(Editor*, OnionSkinWidget*);
     void makeConnections(Editor*, StatusBar*);
 
-    bool tryRecoverUnsavedProject();
-    void startProjectRecovery(int result);
+    bool checkForRecoverableProjects();
+    bool tryRecoverProject(const QString recoverPath);
+    bool startProjectRecovery(const QString recoverPath);
 
     // UI: Dock widgets
     ColorBox*             mColorBox = nullptr;
     ColorPaletteWidget*   mColorPalette = nullptr;
     ToolOptionWidget*     mToolOptions = nullptr;
-    ToolBoxWidget*        mToolBox = nullptr;
+    ToolBoxDockWidget*        mToolBox = nullptr;
     RecentFileMenu*       mRecentFileMenu = nullptr;
     PreferencesDialog*    mPrefDialog = nullptr;
     //PreviewWidget*      mPreview = nullptr;

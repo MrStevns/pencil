@@ -19,6 +19,7 @@ GNU General Public License for more details.
 #include <QSettings>
 
 #include "pointerevent.h"
+#include "vectorimage.h"
 #include "editor.h"
 #include "scribblearea.h"
 
@@ -28,11 +29,12 @@ GNU General Public License for more details.
 #include "undoredomanager.h"
 
 #include "layerbitmap.h"
+#include "layervector.h"
 #include "blitrect.h"
 
 SmudgeTool::SmudgeTool(QObject* parent) : StrokeTool(parent)
 {
-    mToolMode = 0; // tool mode
+    toolMode = 0; // tool mode
 }
 
 ToolType SmudgeTool::type() const
@@ -45,28 +47,26 @@ void SmudgeTool::loadSettings()
     StrokeTool::loadSettings();
 
     QHash<int, PropertyInfo> info;
-    QSettings settings(PENCIL2D, PENCIL2D);
-    mPropertyUsed[StrokeSettings::WIDTH_VALUE] = { Layer::BITMAP };
-    mPropertyUsed[StrokeSettings::FEATHER_VALUE] = { Layer::BITMAP };
+    QSettings pencilSettings(PENCIL2D, PENCIL2D);
+    mPropertyUsed[StrokeToolProperties::WIDTH_VALUE] = { Layer::BITMAP };
+    mPropertyUsed[StrokeToolProperties::FEATHER_VALUE] = { Layer::BITMAP };
 
-    info[StrokeSettings::WIDTH_VALUE] = { WIDTH_MIN, WIDTH_MAX, 24.0 };
-    info[StrokeSettings::FEATHER_VALUE] = { FEATHER_MIN, FEATHER_MAX, 48.0 };
-    info[StrokeSettings::STABILIZATION_VALUE] = StabilizationLevel::SIMPLE;
+    info[StrokeToolProperties::WIDTH_VALUE] = { WIDTH_MIN, WIDTH_MAX, 24.0 };
+    info[StrokeToolProperties::FEATHER_VALUE] = { FEATHER_MIN, FEATHER_MAX, 48.0 };
 
-    mStrokeSettings->load(typeName(), settings, info);
+    toolProperties().insertProperties(info);
+    toolProperties().loadFrom(typeName(), pencilSettings);
 
-    if (mStrokeSettings->requireMigration(settings, 1)) {
-        mStrokeSettings->setBaseValue(StrokeSettings::WIDTH_VALUE, settings.value("smudgeWidth", 24.0).toReal());
-        mStrokeSettings->setBaseValue(StrokeSettings::FEATHER_VALUE, settings.value("smudgeFeather", 48.0).toReal());
+    if (toolProperties().requireMigration(pencilSettings, ToolProperties::VERSION_1)) {
+        toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, pencilSettings.value("smudgeWidth", 24.0).toReal());
+        toolProperties().setBaseValue(StrokeToolProperties::FEATHER_VALUE, pencilSettings.value("smudgeFeather", 48.0).toReal());
 
-        settings.remove("smudgeWidth");
-        settings.remove("smudgeFeather");
+        pencilSettings.remove("smudgeWidth");
+        pencilSettings.remove("smudgeFeather");
     }
 
-    mInterpolator.setStabilizerLevel(mStrokeSettings->stabilizerLevel());
-
-    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
-    mQuickSizingProperties.insert(Qt::ControlModifier, StrokeSettings::FEATHER_VALUE);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeToolProperties::WIDTH_VALUE);
+    mQuickSizingProperties.insert(Qt::ControlModifier, StrokeToolProperties::FEATHER_VALUE);
 }
 
 bool SmudgeTool::emptyFrameActionEnabled()
@@ -77,7 +77,7 @@ bool SmudgeTool::emptyFrameActionEnabled()
 
 QCursor SmudgeTool::cursor()
 {
-    if (mToolMode == 0) { //normal mode
+    if (toolMode == 0) { //normal mode
         return QCursor(QPixmap(":icons/general/cursor-smudge.svg"), 4, 18);
 
     }
@@ -90,7 +90,7 @@ bool SmudgeTool::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Alt)
     {
-        mToolMode = 1; // alternative mode
+        toolMode = 1; // alternative mode
         mScribbleArea->setCursor(cursor()); // update cursor
         return true;
     }
@@ -101,7 +101,7 @@ bool SmudgeTool::keyReleaseEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Alt)
     {
-        mToolMode = 0; // default mode
+        toolMode = 0; // default mode
         mScribbleArea->setCursor(cursor()); // update cursor
         return true;
     }
@@ -114,8 +114,8 @@ StrokeDynamics SmudgeTool::createDynamics() const
 
     dynamics.dabSpacing = 1.0;
     dynamics.canSingleDab = false;
-    dynamics.width = mStrokeSettings->width();
-    dynamics.feather = qMax(0.0, dynamics.width - 0.5 * mStrokeSettings->feather()) / dynamics.width;
+    dynamics.width = mSettings.width();
+    dynamics.feather = qMax(0.0, dynamics.width - 0.5 * mSettings.feather()) / dynamics.width;
     dynamics.opacity = 1.0;
 
     return dynamics;
@@ -140,7 +140,7 @@ void SmudgeTool::drawStroke()
 
 void SmudgeTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
 {
-    if (mToolMode == 0) {
+    if (toolMode == 0) {
         mScribbleArea->blurBrush(&mTargetImage,
                              getLastPoint(),
                              point,
@@ -156,3 +156,4 @@ void SmudgeTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
                                     dynamics.opacity);
     }
 }
+

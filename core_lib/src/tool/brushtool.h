@@ -31,7 +31,9 @@ public:
     explicit BrushTool(QObject* parent = 0);
 
     ToolType type() const override;
-    ToolCategory category() const override { return STROKETOOL; }
+
+    ToolProperties& toolProperties() override { return mSettings.toolProperties(); }
+    const StrokeToolProperties& strokeToolProperties() const override { return mSettings; }
 
     void loadSettings() override;
     QCursor cursor() override;
@@ -39,14 +41,20 @@ public:
     void drawStroke() override;
 
     void applyVectorBuffer(VectorImage* image) override;
+    
 
 private:
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
     void drawPath(const QPainterPath& path, QPen pen, QBrush brush) override;
 
 protected:
+    QPointF mLastBrushPoint;
+    QPointF mMouseDownPoint;
+
     QColor mCurrentPressuredColor;
     qreal mOpacity = 1.0;
+
+    StrokeToolProperties mSettings;
 };
 
 #endif // BRUSHTOOL_H

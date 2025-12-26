@@ -24,6 +24,7 @@ GNU General Public License for more details.
 #include <QTimer>
 
 #include "basetool.h"
+#include "transformtool.h"
 #include "pointerevent.h"
 #include "beziercurve.h"
 #include "object.h"
@@ -84,6 +85,8 @@ bool ScribbleArea::init()
 
     const int curveSmoothingLevel = mPrefs->getInt(SETTING::CURVE_SMOOTHING);
     mCurveSmoothingLevel = curveSmoothingLevel / 20.0; // default value is 1.0
+
+    mMakeInvisible = false;
 
     mLayerVisibility = static_cast<LayerVisibility>(mPrefs->getInt(SETTING::LAYER_VISIBILITY));
 
@@ -758,10 +761,51 @@ void ScribbleArea::showLayerNotVisibleWarning()
                          QMessageBox::Ok);
 }
 
+// void ScribbleArea::paintBitmapBuffer()
+// {
+//     LayerBitmap* layer = static_cast<LayerBitmap*>(mEditor->layers()->currentLayer());
+//     Q_ASSERT(layer);
+//     Q_ASSERT(layer->type() == Layer::BITMAP);
+
+//     int frameNumber = mEditor->currentFrame();
+
+//     // If there is no keyframe at or before the current position,
+//     // just return (since we have nothing to paint on).
+//     if (layer->getLastKeyFrameAtPosition(frameNumber) == nullptr)
+//     {
+//         updateFrame();
+//         return;
+//     }
+
+//     BitmapImage* targetImage = currentBitmapImage(layer);
+//     if (targetImage != nullptr)
+//     {
+//         QPainter::CompositionMode cm = QPainter::CompositionMode_SourceOver;
+//         switch (currentTool()->type())
+//         {
+//         case ERASER:
+//             cm = QPainter::CompositionMode_DestinationOut;
+//             break;
+//         case BRUSH:
+//         case PEN:
+//         case PENCIL:
+//             break;
+//         default: //nothing
+//             break;
+//         }
+//         targetImage->paste(&mTiledBuffer, cm);
+//     }
+
+//     QRect rect = mEditor->view()->mapCanvasToScreen(mTiledBuffer.bounds()).toRect();
+
+//     update(rect);
+
+//     layer->setModified(frameNumber, true);
+//     mTiledBuffer.clear();
+// }
+
 void ScribbleArea::clearDrawingBuffer()
 {
-    QRect rect = mEditor->view()->mapCanvasToScreen(mTiledBuffer.bounds()).toRect();
-    update(rect);
     mTiledBuffer.clear();
 }
 
@@ -812,6 +856,7 @@ void ScribbleArea::handleDrawingOnEmptyFrame()
 
         // Refresh canvas
         drawCanvas(frameNumber, mCanvas.rect());
+        update();
         break;
     default:
         break;
@@ -883,8 +928,81 @@ void ScribbleArea::paintEvent(QPaintEvent* event)
 
     currentTool()->paint(painter, event->rect());
 
-    if (!editor()->playback()->isPlaying()) // we don't need to display the following when the animation is playing
+    if (!editor()->playback()->isPlaying())    // we don't need to display the following when the animation is playing
     {
+        Layer* layer = mEditor->layers()->currentLayer();
+        if (layer->type() == Layer::VECTOR)
+        {
+            VectorImage* vectorImage = currentVectorImage(layer);
+            if (vectorImage != nullptr)
+            {
+                switch (currentTool()->type())
+                {
+                case SMUDGE:
+                case HAND:
+                {
+                    auto selectMan = mEditor->select();
+                    painter.save();
+                    painter.setWorldMatrixEnabled(false);
+                    painter.setRenderHint(QPainter::Antialiasing, false);
+                    // ----- paints the edited elements
+                    QPen pen2(Qt::black, 0.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+                    painter.setPen(pen2);
+                    QColor color;
+                    // ------------ vertices of the edited curves
+                    color = QColor(200, 200, 200);
+                    painter.setBrush(color);
+                    VectorSelection vectorSelection = selectMan->vectorSelection;
+                    for (int k = 0; k < vectorSelection.curve.size(); k++)
+                    {
+                        int curveNumber = vectorSelection.curve.at(k);
+
+                        for (int vertexNumber = -1; vertexNumber < vectorImage->getCurveSize(curveNumber); vertexNumber++)
+                        {
+                            QPointF vertexPoint = vectorImage->getVertex(curveNumber, vertexNumber);
+                            QRectF rectangle(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
+                            if (rect().contains(mEditor->view()->mapCanvasToScreen(vertexPoint).toPoint()))
+                            {
+                                painter.drawRect(rectangle);
+                            }
+                        }
+                    }
+                    // ------------ selected vertices of the edited curves
+                    color = QColor(100, 100, 255);
+                    painter.setBrush(color);
+                    for (int k = 0; k < vectorSelection.vertex.size(); k++)
+                    {
+                        VertexRef vertexRef = vectorSelection.vertex.at(k);
+                        QPointF vertexPoint = vectorImage->getVertex(vertexRef);
+                        QRectF rectangle0 = QRectF(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
+                        painter.drawRect(rectangle0);
+                    }
+                    // ----- paints the closest vertices
+                    color = QColor(255, 0, 0);
+                    painter.setBrush(color);
+                    QList<VertexRef> closestVertices = selectMan->closestVertices();
+                    if (vectorSelection.curve.size() > 0)
+                    {
+                        for (int k = 0; k < closestVertices.size(); k++)
+                        {
+                            VertexRef vertexRef = closestVertices.at(k);
+                            QPointF vertexPoint = vectorImage->getVertex(vertexRef);
+
+                            QRectF rectangle = QRectF(mEditor->view()->mapCanvasToScreen(vertexPoint) - QPointF(3.0, 3.0), QSizeF(7, 7));
+                            painter.drawRect(rectangle);
+                        }
+                    }
+                    painter.restore();
+                    break;
+                }
+                default:
+                {
+                    break;
+                }
+                } // end switch
+            }
+        }
+
         mOverlayPainter.paint(painter, rect());
 
         // paints the selection outline
@@ -920,7 +1038,7 @@ void ScribbleArea::paintSelectionVisuals(QPainter &painter)
     mSelectionPainter.paint(painter,
                             object,
                             mEditor->currentLayerIndex(),
-                            static_cast<const TransformSettings*>(editor()->tools()->getTool(TRANSFORMTOOL)->settings()),
+                            static_cast<const TransformTool*>(editor()->tools()->getTool(SELECT))->transformSettings(),
                             params);
     emit selectionUpdated();
 }
@@ -1037,7 +1155,7 @@ void ScribbleArea::setGaussianGradient(QGradient &gradient, QColor color, qreal 
 
 void ScribbleArea::drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm)
 {
-    mTiledBuffer.drawPath(path, pen, brush, cm, mPrefs->isOn(SETTING::ANTIALIAS));
+    mTiledBuffer.drawPath(mEditor->view()->mapScreenToCanvas(path), pen, brush, cm, mPrefs->isOn(SETTING::ANTIALIAS));
 }
 
 void ScribbleArea::drawPen(QPointF thePoint, qreal brushWidth, QColor fillColor, bool useAA)
@@ -1218,7 +1336,7 @@ void ScribbleArea::applyTransformedSelection()
 
     Layer* layer = mEditor->layers()->currentLayer();
 
-    bool useAA = mEditor->tools()->getTool(ToolType::MOVE)->settings()->getInfo(TransformSettings::ANTI_ALIASING_ENABLED).boolValue();
+    bool useAA = mEditor->tools()->getTool(ToolType::MOVE)->toolProperties().getInfo(TransformToolProperties::ANTI_ALIASING_ENABLED).boolValue();
 
     if (layer == nullptr) { return; }
 
@@ -1282,6 +1400,12 @@ void ScribbleArea::cancelTransformedSelection()
         mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
         updateFrame();
     }
+}
+
+void ScribbleArea::toggleThinLines()
+{
+    bool previousValue = mPrefs->isOn(SETTING::INVISIBLE_LINES);
+    setEffect(SETTING::INVISIBLE_LINES, !previousValue);
 }
 
 void ScribbleArea::setLayerVisibility(LayerVisibility visibility)

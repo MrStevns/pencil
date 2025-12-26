@@ -32,7 +32,6 @@ class BucketOptionsWidget;
 class CameraOptionsWidget;
 class StrokeOptionsWidget;
 class TransformOptionsWidget;
-class PolylineOptionsWidget;
 
 class ToolOptionWidget : public BaseDockWidget
 {
@@ -62,7 +61,6 @@ private:
     CameraOptionsWidget* mCameraOptionsWidget = nullptr;
     StrokeOptionsWidget* mStrokeOptionsWidget = nullptr;
     TransformOptionsWidget* mTransformOptionsWidget = nullptr;
-    PolylineOptionsWidget* mPolylineOptionsWidget = nullptr;
 };
 
 #endif // TOOLOPTIONDOCKWIDGET_H

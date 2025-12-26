@@ -18,7 +18,6 @@ GNU General Public License for more details.
 
 #include <QPainter>
 #include <QtMath>
-#include <QDebug>
 
 CanvasCursorPainter::CanvasCursorPainter()
 {
@@ -57,6 +56,7 @@ void CanvasCursorPainter::paintWidthCursor(QPainter& painter, const QRect& blitR
     // Only draw the cross when the width is bigger than the cross itself
     if (widthCircleBounds.width() > 8 && mOptions.showCross) {
         painter.save();
+
         const QPointF& pos = painter.transform().mapRect(widthCircleBounds).center();
         painter.resetTransform();
         painter.drawLine(QPointF(pos.x() - 2, pos.y()), QPointF(pos.x() + 2, pos.y()));

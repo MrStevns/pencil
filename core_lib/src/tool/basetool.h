@@ -26,8 +26,7 @@ GNU General Public License for more details.
 #include <QSet>
 #include <QEvent>
 #include "pencildef.h"
-#include "preferencesdef.h"
-#include "toolsettings.h"
+#include "toolproperties.h"
 #include "layer.h"
 
 class QPixmap;
@@ -49,6 +48,7 @@ class BaseTool : public QObject
     Q_OBJECT
 protected:
     explicit BaseTool(QObject* parent);
+    virtual ~BaseTool();
 public:
     static QString TypeName(ToolType);
     QString typeName() { return TypeName(type()); }
@@ -56,9 +56,8 @@ public:
     void initialize(Editor* editor);
 
     virtual ToolType type() const = 0;
-    virtual ToolCategory category() const { return ToolCategory::BASETOOL; }
 
-    virtual void createSettings(ToolSettings* settings = nullptr);
+    virtual ToolProperties& toolProperties() = 0;
     virtual void loadSettings() = 0;
     void saveSettings();
     void resetSettings();
@@ -88,8 +87,6 @@ public:
      */
     virtual bool isActive() const;
 
-    ToolSettings* settings() { Q_ASSERT(mSettings); return mSettings; }
-
     virtual void paint(QPainter& painter, const QRect& blitRect) { Q_UNUSED(painter) Q_UNUSED(blitRect) }
 
     /// Will clean up `active` connections
@@ -99,26 +96,22 @@ public:
     /// `leavingThisTool` will handle the cleanup of `active` connections
     virtual bool enteringThisTool() { return true; }
 
+    virtual QPainter::CompositionMode compositionMode() const;
+
     bool isPropertyEnabled(int rawType);
     bool isDrawingTool();
-
-    virtual QPainter::CompositionMode compositionMode() const;
 
 signals:
     bool isActiveChanged(ToolType, bool);
 
-public slots:
-    virtual void onPreferenceChanged(SETTING) { }
-
 protected:
-
     Editor* editor() { return mEditor; }
     QHash<int, QSet<Layer::LAYER_TYPE>> mPropertyUsed;
-    ToolSettings* mSettings = nullptr;
 
     Editor* mEditor = nullptr;
     ScribbleArea* mScribbleArea = nullptr;
     QList<QMetaObject::Connection> mActiveConnections;
+
 };
 
 #endif // BASETOOL_H

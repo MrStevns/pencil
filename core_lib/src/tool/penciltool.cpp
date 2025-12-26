@@ -41,39 +41,40 @@ void PencilTool::loadSettings()
 {
     StrokeTool::loadSettings();
 
-    mPropertyUsed[StrokeSettings::WIDTH_VALUE] = { Layer::BITMAP };
-    mPropertyUsed[StrokeSettings::PRESSURE_ENABLED] = { Layer::BITMAP };
-    mPropertyUsed[StrokeSettings::FILLCONTOUR_ENABLED] = { Layer::VECTOR };
-    mPropertyUsed[StrokeSettings::STABILIZATION_VALUE] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::WIDTH_VALUE] = { Layer::BITMAP };
+    mPropertyUsed[StrokeToolProperties::PRESSURE_ENABLED] = { Layer::BITMAP };
+    mPropertyUsed[StrokeToolProperties::FILLCONTOUR_ENABLED] = { Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::STABILIZATION_VALUE] = { Layer::BITMAP, Layer::VECTOR };
 
-    QSettings settings(PENCIL2D, PENCIL2D);
+    QSettings pencilSettings(PENCIL2D, PENCIL2D);
 
     QHash<int, PropertyInfo> info;
 
-    info[StrokeSettings::WIDTH_VALUE] = { WIDTH_MIN, WIDTH_MAX, 4.0 };
-    info[StrokeSettings::FEATHER_VALUE] = { FEATHER_MIN, FEATHER_MAX, 50.0 };
-    info[StrokeSettings::PRESSURE_ENABLED] = true;
-    info[StrokeSettings::FEATHER_ENABLED] = false;
-    info[StrokeSettings::STABILIZATION_VALUE] = { StabilizationLevel::NONE, StabilizationLevel::STRONG, StabilizationLevel::STRONG };
-    info[StrokeSettings::FILLCONTOUR_ENABLED] = false;
+    info[StrokeToolProperties::WIDTH_VALUE] = { WIDTH_MIN, WIDTH_MAX, 4.0 };
+    info[StrokeToolProperties::FEATHER_VALUE] = { FEATHER_MIN, FEATHER_MAX, 50.0 };
+    info[StrokeToolProperties::PRESSURE_ENABLED] = true;
+    info[StrokeToolProperties::FEATHER_ENABLED] = false;
+    info[StrokeToolProperties::STABILIZATION_VALUE] = { StabilizationLevel::NONE, StabilizationLevel::STRONG, StabilizationLevel::STRONG };
+    info[StrokeToolProperties::FILLCONTOUR_ENABLED] = false;
 
-    mStrokeSettings->load(typeName(), settings, info);
+    toolProperties().insertProperties(info);
+    toolProperties().loadFrom(typeName(), pencilSettings);
 
-    if (mStrokeSettings->requireMigration(settings, 1)) {
-        mStrokeSettings->setBaseValue(StrokeSettings::WIDTH_VALUE, settings.value("pencilWidth", 4.0).toReal());
-        mStrokeSettings->setBaseValue(StrokeSettings::PRESSURE_ENABLED, settings.value("pencilPressure", true).toBool());
-        mStrokeSettings->setBaseValue(StrokeSettings::STABILIZATION_VALUE, settings.value("pencilLineStabilization", StabilizationLevel::STRONG).toInt());
-        mStrokeSettings->setBaseValue(StrokeSettings::FILLCONTOUR_ENABLED, settings.value("FillContour", false).toBool());
+    if (toolProperties().requireMigration(pencilSettings, ToolProperties::VERSION_1)) {
+        toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, pencilSettings.value("pencilWidth", 4.0).toReal());
+        toolProperties().setBaseValue(StrokeToolProperties::PRESSURE_ENABLED, pencilSettings.value("pencilPressure", true).toBool());
+        toolProperties().setBaseValue(StrokeToolProperties::STABILIZATION_VALUE, pencilSettings.value("pencilLineStabilization", StabilizationLevel::STRONG).toInt());
+        toolProperties().setBaseValue(StrokeToolProperties::FILLCONTOUR_ENABLED, pencilSettings.value("FillContour", false).toBool());
 
-        settings.remove("pencilWidth");
-        settings.remove("pencilPressure");
-        settings.remove("pencilLineStabilization");
-        settings.remove("FillContour");
+        pencilSettings.remove("pencilWidth");
+        pencilSettings.remove("pencilPressure");
+        pencilSettings.remove("pencilLineStabilization");
+        pencilSettings.remove("FillContour");
     }
 
-    mInterpolator.setStabilizerLevel(mStrokeSettings->stabilizerLevel());
+    toolProperties().setBaseValue(StrokeToolProperties::FEATHER_VALUE, info[StrokeToolProperties::FEATHER_VALUE].defaultReal());
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeSettings::WIDTH_VALUE);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeToolProperties::WIDTH_VALUE);
 }
 
 QCursor PencilTool::cursor()
@@ -136,7 +137,7 @@ void PencilTool::applyVectorBuffer(VectorImage* vectorImage)
 
     vectorImage->addCurve(curve, qAbs(mEditor->view()->scaling()), false);
 
-    if (mStrokeSettings->fillContourEnabled())
+    if (mSettings.fillContourEnabled())
     {
         vectorImage->fillContour(mStrokePoints,
                                  mEditor->color()->frontColorNumber());
