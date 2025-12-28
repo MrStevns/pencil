@@ -116,8 +116,9 @@ StrokeDynamics SmudgeTool::createDynamics() const
 
     dynamics.dabSpacing = 1.0;
     dynamics.canSingleDab = false;
-    dynamics.width = mSettings.width();
-    dynamics.feather = mSettings.feather();
+    qreal mTempWidth = mSettings.width();
+    dynamics.width = mSettings.width() + 0.0 * mSettings.feather();
+    dynamics.feather = qMax(0.0, mTempWidth - 0.5 * mSettings.feather()) / dynamics.width;
     dynamics.opacity = 1.0;
     dynamics.color = QColor(255,255,255);
 
@@ -129,7 +130,7 @@ void SmudgeTool::pointerPressEvent(PointerEvent* event)
     StrokeTool::pointerPressEvent(event);
 
     mMaskImage = createMask();
-    mLastDab = QPoint();
+    mLastDab = getCurrentPoint().toPoint();
 
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer == nullptr || !layer->isPaintable()) { return; }
@@ -180,6 +181,29 @@ void SmudgeTool::drawStroke()
     // mTargetImage = sourceImage->copy();
 
     doStroke();
+
+    // qreal brushStep = 2.0;
+    // qreal distance = QLineF(mLastDab, getCurrentPoint()).length();
+    // int steps = qRound(distance / brushStep);
+
+    // StrokeDynamics dynamics = createDynamics();
+
+    // QPointF sourcePoint = mLastDab;
+    // for (int i = 0; i < steps; i++)
+    // {
+    //     mTargetImage.paste(&mScribbleArea->mTiledBuffer);
+    //     QPointF targetPoint = mLastDab + (i + 1) * (brushStep) * (getCurrentPoint() - mLastDab) / distance;
+    //     liquifyBrush(&mTargetImage,
+    //               sourcePoint,
+    //               targetPoint,
+    //               dynamics);
+
+    //     if (i == (steps - 1))
+    //     {
+    //         mLastDab = targetPoint.toPoint();
+    //     }
+    //     sourcePoint = targetPoint;
+    // }
 }
 
 void SmudgeTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
@@ -228,42 +252,78 @@ void SmudgeTool::liquifyBrush(BitmapImage *bmiSource_, QPointF srcPoint_, QPoint
     BitmapImage bmiTmpClip;
     bmiTmpClip.drawRect(trgRect, Qt::NoPen, radialGrad, QPainter::CompositionMode_Source, dynamics.antiAliasingEnabled);
 
+    BitmapImage maskImage(trgRect.toRect(), Qt::black);
+    maskImage.image()->setAlphaChannel(mMaskImage);
+    // bmiTmpClip.drawRect(trgRect, Qt::NoPen, radialGrad, QPainter::CompositionMode_Source, dynamics.antiAliasingEnabled);
+
     // Slide texture/pixels of the source image
     qreal factor, factorGrad;
+
+    // qDebug() << qAlpha(maskImage.constScanLine(thePoint_.x(), thePoint_.y()));
 
     for (int yb = bmiTmpClip.top(); yb < bmiTmpClip.bottom(); yb++)
     {
         for (int xb = bmiTmpClip.left(); xb < bmiTmpClip.right(); xb++)
         {
             QColor color;
-            color.setRgba(bmiTmpClip.pixel(xb, yb));
-            factorGrad = color.alphaF(); // any from r g b a is ok
+            color.setRgba(maskImage.pixel(xb, yb));
+            factorGrad = static_cast<qreal>(qAlpha(maskImage.constScanLine(xb, yb))) / 255.0; // any from r g b a is ok
 
-            int xa = xb - factorGrad * delta.x();
-            int ya = yb - factorGrad * delta.y();
+            // qDebug() << factorGrad;
 
-            color.setRgba(bmiSource_->pixel(xa, ya));
-            factor = color.alphaF();
+            int xa = qRound(xb - factorGrad * delta.x());
+            int ya = qRound(yb - factorGrad * delta.y());
 
-            if (factor > 0.0)
-            {
-                color.setRed(color.red() / factor);
-                color.setGreen(color.green() / factor);
-                color.setBlue(color.blue() / factor);
-                color.setAlpha(255); // Premultiplied color
+            QRgb sourceColor = bmiSource_->pixel(xa, ya);
 
-                color.setRed(color.red()*factorGrad);
-                color.setGreen(color.green()*factorGrad);
-                color.setBlue(color.blue()*factorGrad);
-                color.setAlpha(255 * factorGrad); // Premultiplied color
-
-                bmiTmpClip.setPixel(xb, yb, color.rgba());
+            if (sourceColor == 0) {
+                bmiTmpClip.setPixel(xb, yb, qRgba(0,0,0,0));
+                continue;
             }
-            else
+
+            color.setRgba(sourceColor);
+
+            // QColor color;
+            // color.setRgba(sourceColor);
+
+            int sourceA = qAlpha(sourceColor);
+            if (sourceA == 0)
             {
-                bmiTmpClip.setPixel(xb, yb, qRgba(255, 255, 255, 0));
+                bmiTmpClip.setPixel(xb, yb, 0);
+                continue;
             }
+
+            int r = qRed(sourceColor) * factorGrad;
+            int g = qGreen(sourceColor) * factorGrad;
+            int b = qBlue(sourceColor) * factorGrad;
+            int a = sourceA * factorGrad;
+
+            bmiTmpClip.setPixel(xb, yb, qRgba(r, g, b, a));
+
+            // factor = color.alphaF();
+
+            // if (factor > 0.0)
+            // {
+            //     color.setRed(color.red() / factor);
+            //     color.setGreen(color.green() / factor);
+            //     color.setBlue(color.blue() / factor);
+            //     color.setAlpha(255 / factor); // Premultiplied color
+
+            //     color.setRed(color.red()*factorGrad);
+            //     color.setGreen(color.green()*factorGrad);
+            //     color.setBlue(color.blue()*factorGrad);
+            //     color.setAlpha(255 * factorGrad); // Premultiplied color
+
+            //     bmiTmpClip.setPixel(xb, yb, color.rgba());
+            // }
+            // else
+            // {
+            //     bmiTmpClip.setPixel(xb, yb, qRgba(0, 0, 0, 0));
+            // }
         }
     }
+    mTestImage = *bmiTmpClip.image();
     mScribbleArea->mTiledBuffer.drawImage(*bmiTmpClip.image(), bmiTmpClip.bounds(), dynamics.blending, dynamics.antiAliasingEnabled);
+
+    // mScribbleArea->update();
 }
