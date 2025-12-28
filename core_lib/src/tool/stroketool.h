@@ -114,6 +114,7 @@ protected:
     virtual void applyVectorBuffer(VectorImage* vectorImage);
     virtual void applyBitmapBuffer(BitmapImage* bitmapImage);
 
+    virtual void setGaussianGradient(QGradient &gradient, QColor color, qreal opacity, qreal offset) const;
 
     QRectF cursorRect(StrokeToolProperties::Type settingType, const QPointF& point);
 

@@ -67,6 +67,8 @@ void SmudgeTool::loadSettings()
 
     mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeToolProperties::WIDTH_VALUE);
     mQuickSizingProperties.insert(Qt::ControlModifier, StrokeToolProperties::FEATHER_VALUE);
+
+    setStablizationLevel(1);
 }
 
 bool SmudgeTool::emptyFrameActionEnabled()
@@ -115,15 +117,19 @@ StrokeDynamics SmudgeTool::createDynamics() const
     dynamics.dabSpacing = 1.0;
     dynamics.canSingleDab = false;
     dynamics.width = mSettings.width();
-    dynamics.feather = qMax(0.0, dynamics.width - 0.5 * mSettings.feather()) / dynamics.width;
+    dynamics.feather = mSettings.feather();
     dynamics.opacity = 1.0;
+    dynamics.color = QColor(255,255,255);
 
     return dynamics;
 }
 
-void SmudgeTool::drawStroke()
+void SmudgeTool::pointerPressEvent(PointerEvent* event)
 {
-    StrokeTool::drawStroke();
+    StrokeTool::pointerPressEvent(event);
+
+    mMaskImage = createMask();
+    mLastDab = QPoint();
 
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer == nullptr || !layer->isPaintable()) { return; }
@@ -133,27 +139,131 @@ void SmudgeTool::drawStroke()
 
     // TODO: Figure out a better way to copy the target image
     mTargetImage = sourceImage->copy();
+}
 
-    mTargetImage.paste(&mScribbleArea->mTiledBuffer);
+void SmudgeTool::pointerReleaseEvent(PointerEvent *event)
+{
+    StrokeTool::pointerReleaseEvent(event);
+
+    mLastDab = QPoint();
+}
+
+QImage SmudgeTool::createMask() const
+{
+    StrokeDynamics dynamics = createDynamics();
+    qreal brushRadius = 0.5 * dynamics.width;
+    QRadialGradient radialGrad(brushRadius, brushRadius, brushRadius);
+    setGaussianGradient(radialGrad, dynamics.color, dynamics.opacity, dynamics.feather);
+
+    QImage mask(dynamics.width, dynamics.width, QImage::Format_Alpha8);
+    mask.fill(Qt::transparent);
+
+    QPainter maskPainter(&mask);
+    maskPainter.setPen(Qt::NoPen);
+    maskPainter.setBrush(radialGrad);
+    maskPainter.drawEllipse(0,0, dynamics.width, dynamics.width);
+
+    return mask;
+}
+
+void SmudgeTool::drawStroke()
+{
+    StrokeTool::drawStroke();
+
+    // Layer* layer = mEditor->layers()->currentLayer();
+    // if (layer == nullptr || !layer->isPaintable()) { return; }
+
+    // BitmapImage *sourceImage = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(mEditor->currentFrame(), 0);
+    // if (sourceImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
+
+    // // TODO: Figure out a better way to copy the target image
+    // mTargetImage = sourceImage->copy();
+
     doStroke();
 }
 
 void SmudgeTool::drawDab(const QPointF& point, const StrokeDynamics& dynamics)
 {
-    if (toolMode == 0) {
-        mScribbleArea->blurBrush(&mTargetImage,
-                             getLastPoint(),
-                             point,
-                             dynamics.width,
-                             dynamics.feather,
-                             dynamics.opacity);
-    } else {
-        mScribbleArea->liquifyBrush(&mTargetImage,
-                                    getLastPoint(),
-                                    point,
-                                    dynamics.width,
-                                    dynamics.feather,
-                                    dynamics.opacity);
+    QPoint dabPoint = point.toPoint();
+    if (!mLastDab.isNull() && mLastDab != dabPoint) {
+        mTargetImage.paste(&mScribbleArea->mTiledBuffer, QPainter::CompositionMode_SourceOver);
+        if (toolMode == 0) {
+            blurBrush(&mTargetImage,
+                      mLastDab,
+                      dabPoint,
+                      dynamics);
+        } else {
+            liquifyBrush(&mTargetImage,
+                         mLastDab,
+                         dabPoint,
+                         dynamics);
+        }
     }
+    mLastDab = dabPoint;
 }
 
+void SmudgeTool::blurBrush(BitmapImage *bmiSource_, QPoint prevPoint, QPoint currentPoint, const StrokeDynamics& dynamics)
+{
+    qreal brushWidth = dynamics.width;
+
+    QRect prevRect(prevPoint.x() - 0.5 * brushWidth, prevPoint.y() - 0.5 * brushWidth, brushWidth, brushWidth);
+    QRect currentRect(currentPoint.x() - 0.5 * brushWidth, currentPoint.y() - 0.5 * brushWidth, brushWidth, brushWidth);
+
+    BitmapImage bmiSrcClip = bmiSource_->copy(prevRect);
+    bmiSrcClip.image()->setAlphaChannel(mMaskImage);
+
+    mScribbleArea->mTiledBuffer.drawImage(*bmiSrcClip.image(), currentRect, dynamics.blending, dynamics.antiAliasingEnabled);
+}
+
+void SmudgeTool::liquifyBrush(BitmapImage *bmiSource_, QPointF srcPoint_, QPointF thePoint_, const StrokeDynamics& dynamics)
+{
+    qreal brushWidth = dynamics.width;
+    QPointF delta = (thePoint_ - srcPoint_); // increment vector
+    QRectF trgRect(thePoint_.x() - 0.5 * brushWidth, thePoint_.y() - 0.5 * brushWidth, brushWidth, brushWidth);
+
+    QRadialGradient radialGrad(thePoint_, 0.5 * brushWidth);
+    setGaussianGradient(radialGrad, QColor(255, 255, 255, 255), dynamics.opacity, dynamics.feather);
+
+    // Create gradient brush
+    BitmapImage bmiTmpClip;
+    bmiTmpClip.drawRect(trgRect, Qt::NoPen, radialGrad, QPainter::CompositionMode_Source, dynamics.antiAliasingEnabled);
+
+    // Slide texture/pixels of the source image
+    qreal factor, factorGrad;
+
+    for (int yb = bmiTmpClip.top(); yb < bmiTmpClip.bottom(); yb++)
+    {
+        for (int xb = bmiTmpClip.left(); xb < bmiTmpClip.right(); xb++)
+        {
+            QColor color;
+            color.setRgba(bmiTmpClip.pixel(xb, yb));
+            factorGrad = color.alphaF(); // any from r g b a is ok
+
+            int xa = xb - factorGrad * delta.x();
+            int ya = yb - factorGrad * delta.y();
+
+            color.setRgba(bmiSource_->pixel(xa, ya));
+            factor = color.alphaF();
+
+            if (factor > 0.0)
+            {
+                color.setRed(color.red() / factor);
+                color.setGreen(color.green() / factor);
+                color.setBlue(color.blue() / factor);
+                color.setAlpha(255); // Premultiplied color
+
+                color.setRed(color.red()*factorGrad);
+                color.setGreen(color.green()*factorGrad);
+                color.setBlue(color.blue()*factorGrad);
+                color.setAlpha(255 * factorGrad); // Premultiplied color
+
+                bmiTmpClip.setPixel(xb, yb, color.rgba());
+            }
+            else
+            {
+                bmiTmpClip.setPixel(xb, yb, qRgba(255, 255, 255, 0));
+            }
+        }
+    }
+    mScribbleArea->mTiledBuffer.drawImage(*bmiTmpClip.image(), bmiTmpClip.bounds(), dynamics.blending, dynamics.antiAliasingEnabled);
+}

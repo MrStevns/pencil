@@ -42,17 +42,34 @@ public:
     void drawStroke() override;
 
     StrokeDynamics createDynamics() const override;
+
+    void pointerPressEvent(PointerEvent* event) override;
+    void pointerReleaseEvent(PointerEvent *event) override;
     
 protected:
     bool emptyFrameActionEnabled() override;
 
 private:
+
+    QImage createMask() const;
+
+    void blurBrush(BitmapImage *bmiSource_, QPoint srcPoint_, QPoint thePoint_, const StrokeDynamics& dynamics);
+    void liquifyBrush(BitmapImage *bmiSource_, QPointF srcPoint_, QPointF thePoint_, const StrokeDynamics& dynamics);
+
     void drawDab(const QPointF& point, const StrokeDynamics& dynamics) override;
 
     uint toolMode;  // 0=normal/smooth 1=smudge - todo: move to basetool? could be useful
     BitmapImage mTargetImage;
 
+    QImage mTestImage;
+    QImage mMaskImage;
+
     StrokeToolProperties mSettings;
+
+    QPoint mLastDab;
+
+    QRectF debug1;
+    QRectF debug2;
 };
 
 #endif // SMUDGETOOL_H

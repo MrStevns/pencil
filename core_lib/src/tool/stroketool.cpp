@@ -328,6 +328,26 @@ void StrokeTool::applyVectorBuffer(VectorImage*)
     mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
 }
 
+void StrokeTool::setGaussianGradient(QGradient &gradient, QColor color, qreal opacity, qreal offset) const
+{
+    if (offset < 0) { offset = 0; }
+    if (offset > 100) { offset = 100; }
+
+    int r = color.red();
+    int g = color.green();
+    int b = color.blue();
+    qreal a = color.alphaF();
+
+    int mainColorAlpha = qRound(a * 255 * opacity);
+
+    // the more feather (offset), the more softness (opacity)
+    int alphaAdded = qRound((mainColorAlpha * offset) / 100);
+
+    gradient.setColorAt(0.0, QColor(r, g, b, mainColorAlpha - alphaAdded));
+    gradient.setColorAt(1.0, QColor(r, g, b, 0));
+    gradient.setColorAt(1.0 - (offset / 100.0), QColor(r, g, b, mainColorAlpha - alphaAdded));
+}
+
 bool StrokeTool::handleQuickSizing(PointerEvent* event)
 {
     if (!mQuickSizingEnabled) { return false; }
