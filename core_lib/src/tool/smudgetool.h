@@ -66,6 +66,8 @@ private:
 
     StrokeToolProperties mSettings;
 
+    QVector<QPointF> mDisplacementBuffer;
+
     QPoint mLastDab;
 
     QRectF debug1;
