@@ -67,8 +67,6 @@ void SmudgeTool::loadSettings()
 
     mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeToolProperties::WIDTH_VALUE);
     mQuickSizingProperties.insert(Qt::ControlModifier, StrokeToolProperties::FEATHER_VALUE);
-
-    setStablizationLevel(1);
 }
 
 bool SmudgeTool::emptyFrameActionEnabled()

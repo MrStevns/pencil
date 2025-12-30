@@ -83,8 +83,6 @@ void StrokeTool::loadSettings()
     toolProperties().insertProperties(info);
     toolProperties().loadFrom(typeName(), pencilSettings);
 
-    mInterpolator.setStabilizerLevel(toolProperties().getInfo(StrokeToolProperties::STABILIZATION_VALUE).intValue());
-
     /// Given the way that we update preferences currently, this connection should not be removed
     /// when the tool is not active.
     connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &StrokeTool::onPreferenceChanged);
@@ -542,13 +540,6 @@ void StrokeTool::paint(QPainter& painter, const QRect& blitRect)
     mWidthCursorPainter.paint(painter, blitRect);
 
     painter.restore();
-}
-
-void StrokeTool::setStablizationLevel(int level)
-{
-    toolProperties().setBaseValue(StrokeToolProperties::STABILIZATION_VALUE, level);
-    mInterpolator.setStabilizerLevel(level);
-    emit stabilizationLevelChanged(level);
 }
 
 void StrokeTool::setFeatherEnabled(bool enabled)

@@ -35,10 +35,8 @@ public:
     void pointerMoveEvent(PointerEvent* event);
     void pointerReleaseEvent(PointerEvent* event);
     void setPressure(float pressure);
-    void setStabilizerLevel(int level);
 
     float getPressure() { return mTabletPressure; }
-    int getStabilizerLevel() { return mStabilizerLevel; }
     bool isActive() const { return mStrokeStarted; }
 
     QList<QPointF> interpolateStroke();
@@ -47,8 +45,6 @@ public:
     void interpolatePollAndPaint();
     void interpolateEnd();
     void smoothMousePos(QPointF pos);
-    QList<QPointF> meanInpolOp(QList<QPointF> points, qreal x, qreal y, qreal pressure);
-    QList<QPointF> noInpolOp(QList<QPointF> points);
     QList<QPointF> catmulInpolOp(const QList<QPointF>& points);
 
     QPointF getCurrentPixel() const { return mCurrentPixel; }
@@ -74,12 +70,9 @@ private:
     QPointF mLastPixel = { 0, 0 };
     QPointF mLastInterpolated = { 0, 0 };
 
-    QPointF m_previousTangent;
-    bool    mHasTangent = false;
     bool    mStrokeStarted = false;
     bool    mTabletInUse = false;
     float   mTabletPressure = 1.f;
-    int     mStabilizerLevel = 0;
 };
 
 #endif // STROKEINTERPOLATOR_H

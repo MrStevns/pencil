@@ -102,48 +102,6 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,1">
-     <item>
-      <widget class="QLabel" name="stabilizerLabel">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Stabilizer</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="inpolLevelsCombo">
-       <property name="toolTip">
-        <string>Use stabilizer to interpolate strokes</string>
-       </property>
-       <property name="currentText">
-        <string comment="Stablizer level">None</string>
-       </property>
-       <item>
-        <property name="text">
-         <string comment="Stabilizer option">None</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string comment="Stabilizer option">Simple</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string comment="Stabilizer option">Strong</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <property name="topMargin">
       <number>0</number>

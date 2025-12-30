@@ -72,7 +72,6 @@ public:
 
     QPainter::CompositionMode compositionMode() const override;
 
-    virtual void setStablizationLevel(int level);
     virtual void setWidth(qreal width);
     virtual void setFeather(qreal feather);
     virtual void setPressureEnabled(bool enabled);

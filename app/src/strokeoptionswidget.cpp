@@ -97,10 +97,6 @@ void StrokeOptionsWidget::updateUI()
         setAntiAliasingEnabled(p.AntiAliasingEnabled());
     }
 
-    if (strokeTool->isPropertyEnabled(StrokeToolProperties::STABILIZATION_VALUE)) {
-        setStabilizerLevel(p.stabilizerLevel());
-    }
-
     if (strokeTool->isPropertyEnabled(StrokeToolProperties::FILLCONTOUR_ENABLED)) {
         setFillContourEnabled(p.fillContourEnabled());
     }
@@ -130,7 +126,6 @@ void StrokeOptionsWidget::makeConnectionFromModelToUI(StrokeTool* strokeTool)
     connect(strokeTool, &StrokeTool::featherChanged, this, &StrokeOptionsWidget::setFeatherValue);
     connect(strokeTool, &StrokeTool::featherEnabledChanged, this, &StrokeOptionsWidget::setFeatherEnabled);
     connect(strokeTool, &StrokeTool::pressureEnabledChanged, this, &StrokeOptionsWidget::setPressureEnabled);
-    connect(strokeTool, &StrokeTool::stabilizationLevelChanged, this, &StrokeOptionsWidget::setStabilizerLevel);
     connect(strokeTool, &StrokeTool::antiAliasingEnabledChanged, this, &StrokeOptionsWidget::setAntiAliasingEnabled);
     connect(strokeTool, &StrokeTool::fillContourEnabledChanged, this, &StrokeOptionsWidget::setFillContourEnabled);
     connect(strokeTool, &StrokeTool::invisibleStrokeEnabledChanged, this, &StrokeOptionsWidget::setPenInvisibilityEnabled);
@@ -193,10 +188,6 @@ void StrokeOptionsWidget::makeConnectionFromUIToModel()
 
     clearFocusOnFinished(ui->sizeSpinBox);
     clearFocusOnFinished(ui->featherSpinBox);
-
-    connect(ui->inpolLevelsCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated), [=](int value) {
-        mCurrentTool->setStablizationLevel(value);
-    });
 }
 
 void StrokeOptionsWidget::setVisibility(BaseTool* tool)
@@ -209,8 +200,6 @@ void StrokeOptionsWidget::setVisibility(BaseTool* tool)
     ui->usePressureBox->setVisible(tool->isPropertyEnabled(StrokeToolProperties::PRESSURE_ENABLED));
     ui->makeInvisibleBox->setVisible(tool->isPropertyEnabled(StrokeToolProperties::INVISIBILITY_ENABLED));
     ui->useAABox->setVisible(tool->isPropertyEnabled(StrokeToolProperties::ANTI_ALIASING_ENABLED));
-    ui->stabilizerLabel->setVisible(tool->isPropertyEnabled(StrokeToolProperties::STABILIZATION_VALUE));
-    ui->inpolLevelsCombo->setVisible(tool->isPropertyEnabled(StrokeToolProperties::STABILIZATION_VALUE));
     ui->fillContourBox->setVisible(tool->isPropertyEnabled(StrokeToolProperties::FILLCONTOUR_ENABLED));
     ui->useBezierBox->setVisible(tool->isPropertyEnabled(PolylineToolProperties::BEZIERPATH_ENABLED));
     ui->useClosedPathBox->setVisible(tool->isPropertyEnabled(PolylineToolProperties::CLOSEDPATH_ENABLED));
@@ -256,12 +245,6 @@ void StrokeOptionsWidget::setAntiAliasingEnabled(bool enabled)
 {
     QSignalBlocker b(ui->useAABox);
     ui->useAABox->setChecked(enabled);
-}
-
-void StrokeOptionsWidget::setStabilizerLevel(int level)
-{
-    QSignalBlocker b(ui->inpolLevelsCombo);
-    ui->inpolLevelsCombo->setCurrentIndex(level);
 }
 
 void StrokeOptionsWidget::setFillContourEnabled(bool enabled)
