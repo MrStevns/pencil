@@ -76,6 +76,7 @@ void StrokeInterpolator::poll(QPointF pos, qreal pressure)
     mLastPixel = mCurrentPixel;
     mCurrentPixel = pos;
     mLastInterpolated = mCurrentPixel;
+    mPressure = pressure;
 
     // shift queue
     while (strokeQueue.size() >= STROKE_QUEUE_LENGTH)
@@ -96,19 +97,33 @@ void StrokeInterpolator::poll(QPointF pos, qreal pressure)
 }
 
 
-QPointF StrokeInterpolator::interpolateStart(QPointF firstPoint)
+StrokeSegment StrokeInterpolator::interpolateStart(QPointF firstPoint)
 {
     // Clear queue
     strokeQueue.clear();
     pressureQueue.clear();
 
     mLastPixel = firstPoint;
-    return firstPoint;
+
+    // mLastPixel = firstPoint;
+    StrokeSegment segment;
+    segment.positions << firstPoint;
+    segment.pressures << mPressure;
+
+    return segment;
 }
 
-QList<QPointF> StrokeInterpolator::interpolateStroke()
+StrokeSegment StrokeInterpolator::interpolateStroke()
 {
-    return catmulInpolOp(strokeQueue);
+    StrokeSegment segment;
+    segment.positions = catmulInpolOp(strokeQueue);
+
+    for (int i = 0; i < segment.positions.count(); i += 1) {
+        pressureQueue << mPressure;
+    }
+    segment.pressures = pressureQueue;
+
+    return segment;
 }
 
 QPointF StrokeInterpolator::catmullRomInterpolate(const QPointF& p0, const QPointF& p1,
@@ -128,9 +143,9 @@ QPointF StrokeInterpolator::catmullRomInterpolate(const QPointF& p0, const QPoin
 }
 
 
-QList<QPointF> StrokeInterpolator::catmulInpolOp(const QList<QPointF>& points) const
+QQueue<QPointF> StrokeInterpolator::catmulInpolOp(const QQueue<QPointF>& points) const
 {
-    QList<QPointF> result;
+    QQueue<QPointF> result;
 
     // You need at least 4 points for Catmull-Rom
     if (points.size() < 4)

@@ -1112,7 +1112,7 @@ void ScribbleArea::setGaussianGradient(QGradient &gradient, QColor color, qreal 
 
 void ScribbleArea::drawPath(QPainterPath path, QPen pen, QBrush brush, QPainter::CompositionMode cm)
 {
-    mTiledBuffer.drawPath(mEditor->view()->mapScreenToCanvas(path), pen, brush, cm, mPrefs->isOn(SETTING::ANTIALIAS));
+    mTiledBuffer.drawPath(path, pen, brush, cm, mPrefs->isOn(SETTING::ANTIALIAS));
 }
 
 void ScribbleArea::drawPen(QPointF thePoint, qreal brushWidth, QColor fillColor, bool useAA)

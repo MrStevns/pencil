@@ -105,7 +105,7 @@ void PencilTool::drawStroke()
                  Qt::RoundCap,
                  Qt::RoundJoin);
 
-        doPath(mStrokeSegment, Qt::NoBrush, pen);
+        doPath(Qt::NoBrush, pen);
     }
 }
 

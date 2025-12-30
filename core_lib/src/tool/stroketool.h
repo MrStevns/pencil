@@ -81,7 +81,7 @@ public:
     virtual void setStrokeInvisibleEnabled(bool enabled);
 
     void doStroke();
-    void doPath(const QList<QPointF>& points, QBrush brush, QPen pen);
+    void doPath(QBrush brush, QPen pen);
 
     void applyKeyFrameBuffer();
 
@@ -122,6 +122,7 @@ protected:
     QHash<Qt::KeyboardModifiers, int> mQuickSizingProperties;
     bool mFirstDraw = false;
 
+    // Vector data
     QList<QPointF> mStrokePoints;
     QList<qreal> mStrokePressures;
 

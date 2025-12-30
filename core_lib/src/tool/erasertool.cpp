@@ -115,7 +115,7 @@ void EraserTool::drawStroke()
         const StrokeDynamics& dynamics = createDynamics();
         QPen pen(Qt::white, dynamics.width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
-        doPath(mStrokeSegment, Qt::NoBrush, pen);
+        doPath(Qt::NoBrush, pen);
     }
 }
 

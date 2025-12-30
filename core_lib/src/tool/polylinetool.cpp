@@ -182,7 +182,7 @@ void PolylineTool::pointerDoubleClickEvent(PointerEvent* event)
 
 void PolylineTool::drawDab(const QPointF &point, const StrokeDynamics &dynamics)
 {
-
+    // Unused
 }
 
 void PolylineTool::removeLastPolylineSegment()

@@ -23,6 +23,10 @@ GNU General Public License for more details.
 #include <QList>
 #include <QTimer>
 
+struct StrokeSegment {
+    QQueue<QPointF> positions;
+    QQueue<qreal> pressures;
+};
 
 class PointerEvent;
 
@@ -37,11 +41,10 @@ public:
 
     bool isActive() const { return mStrokeStarted; }
 
-    QList<QPointF> interpolateStroke();
-    QPointF interpolateStart(QPointF firstPoint);
+    StrokeSegment interpolateStroke();
+    StrokeSegment interpolateStart(QPointF firstPoint);
     void interpolateEnd();
     void poll(QPointF pos, qreal pressure);
-    QList<QPointF> catmulInpolOp(const QList<QPointF>& points) const;
 
     QPointF getCurrentPixel() const { return mCurrentPixel; }
     QPointF getLastPixel() const { return mLastPixel; }
@@ -49,6 +52,7 @@ public:
     QPointF getCurrentPressPixel() const { return mCurrentPressPixel; }
 
 private:
+    QQueue<QPointF> catmulInpolOp(const QQueue<QPointF>& points) const;
     QPointF catmullRomInterpolate(const QPointF& p0, const QPointF& p1,
                                                       const QPointF& p2, const QPointF& p3, float t) const;
     static const int STROKE_QUEUE_LENGTH = 4; // 4 points for cubic bezier
@@ -62,6 +66,8 @@ private:
     QPointF mCurrentPixel = { 0, 0 };
     QPointF mLastPixel = { 0, 0 };
     QPointF mLastInterpolated = { 0, 0 };
+
+    qreal mPressure = 1.0;
 
     bool    mStrokeStarted = false;
     bool    mTabletInUse = false;

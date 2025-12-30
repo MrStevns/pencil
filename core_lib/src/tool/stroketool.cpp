@@ -175,13 +175,15 @@ void StrokeTool::startStroke(PointerEvent::InputType inputType)
     mFirstDraw = true;
 
     mStrokePoints.clear();
+    mStrokePressures.clear();
+    mStrokeSegment.clear();
 
     //Experimental
-    QPointF startStroke = mInterpolator.interpolateStart(getCurrentPixel());
-    startStroke = mEditor->view()->mapScreenToCanvas(startStroke);
-    mStrokePoints << startStroke;
+    StrokeSegment segment = mInterpolator.interpolateStart(getCurrentPixel());
+    mStrokePoints << segment.positions;
 
-    mStrokePressures.clear();
+    mStrokeSegment = segment.positions;
+    mStrokePressures << segment.pressures;
 
     mCurrentInputType = inputType;
     mUndoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
@@ -254,7 +256,11 @@ void StrokeTool::drawStroke()
     mStrokeDynamics = createDynamics();
     if (pixel != getLastPixel() || !mFirstDraw)
     {
-        mStrokeSegment = mInterpolator.interpolateStroke();
+        StrokeSegment segment = mInterpolator.interpolateStroke();
+
+        mStrokePoints << segment.positions;
+        mStrokeSegment = segment.positions;
+        mStrokePressures << segment.pressures;
 
         for (QPointF& point : mStrokeSegment) {
             point = mEditor->view()->mapScreenToCanvas(point);
@@ -277,18 +283,16 @@ void StrokeTool::doStroke()
     }
 }
 
-void StrokeTool::doPath(const QList<QPointF>& points, QBrush brush, QPen pen)
+void StrokeTool::doPath(QBrush brush, QPen pen)
 {
-    if (points.size() < 4) { return; }
+    if (mStrokeSegment.size() <= 0) { return; }
 
     QPainterPath path;
-    QPointF startPoint = points[0];
+    QPointF startPoint = mStrokeSegment[0];
     path.moveTo(startPoint);
-    mStrokePoints << startPoint;
-    for (int i = 1; i < points.count(); i += 1) {
-        const QPointF& point = points[i];
+    for (int i = 1; i < mStrokeSegment.count(); i += 1) {
+        const QPointF& point = mStrokeSegment[i];
         path.lineTo(point);
-        mStrokePoints << point;
     }
 
     drawPath(path, pen, brush);
@@ -307,6 +311,10 @@ void StrokeTool::applyKeyFrameBuffer()
     } else if (currentLayer->type() == Layer::VECTOR) {
         VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(currentFrame, 0);
         if (vectorImage && mStrokePoints.count() > 0) {
+            for (QPointF& point : mStrokePoints) {
+                point = mEditor->view()->mapScreenToCanvas(point);
+            }
+
             applyVectorBuffer(vectorImage);
         }
     }
