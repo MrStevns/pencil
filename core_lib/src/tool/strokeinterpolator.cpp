@@ -28,10 +28,7 @@
 StrokeInterpolator::StrokeInterpolator()
 {
     mTabletInUse = false;
-    mTabletPressure = 0;
-
     reset();
-    connect(&timer, &QTimer::timeout, this, &StrokeInterpolator::interpolatePollAndPaint);
 }
 
 void StrokeInterpolator::reset()
@@ -39,13 +36,6 @@ void StrokeInterpolator::reset()
     mStrokeStarted = false;
     pressureQueue.clear();
     strokeQueue.clear();
-    pressure = 0.0f;
-    timer.stop();
-}
-
-void StrokeInterpolator::setPressure(float pressure)
-{
-    mTabletPressure = pressure;
 }
 
 void StrokeInterpolator::pointerPressEvent(PointerEvent* event)
@@ -59,18 +49,12 @@ void StrokeInterpolator::pointerPressEvent(PointerEvent* event)
     mLastPixel = mCurrentPixel = event->viewportPos();
 
     mStrokeStarted = true;
-    setPressure(event->pressure());
-
     mTabletInUse = mTabletInUse || event->isTabletEvent();
 }
 
 void StrokeInterpolator::pointerMoveEvent(PointerEvent* event)
 {
-    smoothMousePos(event->viewportPos());
-    if(event->isTabletEvent())
-    {
-        setPressure(event->pressure());
-    }
+    poll(event->viewportPos(), event->pressure());
 }
 
 void StrokeInterpolator::pointerReleaseEvent(PointerEvent* event)
@@ -85,7 +69,7 @@ void StrokeInterpolator::pointerReleaseEvent(PointerEvent* event)
     mTabletInUse = mTabletInUse && !event->isTabletEvent();
 }
 
-void StrokeInterpolator::smoothMousePos(QPointF pos)
+void StrokeInterpolator::poll(QPointF pos, qreal pressure)
 {
     // simple interpolation
     // QPointF smoothPos = QPointF((pos.x() + mCurrentPixel.x()) / 2.0, (pos.y() + mCurrentPixel.y()) / 2.0);
@@ -97,20 +81,17 @@ void StrokeInterpolator::smoothMousePos(QPointF pos)
     while (strokeQueue.size() >= STROKE_QUEUE_LENGTH)
     {
         strokeQueue.pop_front();
+        pressureQueue.pop_front();
     }
 
     // Note(MrStevns): Was smoothPos, but we don't want a smooth pos, unless explicit said
     // maybe create a GUI control to set the smoothed position?
     strokeQueue.push_back(pos);
+    pressureQueue.push_back(pressure);
 
     if (!mStrokeStarted)
     {
         return;
-    }
-
-    if (!mTabletInUse)   // a mouse is used instead of a tablet
-    {
-        setPressure(1.0);
     }
 }
 
@@ -123,24 +104,6 @@ QPointF StrokeInterpolator::interpolateStart(QPointF firstPoint)
 
     mLastPixel = firstPoint;
     return firstPoint;
-}
-
-void StrokeInterpolator::interpolatePoll()
-{
-    // remove oldest stroke
-    strokeQueue.dequeue();
-
-    // add new stroke with the last interpolated pixel position
-    strokeQueue.enqueue(mLastInterpolated);
-}
-
-void StrokeInterpolator::interpolatePollAndPaint()
-{
-    if (!strokeQueue.isEmpty())
-    {
-        interpolatePoll();
-        interpolateStroke();
-    }
 }
 
 QList<QPointF> StrokeInterpolator::interpolateStroke()
@@ -165,7 +128,7 @@ QPointF StrokeInterpolator::catmullRomInterpolate(const QPointF& p0, const QPoin
 }
 
 
-QList<QPointF> StrokeInterpolator::catmulInpolOp(const QList<QPointF>& points)
+QList<QPointF> StrokeInterpolator::catmulInpolOp(const QList<QPointF>& points) const
 {
     QList<QPointF> result;
 
@@ -195,6 +158,5 @@ QList<QPointF> StrokeInterpolator::catmulInpolOp(const QList<QPointF>& points)
 
 void StrokeInterpolator::interpolateEnd()
 {
-    // Stop timer
-    timer.stop();
+    reset();
 }

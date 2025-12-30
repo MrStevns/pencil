@@ -182,7 +182,6 @@ void StrokeTool::startStroke(PointerEvent::InputType inputType)
     mStrokePoints << startStroke;
 
     mStrokePressures.clear();
-    mStrokePressures << mInterpolator.getPressure();
 
     mCurrentInputType = inputType;
     mUndoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
@@ -219,7 +218,6 @@ void StrokeTool::endStroke()
     applyKeyFrameBuffer();
 
     mInterpolator.interpolateEnd();
-    mStrokePressures << mInterpolator.getPressure();
     mStrokePoints.clear();
     mStrokePressures.clear();
     mStrokeSegment.clear();
@@ -261,8 +259,6 @@ void StrokeTool::drawStroke()
         for (QPointF& point : mStrokeSegment) {
             point = mEditor->view()->mapScreenToCanvas(point);
         }
-
-        mStrokePressures << mInterpolator.getPressure();
     }
     else
     {
