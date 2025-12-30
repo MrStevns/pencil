@@ -247,16 +247,11 @@ void SmudgeTool::liquifyBrush(BitmapImage *bmiSource_, QPointF srcPoint_, QPoint
     QPointF delta = (thePoint_ - srcPoint_); // increment vector
     QRectF trgRect(thePoint_.x() - 0.5 * brushWidth, thePoint_.y() - 0.5 * brushWidth, brushWidth, brushWidth);
 
-    QRadialGradient radialGrad(thePoint_, 0.5 * brushWidth);
-    setGaussianGradient(radialGrad, QColor(255, 255, 255, 255), dynamics.opacity, dynamics.feather);
-
     // Create gradient brush
     BitmapImage bmiTmpClip(trgRect.toRect(), Qt::transparent);
-    // bmiTmpClip.drawRect(trgRect, Qt::NoPen, radialGrad, QPainter::CompositionMode_Source, dynamics.antiAliasingEnabled);
 
     BitmapImage maskImage(trgRect.toRect(), Qt::black);
     maskImage.image()->setAlphaChannel(mMaskImage);
-    // bmiTmpClip.drawRect(trgRect, Qt::NoPen, radialGrad, QPainter::CompositionMode_Source, dynamics.antiAliasingEnabled);
 
     // Slide texture/pixels of the source image
     qreal factorGrad;
@@ -265,46 +260,45 @@ void SmudgeTool::liquifyBrush(BitmapImage *bmiSource_, QPointF srcPoint_, QPoint
     {
         for (int xb = bmiTmpClip.left(); xb < bmiTmpClip.right(); xb++)
         {
-            QColor color;
-            color.setRgba(maskImage.pixel(xb, yb));
-            factorGrad = static_cast<qreal>(qAlpha(maskImage.constScanLine(xb, yb))) / 255.0; // any from r g b a is ok
+            QRgb maskPixelColor = maskImage.constScanLine(xb, yb);
+            factorGrad = static_cast<qreal>(qAlpha(maskPixelColor)) / 255.0; // any from r g b a is ok
 
             int maskX = xb - trgRect.left();
             int maskY = yb - trgRect.top();
 
-            QPointF &disp = mDisplacementBuffer[maskY * bmiSource_->width() + maskX];
-            disp += delta * factorGrad;
+            QPointF disp;
+            bool insideSource = bmiSource_->image()->rect().contains(QPoint(maskX, maskY));
+            if (insideSource) {
+                QPointF& buffer = mDisplacementBuffer[maskY * bmiSource_->width() + maskX];
+                buffer += delta * factorGrad;
+                disp = buffer;
+            }
 
-            // Sample source image at displaced position
             int srcX = qRound(xb - disp.x());
             int srcY = qRound(yb - disp.y());
 
-            QRgb sourceColor = bmiSource_->pixel(srcX, srcY);
-
-            if (sourceColor == 0) {
-                bmiTmpClip.setPixel(xb, yb, qRgba(0,0,0,0));
-                continue;
+            QRgb sourceRGB;
+            if (bmiSource_->contains(QPoint(srcX, srcY)))
+            {
+                sourceRGB = bmiSource_->pixel(srcX, srcY);
+            } else {
+                sourceRGB = qRgba(0,0,0,0); // transparent
             }
 
-            color.setRgba(sourceColor);
-
-            int sourceA = qAlpha(sourceColor);
+            int sourceA = qAlpha(sourceRGB);
             if (sourceA == 0)
             {
                 bmiTmpClip.setPixel(xb, yb, 0);
                 continue;
             }
 
-            int r = qRed(sourceColor) * factorGrad;
-            int g = qGreen(sourceColor) * factorGrad;
-            int b = qBlue(sourceColor) * factorGrad;
+            int r = qRed(sourceRGB) * factorGrad;
+            int g = qGreen(sourceRGB) * factorGrad;
+            int b = qBlue(sourceRGB) * factorGrad;
             int a = sourceA * factorGrad;
 
             bmiTmpClip.setPixel(xb, yb, qRgba(r, g, b, a));
         }
     }
-    // mTestImage = *bmiTmpClip.image();
     mScribbleArea->mTiledBuffer.drawImage(*bmiTmpClip.image(), bmiTmpClip.bounds(), dynamics.blending, dynamics.antiAliasingEnabled);
-
-    // mScribbleArea->update();
 }
