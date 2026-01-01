@@ -72,7 +72,7 @@ void StrokeInterpolator::pointerReleaseEvent(PointerEvent* event)
 void StrokeInterpolator::poll(QPointF pos, qreal pressure)
 {
     // simple interpolation
-    // QPointF smoothPos = QPointF((pos.x() + mCurrentPixel.x()) / 2.0, (pos.y() + mCurrentPixel.y()) / 2.0);
+    QPointF smoothPos = QPointF((pos.x() + mCurrentPixel.x()) / 2.0, (pos.y() + mCurrentPixel.y()) / 2.0);
     mLastPixel = mCurrentPixel;
     mCurrentPixel = pos;
     mLastInterpolated = mCurrentPixel;
@@ -85,9 +85,7 @@ void StrokeInterpolator::poll(QPointF pos, qreal pressure)
         pressureQueue.pop_front();
     }
 
-    // Note(MrStevns): Was smoothPos, but we don't want a smooth pos, unless explicit said
-    // maybe create a GUI control to set the smoothed position?
-    strokeQueue.push_back(pos);
+    strokeQueue.push_back(smoothPos);
     pressureQueue.push_back(pressure);
 
     if (!mStrokeStarted)
