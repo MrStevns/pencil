@@ -346,6 +346,7 @@ void SelectionManager::resetSelectionProperties()
     mSelectionPolygon = QPolygonF();
     mOriginalRect = QRectF();
     mMoveMode = MoveMode::NONE;
+    vectorSelection.clear();
     emit selectionChanged();
 }
 

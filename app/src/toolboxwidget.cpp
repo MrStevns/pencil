@@ -301,7 +301,11 @@ void ToolBoxWidget::brushOn()
 
 void ToolBoxWidget::smudgeOn()
 {
-    toolOn(SMUDGE, ui->smudgeButton);
+    if (mEditor->layers()->currentLayer()->type() == Layer::VECTOR) {
+        toolOn(NODE, ui->smudgeButton);
+    } else {
+        toolOn(SMUDGE, ui->smudgeButton);
+    }
 }
 
 void ToolBoxWidget::deselectAllTools()

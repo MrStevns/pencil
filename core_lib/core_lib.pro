@@ -82,6 +82,7 @@ HEADERS +=  \
     src/tool/eyedroppertool.h \
     src/tool/handtool.h \
     src/tool/movetool.h \
+    src/tool/nodetool.h \
     src/tool/penciltool.h \
     src/tool/pentool.h \
     src/tool/polylinetool.h \
@@ -176,6 +177,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/eyedroppertool.cpp \
     src/tool/handtool.cpp \
     src/tool/movetool.cpp \
+    src/tool/nodetool.cpp \
     src/tool/penciltool.cpp \
     src/tool/pentool.cpp \
     src/tool/polylinetool.cpp \
