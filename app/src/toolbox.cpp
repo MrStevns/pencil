@@ -83,4 +83,7 @@ void ToolBoxDockWidget::onLayerDidChange(int)
     {
         mWidget->moveOn();
     }
+    else if (currentTool->type() == SMUDGE || currentTool->type() == NODE) {
+        mWidget->smudgeOn();
+    }
 }
