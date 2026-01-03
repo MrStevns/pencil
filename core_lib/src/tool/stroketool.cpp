@@ -179,7 +179,7 @@ void StrokeTool::startStroke(PointerEvent::InputType inputType)
     mStrokeSegment.clear();
 
     //Experimental
-    StrokeSegment segment = mInterpolator.interpolateStart(getCurrentPixel());
+    StrokeSegment segment = mInterpolator.interpolateStart();
     mStrokePoints << segment.positions;
 
     mStrokeSegment = segment.positions;

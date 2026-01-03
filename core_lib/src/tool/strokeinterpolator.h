@@ -42,7 +42,7 @@ public:
     bool isActive() const { return mStrokeStarted; }
 
     StrokeSegment interpolateStroke();
-    StrokeSegment interpolateStart(QPointF firstPoint);
+    StrokeSegment interpolateStart();
     void interpolateEnd();
     void poll(QPointF pos, qreal pressure);
 

@@ -95,17 +95,16 @@ void StrokeInterpolator::poll(QPointF pos, qreal pressure)
 }
 
 
-StrokeSegment StrokeInterpolator::interpolateStart(QPointF firstPoint)
+StrokeSegment StrokeInterpolator::interpolateStart()
 {
     // Clear queue
     strokeQueue.clear();
     pressureQueue.clear();
 
-    mLastPixel = firstPoint;
+    mLastPixel = getCurrentPixel();
 
-    // mLastPixel = firstPoint;
     StrokeSegment segment;
-    segment.positions << firstPoint;
+    segment.positions << getCurrentPixel();
     segment.pressures << mPressure;
 
     return segment;
@@ -119,6 +118,7 @@ StrokeSegment StrokeInterpolator::interpolateStroke()
     for (int i = 0; i < segment.positions.count(); i += 1) {
         pressureQueue << mPressure;
     }
+
     segment.pressures = pressureQueue;
 
     return segment;
