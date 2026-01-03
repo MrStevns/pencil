@@ -36,10 +36,10 @@ bool Stroker::nextDab(const StrokeDynamics& dynamics, QPointF& outPoint)
         const QPointF& a = mStrokeSegment[mIndex];
         const QPointF& b = mStrokeSegment[mIndex + 1];
 
-        const qreal segmentLength = QLineF(a,b).length();
+        qreal segmentLength = QLineF(a,b).length();
 
         if (segmentLength <= 0.0) {
-            continue;
+            segmentLength = 1.0;
         }
 
         const QPointF dir = (b - a) / segmentLength;
