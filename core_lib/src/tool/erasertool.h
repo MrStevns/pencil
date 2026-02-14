@@ -38,10 +38,9 @@ public:
     void pointerPressEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
 
-    void drawStroke();
-    void paintAt(QPointF point);
+    void drawStroke(PointerEvent* event);
     void removeVectorPaint();
-    void updateStrokes();
+    void updateStrokes(PointerEvent* event);
 
 protected:
     QPointF mLastBrushPoint;

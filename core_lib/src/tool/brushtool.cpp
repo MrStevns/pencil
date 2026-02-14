@@ -119,7 +119,7 @@ void BrushTool::pointerMoveEvent(PointerEvent* event)
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         mCurrentPressure = mInterpolator.getPressure();
-        drawStroke();
+        drawStroke(event);
         if (mSettings.stabilizerLevel() != mInterpolator.getStabilizerLevel())
         {
             mInterpolator.setStabilizerLevel(mSettings.stabilizerLevel());
@@ -141,15 +141,7 @@ void BrushTool::pointerReleaseEvent(PointerEvent *event)
     Layer* layer = mEditor->layers()->currentLayer();
     mEditor->backup(typeName());
 
-    qreal distance = QLineF(getCurrentPoint(), mMouseDownPoint).length();
-    if (distance < 1)
-    {
-        paintAt(mMouseDownPoint);
-    }
-    else
-    {
-        drawStroke();
-    }
+    drawStroke(event);
 
     if (layer->type() == Layer::VECTOR) {
         paintVectorStroke(layer);
@@ -160,28 +152,7 @@ void BrushTool::pointerReleaseEvent(PointerEvent *event)
     StrokeTool::pointerReleaseEvent(event);
 }
 
-// draw a single paint dab at the given location
-void BrushTool::paintAt(QPointF point)
-{
-    //qDebug() << "Made a single dab at " << point;
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer->type() == Layer::BITMAP)
-    {
-        qreal pressure = (mSettings.pressureEnabled()) ? mCurrentPressure : 1.0;
-        qreal opacity = (mSettings.pressureEnabled()) ? (mCurrentPressure * 0.5) : 1.0;
-        qreal brushWidth = mSettings.width() * pressure;
-        mCurrentWidth = brushWidth;
-        // mScribbleArea->strokeTo(point,
-        //                          brushWidth,
-        //                          mSettings.feather(),
-        //                          mEditor->color()->frontColor(),
-        //                          QPainter::CompositionMode_SourceOver,
-        //                          opacity,
-        //                          true);
-    }
-}
-
-void BrushTool::drawStroke()
+void BrushTool::drawStroke(PointerEvent* event)
 {
     StrokeTool::drawStroke();
     QList<QPointF> p = mInterpolator.interpolateStroke();
@@ -190,52 +161,15 @@ void BrushTool::drawStroke()
 
     if (layer->type() == Layer::BITMAP)
     {
-        qreal pressure = (mSettings.pressureEnabled()) ? mCurrentPressure : 1.0;
-        qreal opacity = (mSettings.pressureEnabled()) ? (mCurrentPressure * 0.5) : 1.0;
-        qreal brushWidth = mSettings.width() * pressure;
-        mCurrentWidth = brushWidth;
+        const float pressure = static_cast<float>(mCurrentPressure);
 
-        qreal brushStep = (0.5 * brushWidth);
-        brushStep = qMax(1.0, brushStep);
+        double dt = calculateDeltaTime(event->timeStamp());
 
-        QPointF a = mLastBrushPoint;
-        QPointF b = getCurrentPoint();
-
-        qreal distance = 4 * QLineF(b, a).length();
-        int steps = qRound(distance / brushStep);
-
-        for (int i = 0; i < steps; i++)
-        {
-            QPointF point = mLastBrushPoint + (i + 1) * brushStep * (getCurrentPoint() - mLastBrushPoint) / distance;
-
-            // mScribbleArea->drawBrush(point,
-            //                          brushWidth,
-            //                          mSettings.feather(),
-            //                          mEditor->color()->frontColor(),
-            //                          QPainter::CompositionMode_SourceOver,
-            //                          opacity,
-            //                          true);
-            if (i == (steps - 1))
-            {
-                mLastBrushPoint = getCurrentPoint();
-            }
+        if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+            mScribbleArea->strokeTo(getCurrentPoint(), pressure, 0.0f,  0.0f, dt);
+        } else {
+            // Only mypaint utilizes a strokeTo method currently...
         }
-
-        // Line visualizer
-        // for debugging
-//        QPainterPath tempPath;
-
-//        QPointF mappedMousePos = mEditor->view()->mapScreenToCanvas(strokeManager()->getMousePos());
-//        tempPath.moveTo(getCurrentPoint());
-//        tempPath.lineTo(mappedMousePos);
-
-//        QPen pen( Qt::black,
-//                   1,
-//                   Qt::SolidLine,
-//                   Qt::RoundCap,
-//                   Qt::RoundJoin );
-//        mScribbleArea->drawPolyline(tempPath, pen, true);
-
     }
     else if (layer->type() == Layer::VECTOR)
     {

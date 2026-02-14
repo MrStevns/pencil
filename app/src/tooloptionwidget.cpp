@@ -54,7 +54,7 @@ void ToolOptionWidget::initUI()
 {
     mBucketOptionsWidget = new BucketOptionsWidget(editor(), this);
     mCameraOptionsWidget = new CameraOptionsWidget(editor(), this);
-    mStrokeOptionsWidget = new StrokeOptionsWidget(editor(), this);
+    // mStrokeOptionsWidget = new StrokeOptionsWidget(editor(), this);
     mTransformOptionsWidget = new TransformOptionsWidget(editor(), this);
     mToolBrushSettingsWidget = new ToolBrushSettingsWidget(editor(), this);
 
@@ -63,7 +63,7 @@ void ToolOptionWidget::initUI()
     
     ui->scrollAreaWidgetContents->layout()->addWidget(mBucketOptionsWidget);
     ui->scrollAreaWidgetContents->layout()->addWidget(mCameraOptionsWidget);
-    ui->scrollAreaWidgetContents->layout()->addWidget(mStrokeOptionsWidget);
+    // ui->scrollAreaWidgetContents->layout()->addWidget(mStrokeOptionsWidget);
     ui->scrollAreaWidgetContents->layout()->addWidget(mTransformOptionsWidget);
     ui->scrollAreaWidgetContents->layout()->addWidget(mToolBrushSettingsWidget);
     ui->scrollAreaWidgetContents->layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Expanding));

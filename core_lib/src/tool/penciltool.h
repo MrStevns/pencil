@@ -37,6 +37,9 @@ public:
     void loadSettings() override;
     QCursor cursor() override;
 
+    void drawStroke(PointerEvent* event);
+    void paintVectorStroke(Layer* layer);
+
     void pointerPressEvent(PointerEvent*) override;
     void pointerMoveEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;

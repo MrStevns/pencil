@@ -74,6 +74,8 @@ public:
     virtual void setFillContourEnabled(bool enabled);
     virtual void setStrokeInvisibleEnabled(bool enabled);
 
+    double calculateDeltaTime(quint64 timeStamp);
+
     // /// Map quick property type to the appropriate widget type
     // /// Currently the only usecase here is the quick-size cursor
     // /// but other functionality may require it too.
@@ -153,6 +155,8 @@ private:
 
     RadialOffsetTool mWidthSizingTool;
     RadialOffsetTool mFeatherSizingTool;
+
+    double mPrevTimeStamp = 0.0;
 };
 
 #endif // STROKETOOL_H

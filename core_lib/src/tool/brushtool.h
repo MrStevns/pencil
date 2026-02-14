@@ -42,9 +42,8 @@ public:
     void pointerPressEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
 
-    void drawStroke();
+    void drawStroke(PointerEvent* event);
     void paintVectorStroke(Layer* layer);
-    void paintAt(QPointF point);
 
 protected:
     QPointF mLastBrushPoint;

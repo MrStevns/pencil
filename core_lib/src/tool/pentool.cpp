@@ -106,7 +106,7 @@ void PenTool::pointerMoveEvent(PointerEvent* event)
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         mCurrentPressure = mInterpolator.getPressure();
-        drawStroke();
+        drawStroke(event);
         if (mSettings.stabilizerLevel() != mInterpolator.getStabilizerLevel())
         {
             mInterpolator.setStabilizerLevel(mSettings.stabilizerLevel());
@@ -129,15 +129,7 @@ void PenTool::pointerReleaseEvent(PointerEvent *event)
 
     Layer* layer = mEditor->layers()->currentLayer();
 
-    qreal distance = QLineF(getCurrentPoint(), mMouseDownPoint).length();
-    if (distance < 1)
-    {
-        paintAt(mMouseDownPoint);
-    }
-    else
-    {
-        drawStroke();
-    }
+    drawStroke(event);
 
     if (layer->type() == Layer::VECTOR) {
         paintVectorStroke(layer);
@@ -147,24 +139,7 @@ void PenTool::pointerReleaseEvent(PointerEvent *event)
     StrokeTool::pointerReleaseEvent(event);
 }
 
-// draw a single paint dab at the given location
-void PenTool::paintAt(QPointF point)
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer->type() == Layer::BITMAP)
-    {
-        qreal pressure = (mSettings.pressureEnabled()) ? mCurrentPressure : 1.0;
-        qreal brushWidth = mSettings.width() * pressure;
-        mCurrentWidth = brushWidth;
-
-        // mScribbleArea->drawPen(point,
-        //                        brushWidth,
-        //                        mEditor->color()->frontColor(),
-        //                        mSettings.AntiAliasingEnabled());
-    }
-}
-
-void PenTool::drawStroke()
+void PenTool::drawStroke(PointerEvent* event)
 {
     StrokeTool::drawStroke();
     QList<QPointF> p = mInterpolator.interpolateStroke();
@@ -173,33 +148,14 @@ void PenTool::drawStroke()
 
     if (layer->type() == Layer::BITMAP)
     {
-        qreal pressure = (mSettings.pressureEnabled()) ? mCurrentPressure : 1.0;
-        qreal brushWidth = mSettings.width() * pressure;
-        mCurrentWidth = brushWidth;
+        const float pressure = static_cast<float>(mCurrentPressure);
 
-        // TODO: Make popup widget for less important properties,
-        // Eg. stepsize should be a slider.. will have fixed (0.3) value for now.
-        qreal brushStep = (0.5 * brushWidth);
-        brushStep = qMax(1.0, brushStep);
+        double dt = calculateDeltaTime(event->timeStamp());
 
-        QPointF a = mLastBrushPoint;
-        QPointF b = getCurrentPoint();
-
-        qreal distance = 4 * QLineF(b, a).length();
-        int steps = qRound(distance / brushStep);
-
-        for (int i = 0; i < steps; i++)
-        {
-            QPointF point = mLastBrushPoint + (i + 1) * brushStep * (getCurrentPoint() - mLastBrushPoint) / distance;
-            // mScribbleArea->drawPen(point,
-            //                        brushWidth,
-            //                        mEditor->color()->frontColor(),
-            //                        mSettings.AntiAliasingEnabled());
-
-            if (i == (steps - 1))
-            {
-                mLastBrushPoint = getCurrentPoint();
-            }
+        if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+            mScribbleArea->strokeTo(getCurrentPoint(), pressure, 0.0f,  0.0f, dt);
+        } else {
+            // Only mypaint utilizes a strokeTo method currently...
         }
     }
     else if (layer->type() == Layer::VECTOR)

@@ -114,7 +114,7 @@ void EraserTool::pointerMoveEvent(PointerEvent* event)
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         mCurrentPressure = mInterpolator.getPressure();
-        updateStrokes();
+        updateStrokes(event);
         if (mSettings.stabilizerLevel() != mInterpolator.getStabilizerLevel())
         {
             mInterpolator.setStabilizerLevel(mSettings.stabilizerLevel());
@@ -135,15 +135,7 @@ void EraserTool::pointerReleaseEvent(PointerEvent *event)
 
     mEditor->backup(typeName());
 
-    qreal distance = QLineF(getCurrentPoint(), mMouseDownPoint).length();
-    if (distance < 1)
-    {
-        paintAt(mMouseDownPoint);
-    }
-    else
-    {
-        drawStroke();
-    }
+    drawStroke(event);
 
     removeVectorPaint();
     endStroke();
@@ -151,29 +143,7 @@ void EraserTool::pointerReleaseEvent(PointerEvent *event)
     StrokeTool::pointerReleaseEvent(event);
 }
 
-// draw a single paint dab at the given location
-void EraserTool::paintAt(QPointF point)
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-    if (layer->type() == Layer::BITMAP)
-    {
-        qreal pressure = (mSettings.pressureEnabled()) ? mCurrentPressure : 1.0;
-        qreal opacity = (mSettings.pressureEnabled()) ? (mCurrentPressure * 0.5) : 1.0;
-        qreal brushWidth = mSettings.width() * pressure;
-        mCurrentWidth = brushWidth;
-
-        // mScribbleArea->drawBrush(point,
-        //                          brushWidth,
-        //                          mSettings.feather(),
-        //                          QColor(255, 255, 255, 255),
-        //                          QPainter::CompositionMode_SourceOver,
-        //                          opacity,
-        //                          mSettings.featherEnabled(),
-        //                          mSettings.AntiAliasingEnabled() == ON);
-    }
-}
-
-void EraserTool::drawStroke()
+void EraserTool::drawStroke(PointerEvent* event)
 {
     StrokeTool::drawStroke();
     QList<QPointF> p = mInterpolator.interpolateStroke();
@@ -182,38 +152,14 @@ void EraserTool::drawStroke()
 
     if (layer->type() == Layer::BITMAP)
     {
-        qreal pressure = (mSettings.pressureEnabled()) ? mCurrentPressure : 1.0;
-        qreal opacity = (mSettings.pressureEnabled()) ? (mCurrentPressure * 0.5) : 1.0;
-        qreal brushWidth = mSettings.width() * pressure;
-        mCurrentWidth = brushWidth;
+        const float pressure = static_cast<float>(mCurrentPressure);
 
-        qreal brushStep = (0.5 * brushWidth);
-        brushStep = qMax(1.0, brushStep);
+        double dt = calculateDeltaTime(event->timeStamp());
 
-        BlitRect rect;
-
-        QPointF a = mLastBrushPoint;
-        QPointF b = getCurrentPoint();
-
-        qreal distance = 4 * QLineF(b, a).length();
-        int steps = qRound(distance / brushStep);
-
-        for (int i = 0; i < steps; i++)
-        {
-            QPointF point = mLastBrushPoint + (i + 1) * brushStep * (getCurrentPoint() - mLastBrushPoint) / distance;
-
-            // mScribbleArea->drawBrush(point,
-            //                          brushWidth,
-            //                          mSettings.feather(),
-            //                          Qt::white,
-            //                          QPainter::CompositionMode_SourceOver,
-            //                          opacity,
-            //                          mSettings.featherEnabled(),
-            //                          mSettings.AntiAliasingEnabled() == ON);
-            if (i == (steps - 1))
-            {
-                mLastBrushPoint = getCurrentPoint();
-            }
+        if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+            mScribbleArea->strokeTo(getCurrentPoint(), pressure, 0.0f,  0.0f, dt);
+        } else {
+            // Only mypaint utilizes a strokeTo method currently...
         }
     }
     else if (layer->type() == Layer::VECTOR)
@@ -255,12 +201,12 @@ void EraserTool::removeVectorPaint()
     }
 }
 
-void EraserTool::updateStrokes()
+void EraserTool::updateStrokes(PointerEvent* event)
 {
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR)
     {
-        drawStroke();
+        drawStroke(event);
     }
 
     if (layer->type() == Layer::VECTOR)

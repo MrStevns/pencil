@@ -1236,7 +1236,9 @@ void ScribbleArea::forceUpdateMyPaintStates()
 void ScribbleArea::endStroke()
 {   
     if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+        paintBitmapBuffer();
         mMyPaint->endStroke();
+        clearDrawingBuffer();
     }
 
     if (mPrefs->isOn(SETTING::PREV_ONION) || mPrefs->isOn(SETTING::NEXT_ONION)) {

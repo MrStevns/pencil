@@ -24,6 +24,7 @@ GNU General Public License for more details.
 #include "editor.h"
 #include "toolmanager.h"
 #include "mathutils.h"
+#include "layermanager.h"
 
 #include "canvascursorpainter.h"
 
@@ -165,6 +166,10 @@ void StrokeTool::startStroke(PointerEvent::InputType inputType)
 
     mStrokePoints.clear();
 
+    if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+       mScribbleArea->startStroke();
+    }
+
     //Experimental
     QPointF startStrokes = mInterpolator.interpolateStart(mLastPixel);
     mStrokePoints << mEditor->view()->mapScreenToCanvas(startStrokes);
@@ -231,6 +236,13 @@ void StrokeTool::drawStroke()
     {
         mFirstDraw = false;
     }
+}
+
+double StrokeTool::calculateDeltaTime(quint64 timeStamp)
+{
+    double frameTime = (timeStamp - mPrevTimeStamp) / 1000.f;
+    mPrevTimeStamp = timeStamp;
+    return frameTime;
 }
 
 bool StrokeTool::handleQuickSizing(PointerEvent* event)

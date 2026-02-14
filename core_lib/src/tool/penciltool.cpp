@@ -117,7 +117,7 @@ void PencilTool::pointerMoveEvent(PointerEvent* event)
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         mCurrentPressure = mInterpolator.getPressure();
-        drawStroke();
+        drawStroke(event);
         if (mSettings.stabilizerLevel() != mInterpolator.getStabilizerLevel())
         {
             mInterpolator.setStabilizerLevel(mSettings.stabilizerLevel());
@@ -136,140 +136,92 @@ void PencilTool::pointerReleaseEvent(PointerEvent *event)
     if (event->inputType() != mCurrentInputType) return;
 
     mEditor->backup(typeName());
-    qreal distance = QLineF(getCurrentPoint(), mMouseDownPoint).length();
-    // if (distance < 1)
-    // {
-    //     paintAt(mMouseDownPoint);
-    // }
-    // else
-    // {
-        drawStroke();
-    // }
+
+    drawStroke(event);
 
     Layer* layer = mEditor->layers()->currentLayer();
-    // if (layer->type() == Layer::VECTOR) {
-    //     paintVectorStroke(layer);
-    // }
+    if (layer->type() == Layer::VECTOR) {
+        paintVectorStroke(layer);
+    }
     endStroke();
 
     StrokeTool::pointerReleaseEvent(event);
 }
 
-// draw a single paint dab at the given location
-// void PencilTool::paintAt(QPointF point)
-// {
-//     //qDebug() << "Made a single dab at " << point;
-//     Layer* layer = mEditor->layers()->currentLayer();
-//     if (layer->type() == Layer::BITMAP)
-//     {
-//         qreal opacity = (mSettings.pressureEnabled()) ? (mCurrentPressure * 0.5) : 1.0;
-//         qreal pressure = (mSettings.pressureEnabled()) ? mCurrentPressure : 1.0;
-//         qreal brushWidth = mSettings.width() * pressure;
-//         qreal fixedBrushFeather = mSettings.feather();
+void PencilTool::drawStroke(PointerEvent* event)
+{
+    StrokeTool::drawStroke();
+    QList<QPointF> p = mInterpolator.interpolateStroke();
 
-//         mCurrentWidth = brushWidth;
-//         mScribbleArea->drawPencil(point,
-//                                   brushWidth,
-//                                   fixedBrushFeather,
-//                                   mEditor->color()->frontColor(),
-//                                   opacity);
-//     }
-// }
+    Layer* layer = mEditor->layers()->currentLayer();
 
+    if (layer->type() == Layer::BITMAP)
+    {
+        const float pressure = static_cast<float>(mCurrentPressure);
 
-// void PencilTool::drawStroke()
-// {
-//     StrokeTool::drawStroke();
-//     QList<QPointF> p = mInterpolator.interpolateStroke();
+        double dt = calculateDeltaTime(event->timeStamp());
 
-//     Layer* layer = mEditor->layers()->currentLayer();
+        if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+            mScribbleArea->strokeTo(getCurrentPoint(), pressure, 0.0f,  0.0f, dt);
+        } else {
+            // Only mypaint utilizes a strokeTo method currently...
+        }
+    }
+    else if (layer->type() == Layer::VECTOR)
+    {
+        mCurrentWidth = 0; // FIXME: WTF?
+        QPen pen(mEditor->color()->frontColor(),
+                 1,
+                 Qt::DotLine,
+                 Qt::RoundCap,
+                 Qt::RoundJoin);
 
-//     if (layer->type() == Layer::BITMAP)
-//     {
-//         qreal pressure = (mSettings.pressureEnabled()) ? mCurrentPressure : 1.0;
-//         qreal opacity = (mSettings.pressureEnabled()) ? (mCurrentPressure * 0.5) : 1.0;
-//         qreal brushWidth = mSettings.width() * pressure;
-//         mCurrentWidth = brushWidth;
+        if (p.size() == 4)
+        {
+            QPainterPath path(p[0]);
+            path.cubicTo(p[1],
+                         p[2],
+                         p[3]);
+            mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
+        }
+    }
+}
 
-//         qreal fixedBrushFeather = mSettings.feather();
-//         qreal brushStep = qMax(1.0, (0.5 * brushWidth));
+void PencilTool::paintVectorStroke(Layer* layer)
+{
+    if (mStrokePoints.empty())
+        return;
 
-//         QPointF a = mLastBrushPoint;
-//         QPointF b = getCurrentPoint();
+    // Clear the temporary pixel path
+    mScribbleArea->clearDrawingBuffer();
+    qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
 
-//         qreal distance = 4 * QLineF(b, a).length();
-//         int steps = qRound(distance / brushStep);
+    BezierCurve curve(mStrokePoints, mStrokePressures, tol);
+    curve.setWidth(0);
+    curve.setFeather(0);
+    curve.setFilled(false);
+    curve.setInvisibility(true);
+    curve.setVariableWidth(false);
+    curve.setColorNumber(mEditor->color()->frontColorNumber());
+    VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+    if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
+    vectorImage->addCurve(curve, qAbs(mEditor->view()->scaling()), false);
 
-//         for (int i = 0; i < steps; i++)
-//         {
-//             QPointF point = mLastBrushPoint + (i + 1) * brushStep * (getCurrentPoint() - mLastBrushPoint) / distance;
-//             mScribbleArea->drawPencil(point,
-//                                       brushWidth,
-//                                       fixedBrushFeather,
-//                                       mEditor->color()->frontColor(),
-//                                       opacity);
+    if (mSettings.fillContourEnabled())
+    {
+        vectorImage->fillContour(mStrokePoints,
+                                 mEditor->color()->frontColorNumber());
+    }
 
-//             if (i == (steps - 1))
-//             {
-//                 mLastBrushPoint = getCurrentPoint();
-//             }
-//         }
-//     }
-//     else if (layer->type() == Layer::VECTOR)
-//     {
-//         mCurrentWidth = 0; // FIXME: WTF?
-//         QPen pen(mEditor->color()->frontColor(),
-//                  1,
-//                  Qt::DotLine,
-//                  Qt::RoundCap,
-//                  Qt::RoundJoin);
+    if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
+    {
+        mEditor->deselectAll();
+    }
 
-//         if (p.size() == 4)
-//         {
-//             QPainterPath path(p[0]);
-//             path.cubicTo(p[1],
-//                          p[2],
-//                          p[3]);
-//             mScribbleArea->drawPath(path, pen, Qt::NoBrush, QPainter::CompositionMode_Source);
-//         }
-//     }
-// }
+    // select last/newest curve
+    vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
 
-// void PencilTool::paintVectorStroke(Layer* layer)
-// {
-//     if (mStrokePoints.empty())
-//         return;
+    // TODO: selection doesn't apply on enter
 
-//     // Clear the temporary pixel path
-//     mScribbleArea->clearDrawingBuffer();
-//     qreal tol = mScribbleArea->getCurveSmoothing() / mEditor->view()->scaling();
-
-//     BezierCurve curve(mStrokePoints, mStrokePressures, tol);
-//     curve.setWidth(0);
-//     curve.setFeather(0);
-//     curve.setFilled(false);
-//     curve.setInvisibility(true);
-//     curve.setVariableWidth(false);
-//     curve.setColorNumber(mEditor->color()->frontColorNumber());
-//     VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-//     if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
-//     vectorImage->addCurve(curve, qAbs(mEditor->view()->scaling()), false);
-
-//     if (mSettings.fillContourEnabled())
-//     {
-//         vectorImage->fillContour(mStrokePoints,
-//                                  mEditor->color()->frontColorNumber());
-//     }
-
-//     if (vectorImage->isAnyCurveSelected() || mEditor->select()->somethingSelected())
-//     {
-//         mEditor->deselectAll();
-//     }
-
-//     // select last/newest curve
-//     vectorImage->setSelected(vectorImage->getLastCurveNumber(), true);
-
-//     // TODO: selection doesn't apply on enter
-
-//     mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
-// }
+    mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
+}

@@ -40,8 +40,7 @@ public:
     void pointerMoveEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
 
-    void drawStroke();
-    void paintAt(QPointF point);
+    void drawStroke(PointerEvent* event);
     void paintVectorStroke(Layer *layer);
 
 private:
