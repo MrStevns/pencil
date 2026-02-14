@@ -19,54 +19,56 @@ GNU General Public License for more details.
 #define POLYLINETOOL_H
 
 #include <QPointF>
+
 #include "stroketool.h"
-#include "blitrect.h"
 
 class PolylineTool : public StrokeTool
 {
     Q_OBJECT
 public:
     explicit PolylineTool(QObject* parent = 0);
-    ToolType type() override;
+
+    ToolType type() const override;
+
+    ToolProperties& toolProperties() override { return mSettings.toolProperties(); }
+    const StrokeToolProperties& strokeToolProperties() const override { return mSettings.strokeToolProperties(); }
+    const PolylineToolProperties& settings() const { return mSettings; }
+
     void loadSettings() override;
-    void saveSettings() override;
     QCursor cursor() override;
-    void resetToDefault() override;
+
+    void setUseBezier(bool useBezier);
+    void setClosePath(bool closePath);
 
     void pointerPressEvent(PointerEvent*) override;
-    void pointerReleaseEvent(PointerEvent* event) override;
+    void pointerReleaseEvent(PointerEvent*) override;
     void pointerMoveEvent(PointerEvent* event) override;
-    void pointerDoubleClickEvent(PointerEvent* event) override;
-
-    void pointerPressOnVector(PointerEvent*);
-    void pointerPressOnBitmap(PointerEvent*);
+    void pointerDoubleClickEvent(PointerEvent*) override;
 
     bool keyPressEvent(QKeyEvent* event) override;
     bool keyReleaseEvent(QKeyEvent* event) override;
 
     void clearToolData() override;
 
-    void setWidth(const qreal width) override;
-    void setFeather(const qreal feather) override;
-    void setClosedPath(const bool closed) override;
-
     bool leavingThisTool() override;
 
     bool isActive() const override;
 
-protected:
-    double calculateDeltaTime(quint64 time) override;
+signals:
+    void bezierPathEnabledChanged(bool useBezier);
+    void closePathChanged(bool closePath);
+
 
 private:
+    PolylineToolProperties mSettings;
     QList<QPointF> mPoints;
-    QPointF previousPoint;
     bool mClosedPathOverrideEnabled = false;
 
-    void updateDirtyRect(QList<QPointF> linePoints, BlitRect dirtyRect);
-    void drawPolyline(QList<QPointF> points, QPointF endPoint, quint64 timeStamp);
+    void drawPolyline(QList<QPointF> points, QPointF endPoint);
     void removeLastPolylineSegment();
     void cancelPolyline();
-    void endPolyline(QList<QPointF> points, quint64 timeStamp);
+    void endPolyline(QList<QPointF> points);
+
 };
 
 #endif // POLYLINETOOL_H

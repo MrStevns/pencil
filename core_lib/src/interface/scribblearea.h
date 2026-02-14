@@ -126,9 +126,6 @@ public:
     /** Object updated, invalidate all cache */
     void onObjectLoaded();
 
-    /** Tool property updated, invalidate cache and frame if needed */
-    void onToolPropertyUpdated(ToolType, ToolPropertyType);
-
     /** Tool changed, invalidate cache and frame if needed */
     void onToolChanged(ToolType);
 

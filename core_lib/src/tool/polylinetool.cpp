@@ -17,11 +17,9 @@ GNU General Public License for more details.
 
 #include "polylinetool.h"
 
-
+#include <QSettings>
 #include "editor.h"
 #include "scribblearea.h"
-#include "mphandler.h"
-#include "pencilsettings.h"
 
 #include "layermanager.h"
 #include "colormanager.h"
@@ -37,7 +35,7 @@ PolylineTool::PolylineTool(QObject* parent) : StrokeTool(parent)
 {
 }
 
-ToolType PolylineTool::type()
+ToolType PolylineTool::type() const
 {
     return POLYLINE;
 }
@@ -46,56 +44,34 @@ void PolylineTool::loadSettings()
 {
     StrokeTool::loadSettings();
 
-    mPropertyEnabled[WIDTH] = true;
-    mPropertyEnabled[BEZIER] = true;
-    mPropertyEnabled[CLOSEDPATH] = true;
-    mPropertyEnabled[ANTI_ALIASING] = true;
+    mPropertyUsed[StrokeToolProperties::WIDTH_VALUE] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[PolylineToolProperties::CLOSEDPATH_ENABLED] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[PolylineToolProperties::BEZIERPATH_ENABLED] = { Layer::BITMAP };
+    mPropertyUsed[StrokeToolProperties::ANTI_ALIASING_ENABLED] = { Layer::BITMAP };
 
-    QSettings settings(PENCIL2D, PENCIL2D);
+    QSettings pencilSettings(PENCIL2D, PENCIL2D);
 
-    properties.width = settings.value("polyLineWidth", 8.0).toDouble();
-    properties.feather = -1;
-    properties.pressure = false;
-    properties.invisibility = OFF;
-    properties.preserveAlpha = OFF;
-    properties.closedPolylinePath = settings.value("closedPolylinePath").toBool();
-    properties.stabilizerLevel = -1;
+    QHash<int, PropertyInfo> info;
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, WIDTH);
-}
+    info[StrokeToolProperties::WIDTH_VALUE] = { WIDTH_MIN, WIDTH_MAX, 8.0 };
+    info[PolylineToolProperties::CLOSEDPATH_ENABLED] = false;
+    info[PolylineToolProperties::BEZIERPATH_ENABLED] = false;
+    info[StrokeToolProperties::ANTI_ALIASING_ENABLED] = true;
 
-void PolylineTool::saveSettings()
-{
-    QSettings settings(PENCIL2D, PENCIL2D);
+    toolProperties().insertProperties(info);
+    toolProperties().loadFrom(typeName(), pencilSettings);
 
-    settings.setValue("polyLineWidth", properties.width);
-    settings.setValue("closedPolylinePath", properties.closedPolylinePath);
+    if (toolProperties().requireMigration(pencilSettings, ToolProperties::VERSION_1)) {
+        toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, pencilSettings.value("polylineWidth", 8.0).toReal());
+        toolProperties().setBaseValue(StrokeToolProperties::ANTI_ALIASING_ENABLED, pencilSettings.value("brushAA", true).toBool());
+        toolProperties().setBaseValue(PolylineToolProperties::CLOSEDPATH_ENABLED, pencilSettings.value("closedPolylinePath", false).toBool());
 
-    settings.sync();
-}
+        pencilSettings.remove("polylineWidth");
+        pencilSettings.remove("brushAA");
+        pencilSettings.remove("closedPolylinePath");
+    }
 
-void PolylineTool::resetToDefault()
-{
-    setWidth(8.0);
-    setBezier(false);
-    setClosedPath(false);
-}
-
-void PolylineTool::setWidth(const qreal width)
-{
-    // Set current property
-    properties.width = width;
-}
-
-void PolylineTool::setFeather(const qreal feather)
-{
-    Q_UNUSED(feather)
-    properties.feather = -1;
-}
-
-void PolylineTool::setClosedPath(const bool closed)
-{
-    BaseTool::setClosedPath(closed);
+    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeToolProperties::WIDTH_VALUE);
 }
 
 bool PolylineTool::leavingThisTool()
@@ -141,62 +117,28 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
 
     Layer* layer = mEditor->layers()->currentLayer();
 
-    if (event->button() != Qt::LeftButton)
+    if (event->button() == Qt::LeftButton)
     {
-        return;
-    }
+        if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR)
+        {
+            mScribbleArea->handleDrawingOnEmptyFrame();
 
-    if (layer->type() == Layer::VECTOR) {
-        pointerPressOnVector(event);
-    } else if (layer->type() == Layer::BITMAP) {
-        pointerPressOnBitmap(event);
+            if (layer->type() == Layer::VECTOR)
+            {
+                VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+                Q_CHECK_PTR(vectorImage);
+                vectorImage->deselectAll();
+                if (mScribbleArea->makeInvisible() && !mEditor->preference()->isOn(SETTING::INVISIBLE_LINES))
+                {
+                    mScribbleArea->toggleThinLines();
+                }
+            }
+            mPoints << getCurrentPoint();
+            emit isActiveChanged(POLYLINE, true);
+        }
     }
-
-    if (previousPoint.isNull()) {
-        mPoints << getCurrentPoint();
-    } else {
-        mPoints << previousPoint;
-    }
-
-    emit isActiveChanged(POLYLINE, true);
 
     StrokeTool::pointerPressEvent(event);
-}
-
-void PolylineTool::pointerPressOnVector(PointerEvent*)
-{
-    Layer* layer = mEditor->layers()->currentLayer();
-
-    mEditor->backup(typeName());
-    mScribbleArea->handleDrawingOnEmptyFrame();
-
-    mScribbleArea->clearDrawingBuffer();
-    static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0)->deselectAll();
-    if (mScribbleArea->makeInvisible() && !mEditor->preference()->isOn(SETTING::INVISIBLE_LINES))
-    {
-        mScribbleArea->toggleThinLines();
-    }
-}
-
-void PolylineTool::pointerPressOnBitmap(PointerEvent* event)
-{
-    mScribbleArea->mMyPaint->clearSurface();
-
-    mEditor->backup(typeName());
-    mScribbleArea->handleDrawingOnEmptyFrame();
-
-    if (!mPoints.isEmpty()) {
-
-        for(int i=0; i < mPoints.size(); i++) {
-            drawStroke(mPoints[i], calculateDeltaTime(event->timeStamp()));
-        }
-
-        mPoints.takeAt(0);
-    }
-
-    mScribbleArea->paintBitmapBuffer();
-    mScribbleArea->clearDrawingBuffer();
-
 }
 
 void PolylineTool::pointerMoveEvent(PointerEvent* event)
@@ -206,16 +148,13 @@ void PolylineTool::pointerMoveEvent(PointerEvent* event)
         return;
     }
 
-    drawPolyline(mPoints, getCurrentPoint(), event->timeStamp());
-    previousPoint = getCurrentPoint();
+    Layer* layer = mEditor->layers()->currentLayer();
+    if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR)
+    {
+        drawPolyline(mPoints, getCurrentPoint());
+    }
 
     StrokeTool::pointerMoveEvent(event);
-}
-
-double PolylineTool::calculateDeltaTime(quint64)
-{
-    // FIXME: Variable dt won't work, will probably have to rework how the polyline is drawn
-    return 1;
 }
 
 void PolylineTool::pointerReleaseEvent(PointerEvent* event)
@@ -237,7 +176,7 @@ void PolylineTool::pointerDoubleClickEvent(PointerEvent* event)
     const UndoSaveState* saveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
     mEditor->backup(typeName());
 
-    endPolyline(mPoints, event->timeStamp());
+    endPolyline(mPoints);
     mEditor->undoRedo()->record(saveState, typeName());
 }
 
@@ -246,7 +185,7 @@ void PolylineTool::removeLastPolylineSegment()
     if (mPoints.size() > 1)
     {
         mPoints.removeLast();
-        drawPolyline(mPoints, getCurrentPoint(), calculateDeltaTime(0));
+        drawPolyline(mPoints, getCurrentPoint());
     }
     else if (mPoints.size() == 1)
     {
@@ -261,7 +200,7 @@ bool PolylineTool::keyPressEvent(QKeyEvent* event)
     {
     case Qt::Key_Control:
         mClosedPathOverrideEnabled = true;
-        drawPolyline(mPoints, getCurrentPoint(), calculateDeltaTime(event->timestamp()));
+        drawPolyline(mPoints, getCurrentPoint());
         return true;
         break;
 
@@ -269,7 +208,7 @@ bool PolylineTool::keyPressEvent(QKeyEvent* event)
         if (mPoints.size() > 0)
         {
             const UndoSaveState* saveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
-            endPolyline(mPoints, calculateDeltaTime(event->timestamp()));
+            endPolyline(mPoints);
             mEditor->undoRedo()->record(saveState, typeName());
             return true;
         }
@@ -292,7 +231,7 @@ bool PolylineTool::keyPressEvent(QKeyEvent* event)
         break;
     }
 
-    return StrokeTool::keyPressEvent(event);
+    return BaseTool::keyPressEvent(event);
 }
 
 bool PolylineTool::keyReleaseEvent(QKeyEvent* event)
@@ -301,7 +240,7 @@ bool PolylineTool::keyReleaseEvent(QKeyEvent* event)
     {
     case Qt::Key_Control:
         mClosedPathOverrideEnabled = false;
-        drawPolyline(mPoints, getCurrentPoint(), event->timestamp());
+        drawPolyline(mPoints, getCurrentPoint());
         return true;
         break;
 
@@ -312,54 +251,39 @@ bool PolylineTool::keyReleaseEvent(QKeyEvent* event)
     return BaseTool::keyReleaseEvent(event);
 }
 
-void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint, quint64 timeStamp)
+void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint)
 {
-    Layer* layer = mEditor->layers()->currentLayer();
     if (points.size() > 0)
     {
-        if (layer->type() == Layer::BITMAP) {
-            BlitRect previousTilesRect = mScribbleArea->mTilesBlitRect;
-            mScribbleArea->clearDrawingBuffer();
-            mScribbleArea->startStroke();
+        QPen pen(mEditor->color()->frontColor(),
+                 mSettings.width(),
+                 Qt::SolidLine,
+                 Qt::RoundCap,
+                 Qt::RoundJoin);
+        Layer* layer = mEditor->layers()->currentLayer();
 
-            for(int i=0; i<points.size(); i++) {
-                drawStroke(points[i], calculateDeltaTime(timeStamp));
-            }
-            drawStroke(endPoint, calculateDeltaTime(timeStamp));
-
-            // In order to clear the polyline overall dirty bounds, we need to do an additional update, otherwise there will be residue
-            // of the previous stroke in some cases.
-            updateDirtyRect(points, previousTilesRect);
-        }
-        else if (layer->type() == Layer::VECTOR)
+        // Bitmap by default
+        QPainterPath tempPath;
+        if (mSettings.bezierPathEnabled())
         {
-            QPen pen(mEditor->color()->frontColor(),
-                     properties.width,
-                     Qt::SolidLine,
-                     Qt::RoundCap,
-                     Qt::RoundJoin);
-            Layer* layer = mEditor->layers()->currentLayer();
+            tempPath = BezierCurve(points).getSimplePath();
+        }
+        else
+        {
+            tempPath = BezierCurve(points).getStraightPath();
+        }
+        tempPath.lineTo(endPoint);
 
-            // Bitmap by default
-            QPainterPath tempPath;
-            if (properties.bezier_state)
-            {
-                tempPath = BezierCurve(points).getSimplePath();
-            }
-            else
-            {
-                tempPath = BezierCurve(points).getStraightPath();
-            }
-            tempPath.lineTo(endPoint);
+        // Ctrl key inverts closed behavior while held (XOR)
+        if ((mSettings.closedPathEnabled() == !mClosedPathOverrideEnabled) && points.size() > 1)
+        {
+            tempPath.closeSubpath();
+        }
 
-            // Ctrl key inverts closed behavior while held (XOR)
-            if ((properties.closedPolylinePath == !mClosedPathOverrideEnabled) && points.size() > 1)
-            {
-                tempPath.closeSubpath();
-            }
-
-            // Vector otherwise
-            if (layer->type() == Layer::VECTOR)
+        // Vector otherwise
+        if (layer->type() == Layer::VECTOR)
+        {
+            if (mEditor->layers()->currentLayer()->type() == Layer::VECTOR)
             {
                 if (mScribbleArea->makeInvisible() == true)
                 {
@@ -368,56 +292,35 @@ void PolylineTool::drawPolyline(QList<QPointF> points, QPointF endPoint, quint64
                 }
                 else
                 {
-                    pen.setWidth(properties.width);
+                    pen.setWidth(mSettings.width());
                 }
             }
-
-            mScribbleArea->drawPolyline(tempPath, pen, true);
         }
+
+        mScribbleArea->drawPolyline(tempPath, pen, mSettings.AntiAliasingEnabled());
     }
 }
 
-void PolylineTool::updateDirtyRect(QList<QPointF> linePoints, BlitRect dirtyRect)
-{
-    BlitRect blitRect;
-
-    // In order to clear what was previously dirty, we need to include the previous buffer bound
-    // this ensures that we won't see stroke artifacts
-    blitRect.extend(mEditor->view()->mapCanvasToScreen(dirtyRect).toRect());
-
-    BlitRect lineBounds;
-
-    for (QPointF point : linePoints) {
-        lineBounds.extend(point.toPoint());
-    }
-    QRect updateRect = mEditor->view()->mapCanvasToScreen(lineBounds).toRect();
-
-    // Now extend with the new path bounds mapped to the local coordinate
-    blitRect.extend(updateRect);
-
-    // And update only the affected area
-    mScribbleArea->update(blitRect.adjusted(-1, -1, 1, 1));
-}
 
 void PolylineTool::cancelPolyline()
 {
     clearToolData();
 }
 
-void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
+void PolylineTool::endPolyline(QList<QPointF> points)
 {
     Layer* layer = mEditor->layers()->currentLayer();
 
     if (layer->type() == Layer::VECTOR)
     {
-        BezierCurve curve = BezierCurve(points, properties.bezier_state);
+        BezierCurve curve = BezierCurve(points, mSettings.bezierPathEnabled());
         if (mScribbleArea->makeInvisible() == true)
         {
             curve.setWidth(0);
         }
         else
         {
-            curve.setWidth(properties.width);
+            curve.setWidth(mSettings.width());
         }
         curve.setColorNumber(mEditor->color()->frontColorNumber());
         curve.setVariableWidth(false);
@@ -429,11 +332,23 @@ void PolylineTool::endPolyline(QList<QPointF> points, quint64 timeStamp)
     }
     if (layer->type() == Layer::BITMAP)
     {
-        drawPolyline(mPoints, mPoints.last(), calculateDeltaTime(timeStamp));
+        drawPolyline(points, points.last());
     }
-    
-    endStroke();
+
+    mScribbleArea->endStroke();
     mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());
 
     clearToolData();
+}
+
+void PolylineTool::setUseBezier(bool useBezier)
+{
+    toolProperties().setBaseValue(PolylineToolProperties::BEZIERPATH_ENABLED, useBezier);
+    emit bezierPathEnabledChanged(useBezier);
+}
+
+void PolylineTool::setClosePath(bool closePath)
+{
+    toolProperties().setBaseValue(PolylineToolProperties::CLOSEDPATH_ENABLED, closePath);
+    emit closePathChanged(closePath);
 }

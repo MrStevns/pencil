@@ -83,6 +83,7 @@ PRECOMPILED_HEADER = src/app-pch.h
 HEADERS += \
     src/addtransparencytopaperdialog.h \
     src/app-pch.h \
+    src/basewidget.h \
     src/appearance.h \
     src/buttonappearancewatcher.h \
     src/brushsettingeditwidget.h \
@@ -113,6 +114,7 @@ HEADERS += \
     src/filespage.h \
     src/generalpage.h \
     src/shortcutspage.h \
+    src/strokeoptionswidget.h \
     src/timelinepage.h \
     src/toolboxwidget.h \
     src/toolspage.h \
@@ -150,10 +152,12 @@ HEADERS += \
     src/commandlineexporter.h \
     src/statusbar.h \
     src/elidedlabel.h \
-    src/cameraoptionswidget.h
+    src/cameraoptionswidget.h \
+    src/transformoptionswidget.h
 
 SOURCES += \
     src/addtransparencytopaperdialog.cpp \
+    src/basewidget.cpp \
     src/buttonappearancewatcher.cpp \
     src/layeropacitydialog.cpp \
     src/brushsettingeditwidget.cpp \
@@ -184,6 +188,7 @@ SOURCES += \
     src/filespage.cpp \
     src/generalpage.cpp \
     src/shortcutspage.cpp \
+    src/strokeoptionswidget.cpp \
     src/timelinepage.cpp \
     src/toolboxwidget.cpp \
     src/toolspage.cpp \
@@ -221,10 +226,13 @@ SOURCES += \
     src/commandlineexporter.cpp \
     src/statusbar.cpp \
     src/elidedlabel.cpp \
-    src/cameraoptionswidget.cpp
+    src/cameraoptionswidget.cpp \
+    src/transformoptionswidget.cpp
 
 FORMS += \
     ui/mainwindow2.ui \
+    ui/transformoptionswidget.ui \
+    ui/strokeoptionswidget.ui \
     ui/addtransparencytopaperdialog.ui \
     ui/cameraoptionswidget.ui \
     ui/camerapropertiesdialog.ui \

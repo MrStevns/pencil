@@ -25,6 +25,8 @@ GNU General Public License for more details.
 #include "undoredomanager.h"
 
 #include "canvascursorpainter.h"
+#include "radialoffsettool.h"
+#include "brushsetting.h"
 
 #include <QList>
 #include <QPointF>
@@ -36,11 +38,12 @@ class StrokeTool : public BaseTool
 
 public:
     explicit StrokeTool(QObject* parent);
+    ~StrokeTool();
+
+    virtual const StrokeToolProperties& strokeToolProperties() const = 0;
 
     void startStroke(PointerEvent::InputType inputType);
-    void drawStroke(const QPointF pos, PointerEvent* event);
-    void drawStroke(const QPointF pos, double dt);
-    void drawStroke(PointerEvent* event);
+    void drawStroke();
     void endStroke();
 
     bool leavingThisTool() override;
@@ -48,16 +51,8 @@ public:
 
     void updateCanvasCursor();
 
-    static const qreal FEATHER_MIN;
-    static const qreal FEATHER_MAX;
-    static const qreal WIDTH_MIN;
-    static const qreal WIDTH_MAX;
-
     void loadSettings() override;
-    bool isActive() const override { return mInterpolator.isActive(); };
-    
-    void commitBitmapStroke();
-    void commitVectorStroke();
+    bool isActive() const override { return mInterpolator.isActive(); }
 
     bool keyPressEvent(QKeyEvent* event) override;
     void pointerPressEvent(PointerEvent* event) override;
@@ -70,18 +65,47 @@ public:
 
     void paint(QPainter& painter, const QRect& blitRect) override;
 
+    virtual void setStablizationLevel(int level);
+    virtual void setWidth(qreal width);
+    virtual void setFeather(qreal feather);
+    virtual void setPressureEnabled(bool enabled);
+    virtual void setFeatherEnabled(bool enabled);
+    virtual void setAntiAliasingEnabled(bool enabled);
+    virtual void setFillContourEnabled(bool enabled);
+    virtual void setStrokeInvisibleEnabled(bool enabled);
+
+    // /// Map quick property type to the appropriate widget type
+    // /// Currently the only usecase here is the quick-size cursor
+    // /// but other functionality may require it too.
+    // void ToolManager::mapQuickPropertyToBrushSettingValue(qreal value, ToolPropertyType setting)
+    // {
+    //     switch (setting) {
+    //     case ToolPropertyType::WIDTH:
+    //         emit brushPropertyChanged(value, BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC);
+    //         break;
+    //     default:
+    //         break;
+    //     }
+    // }
+
+    // /// Already mapped values can go directly to mypaint backend and update the engine.
+    void setMPBrushSetting(qreal value, BrushSettingType setting);
+
+signals:
+    void widthChanged(qreal value);
+    void featherChanged(qreal value);
+    void pressureEnabledChanged(bool enabled);
+    void featherEnabledChanged(bool enabled);
+    void antiAliasingEnabledChanged(bool enabled);
+    void fillContourEnabledChanged(bool enabled);
+    void invisibleStrokeEnabledChanged(bool enabled);
+    void stabilizationLevelChanged(int level);
+
 public slots:
     void onPreferenceChanged(SETTING setting);
     void onViewUpdated();
 
 protected:
-
-    /**
-     * calculates the number of seconds that has passed between the previous and current frame
-     * should be called from paintEvent
-     */
-    virtual double calculateDeltaTime(quint64 timeStamp);
-    
     QPointF getCurrentPressPixel() const;
     QPointF getCurrentPressPoint() const;
     QPointF getCurrentPixel() const;
@@ -89,15 +113,11 @@ protected:
     QPointF getLastPixel() const;
     QPointF getLastPoint() const;
 
-    // dynamic cursor adjustment
-    virtual bool startAdjusting(Qt::KeyboardModifiers modifiers);
-    virtual void stopAdjusting();
-    virtual void adjustCursor(Qt::KeyboardModifiers modifiers);
+    QRectF cursorRect(StrokeToolProperties::Type settingType, const QPointF& point);
 
     static bool mQuickSizingEnabled;
-    static bool msIsAdjusting;
 
-    QHash<Qt::KeyboardModifiers, ToolPropertyType> mQuickSizingProperties;
+    QHash<Qt::KeyboardModifiers, int> mQuickSizingProperties;
     bool mFirstDraw = false;
 
     QList<QPointF> mStrokePoints;
@@ -105,10 +125,6 @@ protected:
 
     qreal mCurrentWidth    = 0.0;
     qreal mCurrentPressure = 0.5;
-    QPointF mMouseDownPoint;
-
-    float mCurrentXTilt = .0f;
-    float mCurrentYTilt = .0f;
 
     PointerEvent::InputType mCurrentInputType = PointerEvent::Unknown;
 
@@ -122,13 +138,21 @@ protected:
     bool mCanvasCursorEnabled = false;
     QPointF mLastPixel { 0, 0 };
 
-    QPointF mAdjustPosition;
-
-    CanvasCursorPainter mCanvasCursorPainter;
     StrokeInterpolator mInterpolator;
-    quint64 mPrevTimeStamp = 0;
 
     const UndoSaveState* mUndoSaveState = nullptr;
+
+    static const qreal FEATHER_MIN;
+    static const qreal FEATHER_MAX;
+    static const qreal WIDTH_MIN;
+    static const qreal WIDTH_MAX;
+
+private:
+    CanvasCursorPainter mWidthCursorPainter;
+    CanvasCursorPainter mFeatherCursorPainter;
+
+    RadialOffsetTool mWidthSizingTool;
+    RadialOffsetTool mFeatherSizingTool;
 };
 
 #endif // STROKETOOL_H

@@ -8,6 +8,7 @@
 
 #include "editor.h"
 #include "basetool.h"
+#include "stroketool.h"
 
 #include "mpbrushmanager.h"
 #include "layermanager.h"
@@ -16,10 +17,13 @@
 #include "brushsetting.h"
 #include "mpbrushsettingcategories.h"
 
-ToolBrushSettingsWidget::ToolBrushSettingsWidget(QWidget* parent) : QWidget(parent)
+ToolBrushSettingsWidget::ToolBrushSettingsWidget(Editor* editor, QWidget* parent)
+    : BaseWidget(parent), mEditor(editor)
 {
     setWindowTitle(tr("Brush settings", "Window title of brush settings panel"));
     setObjectName("brushSettingsWidget");
+
+    initUI();
 }
 
 ToolBrushSettingsWidget::~ToolBrushSettingsWidget()
@@ -144,7 +148,7 @@ void ToolBrushSettingsWidget::addBrushSetting(QString settingName, BrushSettingT
     settingWidget->setCore(mEditor);
     settingWidget->initUI();
 
-    connect(settingWidget, &BrushSettingWidget::brushSettingChanged, mEditor->tools(), &ToolManager::setMPBrushSetting);
+    connect(settingWidget, &BrushSettingWidget::brushSettingChanged, mEditor->tools()->currentStrokeTool(), &StrokeTool::setMPBrushSetting);
     connect(settingWidget, &BrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
     mBrushSettingWidgets.insert(static_cast<int>(settingWidget->setting()), settingWidget);
 }
@@ -229,7 +233,7 @@ void ToolBrushSettingsWidget::setVisibleState(BrushSettingCategoryType settingCa
         settingWidget->setCore(mEditor);
         settingWidget->initUI();
 
-        connect(settingWidget, &BrushSettingWidget::brushSettingChanged, mEditor->tools(), &ToolManager::setMPBrushSetting);
+        connect(settingWidget, &BrushSettingWidget::brushSettingChanged, mEditor->tools()->currentStrokeTool(), &StrokeTool::setMPBrushSetting);
         connect(settingWidget, &BrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
 
     } else {

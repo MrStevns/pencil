@@ -1,7 +1,7 @@
 #ifndef TOOLBRUSHSETTINGSWIDGET_H
 #define TOOLBRUSHSETTINGSWIDGET_H
 
-#include "basedockwidget.h"
+#include "basewidget.h"
 
 #include "brushsetting.h"
 #include "pencildef.h"
@@ -15,18 +15,17 @@ class BrushSettingWidget;
 class QSpacerItem;
 class QScrollArea;
 class BaseTool;
+class Editor;
 
-class ToolBrushSettingsWidget : public QWidget
+class ToolBrushSettingsWidget : public BaseWidget
 {
     Q_OBJECT
 public:
-    ToolBrushSettingsWidget(QWidget* parent = nullptr);
+    ToolBrushSettingsWidget(Editor* editor, QWidget* parent = nullptr);
     ~ToolBrushSettingsWidget() override;
 
-    void initUI();
-    void updateUI();
-
-    void setCore(Editor* editor) { mEditor = editor; }
+    void initUI() override;
+    void updateUI() override;
 
     void setVisibleState(BrushSettingCategoryType settingCategoryType, QString name, BrushSettingType setting, qreal min, qreal max, bool visible);
     void setValue(qreal value, BrushSettingType setting);

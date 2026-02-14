@@ -27,25 +27,28 @@ class PenTool : public StrokeTool
     Q_OBJECT
 public:
     PenTool(QObject* parent = 0);
-    ToolType type() override { return PEN; }
+
+    ToolType type() const override { return PEN; }
+
+    ToolProperties& toolProperties() override { return mSettings.toolProperties(); }
+    const StrokeToolProperties& strokeToolProperties() const override { return mSettings; }
+
     void loadSettings() override;
-    void saveSettings() override;
     QCursor cursor() override;
-    void resetToDefault() override;
 
     void pointerPressEvent(PointerEvent*) override;
     void pointerMoveEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
 
-    void drawStroke(PointerEvent* event);
-
-    void setWidth(const qreal width) override;
-    void setPressure(const bool pressure) override;
-    void setStabilizerLevel(const int level) override;
+    void drawStroke();
+    void paintAt(QPointF point);
+    void paintVectorStroke(Layer *layer);
 
 private:
     QPointF mLastBrushPoint;
     QPointF mMouseDownPoint;
+
+    StrokeToolProperties mSettings;
 };
 
 #endif // PENTOOL_H

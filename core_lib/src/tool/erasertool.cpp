@@ -35,7 +35,7 @@ EraserTool::EraserTool(QObject* parent) : StrokeTool(parent)
 {
 }
 
-ToolType EraserTool::type()
+ToolType EraserTool::type() const
 {
     return ERASER;
 }
@@ -44,67 +44,46 @@ void EraserTool::loadSettings()
 {
     StrokeTool::loadSettings();
 
-    mPropertyEnabled[WIDTH] = true;
-    mPropertyEnabled[FEATHER] = true;
-    mPropertyEnabled[PRESSURE] = true;
-    mPropertyEnabled[STABILIZATION] = true;
+    QSettings pencilSettings(PENCIL2D, PENCIL2D);
 
-    QSettings settings(PENCIL2D, PENCIL2D);
+    QHash<int, PropertyInfo> info;
 
-    properties.width = settings.value("eraserWidth", 24.0).toDouble();
-    properties.feather = settings.value("eraserFeather", 48.0).toDouble();
-    properties.pressure = settings.value("eraserPressure", true).toBool();
-    properties.invisibility = DISABLED;
-    properties.preserveAlpha = OFF;
-    properties.stabilizerLevel = settings.value("stabilizerLevel", StabilizationLevel::NONE).toInt();
+    mPropertyUsed[StrokeToolProperties::WIDTH_VALUE] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::FEATHER_VALUE] = { Layer::BITMAP };
+    mPropertyUsed[StrokeToolProperties::FEATHER_ENABLED] = { Layer::BITMAP };
+    mPropertyUsed[StrokeToolProperties::PRESSURE_ENABLED] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::STABILIZATION_VALUE] = { Layer::BITMAP, Layer::VECTOR };
+    mPropertyUsed[StrokeToolProperties::ANTI_ALIASING_ENABLED] = { Layer::BITMAP };
 
-    mQuickSizingProperties.insert(Qt::ShiftModifier, WIDTH);
+    info[StrokeToolProperties::WIDTH_VALUE] = { WIDTH_MIN, WIDTH_MAX, 24.0 };
+    info[StrokeToolProperties::FEATHER_VALUE] = { FEATHER_MIN, FEATHER_MAX, 48.0 };
+    info[StrokeToolProperties::FEATHER_ENABLED] = true;
+    info[StrokeToolProperties::PRESSURE_ENABLED] = true;
+    info[StrokeToolProperties::STABILIZATION_VALUE] = { StabilizationLevel::NONE, StabilizationLevel::STRONG, StabilizationLevel::NONE };
+    info[StrokeToolProperties::ANTI_ALIASING_ENABLED] = true;
+
+    toolProperties().insertProperties(info);
+    toolProperties().loadFrom(typeName(), pencilSettings);
+
+    if (toolProperties().requireMigration(pencilSettings, ToolProperties::VERSION_1)) {
+        toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, pencilSettings.value("eraserWidth", 24.0).toReal());
+        toolProperties().setBaseValue(StrokeToolProperties::FEATHER_VALUE, pencilSettings.value("eraserFeather", 48.0).toReal());
+        toolProperties().setBaseValue(StrokeToolProperties::STABILIZATION_VALUE, pencilSettings.value("stabilizerLevel", StabilizationLevel::NONE).toInt());
+        toolProperties().setBaseValue(StrokeToolProperties::FEATHER_ENABLED, pencilSettings.value("eraserUseFeather", true).toBool());
+        toolProperties().setBaseValue(StrokeToolProperties::PRESSURE_ENABLED, pencilSettings.value("eraserPressure", true).toBool());
+        toolProperties().setBaseValue(StrokeToolProperties::ANTI_ALIASING_ENABLED, pencilSettings.value("eraserAA", true).toBool());
+
+        pencilSettings.remove("eraserWidth");
+        pencilSettings.remove("eraserFeather");
+        pencilSettings.remove("stabilizerLevel");
+        pencilSettings.remove("eraserUseFeather");
+        pencilSettings.remove("eraserPressure");
+        pencilSettings.remove("eraserAA");
+    }
+
+    mQuickSizingProperties.insert(Qt::ShiftModifier, StrokeToolProperties::WIDTH_VALUE);
+    mQuickSizingProperties.insert(Qt::ControlModifier, StrokeToolProperties::FEATHER_VALUE);
 }
-
-void EraserTool::saveSettings()
-{
-    QSettings settings(PENCIL2D, PENCIL2D);
-
-    settings.setValue("eraserWidth", properties.width);
-    settings.setValue("eraserFeather", properties.feather);
-    settings.setValue("eraserUseFeather", properties.useFeather);
-    settings.setValue("eraserPressure", properties.pressure);
-    settings.setValue("stabilizerLevel", properties.stabilizerLevel);
-
-    settings.sync();
-}
-
-void EraserTool::resetToDefault()
-{
-    setWidth(24.0);
-    setFeather(48.0);
-    setPressure(true);
-    setStabilizerLevel(StabilizationLevel::NONE);
-}
-
-void EraserTool::setWidth(const qreal width)
-{
-    // Set current property
-    properties.width = width;
-}
-
-void EraserTool::setFeather(const qreal feather)
-{
-    // Set current property
-    properties.feather = feather;
-}
-
-void EraserTool::setPressure(const bool pressure)
-{
-    // Set current property
-    properties.pressure = pressure;
-}
-
-void EraserTool::setStabilizerLevel(const int level)
-{
-    properties.stabilizerLevel = level;
-}
-
 
 QCursor EraserTool::cursor()
 {
@@ -135,10 +114,10 @@ void EraserTool::pointerMoveEvent(PointerEvent* event)
     if (event->buttons() & Qt::LeftButton && event->inputType() == mCurrentInputType)
     {
         mCurrentPressure = mInterpolator.getPressure();
-        updateStrokes(event);
-        if (properties.stabilizerLevel != mInterpolator.getStabilizerLevel())
+        updateStrokes();
+        if (mSettings.stabilizerLevel() != mInterpolator.getStabilizerLevel())
         {
-            mInterpolator.setStabilizerLevel(properties.stabilizerLevel);
+            mInterpolator.setStabilizerLevel(mSettings.stabilizerLevel());
         }
     }
 
@@ -153,23 +132,94 @@ void EraserTool::pointerReleaseEvent(PointerEvent *event)
     }
 
     if (event->inputType() != mCurrentInputType) return;
+
+    mEditor->backup(typeName());
+
+    qreal distance = QLineF(getCurrentPoint(), mMouseDownPoint).length();
+    if (distance < 1)
+    {
+        paintAt(mMouseDownPoint);
+    }
+    else
+    {
+        drawStroke();
+    }
+
     removeVectorPaint();
     endStroke();
 
     StrokeTool::pointerReleaseEvent(event);
 }
 
-void EraserTool::drawStroke(PointerEvent* event)
+// draw a single paint dab at the given location
+void EraserTool::paintAt(QPointF point)
 {
-    StrokeTool::drawStroke(event);
+    Layer* layer = mEditor->layers()->currentLayer();
+    if (layer->type() == Layer::BITMAP)
+    {
+        qreal pressure = (mSettings.pressureEnabled()) ? mCurrentPressure : 1.0;
+        qreal opacity = (mSettings.pressureEnabled()) ? (mCurrentPressure * 0.5) : 1.0;
+        qreal brushWidth = mSettings.width() * pressure;
+        mCurrentWidth = brushWidth;
+
+        // mScribbleArea->drawBrush(point,
+        //                          brushWidth,
+        //                          mSettings.feather(),
+        //                          QColor(255, 255, 255, 255),
+        //                          QPainter::CompositionMode_SourceOver,
+        //                          opacity,
+        //                          mSettings.featherEnabled(),
+        //                          mSettings.AntiAliasingEnabled() == ON);
+    }
+}
+
+void EraserTool::drawStroke()
+{
+    StrokeTool::drawStroke();
     QList<QPointF> p = mInterpolator.interpolateStroke();
 
     Layer* layer = mEditor->layers()->currentLayer();
 
-    if (layer->type() == Layer::VECTOR)
+    if (layer->type() == Layer::BITMAP)
     {
-        mCurrentWidth = properties.width;
-        if (properties.pressure)
+        qreal pressure = (mSettings.pressureEnabled()) ? mCurrentPressure : 1.0;
+        qreal opacity = (mSettings.pressureEnabled()) ? (mCurrentPressure * 0.5) : 1.0;
+        qreal brushWidth = mSettings.width() * pressure;
+        mCurrentWidth = brushWidth;
+
+        qreal brushStep = (0.5 * brushWidth);
+        brushStep = qMax(1.0, brushStep);
+
+        BlitRect rect;
+
+        QPointF a = mLastBrushPoint;
+        QPointF b = getCurrentPoint();
+
+        qreal distance = 4 * QLineF(b, a).length();
+        int steps = qRound(distance / brushStep);
+
+        for (int i = 0; i < steps; i++)
+        {
+            QPointF point = mLastBrushPoint + (i + 1) * brushStep * (getCurrentPoint() - mLastBrushPoint) / distance;
+
+            // mScribbleArea->drawBrush(point,
+            //                          brushWidth,
+            //                          mSettings.feather(),
+            //                          Qt::white,
+            //                          QPainter::CompositionMode_SourceOver,
+            //                          opacity,
+            //                          mSettings.featherEnabled(),
+            //                          mSettings.AntiAliasingEnabled() == ON);
+            if (i == (steps - 1))
+            {
+                mLastBrushPoint = getCurrentPoint();
+            }
+        }
+    }
+    else if (layer->type() == Layer::VECTOR)
+    {
+        mCurrentWidth = mSettings.width();
+        if (mSettings.pressureEnabled())
         {
             mCurrentWidth = (mCurrentWidth + (mInterpolator.getPressure() * mCurrentWidth)) * 0.5;
         }
@@ -205,17 +255,17 @@ void EraserTool::removeVectorPaint()
     }
 }
 
-void EraserTool::updateStrokes(PointerEvent* event)
+void EraserTool::updateStrokes()
 {
     Layer* layer = mEditor->layers()->currentLayer();
     if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR)
     {
-        drawStroke(event);
+        drawStroke();
     }
 
     if (layer->type() == Layer::VECTOR)
     {
-        qreal radius = properties.width / 2;
+        qreal radius = mSettings.width() / 2;
 
         VectorImage* currKey = static_cast<VectorImage*>(layer->getLastKeyFrameAtPosition(mEditor->currentFrame()));
         QList<VertexRef> nearbyVertices = currKey->getVerticesCloseTo(getCurrentPoint(), radius);
