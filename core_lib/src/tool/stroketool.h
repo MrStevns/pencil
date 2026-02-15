@@ -91,7 +91,7 @@ public:
     // }
 
     // /// Already mapped values can go directly to mypaint backend and update the engine.
-    void setMPBrushSetting(qreal value, BrushSettingType setting);
+    void setMPBrushSetting(qreal unmappedValue, qreal mappedValue, BrushSettingType setting);
 
 signals:
     void widthChanged(qreal value);
@@ -126,7 +126,7 @@ protected:
     QList<qreal> mStrokePressures;
 
     qreal mCurrentWidth    = 0.0;
-    qreal mCurrentPressure = 0.5;
+    qreal mCurrentPressure = 1.0;
 
     PointerEvent::InputType mCurrentInputType = PointerEvent::Unknown;
 

@@ -12,7 +12,6 @@ class Editor;
 class MPMappingOptionsWidget;
 class QHBoxLayout;
 
-
 class BrushSettingWidget : public QWidget
 {
     Q_OBJECT
@@ -30,36 +29,29 @@ public:
 
     BrushSettingType setting() const { return mSettingType; }
     QString name() const { return mSettingName; }
-    qreal currentValue() const { return mCurrentValue; }
+    qreal currentValue() const { return mLogValue; }
 
     void setValueFromUnmapped(qreal value);
 
 Q_SIGNALS:
-    void brushSettingChanged(qreal value, BrushSettingType setting);
+    void brushSettingChanged(qreal unmappedValue, qreal mappedValue, BrushSettingType setting);
 
 private:
     void updateSetting(qreal value);
+    float logToLinear(float logValue) const;
 
     InlineSlider* mValueSlider = nullptr;
     BrushSettingType mSettingType;
 
     Editor* mEditor = nullptr;
 
-    qreal mMin = 0.0;
-    qreal mMax = 0.0;
-
-    qreal mMappedMin = 0.0;
-    qreal mMappedMax = 0.0;
-
-    qreal mMappedValue = 0.0;
-
-    qreal mCurrentValue;
+    qreal mMinLog = 0.0;
+    qreal mMaxLog = 0.0;
+    qreal mLogValue = 0.0;
 
     QWidget* mParent = nullptr;
 
     const QString mSettingName;
-
-    bool first = false;
 
     QHBoxLayout* mHBoxLayout;
 };

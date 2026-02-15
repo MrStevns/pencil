@@ -26,18 +26,25 @@ class QLabel;
 class QLineEdit;
 class QStackedLayout;
 
-class LineEditWidget : public QLineEdit
+class LineEditNumberWidget : public QLineEdit
 {
     Q_OBJECT
 public:
-    LineEditWidget(QWidget* parent, QString text);
+    LineEditNumberWidget(QWidget* parent, qreal value);
 
     void mousePressEvent(QMouseEvent*) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
     void mouseDoubleClickEvent(QMouseEvent *) override;
+    void focusInEvent(QFocusEvent* event) override;
     void focusOutEvent(QFocusEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
+
+    void setValue(qreal value);
+    void setCosmeticValue(qreal value);
+    qreal value() const;
+
+    void showDecimals(bool show);
 
     void deselect();
 
@@ -45,6 +52,10 @@ private:
     // The stylesheet has to be updated on every event
     // where the read-only property is changed
     void reloadStylesheet();
+
+    static constexpr const char* mValueKey = "value";
+
+    bool mShowDecimals = true;
 
 };
 

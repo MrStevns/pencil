@@ -22,20 +22,20 @@ GNU General Public License for more details.
 #include <QEvent>
 #include <QKeyEvent>
 
-LineEditWidget::LineEditWidget(QWidget* parent, QString text)
+LineEditNumberWidget::LineEditNumberWidget(QWidget* parent, qreal value)
     : QLineEdit(parent)
 {
-    setObjectName("LineEditWidget");
+    setObjectName("LineEditNumberWidget");
 
-    setStyleSheet("LineEditWidget[readOnly=true] {"
+    setStyleSheet("LineEditNumberWidget[readOnly=true] {"
                   "background-color: transparent;"
                   "border: 0;"
                   "}");
-    setText(text);
+    setValue(value);
     setReadOnly(true);
 }
 
-void LineEditWidget::mousePressEvent(QMouseEvent* event)
+void LineEditNumberWidget::mousePressEvent(QMouseEvent* event)
 {
     QLineEdit::mousePressEvent(event);
 
@@ -44,7 +44,7 @@ void LineEditWidget::mousePressEvent(QMouseEvent* event)
     event->ignore();
 }
 
-void LineEditWidget::mouseMoveEvent(QMouseEvent* event)
+void LineEditNumberWidget::mouseMoveEvent(QMouseEvent* event)
 {
     QLineEdit::mouseMoveEvent(event);
 
@@ -53,7 +53,7 @@ void LineEditWidget::mouseMoveEvent(QMouseEvent* event)
     event->ignore();
 }
 
-void LineEditWidget::mouseReleaseEvent(QMouseEvent* event)
+void LineEditNumberWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     QLineEdit::mouseReleaseEvent(event);
 
@@ -62,7 +62,7 @@ void LineEditWidget::mouseReleaseEvent(QMouseEvent* event)
     event->ignore();
 }
 
-void LineEditWidget::mouseDoubleClickEvent(QMouseEvent* event)
+void LineEditNumberWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {
     QLineEdit::mouseDoubleClickEvent(event);
 
@@ -73,41 +73,87 @@ void LineEditWidget::mouseDoubleClickEvent(QMouseEvent* event)
     reloadStylesheet();
 
     // There's no ignore event here because in this case we want to catch it.
-    // The event is ignored explicitly
-    // so that we can allow it to propergate up the chain
-    event->accept();
 }
 
-void LineEditWidget::focusOutEvent(QFocusEvent *event)
+void LineEditNumberWidget::focusInEvent(QFocusEvent* event)
 {
-    QLineEdit::focusOutEvent(event);
-    setReadOnly(true);
-    reloadStylesheet();
+    QLineEdit::focusInEvent(event);
+
+    if (event->reason() == Qt::TabFocusReason) {
+        setReadOnly(false);
+        reloadStylesheet();
+    }
 }
 
-void LineEditWidget::reloadStylesheet()
+void LineEditNumberWidget::focusOutEvent(QFocusEvent *event)
+{
+    if (!isReadOnly()) {
+        setReadOnly(true);
+        reloadStylesheet();
+        setProperty(mValueKey, text());
+    }
+
+    QLineEdit::focusOutEvent(event);
+}
+
+void LineEditNumberWidget::reloadStylesheet()
 {
     // Apparently it's good enough to just call setStyleSheet with its current styling
     // to make it update.
     setStyleSheet(styleSheet());
 }
 
-void LineEditWidget::keyPressEvent(QKeyEvent* event)
+void LineEditNumberWidget::setValue(qreal value)
 {
-    QLineEdit::keyPressEvent(event);
+    setProperty(mValueKey, value);
 
+    if (mShowDecimals) {
+        setText(QString::number(value, 'f', 2));
+    } else {
+        setText(QString::number(static_cast<int>(value)));
+    }
+}
+
+void LineEditNumberWidget::setCosmeticValue(qreal value)
+{
+    if (mShowDecimals) {
+        setText(QString::number(value, 'f', 2));
+    } else {
+        setText(QString::number(static_cast<int>(value)));
+    }
+}
+
+void LineEditNumberWidget::showDecimals(bool show)
+{
+    mShowDecimals = show;
+
+    if (show) {
+        setValue(value());
+    } else {
+        setValue(static_cast<int>(value()));
+    }
+}
+
+qreal LineEditNumberWidget::value() const
+{
+    return property(mValueKey).toReal();
+}
+
+void LineEditNumberWidget::keyPressEvent(QKeyEvent* event)
+{
     if (event->key() == Qt::Key_Return) {
         setReadOnly(true);
+        setProperty(mValueKey, text());
     } else if (event->key() == Qt::Key_Escape) {
         undo();
-        setReadOnly(true);
+        deselect();
     }
     reloadStylesheet();
 
-    event->accept();
+    QLineEdit::keyPressEvent(event);
 }
 
-void LineEditWidget::deselect()
+void LineEditNumberWidget::deselect()
 {
     QLineEdit::deselect();
     setReadOnly(true);

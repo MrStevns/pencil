@@ -16,66 +16,68 @@
 
 #include "lineeditwidget.h"
 
-InlineSlider::InlineSlider(QWidget* parent, QString label, qreal min, qreal max, SliderStartPosType type) : QWidget(parent)
+InlineSlider::InlineSlider(QWidget* parent) : QWidget(parent)
+{
+    setCornerRadius(mCornerRadiusPercentage);
+    setContentsMargins(0,0,0,0);
+    setMinimumSize(50,20);
+    setMaximumHeight(30);
+
+    setLayout(new QStackedLayout);
+
+    mValueLineEditWidget = new LineEditNumberWidget(this, mSliderValue);
+
+    layout()->addWidget(mValueLineEditWidget);
+    connect(mValueLineEditWidget, &LineEditNumberWidget::editingFinished, this, &InlineSlider::onLineEditChanged);
+
+    updateLineEditStylesheet();
+}
+
+void InlineSlider::init(QString label, qreal min, qreal max, SliderStartPosType type)
 {
     mMin = min;
     mMax = max;
     mLabel = label;
     mSliderOrigin = type;
-
-    setCornerRadius(mCornerRadiusPercentage);
-    setContentsMargins(0,0,0,0);
-    setMinimumSize(50,20);
-
-    setLayout(new QStackedLayout);
-
-    mValueLineEditWidget = new LineEditWidget(this, QString::number(mSliderValue));
-
-    layout()->addWidget(mValueLineEditWidget);
-    mValueLineEditWidget->setGeometry(this->geometry());
-    connect(mValueLineEditWidget, &LineEditWidget::editingFinished, this, &InlineSlider::onLineEditChanged);
-
-    updateLineEditStylesheet();
 }
 
 InlineSlider::~InlineSlider()
 {
-
 }
 
-void InlineSlider::onScreenChanged()
+void InlineSlider::onScreenChanged(qreal devicePixelRatio)
 {
     // We need to act on screen change updates to make sure the pixmap is drawn with correct DPI.
-    setupPixmap(size());
+    if (devicePixelRatio != mPixmap.devicePixelRatio()) {
+        setupPixmap(size());
+    }
 }
 
 void InlineSlider::onLineEditChanged()
 {
-    float value = mValueLineEditWidget->text().toFloat();
+    qreal value = mValueLineEditWidget->value();
     setValue(value);
     emit valueChanged(value);
-    emit valueChangedByKeyboard(value);
     updateLineEditStylesheet();
 }
 
 void InlineSlider::updateLineEditStylesheet()
 {
-    QString stylesheet = QString("LineEditWidget[readOnly=true] {"
-                            "background-color: transparent;"
-                            "border: 0;"
-                            "padding: %5;"
+    QString stylesheet = QString("LineEditNumberWidget[readOnly=true] {"
+                                "background-color: transparent;"
+                                "border: none;"
+                                "padding-right: %5;"
                             "}"
-                            "LineEditWidget[readOnly=false]{"
-                            "border-radius: %1px %2px;"
-                            "border: %3px solid %4;"
-                            "padding: %5;"
-                            "margin: 1px"
+                            "LineEditNumberWidget[readOnly=false]{"
+                                "border-radius: %1px %2px;"
+                                "border: %3px solid %4;"
+                                "padding-right: %5;"
                             "}")
                          .arg(mAbsoluteCornerRadiusX)
                          .arg(mAbsoluteCornerRadiusY)
                          .arg(mBorderWidth)
                          .arg(palette().highlight().color().name())
-                         .arg(mTextPadding);
+                         .arg(mTextPadding - 2); // The line edit widget has additional implicit padding that we need to account for...
 
     mValueLineEditWidget->setAlignment(Qt::AlignRight);
     mValueLineEditWidget->setStyleSheet(stylesheet);
@@ -84,14 +86,17 @@ void InlineSlider::updateLineEditStylesheet()
 
 bool InlineSlider::event(QEvent *event)
 {
-    // We are probably not supposed to do use this
-    // but I haven't been able to figure out a better
-    // solution to get a notification when the widget is moved to a different monitor
-    // All other solutions seems more complex and require tighter coupling to the window ...
-    if (event->type() == QEvent::ScreenChangeInternal) {
-        onScreenChanged();
-        return true;
-    }
+
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+        if (event->type() == QEvent::DevicePixelRatioChange) {
+    #else
+        // Prior to the above version there was no way to easily check when the screen changed...
+        // As such we rely on this. The alternative would require more invasive changes which I think is out of scope for this PR.
+        if (event->type() == QEvent::ScreenChangeInternal) {
+    #endif
+            onScreenChanged(this->devicePixelRatio());
+            return true;
+        }
     return QWidget::event(event);
 }
 
@@ -138,44 +143,45 @@ void InlineSlider::drawSlider()
                      option.palette.base());
 
     // // Draw the filled part of the slider
-    QColor textColor = option.palette.highlightedText().color();
-
     switch (mSliderOrigin) {
         case SliderStartPosType::LEFT:
         {
 
-            painter.fillRect(QRectF(borderRect.left(),
+            painter.fillRect(QRect(borderRect.left(),
                                     borderRect.top(),
-                                    mSliderPos,
+                                    mSliderPos - mCaretWidth,
                                     borderRect.bottom()),
-                                   brush);
+                                    brush);
             break;
         }
         case SliderStartPosType::MIDDLE:
         {
             // Now fill the with the brush
-            painter.fillRect(QRectF(mSliderPos,
+            painter.fillRect(QRect(mSliderPos,
                                     borderRect.top(),
                                     borderRect.center().x() - mSliderPos - mCaretWidth,
                                     borderRect.height()),
                                     brush);
 
             painter.save();
-            painter.setPen(textColor);
+            painter.setPen(option.palette.text().color());
 
             // Draw center line
-            painter.drawLine(QPointF(borderRect.center().x() - mCaretWidth, borderRect.top()),
-                             QPointF(borderRect.center().x() - mCaretWidth, borderRect.bottom()));
+            painter.drawLine(QPoint(borderRect.center().x() - mCaretWidth, borderRect.top()),
+                             QPoint(borderRect.center().x() - mCaretWidth, borderRect.bottom()));
             painter.restore();
             break;
         }
     }
 
-    drawCaret(painter, borderRect, textColor);
-    drawLabels(painter, borderRect, textColor);
+    drawCaret(painter, borderRect, option.palette.dark().color());
+    drawLabels(painter, borderRect, option.palette.text().color());
     painter.restore();
 
-    painter.drawRoundedRect(borderRect, mAbsoluteCornerRadiusX, mAbsoluteCornerRadiusY);
+    if (mValueLineEditWidget->isReadOnly()) {
+        painter.setPen(option.palette.dark().color());
+        painter.drawRoundedRect(borderRect, mAbsoluteCornerRadiusX, mAbsoluteCornerRadiusY);
+    }
 
     painter.end();
 }
@@ -184,7 +190,7 @@ void InlineSlider::drawLabels(QPainter& painter, const QRectF& borderRect, const
 {
     painter.save();
     painter.setPen(textColor);
-    const QRectF& textRect = borderRect.adjusted(mTextPadding,0,-mTextPadding,0);
+    const QRectF& textRect = borderRect.adjusted(mTextPadding, 0, -mTextPadding, 0);
     painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, mLabel);
     painter.restore();
 }
@@ -196,8 +202,8 @@ void InlineSlider::drawCaret(QPainter& painter, const QRectF& borderRect, const 
     // // And draw the caret
     painter.save();
     painter.setPen(caretPen);
-    painter.drawLine(QPointF(mSliderPos, borderRect.top()),
-                     QPointF(mSliderPos, borderRect.bottom()));
+    painter.drawLine(QPoint(mSliderPos, borderRect.top()),
+                     QPoint(mSliderPos, borderRect.bottom()));
     painter.restore();
 }
 
@@ -219,17 +225,8 @@ void InlineSlider::setCornerRadius(qreal percentage)
     mCornerRadiusPercentage = percentage;
 }
 
-void InlineSlider::setupPixmap(const QSize& size)
-{
-    mPixmap = QPixmap(size * devicePixelRatio());
-    mPixmap.setDevicePixelRatio(devicePixelRatio());
-    mPixmap.fill(Qt::transparent);
-}
-
 void InlineSlider::resizeEvent(QResizeEvent* event)
 {
-    QWidget::resizeEvent(event);
-
     setupPixmap(event->size());
     setCornerRadius(mCornerRadiusPercentage);
 
@@ -238,40 +235,50 @@ void InlineSlider::resizeEvent(QResizeEvent* event)
     update();
 }
 
+void InlineSlider::setupPixmap(const QSize& size)
+{
+    mPixmap = QPixmap(size * devicePixelRatio());
+    mPixmap.setDevicePixelRatio(devicePixelRatio());
+    mPixmap.fill(Qt::transparent);
+}
+
 void InlineSlider::mouseMoveEvent(QMouseEvent* event)
 {
-    QWidget::mouseMoveEvent(event);
     if (event->buttons() & Qt::LeftButton) {
-        setSliderValueFromPos(event->localPos().x());
         setSliderPixelPos(event->localPos().x());
+        setSliderValueFromPos(mSliderPos);
         update();
     }
 }
 
-void InlineSlider::mouseReleaseEvent(QMouseEvent *event)
-{
-    QWidget::mouseReleaseEvent(event);
-
-    emit sliderReleased(mSliderValue);
-}
-
 void InlineSlider::setValue(qreal newValue)
 {
+    if (mSliderValue == newValue) { return; }
+
     const QRect& borderRect = this->borderRect().toAlignedRect();
     setSliderPixelPos(valueFromMappedRange(newValue, borderRect.left(), borderRect.width(), mMin, mMax));
     mSliderValue = qBound(mMin, newValue, mMax);
-    mValueLineEditWidget->setText(QString::number(mSliderValue, 'f', 2));
+    mValueLineEditWidget->setValue(mSliderValue);
     update();
 }
 
-void InlineSlider::setSliderValueFromPos(int pos)
+void InlineSlider::setCosmeticValue(qreal newValue)
+{
+    mValueLineEditWidget->setCosmeticValue(newValue);
+}
+
+void InlineSlider::showDecimals(bool show)
+{
+    mValueLineEditWidget->showDecimals(show);
+}
+
+void InlineSlider::setSliderValueFromPos(qreal pos)
 {
     const QRect& borderRect = this->borderRect().toAlignedRect();
 
     if (mSliderOrigin == SliderStartPosType::MIDDLE) {
         if (qAbs(pos - borderRect.center().x()) <= 0.5) {
             mSliderValue = 0;
-            return;
         }
     }
 
@@ -283,7 +290,7 @@ void InlineSlider::setSliderValueFromPos(int pos)
     qreal newValue = valueFromMappedRange(pos, newMin, newMax, oldMin, oldMax);
 
     mSliderValue = qBound(mMin, newValue, mMax);
-    mValueLineEditWidget->setText(QString::number(mSliderValue, 'f', 2));
+    mValueLineEditWidget->setValue(mSliderValue);
     emit valueChanged(mSliderValue);
 }
 

@@ -20,8 +20,9 @@ GNU General Public License for more details.
 #include <QWidget>
 #include <QLabel>
 #include <QPainterPath>
+#include <QEvent>
 
-class LineEditWidget;
+class LineEditNumberWidget;
 
 enum class SliderStartPosType {
     LEFT,
@@ -34,37 +35,40 @@ class InlineSlider : public QWidget
     Q_OBJECT
 public:
 
-    explicit InlineSlider(QWidget* parent, QString label, qreal min, qreal max, SliderStartPosType type);
+    explicit InlineSlider(QWidget* parent);
     ~InlineSlider() override;
+
+    void init(QString label, qreal min, qreal max, SliderStartPosType type);
 
     void setRange(qreal min, qreal max) { mMin = min; mMax = max; }
     void setMin(qreal min) { mMin = min; }
     void setMax(qreal max) { mMax = max; }
 
+    /// Override the value visually with a cosmetic one.
+    /// Does not modify the actual value!
+    void setCosmeticValue(qreal newValue);
     void setValue(qreal value);
+    void showDecimals(bool show);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
-    void mouseReleaseEvent(QMouseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
 
     bool event(QEvent *event) override;
 
 signals:
     void valueChanged(qreal value);
-    void sliderReleased(qreal value);
-    void valueChangedByKeyboard(qreal value);
 
 private:
 
     void onLineEditChanged();
-    void onScreenChanged();
+    void onScreenChanged(qreal devicePixelRatio);
     void setupPixmap(const QSize& size);
 
     qreal valueFromMappedRange(qreal value, qreal min, qreal max, qreal oldMin, qreal oldMax) const;
     void setSliderPixelPos(qreal pos);
-    void setSliderValueFromPos(int pos);
+    void setSliderValueFromPos(qreal pos);
 
     void setCornerRadius(qreal percentage);
 
@@ -96,7 +100,7 @@ private:
 
     SliderStartPosType mSliderOrigin = SliderStartPosType::MIDDLE;
 
-    LineEditWidget* mValueLineEditWidget = nullptr;
+    LineEditNumberWidget* mValueLineEditWidget = nullptr;
 };
 
 #endif // INLINESLIDER_H

@@ -27,10 +27,13 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
         startPos = SliderStartPosType::MIDDLE;
     }
 
-    mValueSlider = new InlineSlider(this, name, min, max, startPos);
+    QString visualName = name;
+    if (settingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
+        visualName = tr("Width");
+    }
 
-    mMappedMin = min;
-    mMappedMax = max;
+    mValueSlider = new InlineSlider(this);
+    mValueSlider->init(visualName, min, max, startPos);
 
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     mHBoxLayout->setContentsMargins(0,0,0,0);
@@ -38,8 +41,7 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
 
     mValueSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    connect(mValueSlider, &InlineSlider::sliderReleased, this, &BrushSettingWidget::updateSetting);
-    connect(mValueSlider, &InlineSlider::valueChangedByKeyboard, this, &BrushSettingWidget::updateSetting);
+    connect(mValueSlider, &InlineSlider::valueChanged, this, &BrushSettingWidget::updateSetting);
 }
 
 void BrushSettingWidget::initUI()
@@ -60,12 +62,19 @@ void BrushSettingWidget::updateUI()
 
 void BrushSettingWidget::setValue(qreal value)
 {
-    qreal mappedValue = qBound(mMappedMin, MathUtils::linearMap(value, mMin, mMax, mMappedMin, mMappedMax), mMappedMax);
+    qDebug() << "BrushSettingWidget::setValue: " << value;
 
     QSignalBlocker b(mValueSlider);
-    mValueSlider->setValue(mappedValue);
 
-    mCurrentValue = value;
+    qreal expValue = exp(value);
+    if (mSettingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
+    //     visualValue *= 2.0;
+        expValue *= 2.0;
+    }
+    mValueSlider->setValue(expValue);
+    // mValueSlider->setCosmeticValue(visualValue);
+
+    mLogValue = expValue;
 }
 
 void BrushSettingWidget::setValueFromUnmapped(qreal value)
@@ -75,9 +84,15 @@ void BrushSettingWidget::setValueFromUnmapped(qreal value)
 
 void BrushSettingWidget::setRange(qreal min, qreal max)
 {
-    mMin = min;
-    mMax = max;
-    mValueSlider->setRange(mMappedMin, mMappedMax);
+    if (mSettingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
+        mMinLog = exp(min)*2.0;
+        mMaxLog = exp(max)*2.0;
+        mValueSlider->setRange(mMinLog, mMaxLog);
+    } else {
+        mMinLog = exp(min);
+        mMaxLog = exp(max);
+        mValueSlider->setRange(mMinLog, mMaxLog);
+    }
 }
 
 void BrushSettingWidget::setToolTip(QString toolTip)
@@ -87,9 +102,12 @@ void BrushSettingWidget::setToolTip(QString toolTip)
 
 void BrushSettingWidget::updateSetting(qreal value)
 {
-    qreal mappedToOrig = MathUtils::linearMap(value, mMappedMin, mMappedMax, mMin, mMax);
-
     setValue(value);
 
-    emit brushSettingChanged(mappedToOrig, this->mSettingType);
+    qreal newValue = qLn(value);
+
+    if (mSettingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
+        newValue = qLn(value * 0.5);
+    }
+    emit brushSettingChanged(newValue, newValue, this->mSettingType);
 }
