@@ -83,7 +83,12 @@ void StrokeTool::loadSettings()
     connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &StrokeTool::onPreferenceChanged);
 
     connect(&mWidthSizingTool, &RadialOffsetTool::offsetChanged, this, [=](qreal offset) {
-        setWidth(offset * 2.0);
+        qreal width = offset * 2.0;
+        if (strokeToolProperties().width() == width) { return; }
+
+        // qDebug() << "width is: " << strokeToolProperties().width();
+        // qDebug() << "offset is: " << width;
+        setWidth(width);
     });
 
     connect(&mFeatherSizingTool, &RadialOffsetTool::offsetChanged, this, [=](qreal offset){
@@ -420,8 +425,27 @@ void StrokeTool::setFeather(qreal feather)
 
 void StrokeTool::setWidth(qreal width)
 {
+    qDebug() << "width is: " << width;
     toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, width);
-    emit widthChanged(strokeToolProperties().width());
+
+    qreal logValue = qLn(strokeToolProperties().width() * 0.5);
+    qreal maxLogRadius = logValue;
+
+    // Calculate the new base radius from all our inputs
+    qreal maxInputContribution = 0.0;
+    for (int input = 0; input < (int)BrushInputType::BRUSH_INPUTS_COUNT; input += 1) {
+        auto inputMap = mScribbleArea->getBrushInputMapping(BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC, static_cast<BrushInputType>(input));
+
+        for (QPointF point : inputMap.controlPoints.points) {
+            maxInputContribution = qMax(maxInputContribution, maxInputContribution + point.y());
+        }
+    }
+
+    float baseLogRadius = maxLogRadius - maxInputContribution;
+
+    editor()->setMPBrushSettingBaseValue(BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC, baseLogRadius);
+
+    emit widthChanged(baseLogRadius);
 }
 
 void StrokeTool::setPressureEnabled(bool enabled)

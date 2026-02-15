@@ -247,12 +247,6 @@ private:
     void settingUpdated(SETTING setting);
     void paintSelectionVisuals(QPainter &painter);
 
-    /** forceUpdateMyPaintStates
-     * Use this method if you intend to update brush states without causing a stroke on the canvas
-     */
-    void forceUpdateMyPaintStates();
-
-
     BitmapImage* currentBitmapImage(Layer* layer) const;
     VectorImage* currentVectorImage(Layer* layer) const;
 

@@ -16,6 +16,7 @@ class QSpacerItem;
 class QScrollArea;
 class BaseTool;
 class Editor;
+class StrokeTool;
 
 class ToolBrushSettingsWidget : public BaseWidget
 {
@@ -40,6 +41,7 @@ Q_SIGNALS:
 
 private:
 
+    void updateToolConnections(StrokeTool* tool);
     void addBrushSetting(QString settingName, BrushSettingType type, qreal min, qreal max);
 
     void setupSettingsForTool(ToolType toolType);

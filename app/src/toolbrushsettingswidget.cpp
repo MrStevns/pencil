@@ -63,7 +63,25 @@ void ToolBrushSettingsWidget::initUI()
 void ToolBrushSettingsWidget::updateUI()
 {
     setupSettings(mEditor->currentTool()->type());
+
+    StrokeTool* strokeTool = mEditor->tools()->currentStrokeTool();
+    updateToolConnections(strokeTool);
 }
+
+void ToolBrushSettingsWidget::updateToolConnections(StrokeTool* tool)
+{
+    if (tool) {
+        disconnect(tool, nullptr, this, nullptr);
+    }
+
+    connect(tool, &StrokeTool::widthChanged, this, [=](qreal value) {
+        auto radiusType = BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC;
+        setValue(value, radiusType);
+
+        didUpdateSetting(value, radiusType);
+    });
+}
+
 
 void ToolBrushSettingsWidget::resetSettings()
 {

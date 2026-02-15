@@ -1144,8 +1144,6 @@ void ScribbleArea::prepOverlays(int frame)
 void ScribbleArea::loadMPBrush(const QByteArray &content)
 {
     mMyPaint->loadBrush(content);
-
-    forceUpdateMyPaintStates();
 }
 
 void ScribbleArea::onTileUpdated(TiledBuffer* tiledBuffer, Tile* tile)
@@ -1223,14 +1221,6 @@ void ScribbleArea::strokeTo(QPointF point, float pressure, float xtilt, float yt
     Q_ASSERT(mEditor->layers()->currentLayer()->type() == Layer::BITMAP);
 
     mMyPaint->strokeTo(static_cast<float>(point.x()), static_cast<float>(point.y()), pressure, xtilt, ytilt, dt);
-}
-
-void ScribbleArea::forceUpdateMyPaintStates()
-{
-    // Simulate stroke to force states to update
-    // this doesn't draw on canvas, because the cursor doesn't move
-    mMyPaint->strokeTo();
-    // TODO: deltatime should maybe not be fixed here?
 }
 
 void ScribbleArea::endStroke()
@@ -1483,7 +1473,6 @@ void ScribbleArea::brushSettingChanged(BrushSettingType settingType, float value
     qDebug() << "value before mypaint: " << value;
 
     mMyPaint->setBrushBaseValue(static_cast<MyPaintBrushSetting>(settingType), value);
-    forceUpdateMyPaintStates();
 }
 
 float ScribbleArea::getBrushSettingBaseValue(BrushSettingType settingType)
