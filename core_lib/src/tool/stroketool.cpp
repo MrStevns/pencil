@@ -470,19 +470,30 @@ void StrokeTool::setStrokeInvisibleEnabled(bool enabled)
     emit invisibleStrokeEnabledChanged(enabled);
 }
 
-void StrokeTool::setMPBrushSetting(qreal unmappedValue, qreal mappedValue, BrushSettingType setting)
+void StrokeTool::setMPBrushSetting(qreal value, BrushSettingType setting)
 {
 
-    qreal unmappedWidth = exp(unmappedValue);
-    // qDebug() << "unmappedRadius: " << unmappedValue;
-    // qDebug() << "width pixels: " << unmappedWidth;
-    // qDebug() << "log mappedValue: " << mappedValue;
-    qreal radius = mappedValue - qLn(2.0);
-    qDebug() << "radius log: " << radius;
+    qDebug() << "StrokeTool::setMPBrushSetting: " << value;
     switch (setting) {
         case BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC: {
-            toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, unmappedWidth);
-            editor()->setMPBrushSettingBaseValue(setting, radius);
+            qreal radius = value - qLn(2.0);
+            toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, exp(value));
+            qreal logValue = radius;
+            qreal maxLogRadius = logValue;
+
+            // Calculate the new base radius from all our inputs
+            qreal maxInputContribution = 0.0;
+            for (int input = 0; input < (int)BrushInputType::BRUSH_INPUTS_COUNT; input += 1) {
+                auto inputMap = mScribbleArea->getBrushInputMapping(BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC, static_cast<BrushInputType>(input));
+
+                for (QPointF point : inputMap.controlPoints.points) {
+                    maxInputContribution = qMax(maxInputContribution, maxInputContribution + point.y());
+                }
+            }
+
+            float baseLogRadius = maxLogRadius - maxInputContribution;
+
+            editor()->setMPBrushSettingBaseValue(BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC, baseLogRadius);
             break;
         }
         default:

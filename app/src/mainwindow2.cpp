@@ -1618,9 +1618,7 @@ void MainWindow2::makeConnections(Editor* editor, MPBrushSelector* brushSelector
     connect(brushSelector, &MPBrushSelector::didReloadBrush, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::resetSettings);
     connect(brushSelector, &MPBrushSelector::notifyBrushSettingToggled, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::setVisibleState);
     connect(brushSelector, &MPBrushSelector::notifyBrushSettingChanged, mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::setValue);
-    connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::brushSettingChanged, brushSelector, [=](qreal unmapped, qreal mapped, BrushSettingType type) {
-        brushSelector->notifyBrushSettingChanged(mapped, type);
-    });
+    connect(mToolOptions->brushSettingsWidget(), &ToolBrushSettingsWidget::brushSettingChanged, brushSelector, &MPBrushSelector::notifyBrushSettingChanged);
 }
 
 void MainWindow2::makeConnections(Editor* editor, StatusBar *statusBar)

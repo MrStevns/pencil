@@ -41,7 +41,7 @@ public:
     DefaultBrushSettingWidget(const QString& name, BrushSettingType settingType, qreal min, qreal max, QWidget* parent = nullptr);
     ~DefaultBrushSettingWidget() override { }
 
-    void initUI() override;
+    virtual void initUI() override;
     void updateUI() override;
     void setCore(Editor* editor) override { mEditor = editor; }
 
@@ -58,26 +58,27 @@ public:
     InlineSlider* inlineSlider() { return mValueSlider; }
 
 Q_SIGNALS:
-    void brushSettingChanged(qreal unmappedValue, qreal mappedValue, BrushSettingType setting);
+    void brushSettingChanged(qreal value, BrushSettingType setting);
 
 protected:
+    virtual void updateSetting(qreal value);
+
     InlineSlider* mValueSlider = nullptr;
 
+    qreal mInternalMinValue = 0.0;
+    qreal mInternalMaxValue = 0.0;
+
+    const QString mSettingName;
     qreal mMinValue = 0.0;
     qreal mMaxValue = 0.0;
     qreal mCurrentValue = 0.0;
 
-private:
-    void updateSetting(qreal value);
-    float logToLinear(float logValue) const;
+    Editor* mEditor = nullptr;
 
     BrushSettingType mSettingType;
 
-    Editor* mEditor = nullptr;
-
+private:
     QWidget* mParent = nullptr;
-
-    const QString mSettingName;
 
     QHBoxLayout* mHBoxLayout;
 };

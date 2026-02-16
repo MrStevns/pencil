@@ -35,7 +35,7 @@ public:
     void resetSettings();
 
 Q_SIGNALS:
-    void brushSettingChanged(qreal unmappedValue, qreal mappedValue, BrushSettingType setting);
+    void brushSettingChanged(qreal value, BrushSettingType setting);
 
 private:
 
@@ -45,7 +45,7 @@ private:
     void setupSettingsForTool(ToolType toolType);
     void setupDefaultSettings();
     void clearSettings();
-    void didUpdateSetting(qreal unmappedValue, qreal mappedValue, BrushSettingType setting);
+    void didUpdateSetting(qreal value, BrushSettingType setting);
 
     void addSettingToCategory(BrushSettingCategoryType settingCategoryType, DefaultBrushSettingWidget* settingWidget);
     void insertSettingAfter(BrushSettingCategoryType categoryType, DefaultBrushSettingWidget* settingWidget);

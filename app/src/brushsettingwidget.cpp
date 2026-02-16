@@ -23,13 +23,11 @@ DefaultBrushSettingWidget::DefaultBrushSettingWidget(const QString& name, BrushS
     mHBoxLayout = new QHBoxLayout(this);
     setLayout(mHBoxLayout);
 
-    SliderStartPosType startPos = SliderStartPosType::LEFT;
-    // if (min < 0) {
-        // startPos = SliderStartPosType::MIDDLE;
-    // }
-
     mValueSlider = new InlineSlider(this);
-    mValueSlider->init(name, min, max, startPos);
+    mValueSlider->init(name, min, max, SliderStartPosType::LEFT);
+
+    mInternalMinValue = min;
+    mInternalMaxValue = max;
 
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     mHBoxLayout->setContentsMargins(0,0,0,0);
@@ -59,13 +57,11 @@ void DefaultBrushSettingWidget::updateUI()
 void DefaultBrushSettingWidget::setValue(qreal value)
 {
 
-    qDebug() << "BrushSettingWidget::setValue: " << value;
+    qreal mappedValue = qBound(mInternalMinValue, MathUtils::linearMap(value, mMinValue, mMaxValue, mInternalMinValue, mInternalMaxValue), mInternalMaxValue);
 
     QSignalBlocker b(mValueSlider);
 
-    // qreal expValue = value;
-    mValueSlider->setValue(value);
-    mValueSlider->setCosmeticValue(exp(value));
+    mValueSlider->setValue(mappedValue);
 
     mCurrentValue = value;
 }
@@ -86,7 +82,7 @@ void DefaultBrushSettingWidget::setRange(qreal min, qreal max)
 {
     mMinValue = min;
     mMaxValue = max;
-    mValueSlider->setRange(mMinValue, mMaxValue);
+    mValueSlider->setRange(mInternalMinValue, mInternalMaxValue);
 }
 
 void DefaultBrushSettingWidget::setToolTip(const QString& toolTip)
@@ -98,8 +94,12 @@ void DefaultBrushSettingWidget::updateSetting(qreal value)
 {
     setValue(value);
 
-    qDebug() << "updateSetting: " << value;
+    qreal mappedToOrig = MathUtils::linearMap(value, mInternalMinValue, mInternalMaxValue, mMinValue, mMaxValue);
 
-    qreal newValue = value;
-    emit brushSettingChanged(newValue, newValue, this->mSettingType);
+
+    if (qFuzzyIsNull(mappedToOrig)) {
+        mappedToOrig = 0.0;
+    }
+
+    emit brushSettingChanged(mappedToOrig, this->mSettingType);
 }

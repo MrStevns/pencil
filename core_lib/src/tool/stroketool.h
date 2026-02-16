@@ -91,7 +91,7 @@ public:
     // }
 
     // /// Already mapped values can go directly to mypaint backend and update the engine.
-    void setMPBrushSetting(qreal unmappedValue, qreal mappedValue, BrushSettingType setting);
+    void setMPBrushSetting(qreal value, BrushSettingType setting);
 
 signals:
     void widthChanged(qreal value);

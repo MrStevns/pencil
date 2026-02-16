@@ -64,9 +64,7 @@ BrushSettingEditWidget::BrushSettingEditWidget(BrushSettingCategoryType settingC
     gridLayout->addWidget(mMappingButton, 0, 2);
     connect(mMappingButton, &QToolButton::pressed, this, &BrushSettingEditWidget::openMappingWindow);
     connect(mVisibleCheck, &QCheckBox::toggled, this, &BrushSettingEditWidget::visibilityChanged);
-    connect(mSettingWidget, &DefaultBrushSettingWidget::brushSettingChanged, this, [=](qreal unmapped, qreal mapped, BrushSettingType type) {
-        updateSetting(mapped, type);
-    });
+    connect(mSettingWidget, &DefaultBrushSettingWidget::brushSettingChanged, this, &BrushSettingEditWidget::updateSetting);
 }
 
 void BrushSettingEditWidget::hideMappingUI()

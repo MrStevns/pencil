@@ -84,7 +84,7 @@ void ToolBrushSettingsWidget::updateToolConnections(StrokeTool* tool)
             settingWidget->setPixelValue(value);
         }
 
-        // didUpdateSetting(0, value, radiusType);
+        didUpdateSetting(qLn(value), radiusType);
     });
 }
 
@@ -178,9 +178,7 @@ void ToolBrushSettingsWidget::addBrushSetting(QString settingName, BrushSettingT
     settingWidget->setCore(mEditor);
     settingWidget->initUI();
 
-    connect(settingWidget, &DefaultBrushSettingWidget::brushSettingChanged, mEditor->tools()->currentStrokeTool(), [=](qreal unmapped, qreal mapped, BrushSettingType type) {
-        mEditor->tools()->currentStrokeTool()->setMPBrushSetting(unmapped, mapped, type);
-    });
+    connect(settingWidget, &DefaultBrushSettingWidget::brushSettingChanged, mEditor->tools()->currentStrokeTool(), &StrokeTool::setMPBrushSetting);
     connect(settingWidget, &DefaultBrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
     mBrushSettingWidgets.insert(static_cast<int>(settingWidget->setting()), settingWidget);
 }
@@ -212,18 +210,18 @@ void ToolBrushSettingsWidget::setValue(qreal value, BrushSettingType setting)
     }
 }
 
-void ToolBrushSettingsWidget::didUpdateSetting(qreal unmappedValue, qreal mappedValue, BrushSettingType setting)
+void ToolBrushSettingsWidget::didUpdateSetting(qreal value, BrushSettingType setting)
 {
     BrushChanges change;
-    change.baseValue = unmappedValue;
+    change.baseValue = value;
     change.settingsType = setting;
 
     QHash<BrushSettingType, BrushChanges> changes;
     changes.insert(setting, change);
-    mEditor->brushes()->backupBrushSettingChanges(setting, unmappedValue);
+    mEditor->brushes()->backupBrushSettingChanges(setting, value);
     mEditor->brushes()->applyChangesToBrushFile(false);
 
-    emit brushSettingChanged(unmappedValue, mappedValue, setting);
+    emit brushSettingChanged(value, setting);
 }
 
 void ToolBrushSettingsWidget::setVisibleState(BrushSettingCategoryType settingCategoryType, QString name, BrushSettingType settingType, qreal min, qreal max, bool visible)
@@ -260,9 +258,7 @@ void ToolBrushSettingsWidget::setVisibleState(BrushSettingCategoryType settingCa
         settingWidget->setCore(mEditor);
         settingWidget->initUI();
 
-        connect(settingWidget, &DefaultBrushSettingWidget::brushSettingChanged, mEditor->tools()->currentStrokeTool(), [=](qreal unmapped, qreal mapped, BrushSettingType type) {
-            mEditor->tools()->currentStrokeTool()->setMPBrushSetting(unmapped, mapped, type);
-        });
+        connect(settingWidget, &DefaultBrushSettingWidget::brushSettingChanged, mEditor->tools()->currentStrokeTool(), &StrokeTool::setMPBrushSetting);
         connect(settingWidget, &DefaultBrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
 
     } else {
