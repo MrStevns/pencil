@@ -123,6 +123,11 @@ void ToolOptionWidget::onLayerChanged(int layerIndex)
 void ToolOptionWidget::onToolChanged(ToolType toolType)
 {
     BaseTool* tool = editor()->tools()->getTool(toolType);
+
+    if (tool->type() == toolType) {
+        return;
+    }
+
     updateUIForTool(tool);
 }
 
