@@ -443,7 +443,7 @@ void StrokeTool::setWidth(qreal width)
 
     qDebug() << "newBaseLog: " << baseLogRadius;
 
-    emit widthChanged(baseLogRadius);
+    emit widthChanged(width);
 }
 
 void StrokeTool::setPressureEnabled(bool enabled)
@@ -470,22 +470,19 @@ void StrokeTool::setStrokeInvisibleEnabled(bool enabled)
     emit invisibleStrokeEnabledChanged(enabled);
 }
 
-// Linear scale value (0-100) to pixel radius (direct 1:1 relationship)
-float scaleToPixels(float scaleValue) {
-    return 0.0 + scaleValue * (100.0 - 0.0) / 100.0f;
-}
-
 void StrokeTool::setMPBrushSetting(qreal unmappedValue, qreal mappedValue, BrushSettingType setting)
 {
 
-    qreal unmappedWidth = exp(unmappedValue) * 2.0;
+    qreal unmappedWidth = exp(unmappedValue);
     // qDebug() << "unmappedRadius: " << unmappedValue;
     // qDebug() << "width pixels: " << unmappedWidth;
     // qDebug() << "log mappedValue: " << mappedValue;
+    qreal radius = mappedValue - qLn(2.0);
+    qDebug() << "radius log: " << radius;
     switch (setting) {
         case BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC: {
             toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, unmappedWidth);
-            editor()->setMPBrushSettingBaseValue(setting, mappedValue);
+            editor()->setMPBrushSettingBaseValue(setting, radius);
             break;
         }
         default:

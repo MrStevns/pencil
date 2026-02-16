@@ -16,24 +16,20 @@
 
 #include "mathutils.h"
 
-BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType settingType, qreal min, qreal max, QWidget* parent) : QWidget(parent),
+DefaultBrushSettingWidget::DefaultBrushSettingWidget(const QString& name, BrushSettingType settingType, qreal min, qreal max, QWidget* parent)
+    : BrushSettingWidget(parent),
     mSettingType(settingType), mParent(parent), mSettingName(name)
 {
     mHBoxLayout = new QHBoxLayout(this);
     setLayout(mHBoxLayout);
 
     SliderStartPosType startPos = SliderStartPosType::LEFT;
-    if (min < 0) {
-        startPos = SliderStartPosType::MIDDLE;
-    }
-
-    QString visualName = name;
-    if (settingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
-        visualName = tr("Width");
-    }
+    // if (min < 0) {
+        // startPos = SliderStartPosType::MIDDLE;
+    // }
 
     mValueSlider = new InlineSlider(this);
-    mValueSlider->init(visualName, min, max, startPos);
+    mValueSlider->init(name, min, max, startPos);
 
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     mHBoxLayout->setContentsMargins(0,0,0,0);
@@ -41,10 +37,10 @@ BrushSettingWidget::BrushSettingWidget(const QString name, BrushSettingType sett
 
     mValueSlider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    connect(mValueSlider, &InlineSlider::valueChanged, this, &BrushSettingWidget::updateSetting);
+    connect(mValueSlider, &InlineSlider::valueChanged, this, &DefaultBrushSettingWidget::updateSetting);
 }
 
-void BrushSettingWidget::initUI()
+void DefaultBrushSettingWidget::initUI()
 {
     BrushSettingInfo info = mEditor->getBrushSettingInfo(mSettingType);
 
@@ -54,60 +50,56 @@ void BrushSettingWidget::initUI()
     setToolTip(info.tooltip);
 }
 
-void BrushSettingWidget::updateUI()
+void DefaultBrushSettingWidget::updateUI()
 {
     qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(mSettingType));
     setValue(baseValue);
 }
 
-void BrushSettingWidget::setValue(qreal value)
+void DefaultBrushSettingWidget::setValue(qreal value)
 {
+
     qDebug() << "BrushSettingWidget::setValue: " << value;
 
     QSignalBlocker b(mValueSlider);
 
-    qreal expValue = exp(value);
-    if (mSettingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
-    //     visualValue *= 2.0;
-        expValue *= 2.0;
-    }
-    mValueSlider->setValue(expValue);
-    // mValueSlider->setCosmeticValue(visualValue);
+    // qreal expValue = value;
+    mValueSlider->setValue(value);
+    mValueSlider->setCosmeticValue(exp(value));
 
-    mLogValue = expValue;
+    mCurrentValue = value;
 }
 
-void BrushSettingWidget::setValueFromUnmapped(qreal value)
+void DefaultBrushSettingWidget::setPixelValue(qreal pixelValue)
 {
-    updateSetting(value);
+    qDebug() << "BrushSettingWidget::setPixelValue: " << pixelValue;
+
+    QSignalBlocker b(mValueSlider);
+
+    mValueSlider->setValue(qLn(pixelValue));
+    mValueSlider->setCosmeticValue(pixelValue);
+
+    mCurrentValue = pixelValue;
 }
 
-void BrushSettingWidget::setRange(qreal min, qreal max)
+void DefaultBrushSettingWidget::setRange(qreal min, qreal max)
 {
-    if (mSettingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
-        mMinLog = exp(min)*2.0;
-        mMaxLog = exp(max)*2.0;
-        mValueSlider->setRange(mMinLog, mMaxLog);
-    } else {
-        mMinLog = exp(min);
-        mMaxLog = exp(max);
-        mValueSlider->setRange(mMinLog, mMaxLog);
-    }
+    mMinValue = min;
+    mMaxValue = max;
+    mValueSlider->setRange(mMinValue, mMaxValue);
 }
 
-void BrushSettingWidget::setToolTip(QString toolTip)
+void DefaultBrushSettingWidget::setToolTip(const QString& toolTip)
 {
     mValueSlider->setToolTip(toolTip);
 }
 
-void BrushSettingWidget::updateSetting(qreal value)
+void DefaultBrushSettingWidget::updateSetting(qreal value)
 {
     setValue(value);
 
-    qreal newValue = qLn(value);
+    qDebug() << "updateSetting: " << value;
 
-    if (mSettingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
-        newValue = qLn(value * 0.5);
-    }
+    qreal newValue = value;
     emit brushSettingChanged(newValue, newValue, this->mSettingType);
 }

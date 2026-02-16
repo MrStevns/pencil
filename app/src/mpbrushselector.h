@@ -24,7 +24,7 @@ class MPBrushConfigurator;
 class ComboBox;
 class QVBoxLayout;
 class MPBrushPresetsWidget;
-class BrushSettingWidget;
+class DefaultBrushSettingWidget;
 
 class MPBrushSelector : public BaseDockWidget
 {

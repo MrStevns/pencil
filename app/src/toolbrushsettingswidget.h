@@ -11,7 +11,7 @@
 
 class QVBoxLayout;
 class QHBoxLayout;
-class BrushSettingWidget;
+class DefaultBrushSettingWidget;
 class QSpacerItem;
 class QScrollArea;
 class BaseTool;
@@ -34,8 +34,6 @@ public:
     void setupSettings(ToolType toolType);
     void resetSettings();
 
-    void updateFromUnmappedSetting(qreal value, BrushSettingType setting);
-
 Q_SIGNALS:
     void brushSettingChanged(qreal unmappedValue, qreal mappedValue, BrushSettingType setting);
 
@@ -49,8 +47,8 @@ private:
     void clearSettings();
     void didUpdateSetting(qreal unmappedValue, qreal mappedValue, BrushSettingType setting);
 
-    void addSettingToCategory(BrushSettingCategoryType settingCategoryType, BrushSettingWidget* settingWidget);
-    void insertSettingAfter(BrushSettingCategoryType categoryType, BrushSettingWidget* settingWidget);
+    void addSettingToCategory(BrushSettingCategoryType settingCategoryType, DefaultBrushSettingWidget* settingWidget);
+    void insertSettingAfter(BrushSettingCategoryType categoryType, DefaultBrushSettingWidget* settingWidget);
 
     QVBoxLayout* mMainVerticalLayout = nullptr;
     QHBoxLayout* mMainHorizontalLayout = nullptr;
@@ -58,7 +56,7 @@ private:
     QScrollArea* mScrollArea = nullptr;
     Editor* mEditor = nullptr;
 
-    QMap<int, BrushSettingWidget*> mBrushSettingWidgets;
+    QMap<int, DefaultBrushSettingWidget*> mBrushSettingWidgets;
 
     QSpacerItem* mSpacer = nullptr;
 };

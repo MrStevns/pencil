@@ -153,7 +153,8 @@ HEADERS += \
     src/statusbar.h \
     src/elidedlabel.h \
     src/cameraoptionswidget.h \
-    src/transformoptionswidget.h
+    src/transformoptionswidget.h \
+    src/widthbrushsettingwidget.h
 
 SOURCES += \
     src/addtransparencytopaperdialog.cpp \
@@ -227,7 +228,8 @@ SOURCES += \
     src/statusbar.cpp \
     src/elidedlabel.cpp \
     src/cameraoptionswidget.cpp \
-    src/transformoptionswidget.cpp
+    src/transformoptionswidget.cpp \
+    src/widthbrushsettingwidget.cpp
 
 FORMS += \
     ui/mainwindow2.ui \

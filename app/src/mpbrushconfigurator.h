@@ -20,7 +20,7 @@ class QSpacerItem;
 class BrushSettingEditWidget;
 class QLabel;
 class MPBrushInfoDialog;
-class BrushSettingWidget;
+class DefaultBrushSettingWidget;
 class MPBrushPreview;
 
 class MPBrushConfigurator : public QDialog

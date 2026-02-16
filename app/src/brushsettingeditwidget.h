@@ -29,7 +29,7 @@ public:
 
     void closeMappingWindow();
 
-    const BrushSettingWidget* brushSettingWidget() { return mSettingWidget; }
+    const DefaultBrushSettingWidget* brushSettingWidget() { return mSettingWidget; }
     BrushSettingType settingType();
     QString settingName();
 
@@ -65,7 +65,7 @@ private:
     BrushSettingType mSettingType;
     BrushSettingCategoryType mSettingCategoryType;
 
-    BrushSettingWidget* mSettingWidget = nullptr;
+    DefaultBrushSettingWidget* mSettingWidget = nullptr;
     MPMappingOptionsWidget* mMappingOptionsWidget = nullptr;
 };
 

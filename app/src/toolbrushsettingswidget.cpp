@@ -16,6 +16,7 @@
 #include "brushsettingwidget.h"
 #include "brushsetting.h"
 #include "mpbrushsettingcategories.h"
+#include "widthbrushsettingwidget.h"
 
 ToolBrushSettingsWidget::ToolBrushSettingsWidget(Editor* editor, QWidget* parent)
     : BaseWidget(parent), mEditor(editor)
@@ -76,9 +77,14 @@ void ToolBrushSettingsWidget::updateToolConnections(StrokeTool* tool)
 
     connect(tool, &StrokeTool::widthChanged, this, [=](qreal value) {
         auto radiusType = BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC;
-        setValue(value, radiusType);
 
-        didUpdateSetting(0, value, radiusType);
+        auto settingWidget = mBrushSettingWidgets.find(static_cast<int>(radiusType)).value();
+
+        if (mBrushSettingWidgets.contains(static_cast<int>(radiusType))) {
+            settingWidget->setPixelValue(value);
+        }
+
+        // didUpdateSetting(0, value, radiusType);
     });
 }
 
@@ -161,15 +167,21 @@ void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
 
 void ToolBrushSettingsWidget::addBrushSetting(QString settingName, BrushSettingType type, qreal min, qreal max)
 {
-    BrushSettingWidget* settingWidget = new BrushSettingWidget(settingName, type, min, max, this);
+    DefaultBrushSettingWidget* settingWidget = nullptr;
+    if (type == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
+        settingWidget = new WidthBrushSettingWidget(tr("Width"), type, min, max, this);
+    } else {
+        settingWidget = new DefaultBrushSettingWidget(settingName, type, min, max, this);
+    }
+
     mBrushSettingsLayout->addWidget(settingWidget);
     settingWidget->setCore(mEditor);
     settingWidget->initUI();
 
-    connect(settingWidget, &BrushSettingWidget::brushSettingChanged, mEditor->tools()->currentStrokeTool(), [=](qreal unmapped, qreal mapped, BrushSettingType type) {
+    connect(settingWidget, &DefaultBrushSettingWidget::brushSettingChanged, mEditor->tools()->currentStrokeTool(), [=](qreal unmapped, qreal mapped, BrushSettingType type) {
         mEditor->tools()->currentStrokeTool()->setMPBrushSetting(unmapped, mapped, type);
     });
-    connect(settingWidget, &BrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
+    connect(settingWidget, &DefaultBrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
     mBrushSettingWidgets.insert(static_cast<int>(settingWidget->setting()), settingWidget);
 }
 
@@ -188,16 +200,6 @@ void ToolBrushSettingsWidget::setupSettings(ToolType toolType)
             setupSettingsForTool(toolType);
         }
     });
-}
-
-void ToolBrushSettingsWidget::updateFromUnmappedSetting(qreal value, BrushSettingType setting)
-{
-    // qDebug() << "ToolBrushSettingWidget::updating from unmapped setting";
-    auto settingWidget = mBrushSettingWidgets.find(static_cast<int>(setting)).value();
-
-    if (mBrushSettingWidgets.contains(static_cast<int>(setting))) {
-        settingWidget->setValueFromUnmapped(value);
-    }
 }
 
 void ToolBrushSettingsWidget::setValue(qreal value, BrushSettingType setting)
@@ -232,7 +234,12 @@ void ToolBrushSettingsWidget::setVisibleState(BrushSettingCategoryType settingCa
         MPBrushSettingCategories mpSettingCategories;
         auto listOfCategories = mpSettingCategories.allBrushSettings();
 
-        BrushSettingWidget* settingWidget = new BrushSettingWidget(name, settingType, min, max, this);
+        DefaultBrushSettingWidget* settingWidget = nullptr;
+        if (settingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
+            settingWidget = new WidthBrushSettingWidget(tr("Width"), settingType, min, max, this);
+        } else {
+            settingWidget = new DefaultBrushSettingWidget(name, settingType, min, max, this);
+        }
 
         bool hasCategory = false;
         for (auto setting : mpSettingCategories.categoryForSetting(settingType).settings) {
@@ -253,10 +260,10 @@ void ToolBrushSettingsWidget::setVisibleState(BrushSettingCategoryType settingCa
         settingWidget->setCore(mEditor);
         settingWidget->initUI();
 
-        connect(settingWidget, &BrushSettingWidget::brushSettingChanged, mEditor->tools()->currentStrokeTool(), [=](qreal unmapped, qreal mapped, BrushSettingType type) {
+        connect(settingWidget, &DefaultBrushSettingWidget::brushSettingChanged, mEditor->tools()->currentStrokeTool(), [=](qreal unmapped, qreal mapped, BrushSettingType type) {
             mEditor->tools()->currentStrokeTool()->setMPBrushSetting(unmapped, mapped, type);
         });
-        connect(settingWidget, &BrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
+        connect(settingWidget, &DefaultBrushSettingWidget::brushSettingChanged, this, &ToolBrushSettingsWidget::didUpdateSetting);
 
     } else {
         auto settingWidget = mBrushSettingWidgets.take(static_cast<int>(settingType));
@@ -265,13 +272,13 @@ void ToolBrushSettingsWidget::setVisibleState(BrushSettingCategoryType settingCa
     }
 }
 
-void ToolBrushSettingsWidget::insertSettingAfter(BrushSettingCategoryType categoryType, BrushSettingWidget* settingWidget)
+void ToolBrushSettingsWidget::insertSettingAfter(BrushSettingCategoryType categoryType, DefaultBrushSettingWidget* settingWidget)
 {
     MPBrushSettingCategories mpSettingCategories;
 
     int newCategoryTypeIndex = static_cast<int>(categoryType);
     int newIndexAfter = 0;
-    for (BrushSettingWidget* widgetInList : findChildren<BrushSettingWidget*>()) {
+    for (DefaultBrushSettingWidget* widgetInList : findChildren<DefaultBrushSettingWidget*>()) {
         auto categoryForWidget = mpSettingCategories.categoryForSetting(widgetInList->setting());
 
         int categoryIndexOfWidget = static_cast<int>(categoryForWidget.categoryType);
@@ -283,12 +290,12 @@ void ToolBrushSettingsWidget::insertSettingAfter(BrushSettingCategoryType catego
     mBrushSettingsLayout->insertWidget(newIndexAfter, settingWidget);
 }
 
-void ToolBrushSettingsWidget::addSettingToCategory(BrushSettingCategoryType settingCategoryType, BrushSettingWidget* settingWidget)
+void ToolBrushSettingsWidget::addSettingToCategory(BrushSettingCategoryType settingCategoryType, DefaultBrushSettingWidget* settingWidget)
 {
     int categoryTypeIndex = static_cast<int>(settingCategoryType);
     int newIndex = -1;
     MPBrushSettingCategories mpSettingCategories;
-    for (BrushSettingWidget* widgetInList : findChildren<BrushSettingWidget*>()) {
+    for (DefaultBrushSettingWidget* widgetInList : findChildren<DefaultBrushSettingWidget*>()) {
 
         auto categoryForWidget = mpSettingCategories.categoryForSetting(widgetInList->setting());
 
@@ -314,7 +321,7 @@ void ToolBrushSettingsWidget::addSettingToCategory(BrushSettingCategoryType sett
 
 void ToolBrushSettingsWidget::clearSettings()
 {
-    QMapIterator<int, BrushSettingWidget*> it(mBrushSettingWidgets);
+    QMapIterator<int, DefaultBrushSettingWidget*> it(mBrushSettingWidgets);
 
     while (it.hasNext()) {
         it.next();

@@ -10,6 +10,7 @@
 #include <QCheckBox>
 #include <QSettings>
 
+#include "widthbrushsettingwidget.h"
 #include "mpmappingwidget.h"
 #include "mappingdistributionwidget.h"
 #include "mpmappingoptionswidget.h"
@@ -32,7 +33,13 @@ BrushSettingEditWidget::BrushSettingEditWidget(BrushSettingCategoryType settingC
     setLayout(gridLayout);
 
     mSettingCategoryType = settingCategoryType;
-    mSettingWidget = new BrushSettingWidget(name, settingType, min, max, this);
+
+    if (settingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
+        mSettingWidget = new WidthBrushSettingWidget(tr("Width"), settingType, min, max, this);
+    } else {
+        mSettingWidget = new DefaultBrushSettingWidget(name, settingType, min, max, this);
+    }
+
     mSettingType = settingType;
     mVisibleCheck = new QCheckBox(this);
     mMappingButton = new QToolButton(this);
@@ -57,7 +64,7 @@ BrushSettingEditWidget::BrushSettingEditWidget(BrushSettingCategoryType settingC
     gridLayout->addWidget(mMappingButton, 0, 2);
     connect(mMappingButton, &QToolButton::pressed, this, &BrushSettingEditWidget::openMappingWindow);
     connect(mVisibleCheck, &QCheckBox::toggled, this, &BrushSettingEditWidget::visibilityChanged);
-    connect(mSettingWidget, &BrushSettingWidget::brushSettingChanged, this, [=](qreal unmapped, qreal mapped, BrushSettingType type) {
+    connect(mSettingWidget, &DefaultBrushSettingWidget::brushSettingChanged, this, [=](qreal unmapped, qreal mapped, BrushSettingType type) {
         updateSetting(mapped, type);
     });
 }
