@@ -36,9 +36,10 @@ private:
 
     MPSurface* mSurface = nullptr;
     QElapsedTimer* perfTimer = nullptr;
-    QElapsedTimer* updateTimer = nullptr;
 
     QImage mSurfaceBackground;
+
+    qreal mDrawingDelayThreshold = 33;
 };
 
 #endif // MPBRUSHPREVIEW_H

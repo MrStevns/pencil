@@ -20,10 +20,6 @@ MPBrushPreview::MPBrushPreview(QWidget* parent) : QWidget(parent)
     connect(mMypaintHandler, &MPHandler::tileCleared, this, &MPBrushPreview::onTileCleared);
 
     perfTimer = new QElapsedTimer();
-    perfTimer->start();
-
-    updateTimer = new QElapsedTimer();
-    updateTimer->start();
 }
 
 MPBrushPreview::~MPBrushPreview()
@@ -35,16 +31,17 @@ MPBrushPreview::~MPBrushPreview()
 
 void MPBrushPreview::updatePreview(const QByteArray &content, const QColor& brushColor)
 {
-    if (updateTimer->elapsed() < 50) {
+    if (perfTimer->elapsed() > mDrawingDelayThreshold) {
+        perfTimer->restart();
         return;
     }
     mMypaintHandler->loadBrush(content);
     mMypaintHandler->clearSurface();
     mMypaintHandler->setBrushColor(brushColor);
 
-    drawStroke();
+    qDebug() << "MPBrushPreview::updatePreview";
 
-    updateTimer->restart();
+    drawStroke();
 }
 
 void MPBrushPreview::drawStroke() const
@@ -95,11 +92,11 @@ void MPBrushPreview::drawStroke() const
         const qint64 elapsed = perfTimer->elapsed();
 
         // Increase steps to draw less dabs that are slow to create
-        if (elapsed > 300) {
+        if (elapsed > 10) {
             step += 10;
         }
         // Dabs are too slow to draw, break out of the loop.
-        if (elapsed > 700) {
+        if (elapsed > mDrawingDelayThreshold) {
             qDebug() << "stopped drawing, too slow";
             break;
         }
