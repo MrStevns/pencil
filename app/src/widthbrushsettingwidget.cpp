@@ -3,6 +3,8 @@
 #include "inlineslider.h"
 #include "editor.h"
 
+#include "QtMath"
+
 WidthBrushSettingWidget::WidthBrushSettingWidget(const QString& name, BrushSettingType settingType, qreal min, qreal max, QWidget* parent)
     : DefaultBrushSettingWidget(name, settingType, min, max, parent)
 {
