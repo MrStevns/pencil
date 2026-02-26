@@ -62,8 +62,6 @@ void DefaultBrushSettingWidget::setValue(qreal value)
     QSignalBlocker b(mValueSlider);
 
     mValueSlider->setValue(mappedValue);
-
-    mCurrentValue = value;
 }
 
 void DefaultBrushSettingWidget::setPixelValue(qreal pixelValue)
@@ -72,10 +70,8 @@ void DefaultBrushSettingWidget::setPixelValue(qreal pixelValue)
 
     QSignalBlocker b(mValueSlider);
 
-    mValueSlider->setValue(qLn(pixelValue));
+    mValueSlider->setValue(pixelValue);
     mValueSlider->setCosmeticValue(pixelValue);
-
-    mCurrentValue = pixelValue;
 }
 
 void DefaultBrushSettingWidget::setRange(qreal min, qreal max)

@@ -31,7 +31,6 @@ public:
     virtual BrushSettingType setting() const = 0;
 
     virtual QString name() const = 0;
-    virtual qreal currentValue() const = 0;
 };
 
 class DefaultBrushSettingWidget : public BrushSettingWidget
@@ -53,7 +52,6 @@ public:
     void setToolTip(const QString& toolTip) override;
 
     BrushSettingType setting() const override { return mSettingType; }
-    qreal currentValue() const override { return mCurrentValue; }
 
     InlineSlider* inlineSlider() { return mValueSlider; }
 
@@ -71,7 +69,6 @@ protected:
     const QString mSettingName;
     qreal mMinValue = 0.0;
     qreal mMaxValue = 0.0;
-    qreal mCurrentValue = 0.0;
 
     Editor* mEditor = nullptr;
 

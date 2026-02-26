@@ -14,6 +14,7 @@ public:
     void setValue(qreal value) override;
     void setRange(qreal min, qreal max) override;
 
+protected:
     void updateSetting(qreal value) override;
 };
 

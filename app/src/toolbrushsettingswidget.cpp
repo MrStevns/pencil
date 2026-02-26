@@ -83,8 +83,6 @@ void ToolBrushSettingsWidget::updateToolConnections(StrokeTool* tool)
         if (mBrushSettingWidgets.contains(static_cast<int>(radiusType))) {
             settingWidget->setPixelValue(value);
         }
-
-        didUpdateSetting(qLn(value), radiusType);
     });
 }
 
