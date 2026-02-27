@@ -62,6 +62,14 @@ signals:
 
 private:
 
+    /**
+     * Calculates how much space there is for the left label vs the line edit text
+     * and creates an ellided version of the label.
+     *
+     * @return: A potentially ellided label
+     */
+    QString ellidedLabel(const QFontMetrics& metrics) const;
+
     void onLineEditChanged();
     void onScreenChanged(qreal devicePixelRatio);
     void setupPixmap(const QSize& size);

@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QStyleOption>
 #include <QStylePainter>
+#include <QFontMetrics>
 
 #include <QDebug>
 #include <QLabel>
@@ -191,8 +192,22 @@ void InlineSlider::drawLabels(QPainter& painter, const QRectF& borderRect, const
     painter.save();
     painter.setPen(textColor);
     const QRectF& textRect = borderRect.adjusted(mTextPadding, 0, -mTextPadding, 0);
-    painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, mLabel);
+
+    // TODO: cache the ellided text result..
+    painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, ellidedLabel(painter.fontMetrics()));
     painter.restore();
+}
+
+QString InlineSlider::ellidedLabel(const QFontMetrics& metrics) const
+{
+    const QFontMetrics& fm = metrics;
+
+    int rightWidth = fm.horizontalAdvance(mValueLineEditWidget->text());
+    QRect rightRect(width() - mTextPadding - rightWidth, 0, rightWidth, height());
+
+    int horizontalPadding = mTextPadding * 2;
+    int leftMaxWidth = rightRect.left() - horizontalPadding;
+    return fm.elidedText(mLabel, Qt::ElideRight, leftMaxWidth);
 }
 
 void InlineSlider::drawCaret(QPainter& painter, const QRectF& borderRect, const QColor& caretColor)
