@@ -88,10 +88,7 @@ void DefaultBrushSettingWidget::setToolTip(const QString& toolTip)
 
 void DefaultBrushSettingWidget::updateSetting(qreal value)
 {
-    setValue(value);
-
     qreal mappedToOrig = MathUtils::linearMap(value, mInternalMinValue, mInternalMaxValue, mMinValue, mMaxValue);
-
 
     if (qFuzzyIsNull(mappedToOrig)) {
         mappedToOrig = 0.0;
