@@ -26,8 +26,6 @@ void WidthBrushSettingWidget::initUI()
 
 void WidthBrushSettingWidget::setPixelValue(qreal pixelValue)
 {
-    // qDebug() << "WidthBrushSettingWidget::setPixelValue: " << pixelValue;
-
     QSignalBlocker b(mValueSlider);
 
     qreal radValue = qLn(pixelValue * 0.5);
@@ -41,8 +39,6 @@ void WidthBrushSettingWidget::setPixelValue(qreal pixelValue)
 
 void WidthBrushSettingWidget::setValue(qreal value)
 {
-    // qDebug() << "WidthBrushSettingWidget::setValue: " << value;
-
     QSignalBlocker b(mValueSlider);
 
     mValueSlider->setValue(value);

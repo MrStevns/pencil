@@ -66,8 +66,6 @@ void DefaultBrushSettingWidget::setValue(qreal value)
 
 void DefaultBrushSettingWidget::setPixelValue(qreal pixelValue)
 {
-    qDebug() << "BrushSettingWidget::setPixelValue: " << pixelValue;
-
     QSignalBlocker b(mValueSlider);
 
     mValueSlider->setValue(pixelValue);
