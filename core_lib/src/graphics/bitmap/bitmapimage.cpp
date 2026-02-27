@@ -462,129 +462,129 @@ void BitmapImage::setCompositionModeBounds(QRect sourceBounds, bool isSourceMinB
  */
 void BitmapImage::autoCrop()
 {
-// if (!mEnableAutoCrop) return;
-// if (mBounds.isEmpty()) return; // Exit if current bounds are null
-// if (mImage.isNull()) return;
+    if (!mEnableAutoCrop) return;
+    if (mBounds.isEmpty()) return; // Exit if current bounds are null
+    if (mImage.isNull()) return;
 
-// Q_ASSERT(mBounds.size() == mImage.size());
+    Q_ASSERT(mBounds.size() == mImage.size());
 
-// // Exit if already min bounded
-// if (mMinBound) return;
+    // Exit if already min bounded
+    if (mMinBound) return;
 
-// // Get image properties
-// const int width = mImage.width();
+    // Get image properties
+    const int width = mImage.width();
 
-// // Relative top and bottom row indices (inclusive)
-// int relTop = 0;
-// int relBottom = mBounds.height() - 1;
+    // Relative top and bottom row indices (inclusive)
+    int relTop = 0;
+    int relBottom = mBounds.height() - 1;
 
-// // Check top row
-// bool isEmpty = true; // Used to track if a non-transparent pixel has been found
-// while (isEmpty && relTop <= relBottom) // Loop through rows
-// {
-//     // Point cursor to the first pixel in the current top row
-//     const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(relTop));
-//     for (int col = 0; col < width; col++) // Loop through pixels in row
-//     {
-//         // If the pixel is not transparent
-//         // (i.e. alpha channel > 0)
-//         if (qAlpha(*cursor) != 0)
-//         {
-//             // We've found a non-transparent pixel in row relTop,
-//             // so we can stop looking for one
-//             isEmpty = false;
-//             break;
-//         }
-//         // Move cursor to point to the next pixel in the row
-//         cursor++;
-//     }
-//     if (isEmpty)
-//     {
-//         // If the row we just checked was empty, increase relTop
-//         // to remove the empty row from the top of the bounding box
-//         ++relTop;
-//     }
-// }
+    // Check top row
+    bool isEmpty = true; // Used to track if a non-transparent pixel has been found
+    while (isEmpty && relTop <= relBottom) // Loop through rows
+    {
+        // Point cursor to the first pixel in the current top row
+        const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(relTop));
+        for (int col = 0; col < width; col++) // Loop through pixels in row
+        {
+            // If the pixel is not transparent
+            // (i.e. alpha channel > 0)
+            if (qAlpha(*cursor) != 0)
+            {
+                // We've found a non-transparent pixel in row relTop,
+                // so we can stop looking for one
+                isEmpty = false;
+                break;
+            }
+            // Move cursor to point to the next pixel in the row
+            cursor++;
+        }
+        if (isEmpty)
+        {
+            // If the row we just checked was empty, increase relTop
+            // to remove the empty row from the top of the bounding box
+            ++relTop;
+        }
+    }
 
-// // Check bottom row
-// isEmpty = true; // Reset isEmpty
-// while (isEmpty && relBottom >= relTop) // Loop through rows
-// {
-//     // Point cursor to the first pixel in the current bottom row
-//     const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(relBottom));
-//     for (int col = 0; col < width; col++) // Loop through pixels in row
-//     {
-//         // If the pixel is not transparent
-//         // (i.e. alpha channel > 0)
-//         if(qAlpha(*cursor) != 0)
-//         {
-//             // We've found a non-transparent pixel in row relBottom,
-//             // so we can stop looking for one
-//             isEmpty = false;
-//             break;
-//         }
-//         // Move cursor to point to the next pixel in the row
-//         ++cursor;
-//     }
-//     if (isEmpty)
-//     {
-//         // If the row we just checked was empty, decrease relBottom
-//         // to remove the empty row from the bottom of the bounding box
-//         --relBottom;
-//     }
-// }
+    // Check bottom row
+    isEmpty = true; // Reset isEmpty
+    while (isEmpty && relBottom >= relTop) // Loop through rows
+    {
+        // Point cursor to the first pixel in the current bottom row
+        const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(relBottom));
+        for (int col = 0; col < width; col++) // Loop through pixels in row
+        {
+            // If the pixel is not transparent
+            // (i.e. alpha channel > 0)
+            if(qAlpha(*cursor) != 0)
+            {
+                // We've found a non-transparent pixel in row relBottom,
+                // so we can stop looking for one
+                isEmpty = false;
+                break;
+            }
+            // Move cursor to point to the next pixel in the row
+            ++cursor;
+        }
+        if (isEmpty)
+        {
+            // If the row we just checked was empty, decrease relBottom
+            // to remove the empty row from the bottom of the bounding box
+            --relBottom;
+        }
+    }
 
-// // Relative left and right column indices (inclusive)
-// int relLeft = 0;
-// int relRight = mBounds.width()-1;
+    // Relative left and right column indices (inclusive)
+    int relLeft = 0;
+    int relRight = mBounds.width()-1;
 
-// // Check left column - find minimum transparent span at start of each row
-// int minLeft = mBounds.width();
-// for (int row = relTop; row <= relBottom; ++row)
-// {
-//     const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(row));
-//     for (int col = 0; col < minLeft; ++col)
-//     {
-//         if (qAlpha(*cursor) != 0)
-//         {
-//             minLeft = col;
-//             break;
-//         }
-//         ++cursor;
-//     }
-// }
-// relLeft = minLeft;
+    // Check left column - find minimum transparent span at start of each row
+    int minLeft = mBounds.width();
+    for (int row = relTop; row <= relBottom; ++row)
+    {
+        const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(row));
+        for (int col = 0; col < minLeft; ++col)
+        {
+            if (qAlpha(*cursor) != 0)
+            {
+                minLeft = col;
+                break;
+            }
+            ++cursor;
+        }
+    }
+    relLeft = minLeft;
 
-// // Check right column - find minimum transparent span at end of each row
-// int minRight = 0;
-// for (int row = relTop; row <= relBottom; ++row)
-// {
-//     const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(row)) + mBounds.width() - 1;
-//     for (int col = mBounds.width() - 1; col > minRight; --col)
-//     {
-//         if (qAlpha(*cursor) != 0)
-//         {
-//             minRight = col;
-//             break;
-//         }
-//         --cursor;
-//     }
-// }
-// relRight = minRight;
+    // Check right column - find minimum transparent span at end of each row
+    int minRight = 0;
+    for (int row = relTop; row <= relBottom; ++row)
+    {
+        const QRgb* cursor = reinterpret_cast<const QRgb*>(mImage.constScanLine(row)) + mBounds.width() - 1;
+        for (int col = mBounds.width() - 1; col > minRight; --col)
+        {
+            if (qAlpha(*cursor) != 0)
+            {
+                minRight = col;
+                break;
+            }
+            --cursor;
+        }
+    }
+    relRight = minRight;
 
-// if (relTop > relBottom || relLeft > relRight)
-// {
-//     clear();
-//     return;
-// }
-// //qDebug() << "Original" << mBounds;
-// //qDebug() << "Autocrop" << relLeft << relTop << relRight - mBounds.width() + 1 << relBottom - mBounds.height() + 1;
-// // Update mBounds and mImage if necessary
-// updateBounds(mBounds.adjusted(relLeft, relTop, relRight - mBounds.width() + 1, relBottom - mBounds.height() + 1));
+    if (relTop > relBottom || relLeft > relRight)
+    {
+        clear();
+        return;
+    }
+    //qDebug() << "Original" << mBounds;
+    //qDebug() << "Autocrop" << relLeft << relTop << relRight - mBounds.width() + 1 << relBottom - mBounds.height() + 1;
+    // Update mBounds and mImage if necessary
+    updateBounds(mBounds.adjusted(relLeft, relTop, relRight - mBounds.width() + 1, relBottom - mBounds.height() + 1));
 
-// //qDebug() << "New bounds" << mBounds;
+    //qDebug() << "New bounds" << mBounds;
 
-// mMinBound = true;
+    mMinBound = true;
 }
 
 QRgb BitmapImage::pixel(int x, int y)
