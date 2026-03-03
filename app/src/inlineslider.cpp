@@ -193,21 +193,25 @@ void InlineSlider::drawLabels(QPainter& painter, const QRectF& borderRect, const
     painter.setPen(textColor);
     const QRectF& textRect = borderRect.adjusted(mTextPadding, 0, -mTextPadding, 0);
 
-    // TODO: cache the ellided text result..
-    painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, ellidedLabel(painter.fontMetrics()));
+    painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, descriptionLabel(painter.fontMetrics()));
     painter.restore();
 }
 
-QString InlineSlider::ellidedLabel(const QFontMetrics& metrics) const
+QString InlineSlider::descriptionLabel(const QFontMetrics& metrics)
 {
     const QFontMetrics& fm = metrics;
 
     int rightWidth = fm.horizontalAdvance(mValueLineEditWidget->text());
     QRect rightRect(width() - mTextPadding - rightWidth, 0, rightWidth, height());
 
-    int horizontalPadding = mTextPadding * 2;
-    int leftMaxWidth = rightRect.left() - horizontalPadding;
-    return fm.elidedText(mLabel, Qt::ElideRight, leftMaxWidth);
+    int leftMaxWidth = rightRect.left() - mTextPadding;
+
+    if (mCachedElidedLabelWidth != leftMaxWidth) {
+        mCachedElidedLabelWidth = leftMaxWidth;
+        mCachedElidedDescriptionLabel = fm.elidedText(mLabel, Qt::ElideRight, leftMaxWidth);
+    }
+
+    return mCachedElidedDescriptionLabel;
 }
 
 void InlineSlider::drawCaret(QPainter& painter, const QRectF& borderRect, const QColor& caretColor)

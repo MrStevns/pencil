@@ -64,11 +64,11 @@ private:
 
     /**
      * Calculates how much space there is for the left label vs the line edit text
-     * and creates an ellided version of the label.
+     * and creates an elided version of the label.
      *
-     * @return: A potentially ellided label
+     * @return: A potentially elided label
      */
-    QString ellidedLabel(const QFontMetrics& metrics) const;
+    QString descriptionLabel(const QFontMetrics& metrics);
 
     void onLineEditChanged();
     void onScreenChanged(qreal devicePixelRatio);
@@ -105,6 +105,9 @@ private:
 
     qreal mCaretWidth = 1.0;
     qreal mTextPadding = 6;
+
+    qreal mCachedElidedLabelWidth = 0.0;
+    QString mCachedElidedDescriptionLabel = "";
 
     SliderStartPosType mSliderOrigin = SliderStartPosType::MIDDLE;
 
