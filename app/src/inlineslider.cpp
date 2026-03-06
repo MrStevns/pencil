@@ -15,6 +15,7 @@
 
 #include <QStackedLayout>
 
+#include "mathutils.h"
 #include "lineeditwidget.h"
 
 InlineSlider::InlineSlider(QWidget* parent) : QWidget(parent)
@@ -249,7 +250,7 @@ void InlineSlider::resizeEvent(QResizeEvent* event)
     setupPixmap(event->size());
     setCornerRadius(mCornerRadiusPercentage);
 
-    const auto newValue =  valueFromMappedRange(mSliderValue, 0, event->size().width(), mMin, mMax);
+    const auto newValue =  MathUtils::linearMap(mSliderValue, mMin, mMax, 0, event->size().width());
     setSliderPixelPos(newValue);
     update();
 }
@@ -275,15 +276,23 @@ void InlineSlider::setValue(qreal newValue)
     if (mSliderValue == newValue) { return; }
 
     const QRect& borderRect = this->borderRect().toAlignedRect();
-    setSliderPixelPos(valueFromMappedRange(newValue, borderRect.left(), borderRect.width(), mMin, mMax));
+
+    qreal t = 0;
+    switch (mScaleType) {
+        case SliderScaleType::LINEAR:
+            t = MathUtils::normalize(newValue, mMin, mMax);
+            break;
+        case SliderScaleType::LOG:
+            t = MathUtils::normalize(qLn(newValue), qLn(mMin), qLn(mMax));
+            break;
+    }
+
+    qreal pixelPos = MathUtils::lerp(t, borderRect.left(), borderRect.right());
+    setSliderPixelPos(pixelPos);
+
     mSliderValue = qBound(mMin, newValue, mMax);
     mValueLineEditWidget->setValue(mSliderValue);
     update();
-}
-
-void InlineSlider::setCosmeticValue(qreal newValue)
-{
-    mValueLineEditWidget->setCosmeticValue(newValue);
 }
 
 void InlineSlider::showDecimals(bool show)
@@ -306,16 +315,21 @@ void InlineSlider::setSliderValueFromPos(qreal pos)
     const qreal newMin = mMin;
     const qreal newMax = mMax;
 
-    qreal newValue = valueFromMappedRange(pos, newMin, newMax, oldMin, oldMax);
+    qreal t = MathUtils::normalize(pos, oldMin, oldMax);
+
+    qreal newValue = 0;
+    switch (mScaleType) {
+        case SliderScaleType::LINEAR:
+            newValue = MathUtils::lerp(t, newMin, newMax);
+            break;
+        case SliderScaleType::LOG:
+            newValue = qExp(MathUtils::lerp(t, qLn(newMin), qLn(newMax)));
+            break;
+    }
 
     mSliderValue = qBound(mMin, newValue, mMax);
     mValueLineEditWidget->setValue(mSliderValue);
     emit valueChanged(mSliderValue);
-}
-
-qreal InlineSlider::valueFromMappedRange(qreal value, qreal newMin, qreal newMax, qreal oldMin, qreal oldMax) const
-{
-    return ((newMax-newMin) * (value - oldMin)) / (oldMax - oldMin) + newMin;
 }
 
 void InlineSlider::setSliderPixelPos(qreal pos)

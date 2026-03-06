@@ -114,15 +114,6 @@ void LineEditNumberWidget::setValue(qreal value)
     }
 }
 
-void LineEditNumberWidget::setCosmeticValue(qreal value)
-{
-    if (mShowDecimals) {
-        setText(QString::number(value, 'f', 2));
-    } else {
-        setText(QString::number(static_cast<int>(value)));
-    }
-}
-
 void LineEditNumberWidget::showDecimals(bool show)
 {
     mShowDecimals = show;

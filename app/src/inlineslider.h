@@ -29,6 +29,11 @@ enum class SliderStartPosType {
     MIDDLE
 };
 
+enum class SliderScaleType {
+    LINEAR,
+    LOG
+};
+
 class InlineSlider : public QWidget
 {
 
@@ -44,11 +49,9 @@ public:
     void setMin(qreal min) { mMin = min; }
     void setMax(qreal max) { mMax = max; }
 
-    /// Override the value visually with a cosmetic one.
-    /// Does not modify the actual value!
-    void setCosmeticValue(qreal newValue);
     void setValue(qreal value);
     void showDecimals(bool show);
+    void setScaleType(SliderScaleType type) { mScaleType = type; }
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -74,7 +77,6 @@ private:
     void onScreenChanged(qreal devicePixelRatio);
     void setupPixmap(const QSize& size);
 
-    qreal valueFromMappedRange(qreal value, qreal min, qreal max, qreal oldMin, qreal oldMax) const;
     void setSliderPixelPos(qreal pos);
     void setSliderValueFromPos(qreal pos);
 
@@ -109,6 +111,7 @@ private:
     qreal mCachedElidedLabelWidth = 0.0;
     QString mCachedElidedDescriptionLabel = "";
 
+    SliderScaleType mScaleType = SliderScaleType::LINEAR;
     SliderStartPosType mSliderOrigin = SliderStartPosType::MIDDLE;
 
     LineEditNumberWidget* mValueLineEditWidget = nullptr;

@@ -69,7 +69,6 @@ void DefaultBrushSettingWidget::setPixelValue(qreal pixelValue)
     QSignalBlocker b(mValueSlider);
 
     mValueSlider->setValue(pixelValue);
-    mValueSlider->setCosmeticValue(pixelValue);
 }
 
 void DefaultBrushSettingWidget::setRange(qreal min, qreal max)

@@ -41,7 +41,6 @@ public:
     void keyPressEvent(QKeyEvent* event) override;
 
     void setValue(qreal value);
-    void setCosmeticValue(qreal value);
     qreal value() const;
 
     void showDecimals(bool show);
