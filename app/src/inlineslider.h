@@ -49,6 +49,7 @@ public:
     void showDecimals(bool show);
     void setScaleType(const ScaleType& type) { mScaleType = type; }
     void setCaretOrigin(const CaretOriginType& origin) { mSliderOrigin = origin; }
+    void setValuePostFix(QString postfix);
 
 protected:
     void paintEvent(QPaintEvent* event) override;

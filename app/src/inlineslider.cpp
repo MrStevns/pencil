@@ -71,6 +71,11 @@ void InlineSlider::setValue(qreal newValue)
     update();
 }
 
+void InlineSlider::setValuePostFix(QString postfix)
+{
+    mValueLineEditWidget->setPostFix(postfix);
+}
+
 void InlineSlider::setCornerRadius(qreal percentage)
 {
     const qreal minRad = qMin(width(), height());
