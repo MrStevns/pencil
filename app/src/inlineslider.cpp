@@ -211,24 +211,27 @@ void InlineSlider::mouseMoveEvent(QMouseEvent* event)
     }
 }
 
-void InlineSlider::paintEvent(QPaintEvent*)
+void InlineSlider::paintEvent(QPaintEvent* event)
 {
-    drawSlider();
+    drawSlider(event->rect());
 
     QPainter painter(this);
     painter.drawPixmap(0, 0, mPixmap);
     painter.end();
 }
 
-void InlineSlider::drawSlider()
+void InlineSlider::drawSlider(const QRect& blitRect)
 {
     QStyleOption option;
     option.initFrom(this);
 
-    QPainter painter;
-    mPixmap.fill(Qt::transparent);
+    QPainter painter(&mPixmap);
 
-    painter.begin(&mPixmap);
+    painter.setClipRect(blitRect);
+    painter.setCompositionMode(QPainter::CompositionMode_Clear);
+    painter.fillRect(blitRect, Qt::transparent);
+
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
     const QRectF& borderRect = this->calculatedContentsRect();
 
