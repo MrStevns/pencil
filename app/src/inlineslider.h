@@ -24,26 +24,22 @@ GNU General Public License for more details.
 
 class LineEditNumberWidget;
 
-enum class SliderStartPosType {
-    LEFT,
-    MIDDLE
-};
-
-enum class SliderScaleType {
-    LINEAR,
-    LOG
-};
-
 class InlineSlider : public QWidget
 {
-
     Q_OBJECT
 public:
 
-    explicit InlineSlider(QWidget* parent);
-    ~InlineSlider() override;
+    enum CaretOriginType {
+        LEADING,
+        MIDDLE
+    };
 
-    void init(QString label, qreal min, qreal max, SliderStartPosType type);
+    enum ScaleType {
+        LINEAR,
+        LOG
+    };
+
+    explicit InlineSlider(QWidget* parent, qreal min, qreal max, const QString& label);
 
     void setRange(qreal min, qreal max) { mMin = min; mMax = max; }
     void setMin(qreal min) { mMin = min; }
@@ -51,7 +47,8 @@ public:
 
     void setValue(qreal value);
     void showDecimals(bool show);
-    void setScaleType(SliderScaleType type) { mScaleType = type; }
+    void setScaleType(const ScaleType& type) { mScaleType = type; }
+    void setCaretOrigin(const CaretOriginType& origin) { mSliderOrigin = origin; }
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -64,6 +61,10 @@ signals:
     void valueChanged(qreal value);
 
 private:
+    void setupPixmap(const QSize& size);
+
+    void onLineEditChanged();
+    void onScreenChanged(qreal devicePixelRatio);
 
     /**
      * Calculates how much space there is for the left label vs the line edit text
@@ -71,24 +72,25 @@ private:
      *
      * @return: A potentially elided label
      */
-    QString descriptionLabel(const QFontMetrics& metrics);
+    QString calculatedDescriptionLabel(const QFontMetrics& metrics);
 
-    void onLineEditChanged();
-    void onScreenChanged(qreal devicePixelRatio);
-    void setupPixmap(const QSize& size);
+    /**
+     * Calculates the carets pixel position based on the input slider value
+     * @param sliderValue
+     * @return the pixel position of the caret
+     */
+    qreal calculatedPixelPos(qreal sliderValue) const;
+    QRectF calculatedContentsRect() const;
 
     void setSliderPixelPos(qreal pos);
     void setSliderValueFromPos(qreal pos);
-
     void setCornerRadius(qreal percentage);
 
-    void drawSlider();
-    void drawLabels(QPainter& painter, const QRectF& borderRect, const QColor& textColor);
+    void drawSlider(const QRect& blitRect);
+    void drawLeadingLabel(QPainter& painter, const QRectF& borderRect, const QColor& textColor);
     void drawCaret(QPainter& painter, const QRectF& borderRect, const QColor& caretColor);
 
     void updateLineEditStylesheet();
-
-    QRectF borderRect() const;
 
     QString mLabel;
     QPixmap mPixmap;
@@ -111,8 +113,8 @@ private:
     qreal mCachedElidedLabelWidth = 0.0;
     QString mCachedElidedDescriptionLabel = "";
 
-    SliderScaleType mScaleType = SliderScaleType::LINEAR;
-    SliderStartPosType mSliderOrigin = SliderStartPosType::MIDDLE;
+    ScaleType mScaleType = ScaleType::LINEAR;
+    CaretOriginType mSliderOrigin = CaretOriginType::LEADING;
 
     LineEditNumberWidget* mValueLineEditWidget = nullptr;
 };

@@ -18,7 +18,8 @@
 #include "mathutils.h"
 #include "lineeditwidget.h"
 
-InlineSlider::InlineSlider(QWidget* parent) : QWidget(parent)
+InlineSlider::InlineSlider(QWidget* parent, qreal min, qreal max, const QString& label)
+    : QWidget(parent), mLabel(label), mMin(min), mMax(max)
 {
     setCornerRadius(mCornerRadiusPercentage);
     setContentsMargins(0,0,0,0);
@@ -35,16 +36,106 @@ InlineSlider::InlineSlider(QWidget* parent) : QWidget(parent)
     updateLineEditStylesheet();
 }
 
-void InlineSlider::init(QString label, qreal min, qreal max, SliderStartPosType type)
+void InlineSlider::setupPixmap(const QSize& size)
 {
-    mMin = min;
-    mMax = max;
-    mLabel = label;
-    mSliderOrigin = type;
+    mPixmap = QPixmap(size * devicePixelRatio());
+    mPixmap.setDevicePixelRatio(devicePixelRatio());
+    mPixmap.fill(Qt::transparent);
 }
 
-InlineSlider::~InlineSlider()
+qreal InlineSlider::calculatedPixelPos(qreal sliderValue) const
 {
+    const QRect& borderRect = this->calculatedContentsRect().toAlignedRect();
+
+    qreal t = 0;
+    switch (mScaleType) {
+        case ScaleType::LINEAR:
+            t = MathUtils::normalize(sliderValue, mMin, mMax);
+            break;
+        case ScaleType::LOG:
+            t = MathUtils::normalize(qLn(sliderValue), qLn(mMin), qLn(mMax));
+            break;
+    }
+
+    return MathUtils::lerp(t, borderRect.left(), borderRect.right());
+}
+
+void InlineSlider::setValue(qreal newValue)
+{
+    if (mSliderValue == newValue) { return; }
+
+    setSliderPixelPos(calculatedPixelPos(newValue));
+
+    mSliderValue = qBound(mMin, newValue, mMax);
+    mValueLineEditWidget->setValue(mSliderValue);
+    update();
+}
+
+void InlineSlider::setCornerRadius(qreal percentage)
+{
+    const qreal minRad = qMin(width(), height());
+    const qreal maxRad = qMax(width(), height());
+
+    qreal absolutePercentage = maxRad * percentage;
+
+    if (minRad * percentage < absolutePercentage) {
+        mAbsoluteCornerRadiusX = minRad * percentage;
+        mAbsoluteCornerRadiusY = minRad * percentage;
+    } else {
+        mAbsoluteCornerRadiusX = absolutePercentage;
+        mAbsoluteCornerRadiusY = absolutePercentage;
+    }
+
+    mCornerRadiusPercentage = percentage;
+}
+
+void InlineSlider::showDecimals(bool show)
+{
+    mValueLineEditWidget->showDecimals(show);
+}
+
+void InlineSlider::setSliderValueFromPos(qreal pos)
+{
+    const QRect& borderRect = this->calculatedContentsRect().toAlignedRect();
+
+    if (mSliderOrigin == CaretOriginType::MIDDLE) {
+        if (qAbs(pos - borderRect.center().x()) <= 0.5) {
+            mSliderValue = 0;
+        }
+    }
+
+    const qreal oldMin = borderRect.left();
+    const qreal oldMax = qMax(static_cast<qreal>(borderRect.right() + mCaretWidth), static_cast<qreal>(pos));
+    const qreal newMin = mMin;
+    const qreal newMax = mMax;
+
+    qreal t = MathUtils::normalize(pos, oldMin, oldMax);
+
+    qreal newValue = 0;
+    switch (mScaleType) {
+        case ScaleType::LINEAR:
+            newValue = MathUtils::lerp(t, newMin, newMax);
+            break;
+        case ScaleType::LOG:
+            newValue = qExp(MathUtils::lerp(t, qLn(newMin), qLn(newMax)));
+            break;
+    }
+
+    mSliderValue = qBound(mMin, newValue, mMax);
+    mValueLineEditWidget->setValue(mSliderValue);
+    emit valueChanged(mSliderValue);
+}
+
+void InlineSlider::setSliderPixelPos(qreal pos)
+{
+    qreal sliderPos = pos;
+    const QRect& borderRect = this->calculatedContentsRect().adjusted(-mCaretWidth, 0, mCaretWidth, 0).toAlignedRect();
+    if (sliderPos <= borderRect.left()) {
+        sliderPos = borderRect.left();
+    } else if (sliderPos >= borderRect.right()) {
+        sliderPos = borderRect.right();
+    }
+    mSliderPos = sliderPos;
 }
 
 void InlineSlider::onScreenChanged(qreal devicePixelRatio)
@@ -102,6 +193,24 @@ bool InlineSlider::event(QEvent *event)
     return QWidget::event(event);
 }
 
+void InlineSlider::resizeEvent(QResizeEvent* event)
+{
+    setupPixmap(event->size());
+    setCornerRadius(mCornerRadiusPercentage);
+    setSliderPixelPos(calculatedPixelPos(mSliderValue));
+
+    update();
+}
+
+void InlineSlider::mouseMoveEvent(QMouseEvent* event)
+{
+    if (event->buttons() & Qt::LeftButton) {
+        setSliderPixelPos(event->localPos().x());
+        setSliderValueFromPos(mSliderPos);
+        update();
+    }
+}
+
 void InlineSlider::paintEvent(QPaintEvent*)
 {
     drawSlider();
@@ -121,7 +230,7 @@ void InlineSlider::drawSlider()
 
     painter.begin(&mPixmap);
 
-    const QRectF& borderRect = this->borderRect();
+    const QRectF& borderRect = this->calculatedContentsRect();
 
     painter.setRenderHint(QPainter::Antialiasing);
 
@@ -146,7 +255,7 @@ void InlineSlider::drawSlider()
 
     // // Draw the filled part of the slider
     switch (mSliderOrigin) {
-        case SliderStartPosType::LEFT:
+        case CaretOriginType::LEADING:
         {
 
             painter.fillRect(QRect(borderRect.left(),
@@ -156,7 +265,7 @@ void InlineSlider::drawSlider()
                                     brush);
             break;
         }
-        case SliderStartPosType::MIDDLE:
+        case CaretOriginType::MIDDLE:
         {
             // Now fill the with the brush
             painter.fillRect(QRect(mSliderPos,
@@ -177,7 +286,7 @@ void InlineSlider::drawSlider()
     }
 
     drawCaret(painter, borderRect, option.palette.dark().color());
-    drawLabels(painter, borderRect, option.palette.text().color());
+    drawLeadingLabel(painter, borderRect, option.palette.text().color());
     painter.restore();
 
     if (mValueLineEditWidget->isReadOnly()) {
@@ -188,17 +297,17 @@ void InlineSlider::drawSlider()
     painter.end();
 }
 
-void InlineSlider::drawLabels(QPainter& painter, const QRectF& borderRect, const QColor& textColor)
+void InlineSlider::drawLeadingLabel(QPainter& painter, const QRectF& borderRect, const QColor& textColor)
 {
     painter.save();
     painter.setPen(textColor);
     const QRectF& textRect = borderRect.adjusted(mTextPadding, 0, -mTextPadding, 0);
 
-    painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, descriptionLabel(painter.fontMetrics()));
+    painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, calculatedDescriptionLabel(painter.fontMetrics()));
     painter.restore();
 }
 
-QString InlineSlider::descriptionLabel(const QFontMetrics& metrics)
+QString InlineSlider::calculatedDescriptionLabel(const QFontMetrics& metrics)
 {
     const QFontMetrics& fm = metrics;
 
@@ -227,124 +336,7 @@ void InlineSlider::drawCaret(QPainter& painter, const QRectF& borderRect, const 
     painter.restore();
 }
 
-void InlineSlider::setCornerRadius(qreal percentage)
-{
-    const qreal minRad = qMin(width(), height());
-    const qreal maxRad = qMax(width(), height());
-
-    qreal absolutePercentage = maxRad * percentage;
-
-    if (minRad * percentage < absolutePercentage) {
-        mAbsoluteCornerRadiusX = minRad * percentage;
-        mAbsoluteCornerRadiusY = minRad * percentage;
-    } else {
-        mAbsoluteCornerRadiusX = absolutePercentage;
-        mAbsoluteCornerRadiusY = absolutePercentage;
-    }
-
-    mCornerRadiusPercentage = percentage;
-}
-
-void InlineSlider::resizeEvent(QResizeEvent* event)
-{
-    setupPixmap(event->size());
-    setCornerRadius(mCornerRadiusPercentage);
-
-    const auto newValue =  MathUtils::linearMap(mSliderValue, mMin, mMax, 0, event->size().width());
-    setSliderPixelPos(newValue);
-    update();
-}
-
-void InlineSlider::setupPixmap(const QSize& size)
-{
-    mPixmap = QPixmap(size * devicePixelRatio());
-    mPixmap.setDevicePixelRatio(devicePixelRatio());
-    mPixmap.fill(Qt::transparent);
-}
-
-void InlineSlider::mouseMoveEvent(QMouseEvent* event)
-{
-    if (event->buttons() & Qt::LeftButton) {
-        setSliderPixelPos(event->localPos().x());
-        setSliderValueFromPos(mSliderPos);
-        update();
-    }
-}
-
-void InlineSlider::setValue(qreal newValue)
-{
-    if (mSliderValue == newValue) { return; }
-
-    const QRect& borderRect = this->borderRect().toAlignedRect();
-
-    qreal t = 0;
-    switch (mScaleType) {
-        case SliderScaleType::LINEAR:
-            t = MathUtils::normalize(newValue, mMin, mMax);
-            break;
-        case SliderScaleType::LOG:
-            t = MathUtils::normalize(qLn(newValue), qLn(mMin), qLn(mMax));
-            break;
-    }
-
-    qreal pixelPos = MathUtils::lerp(t, borderRect.left(), borderRect.right());
-    setSliderPixelPos(pixelPos);
-
-    mSliderValue = qBound(mMin, newValue, mMax);
-    mValueLineEditWidget->setValue(mSliderValue);
-    update();
-}
-
-void InlineSlider::showDecimals(bool show)
-{
-    mValueLineEditWidget->showDecimals(show);
-}
-
-void InlineSlider::setSliderValueFromPos(qreal pos)
-{
-    const QRect& borderRect = this->borderRect().toAlignedRect();
-
-    if (mSliderOrigin == SliderStartPosType::MIDDLE) {
-        if (qAbs(pos - borderRect.center().x()) <= 0.5) {
-            mSliderValue = 0;
-        }
-    }
-
-    const qreal oldMin = borderRect.left();
-    const qreal oldMax = qMax(static_cast<qreal>(borderRect.right() + mCaretWidth), static_cast<qreal>(pos));
-    const qreal newMin = mMin;
-    const qreal newMax = mMax;
-
-    qreal t = MathUtils::normalize(pos, oldMin, oldMax);
-
-    qreal newValue = 0;
-    switch (mScaleType) {
-        case SliderScaleType::LINEAR:
-            newValue = MathUtils::lerp(t, newMin, newMax);
-            break;
-        case SliderScaleType::LOG:
-            newValue = qExp(MathUtils::lerp(t, qLn(newMin), qLn(newMax)));
-            break;
-    }
-
-    mSliderValue = qBound(mMin, newValue, mMax);
-    mValueLineEditWidget->setValue(mSliderValue);
-    emit valueChanged(mSliderValue);
-}
-
-void InlineSlider::setSliderPixelPos(qreal pos)
-{
-    qreal sliderPos = pos;
-    const QRect& borderRect = this->borderRect().adjusted(-mCaretWidth, 0, mCaretWidth, 0).toAlignedRect();
-    if (sliderPos <= borderRect.left()) {
-        sliderPos = borderRect.left();
-    } else if (sliderPos >= borderRect.right()) {
-        sliderPos = borderRect.right();
-    }
-    mSliderPos = sliderPos;
-}
-
-QRectF InlineSlider::borderRect() const
+QRectF InlineSlider::calculatedContentsRect() const
 {
     const QRect& rect = contentsRect();
 

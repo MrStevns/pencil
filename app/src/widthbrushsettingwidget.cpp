@@ -17,7 +17,7 @@ void WidthBrushSettingWidget::initUI()
     qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(mSettingType));
     setRange(1, 2000.0);
 
-    mValueSlider->setScaleType(SliderScaleType::LOG);
+    mValueSlider->setScaleType(InlineSlider::ScaleType::LOG);
     setValue(baseValue);
     setToolTip(info.tooltip);
 }
@@ -52,4 +52,3 @@ void WidthBrushSettingWidget::updateSetting(qreal value)
 {
     emit brushSettingChanged(qLn(value * 0.5), this->mSettingType);
 }
-

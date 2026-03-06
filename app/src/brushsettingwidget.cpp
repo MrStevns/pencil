@@ -23,8 +23,7 @@ DefaultBrushSettingWidget::DefaultBrushSettingWidget(const QString& name, BrushS
     mHBoxLayout = new QHBoxLayout(this);
     setLayout(mHBoxLayout);
 
-    mValueSlider = new InlineSlider(this);
-    mValueSlider->init(name, min, max, SliderStartPosType::LEFT);
+    mValueSlider = new InlineSlider(this, min, max, name);
 
     mInternalMinValue = min;
     mInternalMaxValue = max;
