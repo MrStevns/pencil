@@ -35,7 +35,7 @@ BrushSettingEditWidget::BrushSettingEditWidget(BrushSettingCategoryType settingC
     mSettingCategoryType = settingCategoryType;
 
     if (settingType == BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC) {
-        mSettingWidget = new WidthBrushSettingWidget(tr("Width"), settingType, min, max, this);
+        mSettingWidget = new WidthBrushSettingWidget(name, settingType, min, max, this);
     } else {
         mSettingWidget = new DefaultBrushSettingWidget(name, settingType, min, max, this);
     }

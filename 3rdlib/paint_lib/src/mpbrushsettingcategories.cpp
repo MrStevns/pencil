@@ -14,23 +14,23 @@ QList<BrushSetting> MPBrushSettingCategories::defaultBrushListForTool(ToolType t
     {
     case ToolType::BRUSH:
     case ToolType::ERASER:
-        return { RadiusLog,
+        return { Width,
                  Hardness,
                  PressureGain };
     case ToolType::PEN:
-        return { RadiusLog,
+        return { Width,
                  PressureGain,
                  AntiAliasing
         };
     case ToolType::PENCIL:
-        return { RadiusLog,
+        return { Width,
                  PressureGain };
     case ToolType::SMUDGE:
-        return { RadiusLog,
+        return { Width,
                  Hardness,
                  Smudge };
     case ToolType::POLYLINE:
-        return { RadiusLog,
+        return { Width,
                  Hardness,
                  Opacity };
     default:
@@ -41,7 +41,7 @@ QList<BrushSetting> MPBrushSettingCategories::defaultBrushListForTool(ToolType t
 QList<BrushSettingCategory> MPBrushSettingCategories::basicBrushSettings() const
 {
     return { BrushSettingCategory(BrushSettingCategoryType::Opacity, { Opacity }),
-                BrushSettingCategory(BrushSettingCategoryType::Dab, { RadiusLog , Hardness }),
+                BrushSettingCategory(BrushSettingCategoryType::Dab, { Width , Hardness }),
                 BrushSettingCategory(BrushSettingCategoryType::Other, { PressureGain, AntiAliasing }) };
 }
 
@@ -52,7 +52,7 @@ BrushSettingCategory MPBrushSettingCategories::opacityBrushSettings() const
 
 BrushSettingCategory MPBrushSettingCategories::dabBrushSettings() const
 {
-    return BrushSettingCategory(BrushSettingCategoryType::Dab, { RadiusLog,
+    return BrushSettingCategory(BrushSettingCategoryType::Dab, { Width,
              Hardness,
              DabsPerBasicRadius,
              DabsPerActualRadius,

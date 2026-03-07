@@ -15,10 +15,11 @@ void WidthBrushSettingWidget::initUI()
     BrushSettingInfo info = mEditor->getBrushSettingInfo(mSettingType);
 
     qreal baseValue = static_cast<qreal>(mEditor->getMPBrushSettingBaseValue(mSettingType));
-    setRange(1, 2000.0);
+    mValueSlider->setRange(mInputMinValue, mInputMaxValue);
 
     mValueSlider->setValuePostFix("px");
     mValueSlider->setScaleType(InlineSlider::ScaleType::LOG);
+    setRange(info.min, info.max);
     setValue(baseValue);
     setToolTip(info.tooltip);
 }
@@ -27,7 +28,7 @@ void WidthBrushSettingWidget::setPixelValue(qreal pixelValue)
 {
     QSignalBlocker b(mValueSlider);
 
-    qreal boundValue = qBound(mOutputMinValue, pixelValue, mOutputMaxValue);
+    qreal boundValue = qBound(mInputMinValue, pixelValue, mInputMaxValue);
     mValueSlider->setValue(boundValue);
 
     updateSetting(boundValue);
@@ -37,16 +38,15 @@ void WidthBrushSettingWidget::setValue(qreal value)
 {
     QSignalBlocker b(mValueSlider);
 
-    qreal boundValue = qBound(mOutputMinValue, qExp(value) * 2.0, mOutputMaxValue);
+    qreal boundValue = qBound(mInputMinValue, qExp(value) * 2.0, mInputMaxValue);
 
     mValueSlider->setValue(boundValue);
 }
 
-void WidthBrushSettingWidget::setRange(qreal, qreal)
+void WidthBrushSettingWidget::setRange(qreal min, qreal max)
 {
-    mOutputMinValue = 1.0;
-    mOutputMaxValue = 2000.0;
-    mValueSlider->setRange(mOutputMinValue, mOutputMaxValue);
+    mOutputMinValue = min;
+    mOutputMaxValue = max;
 }
 
 void WidthBrushSettingWidget::updateSetting(qreal value)

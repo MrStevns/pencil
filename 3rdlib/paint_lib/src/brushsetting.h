@@ -96,7 +96,7 @@ struct BrushSetting {
 static const BrushSetting Opacity = BrushSetting(QT_TR_NOOP("Opacity"), BrushSettingType::BRUSH_SETTING_OPAQUE, 0, 100);
 static const BrushSetting OpacityMultiply = BrushSetting(QT_TR_NOOP("Opacity multiply"), BrushSettingType::BRUSH_SETTING_OPAQUE_MULTIPLY, 0, 100);
 static const BrushSetting OpacityLinearize = BrushSetting(QT_TR_NOOP("Opacity linearize"), BrushSettingType::BRUSH_SETTING_OPAQUE_LINEARIZE, 0, 100);
-static const BrushSetting RadiusLog = BrushSetting(QT_TR_NOOP("Radius"), BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC, 0, 100);
+static const BrushSetting Width = BrushSetting(QT_TR_NOOP("Width"), BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC, 1, 2000);
 static const BrushSetting Hardness = BrushSetting(QT_TR_NOOP("Hardness"), BrushSettingType::BRUSH_SETTING_HARDNESS, 0, 100);
 static const BrushSetting Softness = BrushSetting(QT_TR_NOOP("Softness"), BrushSettingType::BRUSH_SETTING_SOFTNESS, 0, 100);
 static const BrushSetting DabsPerBasicRadius = BrushSetting(QT_TR_NOOP("Dabs per basic radius"), BrushSettingType::BRUSH_SETTING_DABS_PER_BASIC_RADIUS, 0, 100);
@@ -215,7 +215,7 @@ inline const BrushSetting& getBrushSetting(BrushSettingType settingType)
     case BrushSettingType::BRUSH_SETTING_OPAQUE: return Opacity;
     case BrushSettingType::BRUSH_SETTING_OPAQUE_MULTIPLY: return OpacityMultiply;
     case BrushSettingType::BRUSH_SETTING_OPAQUE_LINEARIZE: return OpacityLinearize;
-    case BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC: return RadiusLog;
+    case BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC: return Width;
     case BrushSettingType::BRUSH_SETTING_HARDNESS: return Hardness;
     case BrushSettingType::BRUSH_SETTING_SOFTNESS: return Softness;
     case BrushSettingType::BRUSH_SETTING_ANTI_ALIASING: return AntiAliasing;
