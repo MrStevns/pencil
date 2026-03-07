@@ -27,7 +27,7 @@ void WidthBrushSettingWidget::setPixelValue(qreal pixelValue)
 {
     QSignalBlocker b(mValueSlider);
 
-    qreal boundValue = qBound(mMinValue, pixelValue, mMaxValue);
+    qreal boundValue = qBound(mOutputMinValue, pixelValue, mOutputMaxValue);
     mValueSlider->setValue(boundValue);
 
     updateSetting(boundValue);
@@ -37,16 +37,16 @@ void WidthBrushSettingWidget::setValue(qreal value)
 {
     QSignalBlocker b(mValueSlider);
 
-    qreal boundValue = qBound(mMinValue, qExp(value) * 2.0, mMaxValue);
+    qreal boundValue = qBound(mOutputMinValue, qExp(value) * 2.0, mOutputMaxValue);
 
     mValueSlider->setValue(boundValue);
 }
 
 void WidthBrushSettingWidget::setRange(qreal, qreal)
 {
-    mMinValue = 1.0;
-    mMaxValue = 2000.0;
-    mValueSlider->setRange(mMinValue, mMaxValue);
+    mOutputMinValue = 1.0;
+    mOutputMaxValue = 2000.0;
+    mValueSlider->setRange(mOutputMinValue, mOutputMaxValue);
 }
 
 void WidthBrushSettingWidget::updateSetting(qreal value)

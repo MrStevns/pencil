@@ -128,7 +128,6 @@ void InlineSlider::setSliderValueFromPos(qreal pos)
 
     mSliderValue = qBound(mMin, newValue, mMax);
     mValueLineEditWidget->setValue(mSliderValue);
-    emit valueChanged(mSliderValue);
 }
 
 void InlineSlider::setSliderPixelPos(qreal pos)
@@ -214,6 +213,11 @@ void InlineSlider::mouseMoveEvent(QMouseEvent* event)
         setSliderValueFromPos(mSliderPos);
         update();
     }
+}
+
+void InlineSlider::mouseReleaseEvent(QMouseEvent*)
+{
+    valueChanged(mSliderValue);
 }
 
 void InlineSlider::paintEvent(QPaintEvent* event)

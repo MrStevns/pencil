@@ -63,12 +63,12 @@ protected:
 
     InlineSlider* mValueSlider = nullptr;
 
-    qreal mInternalMinValue = 0.0;
-    qreal mInternalMaxValue = 0.0;
+    qreal mInputMinValue = 0.0;
+    qreal mInputMaxValue = 0.0;
 
     const QString mSettingName;
-    qreal mMinValue = 0.0;
-    qreal mMaxValue = 0.0;
+    qreal mOutputMinValue = 0.0;
+    qreal mOutputMaxValue = 0.0;
 
     Editor* mEditor = nullptr;
 

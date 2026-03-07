@@ -18,15 +18,15 @@
 
 DefaultBrushSettingWidget::DefaultBrushSettingWidget(const QString& name, BrushSettingType settingType, qreal min, qreal max, QWidget* parent)
     : BrushSettingWidget(parent),
-    mSettingType(settingType), mParent(parent), mSettingName(name)
+    mSettingName(name), mSettingType(settingType), mParent(parent)
 {
     mHBoxLayout = new QHBoxLayout(this);
     setLayout(mHBoxLayout);
 
     mValueSlider = new InlineSlider(this, min, max, name);
 
-    mInternalMinValue = min;
-    mInternalMaxValue = max;
+    mInputMinValue = min;
+    mInputMaxValue = max;
 
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     mHBoxLayout->setContentsMargins(0,0,0,0);
@@ -55,8 +55,7 @@ void DefaultBrushSettingWidget::updateUI()
 
 void DefaultBrushSettingWidget::setValue(qreal value)
 {
-
-    qreal mappedValue = qBound(mInternalMinValue, MathUtils::linearMap(value, mMinValue, mMaxValue, mInternalMinValue, mInternalMaxValue), mInternalMaxValue);
+    qreal mappedValue = qBound(mInputMinValue, MathUtils::linearMap(value, mOutputMinValue, mOutputMaxValue, mInputMinValue, mInputMaxValue), mInputMaxValue);
 
     QSignalBlocker b(mValueSlider);
 
@@ -72,9 +71,9 @@ void DefaultBrushSettingWidget::setPixelValue(qreal pixelValue)
 
 void DefaultBrushSettingWidget::setRange(qreal min, qreal max)
 {
-    mMinValue = min;
-    mMaxValue = max;
-    mValueSlider->setRange(mInternalMinValue, mInternalMaxValue);
+    mOutputMinValue = min;
+    mOutputMaxValue = max;
+    mValueSlider->setRange(mInputMinValue, mInputMaxValue);
 }
 
 void DefaultBrushSettingWidget::setToolTip(const QString& toolTip)
@@ -84,7 +83,7 @@ void DefaultBrushSettingWidget::setToolTip(const QString& toolTip)
 
 void DefaultBrushSettingWidget::updateSetting(qreal value)
 {
-    qreal mappedToOrig = MathUtils::linearMap(value, mInternalMinValue, mInternalMaxValue, mMinValue, mMaxValue);
+    qreal mappedToOrig = MathUtils::linearMap(value, mInputMinValue, mInputMaxValue, mOutputMinValue, mOutputMaxValue);
 
     if (qFuzzyIsNull(mappedToOrig)) {
         mappedToOrig = 0.0;
