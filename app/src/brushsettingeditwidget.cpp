@@ -163,9 +163,6 @@ void BrushSettingEditWidget::visibilityChanged(bool state)
         settings.beginGroup(toolSetting);
         settings.beginGroup(getBrushSettingIdentifier(settingType()));
         settings.setValue("visible", state);
-        settings.setValue("name", settingName());
-        settings.setValue("min", mMin);
-        settings.setValue("max", mMax);
         settings.endGroup();
         settings.endGroup();
 

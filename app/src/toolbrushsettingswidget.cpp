@@ -117,9 +117,6 @@ void ToolBrushSettingsWidget::setupDefaultSettings()
             settings.beginGroup(configGroupForBrush);
                 settings.beginGroup(getBrushSettingIdentifier(setting.type));
                 settings.setValue("visible", true);
-                settings.setValue("name", setting.name);
-                settings.setValue("min", setting.min);
-                settings.setValue("max", setting.max);
                 settings.endGroup();
             settings.endGroup();
 
@@ -146,19 +143,17 @@ void ToolBrushSettingsWidget::setupSettingsForTool(ToolType toolType)
 
             settings.beginGroup(key);
 
-            if (settings.value("visible").toBool() == false) {
-                settings.endGroup();
-                continue;
+            BrushSettingType brushSettingType = getBrushSettingType(key);
+            const BrushSetting& brushSetting = getBrushSetting(brushSettingType);
+
+            QString name = brushSetting.name;
+            qreal min = brushSetting.min;
+            qreal max = brushSetting.max;
+            if (settings.value("visible").toBool() == true) {
+                addBrushSetting(name, brushSettingType, min, max);
             }
 
-            BrushSettingType brushSettingType = getBrushSetting(key);
-
-            QString name = settings.value("name").toString();
-            qreal min = settings.value("min").toReal();
-            qreal max = settings.value("max").toReal();
             settings.endGroup();
-
-            addBrushSetting(name, brushSettingType, min, max);
         }
     });
 }

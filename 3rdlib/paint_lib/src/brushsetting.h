@@ -80,7 +80,7 @@ struct BrushSetting {
     qreal max;
     QString name;
 
-    BrushSetting() { };
+    BrushSetting() { }
     BrushSetting(QString name, BrushSettingType type, qreal min, qreal max) { this->type = type;
                                                                               this->min = min;
                                                                               this->max = max;
@@ -98,6 +98,7 @@ static const BrushSetting OpacityMultiply = BrushSetting(QT_TR_NOOP("Opacity mul
 static const BrushSetting OpacityLinearize = BrushSetting(QT_TR_NOOP("Opacity linearize"), BrushSettingType::BRUSH_SETTING_OPAQUE_LINEARIZE, 0, 100);
 static const BrushSetting RadiusLog = BrushSetting(QT_TR_NOOP("Radius"), BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC, 0, 100);
 static const BrushSetting Hardness = BrushSetting(QT_TR_NOOP("Hardness"), BrushSettingType::BRUSH_SETTING_HARDNESS, 0, 100);
+static const BrushSetting Softness = BrushSetting(QT_TR_NOOP("Softness"), BrushSettingType::BRUSH_SETTING_SOFTNESS, 0, 100);
 static const BrushSetting DabsPerBasicRadius = BrushSetting(QT_TR_NOOP("Dabs per basic radius"), BrushSettingType::BRUSH_SETTING_DABS_PER_BASIC_RADIUS, 0, 100);
 static const BrushSetting DabsPerActualRadius = BrushSetting(QT_TR_NOOP("Dabs per actual radius"), BrushSettingType::BRUSH_SETTING_DABS_PER_ACTUAL_RADIUS, 0, 100);
 static const BrushSetting DabsPerSecond = BrushSetting(QT_TR_NOOP("Dabs per second"), BrushSettingType::BRUSH_SETTING_DABS_PER_SECOND, 0, 100);
@@ -138,13 +139,14 @@ static const BrushSetting StrokeDuration = BrushSetting(QT_TR_NOOP("Stroke durat
 static const BrushSetting StrokeHoldTime = BrushSetting(QT_TR_NOOP("Stroke holdtime"), BrushSettingType::BRUSH_SETTING_STROKE_HOLDTIME, 0, 100);
 static const BrushSetting CustomInput = BrushSetting(QT_TR_NOOP("Custom input"), BrushSettingType::BRUSH_SETTING_CUSTOM_INPUT, 0, 100);
 static const BrushSetting CustomInputSlowness = BrushSetting(QT_TR_NOOP("Custom input slowness"), BrushSettingType::BRUSH_SETTING_CUSTOM_INPUT_SLOWNESS, 0, 100);
-static const BrushSetting EllepticalDabRatio = BrushSetting(QT_TR_NOOP("Elleptical dab ratio"), BrushSettingType::BRUSH_SETTING_ELLIPTICAL_DAB_RATIO, 0, 100);
-static const BrushSetting EllepticalDabAngle = BrushSetting(QT_TR_NOOP("Elleptical dab angle"), BrushSettingType::BRUSH_SETTING_ELLIPTICAL_DAB_ANGLE, 0, 100);
+static const BrushSetting EllipticalDabRatio = BrushSetting(QT_TR_NOOP("Elleptical dab ratio"), BrushSettingType::BRUSH_SETTING_ELLIPTICAL_DAB_RATIO, 0, 100);
+static const BrushSetting EllipticalDabAngle = BrushSetting(QT_TR_NOOP("Elleptical dab angle"), BrushSettingType::BRUSH_SETTING_ELLIPTICAL_DAB_ANGLE, 0, 100);
 static const BrushSetting AntiAliasing = BrushSetting(QT_TR_NOOP("Anti-aliasing"), BrushSettingType::BRUSH_SETTING_ANTI_ALIASING, 0, 100);
 static const BrushSetting LockAlpha = BrushSetting(QT_TR_NOOP("Lock Alpha"), BrushSettingType::BRUSH_SETTING_LOCK_ALPHA, 0, 100);
 static const BrushSetting Colorize = BrushSetting(QT_TR_NOOP("Colorize"), BrushSettingType::BRUSH_SETTING_COLORIZE, 0, 100);
 static const BrushSetting SnapToPixel = BrushSetting(QT_TR_NOOP("Snap to pixel"), BrushSettingType::BRUSH_SETTING_SNAP_TO_PIXEL, 0, 100);
 static const BrushSetting PressureGain = BrushSetting(QT_TR_NOOP("Pressure gain"), BrushSettingType::BRUSH_SETTING_PRESSURE_GAIN_LOG, 0, 100);
+static const BrushSetting Dummy = BrushSetting(QT_TR_NOOP("Dummy"), BrushSettingType::BRUSH_SETTING_CUSTOM_INPUT, 0, 100);
 
 enum class BrushState {
     BRUSH_STATE_ACTUAL_RADIUS
@@ -206,7 +208,68 @@ struct BrushInputInfo {
     QString tooltip;
 };
 
-BrushSettingType inline getBrushSetting(const QString identifier)
+inline const BrushSetting& getBrushSetting(BrushSettingType settingType)
+{
+    switch(settingType)
+    {
+    case BrushSettingType::BRUSH_SETTING_OPAQUE: return Opacity;
+    case BrushSettingType::BRUSH_SETTING_OPAQUE_MULTIPLY: return OpacityMultiply;
+    case BrushSettingType::BRUSH_SETTING_OPAQUE_LINEARIZE: return OpacityLinearize;
+    case BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC: return RadiusLog;
+    case BrushSettingType::BRUSH_SETTING_HARDNESS: return Hardness;
+    case BrushSettingType::BRUSH_SETTING_SOFTNESS: return Softness;
+    case BrushSettingType::BRUSH_SETTING_ANTI_ALIASING: return AntiAliasing;
+    case BrushSettingType::BRUSH_SETTING_DABS_PER_BASIC_RADIUS: return DabsPerBasicRadius;
+    case BrushSettingType::BRUSH_SETTING_DABS_PER_ACTUAL_RADIUS: return DabsPerActualRadius;
+    case BrushSettingType::BRUSH_SETTING_DABS_PER_SECOND: return DabsPerSecond;
+    case BrushSettingType::BRUSH_SETTING_GRIDMAP_SCALE: return DabScale;
+    case BrushSettingType::BRUSH_SETTING_GRIDMAP_SCALE_X: return DabScaleX;
+    case BrushSettingType::BRUSH_SETTING_GRIDMAP_SCALE_Y: return DabScaleY;
+    case BrushSettingType::BRUSH_SETTING_RADIUS_BY_RANDOM: return RadiusRandom;
+    case BrushSettingType::BRUSH_SETTING_SPEED1_SLOWNESS: return SpeedStart;
+    case BrushSettingType::BRUSH_SETTING_SPEED2_SLOWNESS: return SpeedEnd;
+    case BrushSettingType::BRUSH_SETTING_SPEED1_GAMMA: return SpeedGammaStart;
+    case BrushSettingType::BRUSH_SETTING_SPEED2_GAMMA: return SpeedGammaEnd;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_BY_RANDOM: return OffsetRandom;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_Y: return OffsetY;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_X: return OffsetX;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_ANGLE: return OffsetAngleLeft;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_ANGLE_ASC: return OffsetAngleLeftAscend;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_ANGLE_2: return OffsetAngleRight;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_ANGLE_2_ASC: return OffsetAngleRightAscend;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_ANGLE_ADJ: return OffsetAngleAdjecent;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_MULTIPLIER: return OffsetMultiplier;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_BY_SPEED: return OffsetBySpeed;
+    case BrushSettingType::BRUSH_SETTING_OFFSET_BY_SPEED_SLOWNESS: return OffsetSpeedSlowness;
+    case BrushSettingType::BRUSH_SETTING_SLOW_TRACKING: return SlowTracking;
+    case BrushSettingType::BRUSH_SETTING_SLOW_TRACKING_PER_DAB: return SlowTrackingPerDab;
+    case BrushSettingType::BRUSH_SETTING_TRACKING_NOISE: return TrackingNoise;
+    case BrushSettingType::BRUSH_SETTING_RESTORE_COLOR: return RestoreColor;
+    case BrushSettingType::BRUSH_SETTING_CHANGE_COLOR_H: return ChangeColorHue;
+    case BrushSettingType::BRUSH_SETTING_CHANGE_COLOR_L: return ChangeColorLightness;
+    case BrushSettingType::BRUSH_SETTING_CHANGE_COLOR_HSL_S: return ChangeColorHLSSaturation;
+    case BrushSettingType::BRUSH_SETTING_CHANGE_COLOR_V: return ChangeColorValue;
+    case BrushSettingType::BRUSH_SETTING_CHANGE_COLOR_HSV_S: return ChangeColorHSVSaturation;
+    case BrushSettingType::BRUSH_SETTING_SMUDGE: return Smudge;
+    case BrushSettingType::BRUSH_SETTING_SMUDGE_LENGTH: return SmudgeLength;
+    case BrushSettingType::BRUSH_SETTING_SMUDGE_RADIUS_LOG: return SmudgeRadius;
+    case BrushSettingType::BRUSH_SETTING_ERASER: return Eraser;
+    case BrushSettingType::BRUSH_SETTING_STROKE_THRESHOLD: return StrokeThreshold;
+    case BrushSettingType::BRUSH_SETTING_STROKE_DURATION_LOGARITHMIC: return StrokeDuration;
+    case BrushSettingType::BRUSH_SETTING_STROKE_HOLDTIME: return StrokeHoldTime;
+    case BrushSettingType::BRUSH_SETTING_CUSTOM_INPUT: return CustomInput;
+    case BrushSettingType::BRUSH_SETTING_CUSTOM_INPUT_SLOWNESS: return CustomInputSlowness;
+    case BrushSettingType::BRUSH_SETTING_ELLIPTICAL_DAB_RATIO: return EllipticalDabRatio;
+    case BrushSettingType::BRUSH_SETTING_ELLIPTICAL_DAB_ANGLE: return EllipticalDabAngle;
+    case BrushSettingType::BRUSH_SETTING_LOCK_ALPHA: return LockAlpha;
+    case BrushSettingType::BRUSH_SETTING_COLORIZE: return Colorize;
+    case BrushSettingType::BRUSH_SETTING_SNAP_TO_PIXEL: return SnapToPixel;
+    case BrushSettingType::BRUSH_SETTING_PRESSURE_GAIN_LOG: return PressureGain;
+    default: return Dummy;
+    }
+}
+
+BrushSettingType inline getBrushSettingType(const QString identifier)
 {
     static QMap<QString, BrushSettingType> map
     {

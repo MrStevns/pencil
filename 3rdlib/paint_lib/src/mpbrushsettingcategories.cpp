@@ -123,7 +123,7 @@ BrushSettingCategory MPBrushSettingCategories::customBrushSettings() const
 
 BrushSettingCategory MPBrushSettingCategories::ellipticalBrushSettings() const
 {
-    return BrushSettingCategory(BrushSettingCategoryType::Elliptical, { EllepticalDabRatio, EllepticalDabAngle });
+    return BrushSettingCategory(BrushSettingCategoryType::Elliptical, { EllipticalDabRatio, EllipticalDabAngle });
 }
 
 BrushSettingCategory MPBrushSettingCategories::otherBrushSettings() const

@@ -221,13 +221,16 @@ void MPBrushConfigurator::setupActiveSettings()
             settings.beginGroup(key);
 
             bool show = settings.value("visible").toBool();
-            QString name = settings.value("name").toString();
-            qreal min = settings.value("min").toReal();
-            qreal max = settings.value("max").toReal();
+            BrushSettingType brushSettingType = getBrushSettingType(key);
+            const BrushSetting& brushSetting = getBrushSetting(brushSettingType);
+
+            QString name = brushSetting.name;
+            qreal min = brushSetting.min;
+            qreal max = brushSetting.max;
             settings.endGroup();
 
             if (show) {
-                BrushSettingEditWidget* settingWidget = new BrushSettingEditWidget(BrushSettingCategoryType::Other, name, getBrushSetting(key), min, max, this);
+                BrushSettingEditWidget* settingWidget = new BrushSettingEditWidget(BrushSettingCategoryType::Other, name, brushSettingType, min, max, this);
                 mBrushWidgets.append(settingWidget);
             }
         }
