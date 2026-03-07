@@ -1,7 +1,7 @@
 #ifndef WIDTHBRUSHSETTINGWIDGET_H
 #define WIDTHBRUSHSETTINGWIDGET_H
 
-#include "brushsettingwidget.h"
+#include "defaultbrushsettingwidget.h"
 
 class WidthBrushSettingWidget : public DefaultBrushSettingWidget
 {

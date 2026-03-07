@@ -4,13 +4,13 @@
 #include "brushsetting.h"
 #include "brushsettingwidget.h"
 #include "mpbrushsettingcategories.h"
+#include "defaultbrushsettingwidget.h"
 
 class QToolButton;
 class QDoubleSpinBox;
 class Editor;
 class MPMappingOptionsWidget;
 class QCheckBox;
-
 
 class BrushSettingEditWidget : public QWidget
 {

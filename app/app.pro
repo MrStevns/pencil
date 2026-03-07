@@ -87,6 +87,7 @@ HEADERS += \
     src/appearance.h \
     src/buttonappearancewatcher.h \
     src/brushsettingeditwidget.h \
+    src/defaultbrushsettingwidget.h \
     src/inlineslider.h \
     src/lineeditwidget.h \
     src/mainwindow2.h \
@@ -160,10 +161,10 @@ SOURCES += \
     src/addtransparencytopaperdialog.cpp \
     src/basewidget.cpp \
     src/buttonappearancewatcher.cpp \
+    src/defaultbrushsettingwidget.cpp \
     src/layeropacitydialog.cpp \
     src/brushsettingeditwidget.cpp \
     src/brushsettingitem.cpp \
-    src/brushsettingwidget.cpp \
     src/combobox.cpp \
     src/mapping/mappingconfiguratorwidget.cpp \
     src/mapping/mappingdistributionwidget.cpp \

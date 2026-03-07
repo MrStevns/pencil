@@ -1,4 +1,4 @@
-#include "brushsettingwidget.h"
+#include "defaultbrushsettingwidget.h"
 
 #include <QLayout>
 #include <QSignalBlocker>
