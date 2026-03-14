@@ -26,6 +26,8 @@ GNU General Public License for more details.
 
 #include "canvascursorpainter.h"
 #include "radialoffsettool.h"
+
+#include "brushchanges.h"
 #include "brushsetting.h"
 
 #include <QList>
@@ -106,6 +108,7 @@ signals:
 public slots:
     void onPreferenceChanged(SETTING setting);
     void onViewUpdated();
+    void onMPBrushUpdated(const QHash<BrushSettingType, BrushChanges>& changes);
 
 protected:
     QPointF getCurrentPressPixel() const;

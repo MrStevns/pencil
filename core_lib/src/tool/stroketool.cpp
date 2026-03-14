@@ -25,6 +25,7 @@ GNU General Public License for more details.
 #include "toolmanager.h"
 #include "mathutils.h"
 #include "layermanager.h"
+#include "mpbrushmanager.h"
 
 #include "canvascursorpainter.h"
 
@@ -82,6 +83,8 @@ void StrokeTool::loadSettings()
     /// when the tool is not active.
     connect(mEditor->preference(), &PreferenceManager::optionChanged, this, &StrokeTool::onPreferenceChanged);
 
+    connect(mEditor->brushes(), &MPBrushManager::brushUpdated, this, &StrokeTool::onMPBrushUpdated);
+
     connect(&mWidthSizingTool, &RadialOffsetTool::offsetChanged, this, [=](qreal offset) {
         qreal width = offset * 2.0;
         if (strokeToolProperties().width() == width) { return; }
@@ -118,6 +121,24 @@ void StrokeTool::onPreferenceChanged(SETTING setting)
         mQuickSizingEnabled = mEditor->preference()->isOn(setting);
     } else if (setting == SETTING::CANVAS_CURSOR) {
         mCanvasCursorEnabled = mEditor->preference()->isOn(setting);
+    }
+}
+
+void StrokeTool::onMPBrushUpdated(const QHash<BrushSettingType, BrushChanges>& changes)
+{
+    QHashIterator<BrushSettingType, BrushChanges> settingIt(changes);
+    while (settingIt.hasNext()) {
+        settingIt.next();
+
+        switch (settingIt.key())
+        {
+            case BrushSettingType::BRUSH_SETTING_RADIUS_LOGARITHMIC: {
+                toolProperties().setBaseValue(StrokeToolProperties::WIDTH_VALUE, qExp(settingIt.value().baseValue) * 2.0);
+                break;
+            default:
+                break;
+            }
+        }
     }
 }
 

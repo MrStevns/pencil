@@ -139,6 +139,10 @@ Status MPBrushManager::applyChangesToBrushFile(bool flush)
 
     Status statusWrite = writeBrushToFile(mCurrentPresetName, mCurrentBrushName, doc.toJson());
 
+    if (statusWrite.ok()) {
+        emit brushUpdated(modificationHash.value());
+    }
+
     return statusWrite;
 }
 

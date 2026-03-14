@@ -75,6 +75,7 @@ Q_SIGNALS:
     void errorFromTitleMessage(QString title, QString description);
 
     void brushesLoaded();
+    void brushUpdated(const QHash<BrushSettingType, BrushChanges>& brushModifications);
 
 private:
     Status replaceBrushIfNeeded(QString brushPath);
