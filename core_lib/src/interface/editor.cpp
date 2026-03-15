@@ -635,6 +635,7 @@ Status Editor::importBitmapImage(const QString& filePath, const QTransform& impo
     }
     BitmapImage* bitmapImage = layer->getBitmapImageAtFrame(mFrame);
     BitmapImage importedBitmapImage(pos, img);
+
     bitmapImage->paste(&importedBitmapImage);
     emit frameModified(bitmapImage->pos());
 

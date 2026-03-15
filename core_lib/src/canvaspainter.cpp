@@ -412,17 +412,23 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
             clipPath.addPolygon(selectionState.selectionPolygon);
 
             painter.setTransform(selectionTransform*mViewTransform);
-            painter.setClipPath(clipPath);
-            painter.setClipping(true);
+            // painter.setClipPath(clipPath);
+            // painter.setClipping(true);
 
-            // painter.save();
-            // painter.setPen(Qt::green);
-            // painter.drawRect(selectionState.originalRect);
-            // painter.setPen(Qt::blue);
-            // painter.drawPolygon(selectionState.selectionPolygon);
-            // painter.setPen(Qt::red);
-            // painter.drawRect(selectionState.transformedRect);
-            // painter.restore();
+            painter.save();
+            QPen pen;
+            pen.setCosmetic(true);
+            pen.setColor(Qt::green);
+            painter.setPen(pen);
+            painter.drawRect(selectionState.originalRect);
+            pen.setColor(Qt::blue);
+            painter.setPen(pen);
+            painter.drawPolygon(selectionState.selectionPolygon);
+            pen.setColor(Qt::red);
+            painter.setPen(pen);
+            painter.drawRect(selectionState.transformedRect);
+            painter.drawEllipse(selectionState.commonState.anchorPoint, 0.5, 0.5);
+            painter.restore();
 
             painter.setTransform(mViewTransform);
             painter.setCompositionMode(mOptions.cmBufferBlendMode);

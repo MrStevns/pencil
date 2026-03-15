@@ -39,7 +39,7 @@ public:
     void lockMovementToAxis(const bool state);
 
     QRect mySelectionRect() const;
-    QPolygon mySelectionPolygon() const;
+    QPolygonF mySelectionPolygon() const;
     qreal myRotation() const;
     qreal myScaleX() const;
     qreal myScaleY() const;

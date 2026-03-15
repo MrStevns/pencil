@@ -77,7 +77,7 @@ QRect SelectionBitmapEditor::mySelectionRect() const
     return mState->selectionRect;
 }
 
-QPolygon SelectionBitmapEditor::mySelectionPolygon() const
+QPolygonF SelectionBitmapEditor::mySelectionPolygon() const
 {
     if (!mIsValid) { return QPolygon(); }
 
@@ -268,7 +268,7 @@ void SelectionBitmapEditor::createImageCache()
     if (!mCacheInvalidated) {
         invalidateBitmapCache();
     }
-    mState->selectionImage = *mBitmapImage->copy(mState->selectionRect, mState->selectionPolygon).image();
+    mState->selectionImage = *mBitmapImage->copy(mState->selectionRect, mState->selectionPolygon.toPolygon()).image();
     mCacheInvalidated = false;
 
     updateTransformedSelectionState();
@@ -315,7 +315,7 @@ void SelectionBitmapEditor::commitChanges()
 
     auto state = mState;
     // TODO: replace with qpolygon
-    const QPolygon& alignedSelection = mState->selectionPolygon;
+    // const QPolygon& alignedSelection = mState->selectionPolygon;
 
     // if (!mTransformCopyImage) {
     //     return;
@@ -414,14 +414,16 @@ void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBou
 
     QRectF boundingRect = transform.map(boundsPolygon).boundingRect();
 
-    outPreciseRect = transform.map(QPolygonF(boundsPolygon)).boundingRect();
+    QPolygonF mappedPolygon = transform.map(QPolygonF(boundsPolygon));
+    outPreciseRect = mappedPolygon.boundingRect();
 
-    outAlignedRect = QRect(
-        qFloor(boundingRect.x()),
-        qFloor(boundingRect.y()),
-        qCeil(boundingRect.width()),
-        qCeil(boundingRect.height())
-    );
+    outAlignedRect = mappedPolygon.boundingRect().toRect();
+    // outAlignedRect = QRect(
+    //     qFloor(boundingRect.x()),
+    //     qFloor(boundingRect.y()),
+    //     qCeil(boundingRect.width()),
+    //     qCeil(boundingRect.height())
+    // );
 }
 
 void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
@@ -437,6 +439,7 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
     auto const tiles = tiledBuffer.tiles();
     QRectF transformedSelectionRect = transform.mapRect(QRectF(mState->selectionRect));
     painter.translate(-transformedSelectionRect.topLeft());
+    // painter.setTransform(transform);
 
     QPainterPath path;
     QPolygonF transformedPolygon = transform.map(mState->selectionPolygon);
@@ -450,11 +453,18 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
     }
     painter.end();
 
-    mState->selectionImage = mState->transformedImage;;
-    mState->selectionPolygon = transformedPolygon.toPolygon();
-    mState->selectionRect = preciseRect.toRect();
+    qDebug() << "transformed size: " << mState->transformedImage.size();
+    qDebug() << "selection size: " << mState->selectionImage.size();
+    mState->selectionImage = mState->transformedImage;
+    mState->selectionRect = transformedPolygon.boundingRect().toRect();
+
+    mState->selectionPolygon = QPolygonF(QRectF(transformedPolygon.boundingRect().toRect()));
     mCommonEditor.resetState();
+
     mCacheInvalidated = false;
+
+    // to update the image on the canvas instantly
+    updateTransformedSelectionState();
 }
 
 
@@ -475,6 +485,9 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
 
     mState->transformedImage = transformedImage(mState->selectionImage, transform, transformedImageBounds, bRectF, mSmoothTransform);
     mState->transformedRect = transformedImageBounds;
+
+    qDebug() << "bRectF: " << bRectF;
+    qDebug() << "transformedRect: " << mState->transformedRect;
 }
 
 QImage SelectionBitmapEditor::transformedImage(const QImage& src,

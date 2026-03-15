@@ -23,7 +23,7 @@ struct SelectionBitmapState {
     /// the state before being transformed
     QRect selectionRect;
     QImage selectionImage;
-    QPolygon selectionPolygon;
+    QPolygonF selectionPolygon;
     ///
 
     SelectionState commonState;
