@@ -31,6 +31,24 @@ GNU General Public License for more details.
 
 class Editor;
 
+/**
+ * @brief The SelectionManager class acts as the "Brain" of the selection system.
+ * 
+ * It is responsible for:
+ * 1. Storing the "Truth" of the selection:
+ *    - The original shape (mOriginalRect)
+ *    - The current transformation state (mSelectionTransform) including position, rotation, and scale.
+ * 
+ * 2. Performing the Math:
+ *    - Calculates new transformations based on user input from the SelectTool.
+ *    - Handles complex matrix operations for rotation and scaling.
+ * 
+ * 3. Coordinate Space Management:
+ *    - Converts points between "Screen Space" (mouse coordinates) and "Selection Space" (drawing coordinates).
+ *    - Maps operations from the UI (SelectTool) to the underlying data.
+ * 
+ * The SelectTool (the "Hand") delegates all state tracking and heavy calculation to this manager.
+ */
 class SelectionManager : public BaseManager
 {
     Q_OBJECT
@@ -44,7 +62,7 @@ public:
     void workingLayerChanged(Layer*workingLayer) override;
 
     void flipSelection(bool flipVertical);
-
+    
     void setSelection(const QRectF& rect);
 
     void translate(QPointF point);
@@ -56,6 +74,7 @@ public:
      *  @param state */
     void lockMovementToAxis(bool state);
 
+    /** @brief Checks if the point is over a handle (corner) or body and sets the MoveMode accordingly. */
     void setMoveModeForAnchorInRange(const QPointF& point);
 
     MoveMode getMoveMode() const;
@@ -64,6 +83,8 @@ public:
     bool somethingSelected() const;
     bool isSelectionValid() const;
 
+    /** @brief Updates the selection transform (move, scale, rotate) based on input delta.
+     *  This is the core logic for interactive manipulation. */
     void adjustSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement = 0);
 
     void setSelectionTransform(const QTransform& transform);
