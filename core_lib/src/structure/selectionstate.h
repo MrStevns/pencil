@@ -23,6 +23,9 @@ struct SelectionBitmapState {
     SelectionState commonState;
 
     QImage transformedImage;
+
+    // Padding to account for pixels being out of bound when rotating
+    int boundsPadding = 2;
     QRect transformedRect;
 };
 
