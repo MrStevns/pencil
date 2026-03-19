@@ -103,7 +103,7 @@ QPointF SelectionBitmapEditor::myTranslation() const
 {
     if (!mIsValid) { return QPointF(); }
 
-    return mCommonEditor.myTranslation();
+    return mCommonEditor.myTranslation().toPoint();
 }
 
 QTransform SelectionBitmapEditor::myTransform() const
@@ -165,19 +165,19 @@ MoveMode SelectionBitmapEditor::resolveMoveModeForAnchorInRange(const QPointF& p
 void SelectionBitmapEditor::setDragOrigin(const QPointF& point)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.setDragOrigin(point);
+    mCommonEditor.setDragOrigin(point.toPoint());
 }
 
 QPointF SelectionBitmapEditor::currentAnchorPoint() const
 {
     if (!mIsValid) { return QPointF(); }
-    return mCommonEditor.currentAnchorPoint();
+    return mCommonEditor.currentAnchorPoint().toPoint();
 }
 
 void SelectionBitmapEditor::setTransformAnchor(const QPointF& anchorPoint)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.setTransformAnchor(anchorPoint);
+    mCommonEditor.setTransformAnchor(anchorPoint.toPoint());
 }
 
 void SelectionBitmapEditor::translate(const QPointF& point)
