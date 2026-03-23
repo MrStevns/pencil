@@ -17,16 +17,24 @@ struct SelectionState {
 };
 
 struct SelectionBitmapState {
-    QPolygon selectionPolygon;
+    // The rect that belongs to the initial selection
     QRect originalRect;
+
+    /// the state before being transformed
+    QRect selectionRect;
+    QImage selectionImage;
+    QPolygon selectionPolygon;
+    ///
 
     SelectionState commonState;
 
-    QImage transformedImage;
-
     // Padding to account for pixels being out of bound when rotating
     int boundsPadding = 2;
+
+    /// The state after being transformed
+    QImage transformedImage;
     QRect transformedRect;
+    ///
 };
 
 #endif // SELECTIONSTATE_H
