@@ -23,10 +23,13 @@ struct SelectionBitmapState {
     /// the state before being transformed
     QRect selectionRect;
     QImage selectionImage;
-    QPolygonF selectionPolygon;
+    QPolygon selectionPolygon;
     ///
 
     SelectionState commonState;
+
+    // Padding to account for pixels being out of bound when rotating
+    int boundsPadding = 2;
 
     /// The state after being transformed
     QImage transformedImage;

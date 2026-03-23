@@ -106,7 +106,7 @@ QPointF SelectionBitmapEditor::myTranslation() const
 {
     if (!mIsValid) { return QPointF(); }
 
-    return mCommonEditor.myTranslation();
+    return mCommonEditor.myTranslation().toPoint();
 }
 
 QTransform SelectionBitmapEditor::myTransform() const
@@ -168,19 +168,19 @@ MoveMode SelectionBitmapEditor::resolveMoveModeForAnchorInRange(const QPointF& p
 void SelectionBitmapEditor::setDragOrigin(const QPointF& point)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.setDragOrigin(point);
+    mCommonEditor.setDragOrigin(point.toPoint());
 }
 
 QPointF SelectionBitmapEditor::currentAnchorPoint() const
 {
     if (!mIsValid) { return QPointF(); }
-    return mCommonEditor.currentAnchorPoint();
+    return mCommonEditor.currentAnchorPoint().toPoint();
 }
 
 void SelectionBitmapEditor::setTransformAnchor(const QPointF& anchorPoint)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.setTransformAnchor(anchorPoint);
+    mCommonEditor.setTransformAnchor(anchorPoint.toPoint());
 }
 
 void SelectionBitmapEditor::translate(const QPointF& point)
@@ -268,7 +268,7 @@ void SelectionBitmapEditor::createImageCache()
     if (!mCacheInvalidated) {
         invalidateBitmapCache();
     }
-    mState->selectionImage = *mBitmapImage->copy(mState->selectionRect, mState->selectionPolygon.toPolygon()).image();
+    mState->selectionImage = *mBitmapImage->copy(mState->selectionRect, mState->selectionPolygon).image();
     mCacheInvalidated = false;
 
     updateTransformedSelectionState();
@@ -458,7 +458,7 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
     mState->selectionImage = mState->transformedImage;
     mState->selectionRect = transformedPolygon.boundingRect().toRect();
 
-    mState->selectionPolygon = QPolygonF(QRectF(transformedPolygon.boundingRect().toRect()));
+    mState->selectionPolygon = QPolygon(QRect(transformedPolygon.boundingRect().toRect()));
     mCommonEditor.resetState();
 
     mCacheInvalidated = false;
@@ -484,10 +484,11 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
     computeTransformedImageBounds(originalBounds, transform, transformedImageBounds, bRectF);
 
     mState->transformedImage = transformedImage(mState->selectionImage, transform, transformedImageBounds, bRectF, mSmoothTransform);
-    mState->transformedRect = transformedImageBounds;
-
-    qDebug() << "bRectF: " << bRectF;
-    qDebug() << "transformedRect: " << mState->transformedRect;
+    int padding = mState->boundsPadding * 0.5;
+    mState->transformedRect = transformedImageBounds.adjusted(-padding,
+                                                              -padding,
+                                                              padding,
+                                                              padding);
 }
 
 QImage SelectionBitmapEditor::transformedImage(const QImage& src,
@@ -496,7 +497,9 @@ QImage SelectionBitmapEditor::transformedImage(const QImage& src,
                                                const QRectF& preciseRect,
                                                bool smooth) const
 {
-    QImage result(QSize(alignedRect.width(), alignedRect.height()),
+    int padding = mState->boundsPadding;
+
+    QImage result(QSize(alignedRect.width() + padding, alignedRect.height() + padding),
                   QImage::Format_ARGB32_Premultiplied);
     result.fill(Qt::transparent);
 
@@ -508,7 +511,8 @@ QImage SelectionBitmapEditor::transformedImage(const QImage& src,
 
     QPointF preciseCenter(preciseRect.width() * 0.5, preciseRect.height() * 0.5);
 
-    painter.setTransform(transform);
+    painter.translate(padding * 0.5, padding * 0.5);
+    painter.setTransform(transform, true);
 
     // Calculates the sub pixel position offset in order to account for the image being integer based.
     QPointF pixelCorrectionOffset = preciseRect.topLeft() - alignedRect.topLeft();
