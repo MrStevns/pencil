@@ -111,6 +111,7 @@ private:
     bool mIsValid = false;
     bool mCacheInvalidated = true;
     SelectionEditor mCommonEditor;
+    SelectionEditor mClipEditor;
 
     /// Creates a copy of the editor based on the selection that was set
     void createImageCache();

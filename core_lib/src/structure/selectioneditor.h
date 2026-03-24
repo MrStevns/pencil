@@ -46,6 +46,8 @@ public:
     void resetTransformation();
     void setTransform(const QTransform& transform);
 
+    void adjustScaleFromCurrentAnchorPoint(const QPolygonF& polygon, const QPointF& currentPoint);
+    void adjustTranslation(const QPointF& currentPoint, const QPointF& offset);
     void translate(QPointF point);
     void rotate(qreal angle, qreal lockedAngle);
     void scale(qreal sX, qreal sY);

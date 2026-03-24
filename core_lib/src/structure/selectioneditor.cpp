@@ -141,62 +141,14 @@ void SelectionEditor::adjustCurrentSelection(const QPolygonF& selectionPolygon, 
     switch (mMoveMode)
     {
     case MoveMode::MIDDLE: {
-        QPointF newOffset = currentPoint - mDragOrigin;
-
-        if (mLockAxis) {
-            mState->translation = offset + alignedPositionToAxis(newOffset);
-        } else {
-            mState->translation = offset + newOffset;
-        }
+        adjustTranslation(currentPoint, offset);
         break;
     }
     case MoveMode::TOPLEFT:
     case MoveMode::TOPRIGHT:
     case MoveMode::BOTTOMRIGHT:
     case MoveMode::BOTTOMLEFT: {
-
-        QPolygonF projectedPolygon = mapToSelection(selectionPolygon);
-        QVector2D currentPVec = QVector2D(currentPoint);
-
-        qreal originWidth = selectionPolygon[1].x() - selectionPolygon[0].x();
-        qreal originHeight = selectionPolygon[3].y() - selectionPolygon[0].y();
-
-        QVector2D staticXAnchor;
-        QVector2D staticYAnchor;
-        QVector2D movingAnchor;
-        if (mMoveMode == MoveMode::TOPLEFT) {
-            movingAnchor = QVector2D(projectedPolygon[0]);
-            staticXAnchor = QVector2D(projectedPolygon[1]);
-            staticYAnchor = QVector2D(projectedPolygon[3]);
-        } else if (mMoveMode == MoveMode::TOPRIGHT) {
-            movingAnchor = QVector2D(projectedPolygon[1]);
-            staticXAnchor = QVector2D(projectedPolygon[0]);
-            staticYAnchor = QVector2D(projectedPolygon[2]);
-        } else if (mMoveMode == MoveMode::BOTTOMRIGHT) {
-            movingAnchor = QVector2D(projectedPolygon[2]);
-            staticXAnchor = QVector2D(projectedPolygon[3]);
-            staticYAnchor = QVector2D(projectedPolygon[1]);
-        } else {
-            movingAnchor = QVector2D(projectedPolygon[3]);
-            staticXAnchor = QVector2D(projectedPolygon[2]);
-            staticYAnchor = QVector2D(projectedPolygon[0]);
-        }
-
-        QVector2D directionVecX = staticXAnchor - currentPVec;
-        QVector2D directionVecY = staticYAnchor - currentPVec;
-
-        // Calculates the signed distance
-        qreal distanceX = QVector2D::dotProduct(directionVecX, (staticXAnchor - movingAnchor).normalized());
-        qreal distanceY = QVector2D::dotProduct(directionVecY, (staticYAnchor - movingAnchor).normalized());
-
-        qreal scaleX = distanceX / originWidth;
-        qreal scaleY = distanceY / originHeight;
-        if (mAspectRatioFixed) {
-            scaleY = scaleX;
-        }
-
-        scale(scaleX, scaleY);
-
+        adjustScaleFromCurrentAnchorPoint(selectionPolygon, currentPoint);
         break;
     }
     case MoveMode::ROTATION: {
@@ -209,8 +161,68 @@ void SelectionEditor::adjustCurrentSelection(const QPolygonF& selectionPolygon, 
     calculateSelectionTransformation();
 }
 
+void SelectionEditor::adjustTranslation(const QPointF& currentPoint, const QPointF& offset)
+{
+    const QPointF newOffset = currentPoint - mDragOrigin;
+    QPointF translation = offset + newOffset;
+
+    if (mLockAxis) {
+        translation = offset + alignedPositionToAxis(newOffset);
+    }
+    mState->translation = translation;
+}
+
+void SelectionEditor::adjustScaleFromCurrentAnchorPoint(const QPolygonF& polygon, const QPointF& currentPoint)
+{
+    QPolygonF projectedPolygon = mapToSelection(polygon);
+    QVector2D currentPVec = QVector2D(currentPoint);
+
+    qreal originWidth = polygon[1].x() - polygon[0].x();
+    qreal originHeight = polygon[3].y() - polygon[0].y();
+
+    QVector2D staticXAnchor;
+    QVector2D staticYAnchor;
+    QVector2D movingAnchor;
+    if (mMoveMode == MoveMode::TOPLEFT) {
+        movingAnchor = QVector2D(projectedPolygon[0]);
+        staticXAnchor = QVector2D(projectedPolygon[1]);
+        staticYAnchor = QVector2D(projectedPolygon[3]);
+    } else if (mMoveMode == MoveMode::TOPRIGHT) {
+        movingAnchor = QVector2D(projectedPolygon[1]);
+        staticXAnchor = QVector2D(projectedPolygon[0]);
+        staticYAnchor = QVector2D(projectedPolygon[2]);
+    } else if (mMoveMode == MoveMode::BOTTOMRIGHT) {
+        movingAnchor = QVector2D(projectedPolygon[2]);
+        staticXAnchor = QVector2D(projectedPolygon[3]);
+        staticYAnchor = QVector2D(projectedPolygon[1]);
+    } else {
+        movingAnchor = QVector2D(projectedPolygon[3]);
+        staticXAnchor = QVector2D(projectedPolygon[2]);
+        staticYAnchor = QVector2D(projectedPolygon[0]);
+    }
+
+    QVector2D directionVecX = staticXAnchor - currentPVec;
+    QVector2D directionVecY = staticYAnchor - currentPVec;
+
+    // Calculates the signed distance
+    qreal distanceX = QVector2D::dotProduct(directionVecX, (staticXAnchor - movingAnchor).normalized());
+    qreal distanceY = QVector2D::dotProduct(directionVecY, (staticYAnchor - movingAnchor).normalized());
+
+    qreal scaleX = distanceX / originWidth;
+    qreal scaleY = distanceY / originHeight;
+    if (mAspectRatioFixed) {
+        scaleY = scaleX;
+    }
+
+    scale(scaleX, scaleY);
+}
+
 void SelectionEditor::translate(QPointF newPos)
 {
+    if (mLockAxis) {
+        newPos = alignedPositionToAxis(newPos);
+    }
+
     mState->translation += newPos;
 }
 
