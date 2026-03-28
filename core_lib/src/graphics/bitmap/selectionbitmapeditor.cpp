@@ -60,6 +60,7 @@ void SelectionBitmapEditor::setSelection(const QRect& rect)
 void SelectionBitmapEditor::setSelection(const QPolygon& polygon)
 {
     mState->selectionPolygon = polygon;
+    mState->clipPolygon = polygon;
 
     // QRect's right() and bottom() are slightly different from QRectF,
     // because they always return left+width-1
@@ -67,6 +68,8 @@ void SelectionBitmapEditor::setSelection(const QPolygon& polygon)
     // as such in order to get the same bound, we need to subtract from the right and bottom
     mState->selectionRect = polygon.boundingRect().adjusted(0, 0,-1,-1);
     mState->originalRect = mState->selectionRect;
+
+    qDebug() << "set Selection";
 
     createImageCache();
 }
@@ -418,12 +421,6 @@ void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBou
     outPreciseRect = mappedPolygon.boundingRect();
 
     outAlignedRect = mappedPolygon.boundingRect().toRect();
-    // outAlignedRect = QRect(
-    //     qFloor(boundingRect.x()),
-    //     qFloor(boundingRect.y()),
-    //     qCeil(boundingRect.width()),
-    //     qCeil(boundingRect.height())
-    // );
 }
 
 void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
@@ -435,15 +432,13 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
     computeTransformedImageBounds(mState->selectionRect, mState->commonState.selectionTransform, alignedRect, preciseRect);
 
     QPainter painter(&mState->transformedImage);
-    QTransform transform = mState->commonState.selectionTransform;
     auto const tiles = tiledBuffer.tiles();
-    QRectF transformedSelectionRect = transform.mapRect(QRectF(mState->selectionRect));
-    painter.translate(-transformedSelectionRect.topLeft());
-    // painter.setTransform(transform);
+
+    // Account for pixel offset
+    painter.translate(-preciseRect.topLeft() + QPoint(1,1));
 
     QPainterPath path;
-    QPolygonF transformedPolygon = transform.map(mState->selectionPolygon);
-    path.addPolygon(transformedPolygon);
+    path.addPolygon(mState->clipPolygon);
     painter.setClipPath(path);
     painter.setClipping(true);
     for (const Tile* item : tiles) {
@@ -453,12 +448,11 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
     }
     painter.end();
 
-    qDebug() << "transformed size: " << mState->transformedImage.size();
-    qDebug() << "selection size: " << mState->selectionImage.size();
     mState->selectionImage = mState->transformedImage;
-    mState->selectionRect = transformedPolygon.boundingRect().toRect();
+    mState->selectionRect = alignedRect;
 
-    mState->selectionPolygon = QPolygon(QRect(transformedPolygon.boundingRect().toRect()));
+    mState->selectionPolygon = QPolygon(QRect(mState->selectionRect));
+
     mCommonEditor.resetState();
 
     mCacheInvalidated = false;
@@ -489,6 +483,11 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
                                                               -padding,
                                                               padding,
                                                               padding);
+
+    QTransform selectionT = mState->commonState.selectionTransform;
+    QTransform deltaT = selectionT * mState->commonState.prevSelectionTransform.inverted();
+    mState->clipTransform = deltaT * mState->clipTransform;
+    mState->clipPolygon = QPolygonF(mState->clipTransform.map(QPolygonF(QRectF(mState->originalRect)))).toPolygon();
 }
 
 QImage SelectionBitmapEditor::transformedImage(const QImage& src,

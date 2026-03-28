@@ -10,10 +10,15 @@ struct SelectionState {
     qreal scaleX = 1;
     qreal scaleY = 1;
     QPointF translation;
+
     qreal rotatedAngle = 0.0;
+
     QPointF anchorPoint;
 
     QTransform selectionTransform;
+    QTransform prevSelectionTransform;
+
+    SelectionState() = default;
 };
 
 struct SelectionBitmapState {
@@ -33,7 +38,7 @@ struct SelectionBitmapState {
 
     /// Clipping
     QPolygon clipPolygon;
-    SelectionState clipState;
+    QTransform clipTransform;
 
     SelectionState commonState;
 

@@ -408,26 +408,32 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
             painter.save();
 
             QPainterPath clipPath;
-            clipPath.addPolygon(selectionState.selectionPolygon);
 
-            painter.setTransform(selectionTransform*mViewTransform);
-            // painter.setClipPath(clipPath);
-            // painter.setClipping(true);
+            clipPath.addPolygon(selectionState.clipPolygon);
 
-            painter.save();
-            QPen pen;
-            pen.setCosmetic(true);
-            pen.setColor(Qt::green);
-            painter.setPen(pen);
-            painter.drawRect(selectionState.originalRect);
-            pen.setColor(Qt::blue);
-            painter.setPen(pen);
-            painter.drawPolygon(selectionState.selectionPolygon);
-            pen.setColor(Qt::red);
-            painter.setPen(pen);
-            painter.drawRect(selectionState.transformedRect);
-            painter.drawEllipse(selectionState.commonState.anchorPoint, 0.5, 0.5);
-            painter.restore();
+            // painter.save();
+            // painter.setPen(Qt::red);
+            // painter.drawPolygon(selectionState.clipPolygon);
+            // painter.restore();
+
+            painter.setTransform(mViewTransform);
+            painter.setClipPath(clipPath);
+            painter.setClipping(true);
+
+            // painter.save();
+            // QPen pen;
+            // pen.setCosmetic(true);
+            // pen.setColor(Qt::green);
+            // painter.setPen(pen);
+            // painter.drawRect(selectionState.originalRect);
+            // pen.setColor(Qt::blue);
+            // painter.setPen(pen);
+            // painter.drawPolygon(selectionState.selectionPolygon);
+            // pen.setColor(Qt::red);
+            // painter.setPen(pen);
+            // painter.drawRect(selectionState.transformedRect);
+            // painter.drawEllipse(selectionState.commonState.anchorPoint, 0.5, 0.5);
+            // painter.restore();
 
             painter.setTransform(mViewTransform);
             painter.setCompositionMode(mOptions.cmBufferBlendMode);

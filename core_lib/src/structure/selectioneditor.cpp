@@ -303,6 +303,7 @@ void SelectionEditor::calculateSelectionTransformation()
     r.rotate(mState->rotatedAngle);
     QTransform s;
     s.scale(mState->scaleX, mState->scaleY);
+    mState->prevSelectionTransform = mState->selectionTransform;
     mState->selectionTransform = t * s * r * t2;
     onEvent(SelectionEvent::CHANGED);
 }
