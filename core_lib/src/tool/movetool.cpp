@@ -167,8 +167,7 @@ void MoveTool::beginInteraction(PointerEvent* event, SelectionBitmapEditor& sele
         }
     }
 
-    selectionEditor.setTransformAnchor(selectionEditor.getSelectionAnchorPoint());
-    selectionEditor.setDragOrigin(canvasPos);
+    selectionEditor.setTransformAnchor(selectionEditor.resolveAnchorPoint());
 
     if(selectionEditor.moveMode() == MoveMode::ROTATION) {
         mRotatedAngle = selectionEditor.angleFromPoint(canvasPos, selectionEditor.currentAnchorPoint()) - selectionEditor.myRotation();
@@ -271,7 +270,6 @@ void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod
     }
 
     selectMan->setTransformAnchor(selectMan->getSelectionAnchorPoint());
-    selectMan->setDragOrigin(pos);
     // mOffset = selectMan->myTranslation();
 
     if(selectMan->getMoveMode() == MoveMode::ROTATION) {
@@ -306,7 +304,7 @@ void MoveTool::transformSelection(PointerEvent* event, SelectionBitmapEditor& se
         case MoveMode::TOPRIGHT:
         case MoveMode::BOTTOMRIGHT:
         case MoveMode::BOTTOMLEFT: {
-            // adjustScaleFromCurrentAnchorPoint(selectionPolygon, currentPoint);
+            selectionEditor.scaleAroundAnchorPoint(event->canvasPos());
             break;
         }
         case MoveMode::ROTATION: {

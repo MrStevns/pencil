@@ -46,7 +46,7 @@ public:
     void resetTransformation();
     void setTransform(const QTransform& transform);
 
-    void adjustScaleFromCurrentAnchorPoint(const QPolygonF& polygon, const QPointF& currentPoint);
+    void adjustFromAnchorPoint(const QPolygonF& polygon, const QPointF& currentPoint);
     void adjustTranslation(const QPointF& currentPoint, const QPointF& offset);
     void translate(QPointF point);
     void rotate(qreal angle, qreal angleIncrement);
@@ -70,8 +70,6 @@ public:
 
     QPointF currentAnchorPoint() const { return mState->anchorPoint; }
     void setTransformAnchor(const QPointF& point);
-
-    void setDragOrigin(const QPointF& point) { mDragOrigin = point; }
 
     bool isOutsideSelection(const QPointF& point, const QPolygonF& polygon) const;
 
@@ -102,8 +100,7 @@ public:
     void onEvent(SelectionEvent event) const;
     void notify(SelectionEvent event) const;
 
-    void adjustCurrentSelection(const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
-    QPointF getSelectionAnchorPoint(const QPolygonF& selectionPolygon) const;
+    QPointF resolveAnchorPoint(const QPolygonF& selectionPolygon) const;
 
     void invalidate();
     bool isValid() { return mIsValid && mState != nullptr; }
@@ -116,7 +113,6 @@ private:
     QList<SelectionEventCallback> mObservers;
 
     MoveMode mMoveMode = MoveMode::NONE;
-    QPointF mDragOrigin;
 
     bool mIsValid = false;
     bool mAspectRatioFixed = false;

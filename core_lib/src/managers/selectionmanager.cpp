@@ -192,33 +192,12 @@ MoveMode SelectionManager::resolveMoveModeForPoint(const QPointF& point) const
     }
 }
 
-void SelectionManager::setDragOrigin(const QPointF& point)
-{
-    switch (mWorkingLayer->type())
-    {
-    case Layer::BITMAP:
-        return bitmapSelection.setDragOrigin(point);
-    default:
-        return;
-    }
-}
-
 void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)
 {
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
         return bitmapSelection.setMoveMode(resolveMoveModeForPoint(point));
-    default:
-        return;
-    }
-}
-void SelectionManager::adjustSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
-{
-    switch (mWorkingLayer->type())
-    {
-    case Layer::BITMAP:
-        return bitmapSelection.adjustCurrentSelection(currentPoint, offset, rotationOffset, rotationIncrement);
     default:
         return;
     }

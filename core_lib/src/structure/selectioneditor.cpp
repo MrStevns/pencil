@@ -105,7 +105,7 @@ MoveMode SelectionEditor::resolveMoveModeForAnchorInRange(const QPointF &point, 
     return moveMode;
 }
 
-QPointF SelectionEditor::getSelectionAnchorPoint(const QPolygonF& selectionPolygon) const
+QPointF SelectionEditor::resolveAnchorPoint(const QPolygonF& selectionPolygon) const
 {
     QPointF anchorPoint;
     if (selectionPolygon.count() < 3) { return anchorPoint; }
@@ -136,43 +136,7 @@ bool SelectionEditor::isOutsideSelection(const QPointF &point, const QPolygonF& 
     return (!mapToSelection(polygon).containsPoint(point.toPoint(), Qt::WindingFill)) && getMoveMode() == MoveMode::NONE;
 }
 
-void SelectionEditor::adjustCurrentSelection(const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement)
-{
-    switch (mMoveMode)
-    {
-    case MoveMode::MIDDLE: {
-        adjustTranslation(currentPoint, offset);
-        break;
-    }
-    case MoveMode::TOPLEFT:
-    case MoveMode::TOPRIGHT:
-    case MoveMode::BOTTOMRIGHT:
-    case MoveMode::BOTTOMLEFT: {
-        adjustScaleFromCurrentAnchorPoint(selectionPolygon, currentPoint);
-        break;
-    }
-    case MoveMode::ROTATION: {
-        rotate(rotationOffset, rotationIncrement);
-        break;
-    }
-    default:
-        break;
-    }
-    calculateSelectionTransformation();
-}
-
-void SelectionEditor::adjustTranslation(const QPointF& currentPoint, const QPointF& offset)
-{
-    const QPointF newOffset = currentPoint - mDragOrigin;
-    QPointF translation = offset + newOffset;
-
-    if (mLockAxis) {
-        translation = offset + alignedPositionToAxis(newOffset);
-    }
-    mState->translation = translation;
-}
-
-void SelectionEditor::adjustScaleFromCurrentAnchorPoint(const QPolygonF& polygon, const QPointF& currentPoint)
+void SelectionEditor::adjustFromAnchorPoint(const QPolygonF& polygon, const QPointF& currentPoint)
 {
     QPolygonF projectedPolygon = mapToSelection(polygon);
     QVector2D currentPVec = QVector2D(currentPoint);

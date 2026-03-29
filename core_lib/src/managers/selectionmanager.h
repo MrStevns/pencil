@@ -83,10 +83,6 @@ public:
     bool somethingSelected() const;
     bool isSelectionValid() const;
 
-    /** @brief Updates the selection transform (move, scale, rotate) based on input delta.
-     *  This is the core logic for interactive manipulation. */
-    void adjustSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement = 0);
-
     void setSelectionTransform(const QTransform& transform);
     void resetSelectionTransform();
 
@@ -132,10 +128,6 @@ public:
     QPolygonF getSelectionPolygon() const;
 
     SelectionBitmapEditor* currentSelectionBitmapEditor();
-
-    /// The point from where the dragging will be based of inside the selection area.
-    /// Not to be confused with the selection origin
-    void setDragOrigin(const QPointF& point);
 
     /// This should be called to update the selection transform
     void calculateSelectionTransformation();
