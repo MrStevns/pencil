@@ -326,12 +326,9 @@ void MoveTool::transformSelection(PointerEvent* event, SelectionBitmapEditor& se
 
 void MoveTool::translateSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor)
 {
-    QPointF delta = QPointF(mDragState.dx, mDragState.dy);
-
-
-    // qDebug() << newPos;
-    // selectionEditor.setTransformAnchor(selectionEditor.getSelectionAnchorPoint());
-    selectionEditor.adjustTranslation(event->canvasPos(), delta);
+    QPointF delta = event->canvasPos() - mDragState.startPos;
+    QPointF newPos = QPointF(mDragState.dx, mDragState.dy) + delta;
+    selectionEditor.setTranslation(newPos);
 }
 
 void MoveTool::rotateSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor)

@@ -282,7 +282,7 @@ void SelectionEditor::deselect()
 }
 
 void SelectionEditor::setTransformAnchor(const QPointF& point)
-{   
+{
     const QPointF& oldAnchorPoint = mState->anchorPoint;
     QPointF newPos = mapToSelection(point);
     QPointF oldPos = mapToSelection(oldAnchorPoint);
@@ -290,15 +290,6 @@ void SelectionEditor::setTransformAnchor(const QPointF& point)
     // Adjust translation based on anchor point to avoid moving the selection
     mState->translation = mState->translation - oldPos + newPos;
     mState->anchorPoint = point;
-
-    // QPointF oldAnchor = mapToSelection(mState->anchorPoint);
-    // QPointF objectPos = mState->translation;
-
-    // QPointF newAnchorPos = mapToSelection(point);
-
-    // QPointF delta = newAnchorPos - (objectPos + oldAnchor);
-
-    // mState->anchorPoint = oldAnchor + delta;
 }
 
 void SelectionEditor::calculateSelectionTransformation()
@@ -314,16 +305,6 @@ void SelectionEditor::calculateSelectionTransformation()
     s.scale(mState->scaleX, mState->scaleY);
     mState->selectionTransform = t * s * r * t2;
 
-    // qDebug() << mState->anchorPoint;
-
-    // QTransform transform;
-    // transform.translate(mState->translation.x(), mState->translation.y());
-    // transform.translate(mState->anchorPoint.x(), mState->anchorPoint.y());
-    // transform.rotate(mState->rotatedAngle);
-    // transform.scale(mState->scaleX, mState->scaleY);
-    // transform.translate(-mState->anchorPoint.x(), -mState->anchorPoint.y());
-
-    // mState->selectionTransform = transform;
     onEvent(SelectionEvent::CHANGED);
 }
 
