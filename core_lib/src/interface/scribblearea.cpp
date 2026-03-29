@@ -1031,7 +1031,7 @@ void ScribbleArea::paintSelectionVisuals(QPainter &painter)
 
     QRectF currentSelectionRect = selectMan->mySelectionRect();
 
-    TransformParameters params = { currentSelectionRect, editor()->view()->getView(), selectMan->selectionTransform() };
+    TransformParameters params = { currentSelectionRect, selectMan->currentTransformAnchor(), editor()->view()->getView(), selectMan->selectionTransform() };
 
     mSelectionPainter.paint(painter,
                             object,

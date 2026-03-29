@@ -23,9 +23,18 @@ GNU General Public License for more details.
 #include "preferencemanager.h"
 #include "undoredomanager.h"
 
+#include "selectionbitmapeditor.h"
+
 class Layer;
 class VectorImage;
 
+struct DragState
+{
+    QPointF startPos;
+    qreal dx, dy;
+
+    DragState() = default;
+};
 
 class MoveTool : public TransformTool
 {
@@ -47,13 +56,20 @@ public:
     bool leavingThisTool() override;
     bool isActive() const override;
 
+    void translateSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor);
+    void rotateSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor);
+    void transformSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor);
+
 private:
+
     void applyTransformation();
     void updateSettings(const SETTING setting);
 
     void beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
+    void beginInteraction(PointerEvent* event, SelectionBitmapEditor& selectionEditor);
+
     void createVectorSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
-    void transformSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod);
+    void transformSelection(PointerEvent* event);
     void storeClosestVectorCurve(const QPointF& pos, Layer* layer);
 
     void setCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
@@ -63,9 +79,10 @@ private:
 
     QPointF mCurrentPoint;
     qreal mRotatedAngle = 0.0;
-    int mRotationIncrement = 0;
+    int mRotationIncrementPref = 0;
     MoveMode mPerspMode;
-    QPointF mOffset;
+
+    DragState mDragState;
 
     const UndoSaveState* mUndoSaveState = nullptr;
 };

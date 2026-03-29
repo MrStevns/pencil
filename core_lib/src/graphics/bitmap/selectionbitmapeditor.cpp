@@ -163,6 +163,11 @@ MoveMode SelectionBitmapEditor::resolveMoveModeForAnchorInRange(const QPointF& p
     return mCommonEditor.resolveMoveModeForAnchorInRange(point, mState->selectionPolygon, selectionTolerance);
 }
 
+void SelectionBitmapEditor::adjustTranslation(const QPointF &currentPoint, const QPointF &offset)
+{
+    mCommonEditor.adjustTranslation(currentPoint, offset);
+}
+
 void SelectionBitmapEditor::setDragOrigin(const QPointF& point)
 {
     if (!mIsValid) { return; }
@@ -185,12 +190,14 @@ void SelectionBitmapEditor::translate(const QPointF& point)
 {
     if (!mIsValid) { return; }
     mCommonEditor.translate(point.toPoint());
+
+    // calculateSelectionTransformation();
 }
 
-void SelectionBitmapEditor::rotate(qreal rotationAngle, qreal lockedAngle)
+void SelectionBitmapEditor::rotate(qreal rotationAngle, qreal angleIncrement)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.rotate(rotationAngle, lockedAngle);
+    mCommonEditor.rotate(rotationAngle, angleIncrement);
 }
 
 void SelectionBitmapEditor::scale(qreal scaleX, qreal scaleY)

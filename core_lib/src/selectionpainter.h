@@ -30,6 +30,8 @@ struct TransformParameters
 {
     QPolygonF originalSelectionPolygon;
 
+    QPointF anchorPoint;
+
     QTransform viewTransform;
     QTransform selectionTransform;
 };

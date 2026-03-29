@@ -131,6 +131,8 @@ public:
 
     QPolygonF getSelectionPolygon() const;
 
+    SelectionBitmapEditor* currentSelectionBitmapEditor();
+
     /// The point from where the dragging will be based of inside the selection area.
     /// Not to be confused with the selection origin
     void setDragOrigin(const QPointF& point);

@@ -46,7 +46,7 @@ ToolType MoveTool::type() const
 
 void MoveTool::loadSettings()
 {
-    mRotationIncrement = mEditor->preference()->getInt(SETTING::ROTATION_INCREMENT);
+    mRotationIncrementPref = mEditor->preference()->getInt(SETTING::ROTATION_INCREMENT);
     QSettings pencilSettings(PENCIL2D, PENCIL2D);
 
     mPropertyUsed[TransformToolProperties::SHOWSELECTIONINFO_ENABLED] = { Layer::BITMAP, Layer::VECTOR };
@@ -88,7 +88,7 @@ void MoveTool::updateSettings(const SETTING setting)
     switch (setting)
     {
     case SETTING::ROTATION_INCREMENT:
-        mRotationIncrement = mEditor->preference()->getInt(SETTING::ROTATION_INCREMENT);
+        mRotationIncrementPref = mEditor->preference()->getInt(SETTING::ROTATION_INCREMENT);
         break;
     case SETTING::OVERLAY_PERSPECTIVE1:
         mEditor->overlays()->settingsUpdated(setting, mEditor->preference()->isOn(setting));
@@ -113,7 +113,18 @@ void MoveTool::pointerPressEvent(PointerEvent* event)
 
     if (mEditor->select()->somethingSelected())
     {
-        beginInteraction(event->canvasPos(), event->modifiers(), currentLayer);
+        switch (currentLayer->type())
+        {
+            case Layer::BITMAP:
+                beginInteraction(event, *mEditor->select()->currentSelectionBitmapEditor());
+                break;
+            case Layer::VECTOR:
+                // TODO:
+            case Layer::CAMERA:
+                // TODO:
+        }
+
+        // beginInteraction(event->canvasPos(), event->modifiers(), currentLayer);
     }
     else if (mEditor->overlays()->anyOverlayEnabled())
     {
@@ -129,6 +140,45 @@ void MoveTool::pointerPressEvent(PointerEvent* event)
     mEditor->updateFrame();
 }
 
+void MoveTool::beginInteraction(PointerEvent* event, SelectionBitmapEditor& selectionEditor)
+{
+    const QPointF& canvasPos = event->canvasPos();
+    const Qt::KeyboardModifiers keyMod = event->modifiers();
+    if (!selectionEditor.mySelectionRect().isNull())
+    {
+        mUndoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
+        mEditor->backup(typeName());
+    }
+
+    if (keyMod != Qt::ShiftModifier)
+    {
+        if (selectionEditor.isOutsideSelectionArea(canvasPos))
+        {
+            applyTransformation();
+            mEditor->deselectAll();
+        }
+    }
+
+    if (selectionEditor.moveMode() == MoveMode::MIDDLE)
+    {
+        if (keyMod == Qt::ControlModifier) // --- rotation
+        {
+            selectionEditor.setMoveMode(MoveMode::ROTATION);
+        }
+    }
+
+    selectionEditor.setTransformAnchor(selectionEditor.getSelectionAnchorPoint());
+    selectionEditor.setDragOrigin(canvasPos);
+
+    if(selectionEditor.moveMode() == MoveMode::ROTATION) {
+        mRotatedAngle = selectionEditor.angleFromPoint(canvasPos, selectionEditor.currentAnchorPoint()) - selectionEditor.myRotation();
+    }
+
+    mDragState.startPos = event->canvasPos();
+    mDragState.dx = selectionEditor.myTranslation().x();
+    mDragState.dy = selectionEditor.myTranslation().y();
+}
+
 void MoveTool::pointerMoveEvent(PointerEvent* event)
 {
     Layer* currentLayer = currentPaintableLayer();
@@ -136,8 +186,6 @@ void MoveTool::pointerMoveEvent(PointerEvent* event)
 
     if (mScribbleArea->isPointerInUse())   // the user is also pressing the mouse (dragging)
     {
-        transformSelection(event->canvasPos(), event->modifiers());
-
         if (mEditor->overlays()->anyOverlayEnabled())
         {
             LayerCamera* layerCam = mEditor->layers()->getCameraLayerBelow(mEditor->currentLayerIndex());
@@ -146,7 +194,7 @@ void MoveTool::pointerMoveEvent(PointerEvent* event)
         }
         if (mEditor->select()->somethingSelected())
         {
-            transformSelection(event->canvasPos(), event->modifiers());
+            transformSelection(event);
         }
     }
     else
@@ -174,6 +222,8 @@ void MoveTool::pointerReleaseEvent(PointerEvent*)
 {
     mEditor->undoRedo()->record(mUndoSaveState, typeName());
 
+    mDragState = DragState();
+
     if (mEditor->overlays()->anyOverlayEnabled())
     {
         mEditor->overlays()->setMoveMode(MoveMode::NONE);
@@ -186,34 +236,6 @@ void MoveTool::pointerReleaseEvent(PointerEvent*)
 
     mScribbleArea->updateToolCursor();
     emit mEditor->frameModified(mEditor->currentFrame());
-}
-
-void MoveTool::transformSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod)
-{
-    auto selectMan = mEditor->select();
-    if (selectMan->somethingSelected())
-    {
-        int rotationIncrement = 0;
-        if (selectMan->getMoveMode() == MoveMode::ROTATION && keyMod & Qt::ShiftModifier)
-        {
-            rotationIncrement = mRotationIncrement;
-        }
-
-        selectMan->maintainAspectRatio(keyMod == Qt::ShiftModifier);
-        selectMan->lockMovementToAxis(keyMod == Qt::ShiftModifier);
-
-        qreal newAngle = 0;
-        if (selectMan->getMoveMode() == MoveMode::ROTATION) {
-            QPointF anchorPoint = selectMan->currentTransformAnchor();
-            newAngle = selectMan->angleFromPoint(pos, anchorPoint) - mRotatedAngle;
-        }
-
-        selectMan->adjustSelection(pos, mOffset, newAngle, rotationIncrement);
-    }
-    else // there is nothing selected
-    {
-        selectMan->setMoveMode(MoveMode::NONE);
-    }
 }
 
 void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer)
@@ -250,11 +272,84 @@ void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod
 
     selectMan->setTransformAnchor(selectMan->getSelectionAnchorPoint());
     selectMan->setDragOrigin(pos);
-    mOffset = selectMan->myTranslation();
+    // mOffset = selectMan->myTranslation();
 
     if(selectMan->getMoveMode() == MoveMode::ROTATION) {
         mRotatedAngle = selectMan->angleFromPoint(pos, selectMan->currentTransformAnchor()) - selectMan->myRotation();
     }
+}
+
+void MoveTool::transformSelection(PointerEvent* event)
+{
+    transformSelection(event, *mEditor->select()->currentSelectionBitmapEditor());
+}
+
+void MoveTool::transformSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor)
+{
+    if (selectionEditor.somethingSelected())
+    {
+        const Qt::KeyboardModifiers keyMod = event->modifiers();
+        const MoveMode moveMode = selectionEditor.moveMode();
+
+        selectionEditor.maintainAspectRatio(keyMod == Qt::ShiftModifier);
+        selectionEditor.lockMovementToAxis(keyMod == Qt::ShiftModifier);
+
+        // TODO: set delta for offset.
+        // selectionEditor.adjustCurrentSelection(event->canvasPos(), QPoint(), newAngle, rotationIncrement);
+        switch (moveMode)
+        {
+        case MoveMode::MIDDLE: {
+            translateSelection(event, selectionEditor);
+            break;
+        }
+        case MoveMode::TOPLEFT:
+        case MoveMode::TOPRIGHT:
+        case MoveMode::BOTTOMRIGHT:
+        case MoveMode::BOTTOMLEFT: {
+            // adjustScaleFromCurrentAnchorPoint(selectionPolygon, currentPoint);
+            break;
+        }
+        case MoveMode::ROTATION: {
+            rotateSelection(event, selectionEditor);
+            break;
+        }
+        default:
+            break;
+        }
+        selectionEditor.calculateSelectionTransformation();
+    }
+    else // there is nothing selected
+    {
+        selectionEditor.setMoveMode(MoveMode::NONE);
+    }
+}
+
+void MoveTool::translateSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor)
+{
+    QPointF delta = QPointF(mDragState.dx, mDragState.dy);
+
+
+    // qDebug() << newPos;
+    // selectionEditor.setTransformAnchor(selectionEditor.getSelectionAnchorPoint());
+    selectionEditor.adjustTranslation(event->canvasPos(), delta);
+}
+
+void MoveTool::rotateSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor)
+{
+    if (selectionEditor.moveMode() != MoveMode::ROTATION) {
+        return;
+    }
+
+    int rotationIncrement = 0;
+    if (event->modifiers() & Qt::ShiftModifier)
+    {
+        rotationIncrement = mRotationIncrementPref;
+    }
+
+    QPointF anchorPoint = selectionEditor.currentAnchorPoint();
+    qreal newAngle = selectionEditor.angleFromPoint(event->canvasPos(), anchorPoint) - mRotatedAngle;
+
+    selectionEditor.rotate(newAngle, rotationIncrement);
 }
 
 /**

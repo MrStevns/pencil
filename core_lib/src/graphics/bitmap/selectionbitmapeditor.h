@@ -23,7 +23,7 @@ public:
     void setTransform(const QTransform& transform);
 
     void translate(const QPointF& point);
-    void rotate(qreal rotationAngle, qreal lockedAngle);
+    void rotate(qreal rotationAngle, qreal angleIncrement);
     void scale(qreal scaleX, qreal scaleY);
 
     QPointF mapToSelection(const QPointF& point) const;
@@ -73,6 +73,7 @@ public:
     void resetTransformation();
     void resetSelectionProperties();
 
+    void adjustTranslation(const QPointF& currentPoint, const QPointF& offset);
     void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
 
     bool somethingSelected() const;
@@ -81,7 +82,7 @@ public:
 
     void setSmoothTransform(bool smooth);
 
-    bool isValid() { return mIsValid; }
+    bool isValid() const { return mIsValid; }
     void invalidate();
     void invalidateBitmapCache();
 

@@ -152,6 +152,13 @@ QPointF SelectionManager::currentTransformAnchor() const
     }
 }
 
+SelectionBitmapEditor* SelectionManager::currentSelectionBitmapEditor()
+{
+    if (!bitmapSelection.isValid()) { return nullptr; }
+
+    return &bitmapSelection;
+}
+
 QPointF SelectionManager::getSelectionAnchorPoint() const
 {
     switch (mWorkingLayer->type())

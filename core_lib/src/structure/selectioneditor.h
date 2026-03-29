@@ -49,7 +49,7 @@ public:
     void adjustScaleFromCurrentAnchorPoint(const QPolygonF& polygon, const QPointF& currentPoint);
     void adjustTranslation(const QPointF& currentPoint, const QPointF& offset);
     void translate(QPointF point);
-    void rotate(qreal angle, qreal lockedAngle);
+    void rotate(qreal angle, qreal angleIncrement);
     void scale(qreal sX, qreal sY);
     void maintainAspectRatio(bool state) { mAspectRatioFixed = state; }
 
