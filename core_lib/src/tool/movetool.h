@@ -33,6 +33,9 @@ struct DragState
     QPointF startPos;
     qreal dx, dy;
 
+    TransformMode transformMode = TransformMode::NONE;
+    DragHandle dragHandle = DragHandle::NONE;
+
     DragState() = default;
 };
 
@@ -43,6 +46,7 @@ public:
     explicit MoveTool(QObject* parent);
     QCursor cursor() override;
 
+    QCursor cursorForDragHandle(DragHandle handle) const;
     QCursor cursor(MoveMode mode) const;
     ToolType type() const override;
 
@@ -61,6 +65,9 @@ public:
     void transformSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor);
 
 private:
+
+    void resolveCursorState(PointerEvent* event, Layer* layer);
+    QCursor cursorForSelectionState(PointerEvent* event, SelectionBitmapEditor& editor);
 
     void applyTransformation();
     void updateSettings(const SETTING setting);
@@ -85,6 +92,8 @@ private:
     DragState mDragState;
 
     const UndoSaveState* mUndoSaveState = nullptr;
+
+    QCursor mCursorCache;
 };
 
 #endif

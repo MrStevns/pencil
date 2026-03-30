@@ -38,6 +38,8 @@ signals:
 
 protected:
     TransformToolProperties mSettings;
+
+    qreal mHandleThreshold = 10;
 };
 
 #endif // TRANSFORMTOOL_H

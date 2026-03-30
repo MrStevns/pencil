@@ -120,17 +120,6 @@ void SelectionManager::setSelectionTransform(const QTransform& transform)
     }
 }
 
-bool SelectionManager::isOutsideSelectionArea(const QPointF& point) const
-{
-    switch (mWorkingLayer->type())
-    {
-    case Layer::BITMAP:
-        return bitmapSelection.isOutsideSelectionArea(point);
-    default:
-        return true;
-    }
-}
-
 void SelectionManager::deleteSelection()
 {
     emit needDeleteSelection();
@@ -181,25 +170,14 @@ QPolygonF SelectionManager::getSelectionPolygon() const
     }
 }
 
-MoveMode SelectionManager::resolveMoveModeForPoint(const QPointF& point) const
+DragHandle SelectionManager::resolveHandleMode(const QPointF& point, qreal tolerance) const
 {
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.resolveMoveModeForAnchorInRange(point, mSelectionTolerance * editor()->viewScaleInversed());
+        return bitmapSelection.resolveHandleMode(point, tolerance);
     default:
-        return MoveMode::NONE;
-    }
-}
-
-void SelectionManager::setMoveModeForAnchorInRange(const QPointF& point)
-{
-    switch (mWorkingLayer->type())
-    {
-    case Layer::BITMAP:
-        return bitmapSelection.setMoveMode(resolveMoveModeForPoint(point));
-    default:
-        return;
+        return DragHandle::NONE;
     }
 }
 
@@ -244,28 +222,6 @@ void SelectionManager::lockMovementToAxis(bool state)
         return bitmapSelection.lockMovementToAxis(state);
     default:
         return;
-    }
-}
-
-void SelectionManager::setMoveMode(const MoveMode moveMode)
-{
-    switch (mWorkingLayer->type())
-    {
-    case Layer::BITMAP:
-        return bitmapSelection.setMoveMode(moveMode);
-    default:
-        return;
-    }
-}
-
-MoveMode SelectionManager::getMoveMode() const
-{
-    switch (mWorkingLayer->type())
-    {
-    case Layer::BITMAP:
-        return bitmapSelection.moveMode();
-    default:
-        return MoveMode::NONE;
     }
 }
 

@@ -74,12 +74,6 @@ public:
      *  @param state */
     void lockMovementToAxis(bool state);
 
-    /** @brief Checks if the point is over a handle (corner) or body and sets the MoveMode accordingly. */
-    void setMoveModeForAnchorInRange(const QPointF& point);
-
-    MoveMode getMoveMode() const;
-    void setMoveMode(const MoveMode moveMode);
-
     bool somethingSelected() const;
     bool isSelectionValid() const;
 
@@ -95,8 +89,6 @@ public:
     void resetSelectionProperties();
     void deleteSelection();
 
-    bool isOutsideSelectionArea(const QPointF& point) const;
-
     qreal selectionTolerance() const;
 
     QPointF currentTransformAnchor() const;
@@ -104,7 +96,7 @@ public:
 
     void setTransformAnchor(const QPointF& point);
 
-    MoveMode resolveMoveModeForPoint(const QPointF& point) const;
+    DragHandle resolveHandleMode(const QPointF& point, qreal tolerance) const;
 
     QRectF mySelectionRect() const;
     qreal myRotation() const;

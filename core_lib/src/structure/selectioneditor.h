@@ -22,6 +22,8 @@ GNU General Public License for more details.
 #include <QTransform>
 #include <QList>
 
+#include "pencildef.h"
+
 enum class SelectionEvent {
     NONE,
     CHANGED,
@@ -41,12 +43,10 @@ public:
 
     void resetState();
 
-    // QTransform selectionTransform() const { return mCommonState.selectionTransform; }
-    // void setSelectionTransform(const QTransform& transform) { mCommonState.selectionTransform = transform; }
     void resetTransformation();
     void setTransform(const QTransform& transform);
 
-    void adjustFromAnchorPoint(const QPolygonF& polygon, const QPointF& currentPoint);
+    void scaleAroundAnchorPoint(DragHandle handle, const QPolygonF& polygon, const QPointF& currentPoint);
     void adjustTranslation(const QPointF& currentPoint, const QPointF& offset);
     void translate(QPointF point);
     void rotate(qreal angle, qreal angleIncrement);
@@ -63,15 +63,14 @@ public:
      */
     QPointF alignedPositionToAxis(QPointF currentPoint) const;
 
-    MoveMode getMoveMode() const { return mMoveMode; }
-    void setMoveMode(const MoveMode moveMode) { mMoveMode = moveMode; }
+    bool isHandleInRange(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const;
 
-    MoveMode resolveMoveModeForAnchorInRange(const QPointF &point, const QPolygonF& polygon, qreal selectionTolerance) const;
+    DragHandle resolveHandleMode(const QPointF &point, const QPolygonF& polygon, qreal selectionTolerance) const;
 
     QPointF currentAnchorPoint() const { return mState->anchorPoint; }
     void setTransformAnchor(const QPointF& point);
 
-    bool isOutsideSelection(const QPointF& point, const QPolygonF& polygon) const;
+    bool isOutsideSelection(const QPointF& point, const QPolygonF& polygon, qreal threshold) const;
 
     qreal myRotation() const { return mState->rotatedAngle; }
     qreal myScaleX() const { return mState->scaleX; }
@@ -100,7 +99,7 @@ public:
     void onEvent(SelectionEvent event) const;
     void notify(SelectionEvent event) const;
 
-    QPointF resolveAnchorPoint(const QPolygonF& selectionPolygon) const;
+    QPointF resolveAnchorPoint(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const;
 
     void invalidate();
     bool isValid() { return mIsValid && mState != nullptr; }
@@ -111,8 +110,6 @@ private:
 private:
     SelectionState* mState = nullptr;
     QList<SelectionEventCallback> mObservers;
-
-    MoveMode mMoveMode = MoveMode::NONE;
 
     bool mIsValid = false;
     bool mAspectRatioFixed = false;

@@ -67,76 +67,91 @@ void SelectionEditor::setTransform(const QTransform& transform)
     mState->selectionTransform = transform;
 }
 
-MoveMode SelectionEditor::resolveMoveModeForAnchorInRange(const QPointF &point, const QPolygonF& polygon, qreal selectionTolerance) const
+DragHandle SelectionEditor::resolveHandleMode(const QPointF &point, const QPolygonF& polygon, qreal selectionTolerance) const
 {
     if (polygon.count() < 4)
     {
-        return MoveMode::NONE;
+        return DragHandle::NONE;
     }
 
     QPolygonF projectedPolygon = mapToSelection(polygon);
 
-    MoveMode moveMode = MoveMode::NONE;
+    DragHandle moveMode = DragHandle::NONE;
     if (QLineF(point, projectedPolygon[0]).length() < selectionTolerance)
     {
-        moveMode = MoveMode::TOPLEFT;
+        moveMode = DragHandle::TOP_LEFT;
     }
     else if (QLineF(point, projectedPolygon[1]).length() < selectionTolerance)
     {
-        moveMode = MoveMode::TOPRIGHT;
+        moveMode = DragHandle::TOP_RIGHT;
     }
     else if (QLineF(point, projectedPolygon[2]).length() < selectionTolerance)
     {
-        moveMode = MoveMode::BOTTOMRIGHT;
+        moveMode = DragHandle::BOTTOM_RIGHT;
     }
     else if (QLineF(point, projectedPolygon[3]).length() < selectionTolerance)
     {
-        moveMode = MoveMode::BOTTOMLEFT;
+        moveMode = DragHandle::BOTTOM_LEFT;
     }
     else if (projectedPolygon.containsPoint(point, Qt::WindingFill))
     {
-        moveMode = MoveMode::MIDDLE;
-    }
-    else
-    {
-        moveMode = MoveMode::NONE;
+        moveMode = DragHandle::CENTER;
     }
 
     return moveMode;
 }
 
-QPointF SelectionEditor::resolveAnchorPoint(const QPolygonF& selectionPolygon) const
+bool SelectionEditor::isHandleInRange(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const
+{
+    if (!mIsValid) { return false; }
+
+    QPolygonF projectedPolygon = mapToSelection(selectionPolygon);
+    for (QPointF point : projectedPolygon)
+    {
+        if (QLineF(currentPoint, point).length() < tolerance) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+QPointF SelectionEditor::resolveAnchorPoint(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const
 {
     QPointF anchorPoint;
     if (selectionPolygon.count() < 3) { return anchorPoint; }
 
-    if (mMoveMode == MoveMode::BOTTOMRIGHT)
-    {
-        anchorPoint = selectionPolygon[0];
-    }
-    else if (mMoveMode == MoveMode::BOTTOMLEFT)
-    {
-        anchorPoint = selectionPolygon[1];
-    }
-    else if (mMoveMode == MoveMode::TOPLEFT)
+    QPolygonF projectedPolygon = mapToSelection(selectionPolygon);
+
+    if (QLineF(currentPoint, projectedPolygon[0]).length() < tolerance)
     {
         anchorPoint = selectionPolygon[2];
     }
-    else if (mMoveMode == MoveMode::TOPRIGHT)
+    else if (QLineF(currentPoint, projectedPolygon[1]).length() < tolerance)
     {
         anchorPoint = selectionPolygon[3];
+    }
+    else if (QLineF(currentPoint, projectedPolygon[2]).length() < tolerance)
+    {
+        anchorPoint = selectionPolygon[0];
+    }
+    else if (QLineF(currentPoint, projectedPolygon[3]).length() < tolerance)
+    {
+        anchorPoint = selectionPolygon[1];
     } else {
         anchorPoint = selectionPolygon.boundingRect().center();
     }
+
     return anchorPoint;
 }
 
-bool SelectionEditor::isOutsideSelection(const QPointF &point, const QPolygonF& polygon) const
+bool SelectionEditor::isOutsideSelection(const QPointF &point, const QPolygonF& polygon, qreal threshold) const
 {
-    return (!mapToSelection(polygon).containsPoint(point.toPoint(), Qt::WindingFill)) && getMoveMode() == MoveMode::NONE;
+    bool inRange = isHandleInRange(point, polygon, threshold);
+    return (!mapToSelection(polygon).containsPoint(point.toPoint(), Qt::WindingFill)) && !inRange;
 }
 
-void SelectionEditor::adjustFromAnchorPoint(const QPolygonF& polygon, const QPointF& currentPoint)
+void SelectionEditor::scaleAroundAnchorPoint(DragHandle handle, const QPolygonF& polygon, const QPointF& currentPoint)
 {
     QPolygonF projectedPolygon = mapToSelection(polygon);
     QVector2D currentPVec = QVector2D(currentPoint);
@@ -147,19 +162,19 @@ void SelectionEditor::adjustFromAnchorPoint(const QPolygonF& polygon, const QPoi
     QVector2D staticXAnchor;
     QVector2D staticYAnchor;
     QVector2D movingAnchor;
-    if (mMoveMode == MoveMode::TOPLEFT) {
+    if (handle == DragHandle::TOP_LEFT) {
         movingAnchor = QVector2D(projectedPolygon[0]);
         staticXAnchor = QVector2D(projectedPolygon[1]);
         staticYAnchor = QVector2D(projectedPolygon[3]);
-    } else if (mMoveMode == MoveMode::TOPRIGHT) {
+    } else if (handle == DragHandle::TOP_RIGHT) {
         movingAnchor = QVector2D(projectedPolygon[1]);
         staticXAnchor = QVector2D(projectedPolygon[0]);
         staticYAnchor = QVector2D(projectedPolygon[2]);
-    } else if (mMoveMode == MoveMode::BOTTOMRIGHT) {
+    } else if (handle == DragHandle::BOTTOM_RIGHT) {
         movingAnchor = QVector2D(projectedPolygon[2]);
         staticXAnchor = QVector2D(projectedPolygon[3]);
         staticYAnchor = QVector2D(projectedPolygon[1]);
-    } else {
+    } else { // BOTTOM_LEFT
         movingAnchor = QVector2D(projectedPolygon[3]);
         staticXAnchor = QVector2D(projectedPolygon[2]);
         staticYAnchor = QVector2D(projectedPolygon[0]);
@@ -238,7 +253,6 @@ qreal SelectionEditor::angleFromPoint(const QPointF& point, const QPointF& ancho
 void SelectionEditor::deselect()
 {
     resetState();
-    mMoveMode = MoveMode::NONE;
     mIsValid = false;
     mAspectRatioFixed = false;
     mLockAxis = false;

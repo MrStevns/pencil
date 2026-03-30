@@ -33,6 +33,11 @@ class SelectTool : public TransformTool
 {
     Q_OBJECT
 
+    struct DragState
+    {
+        DragHandle dragHandle = DragHandle::NONE;
+    };
+
 public:
     explicit SelectTool(QObject* parent = nullptr);
 
@@ -49,7 +54,7 @@ private:
 
     bool keyPressEvent(QKeyEvent* event) override;
 
-    void controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint, Layer::LAYER_TYPE layerType);
+    void controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint);
 
     void beginSelection(Layer* currentLayer, const QPointF& pos);
     void keepSelection(Layer* currentLayer);
@@ -63,13 +68,16 @@ private:
     // the selection rectangle in mousePressEvent.
     QPointF mAnchorOriginPoint;
     QPointF mPressPoint;
-    MoveMode mMoveMode;
-    MoveMode mStartMoveMode = MoveMode::NONE;
     QRectF mSelectionRect;
 
     QPixmap mCursorPixmap = QPixmap(24, 24);
 
+    bool mSelectionStarted = false;
+    DragState mDragState;
+
     const UndoSaveState* mUndoState = nullptr;
+
+    qreal mAnchorSize = 10;
 };
 
 #endif

@@ -25,7 +25,7 @@ public:
     void translate(const QPointF& point);
     void rotate(qreal rotationAngle, qreal angleIncrement);
     void scale(qreal scaleX, qreal scaleY);
-    void scaleAroundAnchorPoint(QPointF position);
+    void scaleAroundAnchorPoint(DragHandle handle, QPointF position);
 
     QPointF mapToSelection(const QPointF& point) const;
 
@@ -48,11 +48,9 @@ public:
 
     void flipSelection(bool flipVertical);
 
-    void setMoveMode(MoveMode mode);
-    MoveMode moveMode() const;
-    MoveMode resolveMoveModeForAnchorInRange(const QPointF& point, qreal selectionTolerance) const;
+    DragHandle resolveHandleMode(const QPointF& point, qreal selectionTolerance) const;
 
-    QPointF resolveAnchorPoint() const;
+    QPointF resolveAnchorPoint(const QPointF& currentPoint, const qreal tolerance) const;
     QPointF currentAnchorPoint() const;
     void setTransformAnchor(const QPointF& anchorPoint);
 
@@ -73,11 +71,9 @@ public:
     void resetTransformation();
     void resetSelectionProperties();
 
-    // void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
-
     bool somethingSelected() const;
     bool isSelectionValid() const;
-    bool isOutsideSelectionArea(const QPointF& point) const;
+    bool isOutsideSelectionArea(const QPointF& point, qreal tolerance) const;
 
     void setSmoothTransform(bool smooth);
 

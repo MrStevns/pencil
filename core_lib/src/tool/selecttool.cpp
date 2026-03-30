@@ -52,32 +52,32 @@ QCursor SelectTool::cursor()
     // Don't update cursor while we're moving the selection
     if (mScribbleArea->isPointerInUse()) { return QCursor(mCursorPixmap); }
 
-    MoveMode mode = mEditor->select()->getMoveMode();
-
     mCursorPixmap.fill(QColor(255, 255, 255, 0));
     QPainter cursorPainter(&mCursorPixmap);
     cursorPainter.setRenderHint(QPainter::Antialiasing);
 
+    DragHandle mode = mDragState.dragHandle;
+
     switch(mode)
     {
-    case MoveMode::TOPLEFT:
-    case MoveMode::BOTTOMRIGHT:
+    case DragHandle::TOP_LEFT:
+    case DragHandle::BOTTOM_RIGHT:
     {
         cursorPainter.drawPixmap(QPoint(6,6),QPixmap("://icons/general/cursor-diagonal-left.svg"));
         break;
     }
-    case MoveMode::TOPRIGHT:
-    case MoveMode::BOTTOMLEFT:
+    case DragHandle::TOP_RIGHT:
+    case DragHandle::BOTTOM_LEFT:
     {
         cursorPainter.drawPixmap(QPoint(6,6),QPixmap("://icons/general/cursor-diagonal-right.svg"));
         break;
     }
-    case MoveMode::MIDDLE:
+    case DragHandle::CENTER:
     {
         cursorPainter.drawPixmap(QPoint(6,6),QPixmap("://icons/general/cursor-move.svg"));
         break;
     }
-    case MoveMode::NONE:
+    case DragHandle::NONE:
         cursorPainter.drawPixmap(QPoint(3,3), QPixmap(":icons/general/cross.png"));
         break;
     default:
@@ -91,7 +91,7 @@ void SelectTool::beginSelection(Layer* currentLayer, const QPointF& pos)
 {
     auto selectMan = mEditor->select();
 
-    if (selectMan->somethingSelected() && mMoveMode != MoveMode::NONE) // there is something selected
+    if (selectMan->somethingSelected() && mSelectionStarted) // there is something selected
     {
         if (currentLayer->type() == Layer::VECTOR)
         {
@@ -101,14 +101,17 @@ void SelectTool::beginSelection(Layer* currentLayer, const QPointF& pos)
             }
         }
         mSelectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
+        mDragState.dragHandle = mEditor->select()->resolveHandleMode(pos, selectMan->selectionTolerance());
     }
     else
     {
+        mDragState.dragHandle = DragHandle::TOP_LEFT;
         selectMan->setSelection(QRectF(pos.x(), pos.y(), 0, 0));
         mAnchorOriginPoint = pos;
     }
 
     mScribbleArea->updateFrame();
+    mScribbleArea->updateToolCursor();
 }
 
 void SelectTool::pointerPressEvent(PointerEvent* event)
@@ -117,7 +120,6 @@ void SelectTool::pointerPressEvent(PointerEvent* event)
     if (currentLayer == nullptr) return;
     if (!currentLayer->isPaintable()) { return; }
     if (event->button() != Qt::LeftButton) { return; }
-    auto selectMan = mEditor->select();
 
     mUndoState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
 
@@ -126,10 +128,6 @@ void SelectTool::pointerPressEvent(PointerEvent* event)
     if (currentLayer->type() == Layer::BITMAP) {
         mPressPoint = mPressPoint.toPoint();
     }
-
-    selectMan->setMoveModeForAnchorInRange(mPressPoint);
-    mMoveMode = selectMan->getMoveMode();
-    mStartMoveMode = mMoveMode;
 
     beginSelection(currentLayer, mPressPoint);
 }
@@ -147,13 +145,9 @@ void SelectTool::pointerMoveEvent(PointerEvent* event)
         canvasPos = canvasPos.toPoint();
     }
 
-    selectMan->setMoveModeForAnchorInRange(canvasPos);
-    mMoveMode = selectMan->getMoveMode();
-    mScribbleArea->updateToolCursor();
-
     if (mScribbleArea->isPointerInUse())
     {
-        controlOffsetOrigin(canvasPos, mAnchorOriginPoint, currentLayer->type());
+        controlOffsetOrigin(canvasPos, mAnchorOriginPoint);
 
         if (currentLayer->type() == Layer::VECTOR)
         {
@@ -162,14 +156,20 @@ void SelectTool::pointerMoveEvent(PointerEvent* event)
                 vectorImage->select(selectMan->mapToSelection(QPolygonF(selectMan->mySelectionRect())).boundingRect());
             }
         }
+    } else {
+        mDragState.dragHandle = selectMan->resolveHandleMode(canvasPos, selectMan->selectionTolerance());
     }
 
+    mScribbleArea->updateToolCursor();
     mScribbleArea->updateFrame();
 }
 
 void SelectTool::pointerReleaseEvent(PointerEvent* event)
 {
     Layer* currentLayer = mEditor->layers()->currentLayer();
+
+    mDragState = DragState();
+
     if (currentLayer == nullptr) return;
     if (event->button() != Qt::LeftButton) return;
 
@@ -188,17 +188,16 @@ void SelectTool::pointerReleaseEvent(PointerEvent* event)
     else if (maybeDeselect(canvasPos))
     {
         mEditor->deselectAll();
+        mSelectionStarted = false;
     }
     else
     {
         mSelectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
         keepSelection(currentLayer);
+        mSelectionStarted = true;
     }
 
     mEditor->undoRedo()->record(mUndoState, typeName());
-
-    mStartMoveMode = MoveMode::NONE;
-    mMoveMode = MoveMode::NONE;
 
     mScribbleArea->updateToolCursor();
     mScribbleArea->updateFrame();
@@ -206,7 +205,7 @@ void SelectTool::pointerReleaseEvent(PointerEvent* event)
 
 bool SelectTool::maybeDeselect(const QPointF& pos)
 {
-    return ((!isSelectionPointValid(pos) && mEditor->select()->getMoveMode() == MoveMode::NONE)
+    return ((!isSelectionPointValid(pos) && mDragState.dragHandle == DragHandle::NONE)
             || !mEditor->select()->mySelectionRect().isValid());
 }
 
@@ -225,23 +224,23 @@ void SelectTool::keepSelection(Layer* currentLayer)
     }
 }
 
-void SelectTool::controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint, Layer::LAYER_TYPE layerType)
+void SelectTool::controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint)
 {
     QRectF newSelection;
-    if (mStartMoveMode == MoveMode::NONE) {
+    if (!mSelectionStarted) {
         // When the selection is none, manage the selection Origin
         newSelection = QRectF(currentPoint, anchorPoint);
     } else {
         newSelection = mSelectionRect;
 
         QPointF offset = offsetFromPressPos(currentPoint);
-        if (mStartMoveMode == MoveMode::TOPLEFT) {
+        if (mDragState.dragHandle == DragHandle::TOP_LEFT) {
             newSelection.adjust(offset.x(), offset.y(), 0, 0);
-        } else if (mStartMoveMode == MoveMode::TOPRIGHT) {
+        } else if (mDragState.dragHandle == DragHandle::TOP_RIGHT) {
             newSelection.adjust(0, offset.y(), offset.x(), 0);
-        } else if (mStartMoveMode == MoveMode::BOTTOMRIGHT) {
+        } else if (mDragState.dragHandle == DragHandle::BOTTOM_RIGHT) {
             newSelection.adjust(0, 0, offset.x(), offset.y());
-        } else if (mStartMoveMode == MoveMode::BOTTOMLEFT) {
+        } else if (mDragState.dragHandle == DragHandle::BOTTOM_LEFT) {
             newSelection.adjust(offset.x(), 0, 0, offset.y());
         } else {
             newSelection.translate(offset.x(), offset.y());

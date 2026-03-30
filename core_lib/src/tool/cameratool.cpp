@@ -431,7 +431,6 @@ CameraMoveType CameraTool::getPathMoveMode(const LayerCamera* layerCamera, int f
     return CameraMoveType::NONE;
 }
 
-
 QPointF CameraTool::localRotationHandlePoint(const QPoint& origin, const QTransform& localT, const qreal objectScale, float worldScale) const
 {
     // Calculate the perceived distance from the frame to the handle

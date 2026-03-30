@@ -88,6 +88,24 @@ enum class LayerVisibility
     // If you are adding new enum values here, be sure to update the ++/-- operators below
 };
 
+enum class TransformMode
+{
+    NONE,
+    TRANSLATE,
+    ROTATE,
+    SCALE,
+};
+
+enum class DragHandle
+{
+    NONE,
+    CENTER,
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT
+};
+
 inline LayerVisibility& operator++(LayerVisibility& vis)
 {
     return vis = (vis == LayerVisibility::ALL) ? LayerVisibility::CURRENTONLY : static_cast<LayerVisibility>(static_cast<int>(vis)+1);
