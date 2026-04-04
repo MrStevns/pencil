@@ -2,19 +2,12 @@
 #define MOVEMODE_H
 
 
-enum class MoveMode {
-    MIDDLE,
-    TOPLEFT,
-    TOPRIGHT,
-    BOTTOMLEFT,
-    BOTTOMRIGHT,
-    ROTATION,
+enum class PerspectiveMode {
+    NONE,
     PERSP_SINGLE,
     PERSP_LEFT,
     PERSP_RIGHT,
     PERSP_MIDDLE,
-    CENTER,
-    NONE
 };
 
 #endif // MOVEMODE_H

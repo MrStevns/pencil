@@ -28,26 +28,61 @@ GNU General Public License for more details.
 class Layer;
 class VectorImage;
 
-struct DragState
-{
-    QPointF startPos;
-    qreal dx, dy;
-
-    TransformMode transformMode = TransformMode::NONE;
-    DragHandle dragHandle = DragHandle::NONE;
-
-    DragState() = default;
-};
-
 class MoveTool : public TransformTool
 {
+
+    enum InteractionMode
+    {
+        NONE,
+        SELECTION,
+        PERSPECTIVE_OVERLAY
+    };
+
+    struct DragState
+    {
+        QPointF startPos;
+        qreal dx, dy;
+
+        TransformMode transformMode = TransformMode::NONE;
+        DragHandle dragHandle = DragHandle::NONE;
+
+        DragState() = default;
+    };
+
+    struct BitmapTool
+    {
+        QPointF currentPoint;
+        qreal rotatedAngle = 0.0;
+
+        DragState dragState;
+
+        const UndoSaveState* undoSaveState = nullptr;
+    };
+
+    struct VectorTool
+    {
+        QPointF mCurrentPoint;
+        qreal mRotatedAngle = 0.0;
+        int mRotationIncrementPref = 0;
+
+        DragState mDragState;
+
+        const UndoSaveState* mUndoSaveState = nullptr;
+    };
+
+    struct PerspectiveOverlayTool
+    {
+        PerspectiveMode perspectiveMode;
+    };
+
     Q_OBJECT
 public:
     explicit MoveTool(QObject* parent);
     QCursor cursor() override;
 
     QCursor cursorForDragHandle(DragHandle handle) const;
-    QCursor cursor(MoveMode mode) const;
+    QCursor cursorForPerspective(PerspectiveMode mode) const;
+
     ToolType type() const override;
 
     ToolProperties& toolProperties() override { return mSettings.toolProperties(); }
@@ -60,14 +95,24 @@ public:
     bool leavingThisTool() override;
     bool isActive() const override;
 
-    void translateSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor);
-    void rotateSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor);
-    void transformSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor);
+    void translateSelection(PointerEvent* event, const DragState& dragState, SelectionEditor& selectionEditor);
+    void rotateSelection(PointerEvent* event, const DragState& dragState, qreal previousRotation, SelectionEditor& selectionEditor);
+    void transformSelection(PointerEvent* event, BitmapTool& tool);
 
 private:
 
-    void resolveCursorState(PointerEvent* event, Layer* layer);
-    QCursor cursorForSelectionState(PointerEvent* event, SelectionBitmapEditor& editor);
+    void setDragStateBitmapTool(PointerEvent* event, BitmapTool& tool, const SelectionBitmapEditor& selectionEditor);
+    InteractionMode resolveInteractionMode() const;
+
+    void pressEventPerspectiveTool(PointerEvent* event, PerspectiveOverlayTool& tool);
+    void pressEventVectorTool(PointerEvent* event, VectorTool& tool);
+
+    void pressEventBitmapTool(PointerEvent* event, BitmapTool& tool);
+    void moveEventBitmapTool(PointerEvent* event, BitmapTool& tool);
+    void releaseEventBitmapTool(PointerEvent* event, BitmapTool& tool);
+
+    // void resolveCursorState(PointerEvent* event, Layer* layer);
+    // QCursor cursorForSelectionState(PointerEvent* event);
 
     void applyTransformation();
     void updateSettings(const SETTING setting);
@@ -76,7 +121,6 @@ private:
     void beginInteraction(PointerEvent* event, SelectionBitmapEditor& selectionEditor);
 
     void createVectorSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
-    void transformSelection(PointerEvent* event);
     void storeClosestVectorCurve(const QPointF& pos, Layer* layer);
 
     void setCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
@@ -84,16 +128,14 @@ private:
 
     Layer* currentPaintableLayer();
 
-    QPointF mCurrentPoint;
-    qreal mRotatedAngle = 0.0;
     int mRotationIncrementPref = 0;
-    MoveMode mPerspMode;
-
-    DragState mDragState;
-
-    const UndoSaveState* mUndoSaveState = nullptr;
 
     QCursor mCursorCache;
+    bool mCursorCacheInvalid = true;
+
+    BitmapTool mBitmapTool;
+    VectorTool mVectorTool;
+    PerspectiveOverlayTool mPerspectiveTool;
 };
 
 #endif

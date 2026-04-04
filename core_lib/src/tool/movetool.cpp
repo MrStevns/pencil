@@ -69,18 +69,15 @@ void MoveTool::loadSettings()
 
 QCursor MoveTool::cursor()
 {
-    MoveMode mode = MoveMode::NONE;
-    SelectionManager* selectMan = mEditor->select();
-    if (selectMan->somethingSelected())
-    {
-        return mCursorCache;
+    if (mCursorCacheInvalid) {
+        if (mEditor->select()->somethingSelected()) {
+            mCursorCache = cursorForDragHandle(mBitmapTool.dragState.dragHandle);
+        } else if (mEditor->overlays()->anyOverlayEnabled()) {
+            mCursorCache = cursorForPerspective(mPerspectiveTool.perspectiveMode);
+        }
+        mCursorCacheInvalid = false;
     }
-    else if (mEditor->overlays()->anyOverlayEnabled())
-    {
-        mode = mPerspMode;
-    }
-
-    return cursor(mode);
+    return mCursorCache;
 }
 
 void MoveTool::updateSettings(const SETTING setting)
@@ -104,6 +101,18 @@ void MoveTool::updateSettings(const SETTING setting)
     }
 }
 
+MoveTool::InteractionMode MoveTool::resolveInteractionMode() const
+{
+    if (mEditor->select()->somethingSelected())
+    {
+        return InteractionMode::SELECTION;
+    } else if (mEditor->overlays()->anyOverlayEnabled()) {
+        return InteractionMode::PERSPECTIVE_OVERLAY;
+    }
+
+    return InteractionMode::NONE;
+}
+
 void MoveTool::pointerPressEvent(PointerEvent* event)
 {
     Layer* currentLayer = currentPaintableLayer();
@@ -116,36 +125,36 @@ void MoveTool::pointerPressEvent(PointerEvent* event)
         switch (currentLayer->type())
         {
             case Layer::BITMAP:
-                beginInteraction(event, *mEditor->select()->currentSelectionBitmapEditor());
+                pressEventBitmapTool(event, mBitmapTool);
                 break;
             case Layer::VECTOR:
-                // TODO:
+                pressEventVectorTool(event, mVectorTool);
+                break;
             case Layer::CAMERA:
+                // pressEventCameraTool(event, mCameraTool);
                 // TODO:
+                break;
+            default:
+                break;
         }
-
     }
     else if (mEditor->overlays()->anyOverlayEnabled())
     {
-        LayerCamera* layerCam = mEditor->layers()->getCameraLayerBelow(mEditor->currentLayerIndex());
-        Q_ASSERT(layerCam);
-
-        mPerspMode = mEditor->overlays()->getMoveModeForPoint(event->canvasPos(), layerCam->getViewAtFrame(mEditor->currentFrame()));
-        mEditor->overlays()->setMoveMode(mPerspMode);
-        QPoint mapped = layerCam->getViewAtFrame(mEditor->currentFrame()).map(event->canvasPos()).toPoint();
-        mEditor->overlays()->updatePerspective(mapped);
+        pressEventPerspectiveTool(event, mPerspectiveTool);
     }
 
     mEditor->updateFrame();
 }
 
-void MoveTool::beginInteraction(PointerEvent* event, SelectionBitmapEditor& selectionEditor)
+void MoveTool::pressEventBitmapTool(PointerEvent* event, BitmapTool& tool)
 {
+    auto selectionEditor = mEditor->select()->currentSelectionBitmapEditor();
     const QPointF& canvasPos = event->canvasPos();
     const Qt::KeyboardModifiers keyMod = event->modifiers();
-    if (!selectionEditor.mySelectionRect().isNull())
+
+    if (!selectionEditor->mySelectionRect().isNull())
     {
-        mUndoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
+        tool.undoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
         mEditor->backup(typeName());
     }
 
@@ -153,40 +162,84 @@ void MoveTool::beginInteraction(PointerEvent* event, SelectionBitmapEditor& sele
 
     if (keyMod != Qt::ShiftModifier)
     {
-        if (selectionEditor.isOutsideSelectionArea(canvasPos, handleTolerance))
+        if (selectionEditor->isOutsideSelectionArea(canvasPos, handleTolerance))
         {
             applyTransformation();
             mEditor->deselectAll();
         }
     }
 
-    selectionEditor.setTransformAnchor(selectionEditor.resolveAnchorPoint(canvasPos, handleTolerance));
+    selectionEditor->setTransformAnchor(selectionEditor->resolveAnchorPoint(canvasPos, handleTolerance));
 
-    mDragState.dragHandle = selectionEditor.resolveHandleMode(canvasPos, handleTolerance);
-    mDragState.startPos = event->canvasPos();
-    mDragState.dx = selectionEditor.myTranslation().x();
-    mDragState.dy = selectionEditor.myTranslation().y();
+    setDragStateBitmapTool(event, tool, *selectionEditor);
+}
 
-    if (mDragState.dragHandle == DragHandle::NONE) {
+void MoveTool::setDragStateBitmapTool(PointerEvent* event, BitmapTool& tool, const SelectionBitmapEditor& selectionEditor)
+{
+    const qreal handleTolerance = mEditor->select()->selectionTolerance();
+    const Qt::KeyboardModifiers keyMod = event->modifiers();
+
+    const QPointF& canvasPos = event->canvasPos();
+    tool.dragState.dragHandle = selectionEditor.resolveHandleMode(event->canvasPos(), handleTolerance);
+    tool.dragState.startPos = event->canvasPos();
+    tool.dragState.dx = selectionEditor.myTranslation().x();
+    tool.dragState.dy = selectionEditor.myTranslation().y();
+
+    if (tool.dragState.dragHandle == DragHandle::NONE) {
         return;
     }
 
-    if (mDragState.dragHandle == DragHandle::CENTER) {
+    if (tool.dragState.dragHandle == DragHandle::CENTER) {
 
         if (keyMod == Qt::ControlModifier) {
-            mRotatedAngle = selectionEditor.angleFromPoint(canvasPos, selectionEditor.currentAnchorPoint()) - selectionEditor.myRotation();
-            mDragState.transformMode = TransformMode::ROTATE;
+            tool.rotatedAngle = selectionEditor.angleFromPoint(canvasPos, selectionEditor.currentAnchorPoint()) - selectionEditor.myRotation();
+            tool.dragState.transformMode = TransformMode::ROTATE;
         }
         else
         {
-            mDragState.transformMode = TransformMode::TRANSLATE;
+            tool.dragState.transformMode = TransformMode::TRANSLATE;
         }
     } else {
-        mDragState.transformMode = TransformMode::SCALE;
+        tool.dragState.transformMode = TransformMode::SCALE;
     }
 }
 
+void MoveTool::pressEventVectorTool(PointerEvent* event, VectorTool& tool)
+{
+
+}
+
+void MoveTool::pressEventPerspectiveTool(PointerEvent* event, PerspectiveOverlayTool& tool)
+{
+    LayerCamera* layerCam = mEditor->layers()->getCameraLayerBelow(mEditor->currentLayerIndex());
+    Q_ASSERT(layerCam);
+
+    tool.perspectiveMode = mEditor->overlays()->getMoveModeForPoint(event->canvasPos(), layerCam->getViewAtFrame(mEditor->currentFrame()));
+    mEditor->overlays()->setPerspectiveMode(tool.perspectiveMode);
+    QPoint mapped = layerCam->getViewAtFrame(mEditor->currentFrame()).map(event->canvasPos()).toPoint();
+    mEditor->overlays()->updatePerspective(mapped);
+}
+
 void MoveTool::pointerMoveEvent(PointerEvent* event)
+{
+    Layer* currentLayer = currentPaintableLayer();
+    if (currentLayer == nullptr) return;
+
+    switch (currentLayer->type())
+    {
+        case Layer::BITMAP:
+            moveEventBitmapTool(event, mBitmapTool);
+            break;
+        case Layer::VECTOR:
+            break;
+        default:
+            break;
+    }
+
+    mScribbleArea->updateFrame();
+}
+
+void MoveTool::moveEventBitmapTool(PointerEvent *event, BitmapTool& tool)
 {
     Layer* currentLayer = currentPaintableLayer();
     if (currentLayer == nullptr) return;
@@ -202,45 +255,53 @@ void MoveTool::pointerMoveEvent(PointerEvent* event)
         }
         if (selectMan->somethingSelected())
         {
-            transformSelection(event);
+            transformSelection(event, tool);
         }
     }
     else
     {
         // update cursor to reflect selection corner interaction
-        mDragState.dragHandle = selectMan->resolveHandleMode(event->canvasPos(), selectMan->selectionTolerance());
-
-        if (selectMan->somethingSelected()) {
-            resolveCursorState(event, currentLayer);
-        }
-        mScribbleArea->updateToolCursor();
+        tool.dragState.dragHandle = selectMan->resolveHandleMode(event->canvasPos(), selectMan->selectionTolerance());
 
         if (mEditor->overlays()->anyOverlayEnabled())
         {
             LayerCamera *layerCam = mEditor->layers()->getCameraLayerBelow(mEditor->currentLayerIndex());
             Q_ASSERT(layerCam);
-            mPerspMode = mEditor->overlays()->getMoveModeForPoint(event->canvasPos(), layerCam->getViewAtFrame(mEditor->currentFrame()));
+            mPerspectiveTool.perspectiveMode = mEditor->overlays()->getMoveModeForPoint(event->canvasPos(), layerCam->getViewAtFrame(mEditor->currentFrame()));
         }
 
-        if (currentLayer->type() == Layer::VECTOR)
-        {
-            storeClosestVectorCurve(event->canvasPos(), currentLayer);
+        if (selectMan->somethingSelected() || mEditor->overlays()->anyOverlayEnabled()) {
+            mCursorCacheInvalid = true;
+            mScribbleArea->updateToolCursor();
         }
     }
-
-    mEditor->updateFrame();
 }
 
-void MoveTool::pointerReleaseEvent(PointerEvent*)
+void MoveTool::pointerReleaseEvent(PointerEvent* event)
 {
-    mEditor->undoRedo()->record(mUndoSaveState, typeName());
+    Layer* currentLayer = currentPaintableLayer();
+    if (currentLayer == nullptr) return;
 
-    mDragState = DragState();
+    switch (currentLayer->type())
+    {
+        case Layer::BITMAP:
+            releaseEventBitmapTool(event, mBitmapTool);
+            break;
+        default:
+            break;
+    }
+}
+
+void MoveTool::releaseEventBitmapTool(PointerEvent*, BitmapTool& tool)
+{
+    mEditor->undoRedo()->record(tool.undoSaveState, typeName());
+
+    tool.dragState = DragState();
 
     if (mEditor->overlays()->anyOverlayEnabled())
     {
-        mEditor->overlays()->setMoveMode(MoveMode::NONE);
-        mPerspMode = MoveMode::NONE;
+        mEditor->overlays()->setPerspectiveMode(PerspectiveMode::NONE);
+        mPerspectiveTool.perspectiveMode = PerspectiveMode::NONE;
     }
 
     auto selectMan = mEditor->select();
@@ -249,22 +310,6 @@ void MoveTool::pointerReleaseEvent(PointerEvent*)
 
     mScribbleArea->updateToolCursor();
     emit mEditor->frameModified(mEditor->currentFrame());
-}
-
-void MoveTool::resolveCursorState(PointerEvent* event, Layer* layer)
-{
-    switch (layer->type())
-    {
-    case Layer::BITMAP: {
-            mCursorCache = cursorForSelectionState(event, *mEditor->select()->currentSelectionBitmapEditor());
-            break;
-        }
-    }
-}
-
-QCursor MoveTool::cursorForSelectionState(PointerEvent* event, SelectionBitmapEditor& editor)
-{
-    return cursorForDragHandle(mDragState.dragHandle);
 }
 
 void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer)
@@ -286,11 +331,11 @@ void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod
     //     }
     // }
 
-    // if (selectMan->getMoveMode() == MoveMode::MIDDLE)
+    // if (selectMan->getMoveMode() == PerspectiveMode::MIDDLE)
     // {
     //     if (keyMod == Qt::ControlModifier) // --- rotation
     //     {
-    //         selectMan->setMoveMode(MoveMode::ROTATION);
+    //         selectMan->setMoveMode(PerspectiveMode::ROTATION);
     //     }
     // }
 
@@ -302,56 +347,52 @@ void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod
     // selectMan->setTransformAnchor(selectMan->getSelectionAnchorPoint());
     // // mOffset = selectMan->myTranslation();
 
-    // if(selectMan->getMoveMode() == MoveMode::ROTATION) {
+    // if(selectMan->getMoveMode() == PerspectiveMode::ROTATION) {
     //     mRotatedAngle = selectMan->angleFromPoint(pos, selectMan->currentTransformAnchor()) - selectMan->myRotation();
     // }
 }
 
-void MoveTool::transformSelection(PointerEvent* event)
+void MoveTool::transformSelection(PointerEvent* event, BitmapTool& tool)
 {
-    transformSelection(event, *mEditor->select()->currentSelectionBitmapEditor());
-}
-
-void MoveTool::transformSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor)
-{
-    if (selectionEditor.somethingSelected())
+    auto selectionEditor = mEditor->select()->currentSelectionBitmapEditor();
+    if (selectionEditor->somethingSelected())
     {
         const Qt::KeyboardModifiers keyMod = event->modifiers();
 
-        selectionEditor.maintainAspectRatio(keyMod == Qt::ShiftModifier);
-        selectionEditor.lockMovementToAxis(keyMod == Qt::ShiftModifier);
+        selectionEditor->maintainAspectRatio(keyMod == Qt::ShiftModifier);
+        selectionEditor->lockMovementToAxis(keyMod == Qt::ShiftModifier);
 
-        switch (mDragState.transformMode)
+        switch (tool.dragState.transformMode)
         {
         case TransformMode::TRANSLATE: {
-            translateSelection(event, selectionEditor);
+            translateSelection(event, tool.dragState, selectionEditor->transformEditor());
             break;
         }
         case TransformMode::SCALE: {
-            selectionEditor.scaleAroundAnchorPoint(mDragState.dragHandle, event->canvasPos());
+            selectionEditor->scaleAroundAnchorPoint(tool.dragState.dragHandle, event->canvasPos());
             break;
         }
         case TransformMode::ROTATE: {
-            rotateSelection(event, selectionEditor);
+            rotateSelection(event, tool.dragState, tool.rotatedAngle, selectionEditor->transformEditor());
             break;
         }
         default:
             break;
         }
-        selectionEditor.calculateSelectionTransformation();
+        selectionEditor->calculateSelectionTransformation();
     }
 }
 
-void MoveTool::translateSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor)
+void MoveTool::translateSelection(PointerEvent* event, const DragState& dragState, SelectionEditor& selectionEditor)
 {
-    QPointF delta = event->canvasPos() - mDragState.startPos;
-    QPointF newPos = QPointF(mDragState.dx, mDragState.dy) + delta;
+    QPointF delta = event->canvasPos() - dragState.startPos;
+    QPointF newPos = QPointF(dragState.dx, dragState.dy) + delta;
     selectionEditor.setTranslation(newPos);
 }
 
-void MoveTool::rotateSelection(PointerEvent* event, SelectionBitmapEditor& selectionEditor)
+void MoveTool::rotateSelection(PointerEvent* event, const DragState& dragState, qreal previousRotation, SelectionEditor& selectionEditor)
 {
-    if (mDragState.transformMode != TransformMode::ROTATE) {
+    if (dragState.transformMode != TransformMode::ROTATE) {
         return;
     }
 
@@ -362,7 +403,7 @@ void MoveTool::rotateSelection(PointerEvent* event, SelectionBitmapEditor& selec
     }
 
     QPointF anchorPoint = selectionEditor.currentAnchorPoint();
-    qreal newAngle = selectionEditor.angleFromPoint(event->canvasPos(), anchorPoint) - mRotatedAngle;
+    qreal newAngle = selectionEditor.angleFromPoint(event->canvasPos(), anchorPoint) - previousRotation;
 
     selectionEditor.rotate(newAngle, rotationIncrement);
 }
@@ -440,7 +481,7 @@ void MoveTool::applyTransformation()
     if (selectMan->somethingSelected()) {
         selectMan->setSelection(selectMan->mapToSelection(QPolygonF(selectMan->mySelectionRect())).boundingRect());
     }
-    mRotatedAngle = 0;
+    // mRotatedAngle = 0;
 }
 
 bool MoveTool::leavingThisTool()
@@ -457,7 +498,7 @@ bool MoveTool::leavingThisTool()
 
 bool MoveTool::isActive() const {
     return mScribbleArea->isPointerInUse() &&
-           (mEditor->select()->somethingSelected() || mEditor->overlays()->getMoveMode() != MoveMode::NONE);
+           (mEditor->select()->somethingSelected() || mEditor->overlays()->getPerspectiveMode() != PerspectiveMode::NONE);
 }
 
 Layer* MoveTool::currentPaintableLayer()
@@ -505,7 +546,7 @@ QCursor MoveTool::cursorForDragHandle(DragHandle handle) const
     return QCursor(cursorPixmap);
 }
 
-QCursor MoveTool::cursor(MoveMode mode) const
+QCursor MoveTool::cursorForPerspective(PerspectiveMode mode) const
 {
     QPixmap cursorPixmap = QPixmap(24, 24);
 
@@ -515,33 +556,10 @@ QCursor MoveTool::cursor(MoveMode mode) const
 
     switch(mode)
     {
-    case MoveMode::PERSP_LEFT:
-    case MoveMode::PERSP_RIGHT:
-    case MoveMode::PERSP_MIDDLE:
-    case MoveMode::PERSP_SINGLE:
-    {
-        cursorPainter.drawImage(QPoint(6,6),QImage("://icons/general/cursor-move.svg"));
-        break;
-    }
-    case MoveMode::TOPLEFT:
-    case MoveMode::BOTTOMRIGHT:
-    {
-        cursorPainter.drawImage(QPoint(6,6),QImage("://icons/general/cursor-diagonal-left.svg"));
-        break;
-    }
-    case MoveMode::TOPRIGHT:
-    case MoveMode::BOTTOMLEFT:
-    {
-        cursorPainter.drawImage(QPoint(6,6),QImage("://icons/general/cursor-diagonal-right.svg"));
-        break;
-    }
-    case MoveMode::ROTATION:
-    {
-        cursorPainter.drawImage(QPoint(6,6),QImage("://icons/general/cursor-rotate.svg"));
-        break;
-    }
-    case MoveMode::MIDDLE:
-    case MoveMode::CENTER:
+    case PerspectiveMode::PERSP_LEFT:
+    case PerspectiveMode::PERSP_RIGHT:
+    case PerspectiveMode::PERSP_MIDDLE:
+    case PerspectiveMode::PERSP_SINGLE:
     {
         cursorPainter.drawImage(QPoint(6,6),QImage("://icons/general/cursor-move.svg"));
         break;

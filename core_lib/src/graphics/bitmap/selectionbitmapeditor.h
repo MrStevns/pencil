@@ -81,6 +81,8 @@ public:
     void invalidate();
     void invalidateBitmapCache();
 
+    SelectionEditor& transformEditor() { return mCommonEditor; }
+
 private:
     /// Computes two rectangles, a rectangle for the aligned bounds of the image used to create the image
     /// and a second bound used to allow smooth sub pixel transformation

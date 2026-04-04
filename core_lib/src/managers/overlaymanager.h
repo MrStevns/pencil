@@ -44,13 +44,13 @@ public:
 
     void workingLayerChanged(Layer *) override;
 
-    MoveMode getMoveModeForPoint(const QPointF& pos, const QTransform& transform);
+    PerspectiveMode getMoveModeForPoint(const QPointF& pos, const QTransform& transform);
     double selectionTolerance();
 
     void updatePerspective(const QPointF& point);
 
-    MoveMode getMoveMode() const { return mMoveMode; }
-    void setMoveMode(MoveMode mode) { mMoveMode = mode; }
+    PerspectiveMode getPerspectiveMode() const { return mMoveMode; }
+    void setPerspectiveMode(PerspectiveMode mode) { mMoveMode = mode; }
     QPointF getSinglePerspectivePoint() const { return mSinglePerspectivePoint; }
     QPointF getLeftPerspectivePoint() const { return mLeftPerspectivePoint; }
     QPointF getRightPerspectivePoint() const { return mRightPerspectivePoint; }
@@ -66,7 +66,7 @@ private:
     QPointF mRightPerspectivePoint;    // Left, right and middle are for
     QPointF mMiddlePerspectivePoint;   // two and three point perspective
 
-    MoveMode mMoveMode = MoveMode::NONE;
+    PerspectiveMode mMoveMode = PerspectiveMode::NONE;
 
     bool mSinglePerspectiveEnabled = false;
     bool mTwoPointPerspectiveEnabled = false;

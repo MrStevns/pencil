@@ -71,26 +71,26 @@ void OverlayManager::settingsUpdated(SETTING setting, bool state)
     }
 }
 
-MoveMode OverlayManager::getMoveModeForPoint(const QPointF& pos, const QTransform& transform)
+PerspectiveMode OverlayManager::getMoveModeForPoint(const QPointF& pos, const QTransform& transform)
 {
     const double calculatedSelectionTol = selectionTolerance();
-    MoveMode mode = MoveMode::NONE;
+    PerspectiveMode mode = PerspectiveMode::NONE;
 
     if (mSinglePerspectiveEnabled && QLineF(pos, transform.inverted().map(mSinglePerspectivePoint)).length() < calculatedSelectionTol)
     {
-        mode = MoveMode::PERSP_SINGLE;
+        mode = PerspectiveMode::PERSP_SINGLE;
     }
     else if ((mTwoPointPerspectiveEnabled || mThreePointPerspectiveEnabled) && QLineF(pos, transform.inverted().map(mLeftPerspectivePoint)).length() < calculatedSelectionTol)
     {
-        mode = MoveMode::PERSP_LEFT;
+        mode = PerspectiveMode::PERSP_LEFT;
     }
     else if ((mTwoPointPerspectiveEnabled || mThreePointPerspectiveEnabled) && QLineF(pos, transform.inverted().map(mRightPerspectivePoint)).length() < calculatedSelectionTol)
     {
-        mode = MoveMode::PERSP_RIGHT;
+        mode = PerspectiveMode::PERSP_RIGHT;
     }
     else if (mThreePointPerspectiveEnabled && QLineF(pos, transform.inverted().map(mMiddlePerspectivePoint)).length() < calculatedSelectionTol)
     {
-        mode = MoveMode::PERSP_MIDDLE;
+        mode = PerspectiveMode::PERSP_MIDDLE;
     }
 
     return mode;
@@ -104,18 +104,18 @@ double OverlayManager::selectionTolerance()
 void OverlayManager::updatePerspective(const QPointF& point)
 {
     switch (mMoveMode) {
-    case MoveMode::PERSP_SINGLE:
+    case PerspectiveMode::PERSP_SINGLE:
         mSinglePerspectivePoint = point;
         break;
-    case MoveMode::PERSP_LEFT:
+    case PerspectiveMode::PERSP_LEFT:
         mLeftPerspectivePoint = point;
         mRightPerspectivePoint = QPointF(getRightPerspectivePoint().x(), point.y());
         break;
-    case MoveMode::PERSP_RIGHT:
+    case PerspectiveMode::PERSP_RIGHT:
         mRightPerspectivePoint = point;
         mLeftPerspectivePoint = QPointF(getLeftPerspectivePoint().x(), point.y());
         break;
-    case MoveMode::PERSP_MIDDLE:
+    case PerspectiveMode::PERSP_MIDDLE:
         mMiddlePerspectivePoint = point;
         break;
     default:
