@@ -162,13 +162,13 @@ DragHandle SelectionBitmapEditor::resolveHandleMode(const QPointF& point, qreal 
 QPointF SelectionBitmapEditor::currentAnchorPoint() const
 {
     if (!mIsValid) { return QPointF(); }
-    return mCommonEditor.currentAnchorPoint().toPoint();
+    return mCommonEditor.currentAnchorPoint();
 }
 
 void SelectionBitmapEditor::setTransformAnchor(const QPointF& anchorPoint)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.setTransformAnchor(anchorPoint.toPoint());
+    mCommonEditor.setTransformAnchor(anchorPoint);
 }
 
 void SelectionBitmapEditor::translate(const QPointF& point)
