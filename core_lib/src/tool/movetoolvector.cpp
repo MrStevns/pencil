@@ -21,14 +21,59 @@ GNU General Public License for more details.
 #include "editor.h"
 #include "vectorimage.h"
 #include "selectionmanager.h"
+#include "layermanager.h"
+
+#include "pointerevent.h"
+
+void MoveTool::vectorToolPressEvent(PointerEvent* event, VectorTool& tool)
+{
+    auto selectionEditor = mEditor->select()->currentSelectionBitmapEditor();
+    const QPointF& canvasPos = event->canvasPos();
+    const Qt::KeyboardModifiers keyMod = event->modifiers();
+
+    if (!selectionEditor->mySelectionRect().isNull())
+    {
+        tool.undoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
+        mEditor->backup(typeName());
+    }
+
+    const qreal handleTolerance = mEditor->select()->selectionTolerance();
+
+    if (keyMod != Qt::ShiftModifier)
+    {
+        if (selectionEditor->isOutsideSelectionArea(canvasPos, handleTolerance))
+        {
+            applyTransformation();
+            mEditor->deselectAll();
+        }
+    }
+
+    selectionEditor->setTransformAnchor(selectionEditor->resolveAnchorPoint(canvasPos, handleTolerance));
+
+    vectorToolCreateSelection(canvasPos, keyMod);
+
+    // vectorToolSetDragState(event, *selectionEditor, tool);
+    setTransformMode(event, tool.dragState.dragHandle, selectionEditor->transformEditor(), tool.transformState);
+}
+
+// void MoveTool::bitmapToolSetDragState(PointerEvent* event, const SelectionVectorEditor& selectionEditor, VectorTool& tool)
+// {
+//     const qreal handleTolerance = mEditor->select()->selectionTolerance();
+
+//     tool.dragState.dragHandle = selectionEditor.resolveHandleMode(event->canvasPos(), handleTolerance);
+//     tool.dragState.startPos = event->canvasPos();
+//     tool.dragState.dx = selectionEditor.myTranslation().x();
+//     tool.dragState.dy = selectionEditor.myTranslation().y();
+// }
 
 /**
  * @brief MoveTool::vectorToolCreateSelection
  * In vector the selection rectangle is based on the bounding box of the curves
  * We can therefore create a selection just by clicking near/on a curve
  */
-void MoveTool::vectorToolCreateSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer)
+void MoveTool::vectorToolCreateSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod)
 {
+    auto layer = mEditor->layers()->currentLayer();
     assert(layer->type() == Layer::VECTOR);
     LayerVector* vecLayer = static_cast<LayerVector*>(layer);
     VectorImage* vectorImage = vecLayer->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);

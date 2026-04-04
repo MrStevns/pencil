@@ -106,10 +106,9 @@ void MoveTool::pointerPressEvent(PointerEvent* event)
     Layer* currentLayer = currentPaintableLayer();
     if (currentLayer == nullptr) return;
 
-    mEditor->select()->setSmoothTransform(transformSettings().antiAliasingEnabled());
-
     if (mEditor->select()->somethingSelected())
     {
+        mEditor->select()->setSmoothTransform(transformSettings().antiAliasingEnabled());
         switch (currentLayer->type())
         {
             case Layer::BITMAP:
@@ -132,22 +131,6 @@ void MoveTool::pointerPressEvent(PointerEvent* event)
     }
 
     mEditor->updateFrame();
-}
-
-void MoveTool::vectorToolPressEvent(PointerEvent* event, VectorTool& tool)
-{
-
-}
-
-void MoveTool::pressEventPerspectiveTool(PointerEvent* event, PerspectiveOverlayTool& tool)
-{
-    LayerCamera* layerCam = mEditor->layers()->getCameraLayerBelow(mEditor->currentLayerIndex());
-    Q_ASSERT(layerCam);
-
-    tool.perspectiveMode = mEditor->overlays()->getMoveModeForPoint(event->canvasPos(), layerCam->getViewAtFrame(mEditor->currentFrame()));
-    mEditor->overlays()->setPerspectiveMode(tool.perspectiveMode);
-    QPoint mapped = layerCam->getViewAtFrame(mEditor->currentFrame()).map(event->canvasPos()).toPoint();
-    mEditor->overlays()->updatePerspective(mapped);
 }
 
 void MoveTool::pointerMoveEvent(PointerEvent* event)
@@ -207,46 +190,6 @@ void MoveTool::pointerReleaseEvent(PointerEvent* event)
     }
 }
 
-void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer)
-{
-    // auto selectMan = mEditor->select();
-    // QRectF selectionRect = selectMan->mySelectionRect();
-    // if (!selectionRect.isNull())
-    // {
-    //     mUndoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
-    //     mEditor->backup(typeName());
-    // }
-
-    // if (keyMod != Qt::ShiftModifier)
-    // {
-    //     if (selectMan->isOutsideSelectionArea(pos))
-    //     {
-    //         applyTransformation();
-    //         mEditor->deselectAll();
-    //     }
-    // }
-
-    // if (selectMan->getMoveMode() == PerspectiveMode::MIDDLE)
-    // {
-    //     if (keyMod == Qt::ControlModifier) // --- rotation
-    //     {
-    //         selectMan->setMoveMode(PerspectiveMode::ROTATION);
-    //     }
-    // }
-
-    // if (layer->type() == Layer::VECTOR)
-    // {
-    //     createVectorSelection(pos, keyMod, layer);
-    // }
-
-    // selectMan->setTransformAnchor(selectMan->getSelectionAnchorPoint());
-    // // mOffset = selectMan->myTranslation();
-
-    // if(selectMan->getMoveMode() == PerspectiveMode::ROTATION) {
-    //     mRotatedAngle = selectMan->angleFromPoint(pos, selectMan->currentTransformAnchor()) - selectMan->myRotation();
-    // }
-}
-
 void MoveTool::translateSelection(const PointerEvent* event, const DragState& dragState, SelectionEditor& selectionEditor)
 {
     QPointF delta = event->canvasPos() - dragState.startPos;
@@ -287,7 +230,6 @@ void MoveTool::applyTransformation()
     if (selectMan->somethingSelected()) {
         selectMan->setSelection(selectMan->mapToSelection(QPolygonF(selectMan->mySelectionRect())).boundingRect());
     }
-    // mRotatedAngle = 0;
 }
 
 bool MoveTool::leavingThisTool()

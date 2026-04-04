@@ -53,7 +53,7 @@ void MoveTool::bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool)
 
     selectionEditor->setTransformAnchor(selectionEditor->resolveAnchorPoint(canvasPos, handleTolerance));
 
-    bitmapToolSetDragState(event, tool, *selectionEditor);
+    bitmapToolSetDragState(event, *selectionEditor, tool);
     setTransformMode(event, tool.dragState.dragHandle, selectionEditor->transformEditor(), tool.transformState);
 }
 
@@ -115,7 +115,7 @@ void MoveTool::bitmapToolReleaseEvent(PointerEvent*, BitmapTool& tool)
     emit mEditor->frameModified(mEditor->currentFrame());
 }
 
-void MoveTool::bitmapToolSetDragState(PointerEvent* event, BitmapTool& tool, const SelectionBitmapEditor& selectionEditor)
+void MoveTool::bitmapToolSetDragState(PointerEvent* event, const SelectionBitmapEditor& selectionEditor, BitmapTool& tool)
 {
     const qreal handleTolerance = mEditor->select()->selectionTolerance();
 

@@ -93,14 +93,15 @@ public:
 
 private: // Bitmap
     void bitmapToolTransformSelection(const PointerEvent* event, const BitmapTool& tool);
-    void bitmapToolSetDragState(PointerEvent* event, BitmapTool& tool, const SelectionBitmapEditor& selectionEditor);
+    void bitmapToolSetDragState(PointerEvent* event, const SelectionBitmapEditor& selectionEditor, BitmapTool& tool);
     void bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool);
     void bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool);
     void bitmapToolReleaseEvent(PointerEvent* event, BitmapTool& tool);
 
 private: // Vector
+    // void vectorToolSetDragState(PointerEvent* event, const SelectionVectorEditor& selectionEditor, VectorTool& tool);
     void vectorToolPressEvent(PointerEvent* event, VectorTool& tool);
-    void vectorToolCreateSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
+    void vectorToolCreateSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod);
     void vectorToolStoreClosestCurve(const QPointF& pos, Layer* layer);
 
     void vectorToolSetCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
@@ -113,8 +114,6 @@ private:
     void setTransformMode(const PointerEvent* event, const DragHandle& dragHandle, const SelectionEditor& selectionEditor, TransformState& transformState);
     void applyTransformation();
     void updateSettings(const SETTING setting);
-
-    void beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
 
     Layer* currentPaintableLayer();
 
