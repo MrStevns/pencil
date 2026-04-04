@@ -10,7 +10,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-#include "selectioneditor.h"
+#include "selectiontransformeditor.h"
 
 #include "mathutils.h"
 
@@ -19,12 +19,12 @@ GNU General Public License for more details.
 
 #include <QPolygon>
 
-SelectionEditor::SelectionEditor()
+SelectionTransformEditor::SelectionTransformEditor()
 {
     mIsValid = false;
 }
 
-SelectionEditor::SelectionEditor(SelectionState* state) : mState(state)
+SelectionTransformEditor::SelectionTransformEditor(SelectionTransformState* state) : mState(state)
 {
     if (!state) {
         invalidate(); return;
@@ -34,40 +34,36 @@ SelectionEditor::SelectionEditor(SelectionState* state) : mState(state)
     mIsValid = true;
 }
 
-SelectionEditor::~SelectionEditor()
+SelectionTransformEditor::~SelectionTransformEditor()
 {
     qDebug() << "SelectionEditor destroyed";
 
     invalidate();
 }
 
-void SelectionEditor::invalidate()
+void SelectionTransformEditor::invalidate()
 {
     mIsValid = false;
     mState = nullptr;
-
-    if (mObservers.count() > 0) {
-        mObservers.clear();
-    }
 }
 
-void SelectionEditor::resetState()
+void SelectionTransformEditor::resetState()
 {
     if (!mState) { return; }
-    *mState = SelectionState();
+    *mState = SelectionTransformState();
 }
 
-void SelectionEditor::resetTransformation()
+void SelectionTransformEditor::resetTransformation()
 {
     mState->selectionTransform.reset();
 }
 
-void SelectionEditor::setTransform(const QTransform& transform)
+void SelectionTransformEditor::setTransform(const QTransform& transform)
 {
     mState->selectionTransform = transform;
 }
 
-DragHandle SelectionEditor::resolveHandleMode(const QPointF &point, const QPolygonF& polygon, qreal selectionTolerance) const
+DragHandle SelectionTransformEditor::resolveHandleMode(const QPointF &point, const QPolygonF& polygon, qreal selectionTolerance) const
 {
     if (polygon.count() < 4)
     {
@@ -101,7 +97,7 @@ DragHandle SelectionEditor::resolveHandleMode(const QPointF &point, const QPolyg
     return moveMode;
 }
 
-bool SelectionEditor::isHandleInRange(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const
+bool SelectionTransformEditor::isHandleInRange(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const
 {
     if (!mIsValid) { return false; }
 
@@ -116,7 +112,7 @@ bool SelectionEditor::isHandleInRange(const QPointF& currentPoint, const QPolygo
     return false;
 }
 
-QPointF SelectionEditor::resolveAnchorPoint(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const
+QPointF SelectionTransformEditor::resolveAnchorPoint(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const
 {
     QPointF anchorPoint;
     if (selectionPolygon.count() < 3) { return anchorPoint; }
@@ -145,13 +141,13 @@ QPointF SelectionEditor::resolveAnchorPoint(const QPointF& currentPoint, const Q
     return anchorPoint;
 }
 
-bool SelectionEditor::isOutsideSelection(const QPointF &point, const QPolygonF& polygon, qreal threshold) const
+bool SelectionTransformEditor::isOutsideSelection(const QPointF &point, const QPolygonF& polygon, qreal threshold) const
 {
     bool inRange = isHandleInRange(point, polygon, threshold);
     return (!mapToSelection(polygon).containsPoint(point.toPoint(), Qt::WindingFill)) && !inRange;
 }
 
-void SelectionEditor::scaleAroundAnchorPoint(DragHandle handle, const QPolygonF& polygon, const QPointF& currentPoint)
+void SelectionTransformEditor::scaleAroundAnchorPoint(DragHandle handle, const QPolygonF& polygon, const QPointF& currentPoint)
 {
     QPolygonF projectedPolygon = mapToSelection(polygon);
     QVector2D currentPVec = QVector2D(currentPoint);
@@ -196,7 +192,7 @@ void SelectionEditor::scaleAroundAnchorPoint(DragHandle handle, const QPolygonF&
     scale(scaleX, scaleY);
 }
 
-void SelectionEditor::translate(QPointF newPos)
+void SelectionTransformEditor::translate(QPointF newPos)
 {
     if (mLockAxis) {
         newPos = alignedPositionToAxis(newPos);
@@ -205,7 +201,7 @@ void SelectionEditor::translate(QPointF newPos)
     mState->translation += newPos;
 }
 
-void SelectionEditor::rotate(qreal angle, qreal angleIncrement)
+void SelectionTransformEditor::rotate(qreal angle, qreal angleIncrement)
 {
     if (angleIncrement > 0) {
         mState->rotatedAngle = constrainRotationToAngle(angle, angleIncrement);
@@ -214,7 +210,7 @@ void SelectionEditor::rotate(qreal angle, qreal angleIncrement)
     }
 }
 
-void SelectionEditor::scale(qreal sX, qreal sY)
+void SelectionTransformEditor::scale(qreal sX, qreal sY)
 {
     // Enforce negative scaling when
     // deliberately trying to transform in negative space
@@ -240,26 +236,25 @@ void SelectionEditor::scale(qreal sX, qreal sY)
     mState->scaleY = sY;
 }
 
-int SelectionEditor::constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const
+int SelectionTransformEditor::constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const
 {
     return qRound(rotatedAngle / rotationIncrement) * rotationIncrement;
 }
 
-qreal SelectionEditor::angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const
+qreal SelectionTransformEditor::angleFromPoint(const QPointF& point, const QPointF& anchorPoint) const
 {
     return qRadiansToDegrees(MathUtils::getDifferenceAngle(mState->selectionTransform.map(anchorPoint), point));
 }
 
-void SelectionEditor::deselect()
+void SelectionTransformEditor::deselect()
 {
     resetState();
     mIsValid = false;
     mAspectRatioFixed = false;
     mLockAxis = false;
-    onEvent(SelectionEvent::CHANGED);
 }
 
-void SelectionEditor::setTransformAnchor(const QPointF& point)
+void SelectionTransformEditor::setTransformAnchor(const QPointF& point)
 {
     const QPointF& oldAnchorPoint = mState->anchorPoint;
     QPointF newPos = mapToSelection(point);
@@ -270,7 +265,7 @@ void SelectionEditor::setTransformAnchor(const QPointF& point)
     mState->anchorPoint = point;
 }
 
-void SelectionEditor::calculateSelectionTransformation()
+void SelectionTransformEditor::calculateSelectionTransformation()
 {
     QTransform t;
     t.translate(-mState->anchorPoint.x(), -mState->anchorPoint.y());
@@ -282,11 +277,9 @@ void SelectionEditor::calculateSelectionTransformation()
     QTransform s;
     s.scale(mState->scaleX, mState->scaleY);
     mState->selectionTransform = t * s * r * t2;
-
-    onEvent(SelectionEvent::CHANGED);
 }
 
-QPointF SelectionEditor::alignedPositionToAxis(QPointF currentPoint) const
+QPointF SelectionTransformEditor::alignedPositionToAxis(QPointF currentPoint) const
 {
     if (qAbs(currentPoint.y()) > qAbs(currentPoint.x())) {
         // Align to y axis
@@ -301,7 +294,7 @@ QPointF SelectionEditor::alignedPositionToAxis(QPointF currentPoint) const
  * @brief ScribbleArea::flipSelection
  * flip selection along the X or Y axis
 */
-void SelectionEditor::flipSelection(bool flipVertical)
+void SelectionTransformEditor::flipSelection(bool flipVertical)
 {
     if (flipVertical)
     {
@@ -314,21 +307,4 @@ void SelectionEditor::flipSelection(bool flipVertical)
     // TODO (MrStevns): Why is this needed, The transform anchor shouldn't be any different?
     // setTransformAnchor(mOriginalRect.center());
     calculateSelectionTransformation();
-    onEvent(SelectionEvent::CHANGED);
-}
-
-void SelectionEditor::subscribe(SelectionEventCallback callback)
-{
-    mObservers.append(callback);
-}
-
-void SelectionEditor::onEvent(SelectionEvent event) const
-{
-    notify(event);
-}
-
-void SelectionEditor::notify(SelectionEvent event) const {
-    for (auto& cb : mObservers) {
-        cb(event);
-    }
 }

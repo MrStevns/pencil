@@ -6,7 +6,7 @@
 #include <QPolygonF>
 #include <QImage>
 
-struct SelectionState {
+struct SelectionTransformState {
     qreal scaleX = 1;
     qreal scaleY = 1;
     QPointF translation;
@@ -31,7 +31,7 @@ struct SelectionBitmapState {
     QRect transformedRect;
     ///
 
-    SelectionState commonState;
+    SelectionTransformState transformState;
 
     // Padding to account for pixels being out of bound when rotating
     int boundsPadding = 2;

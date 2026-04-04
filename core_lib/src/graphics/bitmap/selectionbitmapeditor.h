@@ -1,7 +1,7 @@
 #ifndef SELECTIONBITMAPEDITOR_H
 #define SELECTIONBITMAPEDITOR_H
 
-#include "selectioneditor.h"
+#include "selectiontransformeditor.h"
 
 #include <QImage>
 
@@ -81,8 +81,8 @@ public:
     void invalidate();
     void invalidateBitmapCache();
 
-    SelectionEditor& editTransformEditor() { return mCommonEditor; }
-    const SelectionEditor& transformEditor() const { return mCommonEditor; }
+    SelectionTransformEditor& editTransformEditor() { return mTransformEditor; }
+    const SelectionTransformEditor& transformEditor() const { return mTransformEditor; }
 
 private:
     /// Computes two rectangles, a rectangle for the aligned bounds of the image used to create the image
@@ -106,7 +106,7 @@ private:
     bool mSmoothTransform = true;
     bool mIsValid = false;
     bool mCacheInvalidated = true;
-    SelectionEditor mCommonEditor;
+    SelectionTransformEditor mTransformEditor;
 
     /// Creates a copy of the editor based on the selection that was set
     void createImageCache();

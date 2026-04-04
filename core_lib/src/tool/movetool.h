@@ -87,9 +87,9 @@ public:
     bool leavingThisTool() override;
     bool isActive() const override;
 
-    void translateSelection(const PointerEvent* event, const DragState& dragState, SelectionEditor& selectionEditor);
-    void rotateSelection(const PointerEvent* event, const TransformState& transformState, SelectionEditor& selectionEditor);
-    void scaleAroundAnchorPoint(const PointerEvent* evet, const DragState& dragState, const QPolygonF& selectionPolygon, SelectionEditor& selectionEditor);
+    void translateSelection(const PointerEvent* event, const DragState& dragState, SelectionTransformEditor& selectionEditor);
+    void rotateSelection(const PointerEvent* event, const TransformState& transformState, SelectionTransformEditor& selectionEditor);
+    void scaleAroundAnchorPoint(const PointerEvent* evet, const DragState& dragState, const QPolygonF& selectionPolygon, SelectionTransformEditor& selectionEditor);
 
 private: // Bitmap
     void bitmapToolTransformSelection(const PointerEvent* event, const BitmapTool& tool);
@@ -111,7 +111,7 @@ private: // Perspective Overlay
     void pressEventPerspectiveTool(PointerEvent* event, PerspectiveOverlayTool& tool);
 
 private:
-    void setTransformMode(const PointerEvent* event, const DragHandle& dragHandle, const SelectionEditor& selectionEditor, TransformState& transformState);
+    void setTransformMode(const PointerEvent* event, const DragHandle& dragHandle, const SelectionTransformEditor& selectionEditor, TransformState& transformState);
     void applyTransformation();
     void updateSettings(const SETTING setting);
 

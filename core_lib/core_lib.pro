@@ -71,8 +71,8 @@ HEADERS +=  \
     src/structure/layersound.h \
     src/structure/layervector.h \
     src/structure/pegbaraligner.h \
-    src/structure/selectioneditor.h \
     src/structure/selectionstate.h \
+    src/structure/selectiontransformeditor.h \
     src/structure/soundclip.h \
     src/structure/object.h \
     src/structure/objectdata.h \
@@ -167,7 +167,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/structure/layervector.cpp \
     src/structure/object.cpp \
     src/structure/pegbaraligner.cpp \
-    src/structure/selectioneditor.cpp \
+    src/structure/selectiontransformeditor.cpp \
     src/structure/soundclip.cpp \
     src/structure/objectdata.cpp \
     src/structure/filemanager.cpp \

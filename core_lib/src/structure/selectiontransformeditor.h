@@ -10,8 +10,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-#ifndef SELECTIONEDITOR_H
-#define SELECTIONEDITOR_H
+#ifndef SELECTIONTRANSFORMEDITOR_H
+#define SELECTIONTRANSFORMEDITOR_H
 
 #include "movemode.h"
 #include "selectionstate.h"
@@ -24,19 +24,13 @@ GNU General Public License for more details.
 
 #include "pencildef.h"
 
-enum class SelectionEvent {
-    NONE,
-    CHANGED,
-    RESET
-};
-
-class SelectionEditor
+class SelectionTransformEditor
 {
 public:
 
-    SelectionEditor();
-    SelectionEditor(SelectionState* state);
-    ~SelectionEditor();
+    SelectionTransformEditor();
+    SelectionTransformEditor(SelectionTransformState* state);
+    ~SelectionTransformEditor();
 
     void flipSelection(bool flipVertical);
     void deselect();
@@ -93,12 +87,6 @@ public:
     /// This should be called to update the selection transform
     void calculateSelectionTransformation();
 
-    typedef std::function<void(SelectionEvent)> SelectionEventCallback;
-
-    void subscribe(SelectionEventCallback callback);
-    void onEvent(SelectionEvent event) const;
-    void notify(SelectionEvent event) const;
-
     QPointF resolveAnchorPoint(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const;
 
     void invalidate();
@@ -108,12 +96,11 @@ private:
     int constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const;
 
 private:
-    SelectionState* mState = nullptr;
-    QList<SelectionEventCallback> mObservers;
+    SelectionTransformState* mState = nullptr;
 
     bool mIsValid = false;
     bool mAspectRatioFixed = false;
     bool mLockAxis = false;
 };
 
-#endif // SELECTIONEDITOR_H
+#endif // SELECTIONTRANSFORMEDITOR_H
