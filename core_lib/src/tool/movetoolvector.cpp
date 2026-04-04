@@ -31,7 +31,7 @@ void MoveTool::vectorToolPressEvent(PointerEvent* event, VectorTool& tool)
     const QPointF& canvasPos = event->canvasPos();
     const Qt::KeyboardModifiers keyMod = event->modifiers();
 
-    if (!selectionEditor->mySelectionRect().isNull())
+    if (!selectionEditor->selectionRect().isNull())
     {
         tool.undoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
         mEditor->backup(typeName());

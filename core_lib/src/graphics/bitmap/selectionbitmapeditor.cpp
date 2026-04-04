@@ -71,45 +71,45 @@ void SelectionBitmapEditor::setSelection(const QPolygon& polygon)
     createImageCache();
 }
 
-QRect SelectionBitmapEditor::mySelectionRect() const
+QRect SelectionBitmapEditor::selectionRect() const
 {
     if (!mIsValid) { return QRect(); }
     return mState->selectionRect;
 }
 
-QPolygon SelectionBitmapEditor::mySelectionPolygon() const
+QPolygon SelectionBitmapEditor::selectionPolygon() const
 {
     if (!mIsValid) { return QPolygon(); }
 
     return mState->selectionPolygon;
 }
 
-qreal SelectionBitmapEditor::myRotation() const
+qreal SelectionBitmapEditor::rotation() const
 {
     if (!mIsValid) { return 0; }
     return mTransformEditor.myRotation();
 }
 
-qreal SelectionBitmapEditor::myScaleX() const
+qreal SelectionBitmapEditor::scaleX() const
 {
     if (!mIsValid) { return 1; }
     return mTransformEditor.myScaleX();
 }
 
-qreal SelectionBitmapEditor::myScaleY() const
+qreal SelectionBitmapEditor::scaleY() const
 {
     if (!mIsValid) { return 1; }
     return mTransformEditor.myScaleY();
 }
 
-QPointF SelectionBitmapEditor::myTranslation() const
+QPointF SelectionBitmapEditor::translation() const
 {
     if (!mIsValid) { return QPointF(); }
 
     return mTransformEditor.myTranslation().toPoint();
 }
 
-QTransform SelectionBitmapEditor::myTransform() const
+QTransform SelectionBitmapEditor::transform() const
 {
     if (!mIsValid) { return QTransform(); }
     return mTransformEditor.myTransform();

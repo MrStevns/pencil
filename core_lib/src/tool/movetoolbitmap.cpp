@@ -34,7 +34,7 @@ void MoveTool::bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool)
     const QPointF& canvasPos = event->canvasPos();
     const Qt::KeyboardModifiers keyMod = event->modifiers();
 
-    if (!selectionEditor->mySelectionRect().isNull())
+    if (!selectionEditor->selectionRect().isNull())
     {
         tool.undoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
         mEditor->backup(typeName());
@@ -121,8 +121,8 @@ void MoveTool::bitmapToolSetDragState(PointerEvent* event, const SelectionBitmap
 
     tool.dragState.dragHandle = selectionEditor.resolveHandleMode(event->canvasPos(), handleTolerance);
     tool.dragState.startPos = event->canvasPos();
-    tool.dragState.dx = selectionEditor.myTranslation().x();
-    tool.dragState.dy = selectionEditor.myTranslation().y();
+    tool.dragState.dx = selectionEditor.translation().x();
+    tool.dragState.dy = selectionEditor.translation().y();
 }
 
 void MoveTool::bitmapToolTransformSelection(const PointerEvent* event, const BitmapTool& tool)
@@ -142,7 +142,7 @@ void MoveTool::bitmapToolTransformSelection(const PointerEvent* event, const Bit
             break;
         }
         case TransformMode::SCALE: {
-            scaleAroundAnchorPoint(event, tool.dragState, selectionEditor->mySelectionPolygon(), selectionEditor->editTransformEditor());
+            scaleAroundAnchorPoint(event, tool.dragState, selectionEditor->selectionPolygon(), selectionEditor->editTransformEditor());
             break;
         }
         case TransformMode::ROTATE: {

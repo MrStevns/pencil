@@ -164,7 +164,7 @@ QPolygonF SelectionManager::getSelectionPolygon() const
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.mySelectionPolygon();
+        return bitmapSelection.selectionPolygon();
     default:
         return QPolygonF();
     }
@@ -274,7 +274,7 @@ QRectF SelectionManager::mySelectionRect() const {
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.mySelectionRect();
+            return bitmapSelection.selectionRect();
         default:
             return QRectF();
     }
@@ -284,7 +284,7 @@ qreal SelectionManager::myRotation() const {
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.myRotation();
+            return bitmapSelection.rotation();
         default:
         return 0;
     }
@@ -294,7 +294,7 @@ qreal SelectionManager::myScaleX() const {
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.myScaleX();
+            return bitmapSelection.scaleX();
         default:
         return 0;
     }
@@ -304,7 +304,7 @@ qreal SelectionManager::myScaleY() const {
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.myScaleY();
+            return bitmapSelection.scaleY();
         default:
         return 0;
     }
@@ -315,7 +315,7 @@ QPointF SelectionManager::myTranslation() const
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.myTranslation();
+            return bitmapSelection.translation();
         default:
         return QPointF();
     }
@@ -326,7 +326,7 @@ QTransform SelectionManager::selectionTransform() const
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.myTransform();
+            return bitmapSelection.transform();
         default:
             return QTransform();
     }

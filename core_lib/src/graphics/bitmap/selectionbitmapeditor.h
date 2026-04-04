@@ -38,13 +38,13 @@ public:
     void maintainAspectRatio(const bool state);
     void lockMovementToAxis(const bool state);
 
-    QRect mySelectionRect() const;
-    QPolygon mySelectionPolygon() const;
-    qreal myRotation() const;
-    qreal myScaleX() const;
-    qreal myScaleY() const;
-    QPointF myTranslation() const;
-    QTransform myTransform() const;
+    QRect selectionRect() const;
+    QPolygon selectionPolygon() const;
+    qreal rotation() const;
+    qreal scaleX() const;
+    qreal scaleY() const;
+    QPointF translation() const;
+    QTransform transform() const;
 
     void flipSelection(bool flipVertical);
 
@@ -113,8 +113,6 @@ private:
 
     SelectionBitmapState* mState = nullptr;
     BitmapImage* mBitmapImage = nullptr;
-
-    // std::unique_ptr<BitmapImage> mTransformCopyImage;
 };
 
 #endif // SELECTIONBITMAPEDITOR_H
