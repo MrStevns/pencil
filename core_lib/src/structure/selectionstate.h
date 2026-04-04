@@ -35,6 +35,8 @@ struct SelectionBitmapState {
 
     // Padding to account for pixels being out of bound when rotating
     int boundsPadding = 2;
+
+    bool smoothTransform = true;
 };
 
 #endif // SELECTIONSTATE_H

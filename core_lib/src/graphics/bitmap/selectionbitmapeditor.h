@@ -103,9 +103,9 @@ private:
 
     // When this value is valid, is means that all state should memory wise be intact
     // for example when the Editor has been created with a valid BitmapImage ptr.
-    bool mSmoothTransform = true;
     bool mIsValid = false;
     bool mCacheInvalidated = true;
+
     SelectionTransformEditor mTransformEditor;
 
     /// Creates a copy of the editor based on the selection that was set

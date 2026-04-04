@@ -148,7 +148,7 @@ void SelectionBitmapEditor::setTransform(const QTransform& transform)
 void SelectionBitmapEditor::setSmoothTransform(bool smooth)
 {
     if (!mIsValid) { return; }
-    mSmoothTransform = smooth;
+    mState->smoothTransform = smooth;
 
     updateTransformedSelectionState();
 }
@@ -426,7 +426,7 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
 
     computeTransformedImageBounds(originalBounds, transform, transformedImageBounds, bRectF);
 
-    mState->transformedImage = transformedImage(mState->selectionImage, transform, transformedImageBounds, bRectF, mSmoothTransform);
+    mState->transformedImage = transformedImage(mState->selectionImage, transform, transformedImageBounds, bRectF, mState->smoothTransform);
     int padding = mState->boundsPadding * 0.5;
     mState->transformedRect = transformedImageBounds.adjusted(-padding,
                                                               -padding,
