@@ -58,7 +58,6 @@ public:
 
     void updateTransformedSelectionState();
 
-    void commitChanges();
     void discardChanges();
     void deleteSelection();
 

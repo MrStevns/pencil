@@ -295,71 +295,10 @@ void SelectionBitmapEditor::flipSelection(bool flipVertical)
     mTransformEditor.flipSelection(flipVertical);
 }
 
-void SelectionBitmapEditor::commitChanges()
-{
-    if (!mIsValid) { return; }
-    if (!somethingSelected()) { return; }
-    // BitmapImage* currentBitmapImage = static_cast<BitmapImage*>(keyframe);
-
-    auto state = mState;
-    // TODO: replace with qpolygon
-    const QPolygon& alignedSelection = mState->selectionPolygon;
-
-    // if (!mTransformCopyImage) {
-    //     return;
-    // }
-    // if (currentBitmapImage == nullptr) { return; }
-
-    // BitmapImage* floatingImage = static_cast<SelectionBitmapEditor*>(currentBitmapImage->selectionEditor())->floatingImage();
-    // if (mFloatingImage.selection.isValid()) {
-    //     const QRect& transformedSelectionRect = mSelectionTransform.mapRect(alignedSelectionRect);
-    //     const QImage& transformedFloatingImage = mFloatingImage.image.transformed(mSelectionTransform, Qt::SmoothTransformation);
-
-    // //     auto floatingBitmapImage = BitmapImage(transformedSelectionRect.topLeft(), transformedFloatingImage);
-    // //     currentBitmapImage->paste(&floatingBitmapImage, QPainter::CompositionMode_SourceOver);
-    // //     // TODO: figure out how we clear the temporary image without destroying the editor as well
-    // //     // currentBitmapImage->clearTemporaryImage();
-    // } else {
-        // BitmapEditor transformedImage = mTransformCopyEditor.get()->transformed(mSelectionTransform, true);
-
-        // mBitmapEditor->clear(alignedSelection);
-        // mBitmapEditor->paste(transformedImage, QPainter::CompositionMode_SourceOver);
-    // }
-    // // When the selection has been applied, a new rect is applied based on the bounding box.
-    // // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
-    // setSelection(mapToSelection(QPolygonF(alignedSelection)).boundingRect());
-}
-
-// BitmapEditor SelectionBitmapEditor::transformedEditor()
-// {
-//     if (!mTransformCopyEditor) {
-//         return BitmapEditor();
-//     }
-//     if (mCacheInvalidated) {
-//         createImageCache();
-//     }
-//     return mTransformCopyEditor.get()->transformed(mSelectionTransform, true);
-// }
-
 void SelectionBitmapEditor::discardChanges()
 {
-    // if (!keyframe) { return; }
-
-    // BitmapImage* bitmapImage = static_cast<BitmapImage*>(keyframe);
-
-    // if (bitmapImage->temporaryImage()) {
-    //     bitmapImage->clearTemporaryImage();
-    // }
-
     resetSelectionProperties();
 }
-
-// void SelectionBitmapEditor::setFloatingImage(const QImage &floatingImage, const QRect &bounds)
-// {
-//     // mFloatingImage = SelectionBitmapImage();
-//     // mFloatingImage.selection = bounds;
-//     // mFloatingImage.image = floatingImage;
-// }
 
 void SelectionBitmapEditor::deleteSelection()
 {
