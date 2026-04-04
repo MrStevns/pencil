@@ -19,7 +19,7 @@ GNU General Public License for more details.
 #define SELECTTOOL_H
 
 #include "transformtool.h"
-#include "movemode.h"
+#include "perspectivemode.h"
 #include "undoredomanager.h"
 
 #include "layer.h"

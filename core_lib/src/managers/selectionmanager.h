@@ -18,7 +18,7 @@ GNU General Public License for more details.
 #define SELECTIONMANAGER_H
 
 #include "basemanager.h"
-#include "movemode.h"
+#include "perspectivemode.h"
 #include "vertexref.h"
 #include "vectorselection.h"
 

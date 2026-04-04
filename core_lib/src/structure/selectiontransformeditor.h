@@ -13,7 +13,7 @@ GNU General Public License for more details.
 #ifndef SELECTIONTRANSFORMEDITOR_H
 #define SELECTIONTRANSFORMEDITOR_H
 
-#include "movemode.h"
+#include "perspectivemode.h"
 #include "selectionstate.h"
 
 #include <QPointF>

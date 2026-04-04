@@ -19,7 +19,7 @@ GNU General Public License for more details.
 #define OVERLAYMANAGER_H
 
 #include "pencildef.h"
-#include "movemode.h"
+#include "perspectivemode.h"
 #include "basemanager.h"
 
 #include <QPointF>

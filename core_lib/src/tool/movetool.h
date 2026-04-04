@@ -19,7 +19,7 @@ GNU General Public License for more details.
 #define MOVETOOL_H
 
 #include "transformtool.h"
-#include "movemode.h"
+#include "perspectivemode.h"
 #include "preferencemanager.h"
 #include "undoredomanager.h"
 
