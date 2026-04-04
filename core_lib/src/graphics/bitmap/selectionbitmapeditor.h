@@ -81,7 +81,8 @@ public:
     void invalidate();
     void invalidateBitmapCache();
 
-    SelectionEditor& transformEditor() { return mCommonEditor; }
+    SelectionEditor& editTransformEditor() { return mCommonEditor; }
+    const SelectionEditor& transformEditor() const { return mCommonEditor; }
 
 private:
     /// Computes two rectangles, a rectangle for the aligned bounds of the image used to create the image

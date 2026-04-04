@@ -54,6 +54,7 @@ void MoveTool::bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool)
     selectionEditor->setTransformAnchor(selectionEditor->resolveAnchorPoint(canvasPos, handleTolerance));
 
     bitmapToolSetDragState(event, tool, *selectionEditor);
+    setTransformMode(event, tool.dragState.dragHandle, selectionEditor->transformEditor(), tool.transformState);
 }
 
 void MoveTool::bitmapToolMoveEvent(PointerEvent *event, BitmapTool& tool)
@@ -117,33 +118,12 @@ void MoveTool::bitmapToolReleaseEvent(PointerEvent*, BitmapTool& tool)
 void MoveTool::bitmapToolSetDragState(PointerEvent* event, BitmapTool& tool, const SelectionBitmapEditor& selectionEditor)
 {
     const qreal handleTolerance = mEditor->select()->selectionTolerance();
-    const Qt::KeyboardModifiers keyMod = event->modifiers();
 
-    const QPointF& canvasPos = event->canvasPos();
     tool.dragState.dragHandle = selectionEditor.resolveHandleMode(event->canvasPos(), handleTolerance);
     tool.dragState.startPos = event->canvasPos();
     tool.dragState.dx = selectionEditor.myTranslation().x();
     tool.dragState.dy = selectionEditor.myTranslation().y();
-
-    if (tool.dragState.dragHandle == DragHandle::NONE) {
-        return;
-    }
-
-    if (tool.dragState.dragHandle == DragHandle::CENTER) {
-
-        if (keyMod == Qt::ControlModifier) {
-            tool.rotatedAngle = selectionEditor.angleFromPoint(canvasPos, selectionEditor.currentAnchorPoint()) - selectionEditor.myRotation();
-            tool.dragState.transformMode = TransformMode::ROTATE;
-        }
-        else
-        {
-            tool.dragState.transformMode = TransformMode::TRANSLATE;
-        }
-    } else {
-        tool.dragState.transformMode = TransformMode::SCALE;
-    }
 }
-
 
 void MoveTool::bitmapToolTransformSelection(const PointerEvent* event, const BitmapTool& tool)
 {
@@ -155,18 +135,18 @@ void MoveTool::bitmapToolTransformSelection(const PointerEvent* event, const Bit
         selectionEditor->maintainAspectRatio(keyMod == Qt::ShiftModifier);
         selectionEditor->lockMovementToAxis(keyMod == Qt::ShiftModifier);
 
-        switch (tool.dragState.transformMode)
+        switch (tool.transformState.transformMode)
         {
         case TransformMode::TRANSLATE: {
-            translateSelection(event, tool.dragState, selectionEditor->transformEditor());
+            translateSelection(event, tool.dragState, selectionEditor->editTransformEditor());
             break;
         }
         case TransformMode::SCALE: {
-            scaleAroundAnchorPoint(event, tool.dragState, selectionEditor->mySelectionPolygon(), selectionEditor->transformEditor());
+            scaleAroundAnchorPoint(event, tool.dragState, selectionEditor->mySelectionPolygon(), selectionEditor->editTransformEditor());
             break;
         }
         case TransformMode::ROTATE: {
-            rotateSelection(event, tool.dragState, tool.rotatedAngle, selectionEditor->transformEditor());
+            rotateSelection(event, tool.transformState, selectionEditor->editTransformEditor());
             break;
         }
         default:

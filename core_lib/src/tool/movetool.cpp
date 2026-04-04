@@ -184,6 +184,29 @@ void MoveTool::pointerReleaseEvent(PointerEvent* event)
     }
 }
 
+ void MoveTool::setTransformMode(const PointerEvent* event, const DragHandle& dragHandle, const SelectionEditor& selectionEditor, TransformState& transformState)
+{
+    const Qt::KeyboardModifiers keyMod = event->modifiers();
+    const QPointF& canvasPos = event->canvasPos();
+    if (dragHandle == DragHandle::NONE) {
+        return;
+    }
+
+    if (dragHandle == DragHandle::CENTER) {
+
+        if (keyMod == Qt::ControlModifier) {
+            transformState.rotatedAngle = selectionEditor.angleFromPoint(canvasPos, selectionEditor.currentAnchorPoint()) - selectionEditor.myRotation();
+            transformState.transformMode = TransformMode::ROTATE;
+        }
+        else
+        {
+            transformState.transformMode = TransformMode::TRANSLATE;
+        }
+    } else {
+        transformState.transformMode = TransformMode::SCALE;
+    }
+}
+
 void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer)
 {
     // auto selectMan = mEditor->select();
@@ -231,9 +254,9 @@ void MoveTool::translateSelection(const PointerEvent* event, const DragState& dr
     selectionEditor.setTranslation(newPos);
 }
 
-void MoveTool::rotateSelection(const PointerEvent* event, const DragState& dragState, qreal previousRotation, SelectionEditor& selectionEditor)
+void MoveTool::rotateSelection(const PointerEvent* event, const TransformState& transformState, SelectionEditor& selectionEditor)
 {
-    if (dragState.transformMode != TransformMode::ROTATE) {
+    if (transformState.transformMode != TransformMode::ROTATE) {
         return;
     }
 
@@ -244,7 +267,7 @@ void MoveTool::rotateSelection(const PointerEvent* event, const DragState& dragS
     }
 
     QPointF anchorPoint = selectionEditor.currentAnchorPoint();
-    qreal newAngle = selectionEditor.angleFromPoint(event->canvasPos(), anchorPoint) - previousRotation;
+    qreal newAngle = selectionEditor.angleFromPoint(event->canvasPos(), anchorPoint) - transformState.rotatedAngle;
 
     selectionEditor.rotate(newAngle, rotationIncrement);
 }

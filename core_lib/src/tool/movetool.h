@@ -34,18 +34,21 @@ class MoveTool : public TransformTool
     {
         QPointF startPos;
         qreal dx, dy;
-
-        TransformMode transformMode = TransformMode::NONE;
         DragHandle dragHandle = DragHandle::NONE;
 
         DragState() = default;
     };
 
-    struct BitmapTool
+    struct TransformState
     {
         QPointF currentPoint;
         qreal rotatedAngle = 0.0;
+        TransformMode transformMode = TransformMode::NONE;
+    };
 
+    struct BitmapTool
+    {
+        TransformState transformState;
         DragState dragState;
 
         const UndoSaveState* undoSaveState = nullptr;
@@ -53,13 +56,10 @@ class MoveTool : public TransformTool
 
     struct VectorTool
     {
-        QPointF mCurrentPoint;
-        qreal mRotatedAngle = 0.0;
-        int mRotationIncrementPref = 0;
+        TransformState transformState;
+        DragState dragState;
 
-        DragState mDragState;
-
-        const UndoSaveState* mUndoSaveState = nullptr;
+        const UndoSaveState* undoSaveState = nullptr;
     };
 
     struct PerspectiveOverlayTool
@@ -88,7 +88,7 @@ public:
     bool isActive() const override;
 
     void translateSelection(const PointerEvent* event, const DragState& dragState, SelectionEditor& selectionEditor);
-    void rotateSelection(const PointerEvent* event, const DragState& dragState, qreal previousRotation, SelectionEditor& selectionEditor);
+    void rotateSelection(const PointerEvent* event, const TransformState& transformState, SelectionEditor& selectionEditor);
     void scaleAroundAnchorPoint(const PointerEvent* evet, const DragState& dragState, const QPolygonF& selectionPolygon, SelectionEditor& selectionEditor);
 
 private: // Bitmap
@@ -110,7 +110,7 @@ private: // Perspective Overlay
     void pressEventPerspectiveTool(PointerEvent* event, PerspectiveOverlayTool& tool);
 
 private:
-
+    void setTransformMode(const PointerEvent* event, const DragHandle& dragHandle, const SelectionEditor& selectionEditor, TransformState& transformState);
     void applyTransformation();
     void updateSettings(const SETTING setting);
 
