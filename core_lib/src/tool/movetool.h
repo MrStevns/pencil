@@ -30,14 +30,6 @@ class VectorImage;
 
 class MoveTool : public TransformTool
 {
-
-    enum InteractionMode
-    {
-        NONE,
-        SELECTION,
-        PERSPECTIVE_OVERLAY
-    };
-
     struct DragState
     {
         QPointF startPos;
@@ -95,36 +87,34 @@ public:
     bool leavingThisTool() override;
     bool isActive() const override;
 
-    void translateSelection(PointerEvent* event, const DragState& dragState, SelectionEditor& selectionEditor);
-    void rotateSelection(PointerEvent* event, const DragState& dragState, qreal previousRotation, SelectionEditor& selectionEditor);
-    void transformSelection(PointerEvent* event, BitmapTool& tool);
+    void translateSelection(const PointerEvent* event, const DragState& dragState, SelectionEditor& selectionEditor);
+    void rotateSelection(const PointerEvent* event, const DragState& dragState, qreal previousRotation, SelectionEditor& selectionEditor);
+    void scaleAroundAnchorPoint(const PointerEvent* evet, const DragState& dragState, const QPolygonF& selectionPolygon, SelectionEditor& selectionEditor);
+
+private: // Bitmap
+    void bitmapToolTransformSelection(const PointerEvent* event, const BitmapTool& tool);
+    void bitmapToolSetDragState(PointerEvent* event, BitmapTool& tool, const SelectionBitmapEditor& selectionEditor);
+    void bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool);
+    void bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool);
+    void bitmapToolReleaseEvent(PointerEvent* event, BitmapTool& tool);
+
+private: // Vector
+    void vectorToolPressEvent(PointerEvent* event, VectorTool& tool);
+    void vectorToolCreateSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
+    void vectorToolStoreClosestCurve(const QPointF& pos, Layer* layer);
+
+    void vectorToolSetCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
+    void vectorToolSetAreaSelected(const QPointF& pos, VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
+
+private: // Perspective Overlay
+    void pressEventPerspectiveTool(PointerEvent* event, PerspectiveOverlayTool& tool);
 
 private:
-
-    void setDragStateBitmapTool(PointerEvent* event, BitmapTool& tool, const SelectionBitmapEditor& selectionEditor);
-    InteractionMode resolveInteractionMode() const;
-
-    void pressEventPerspectiveTool(PointerEvent* event, PerspectiveOverlayTool& tool);
-    void pressEventVectorTool(PointerEvent* event, VectorTool& tool);
-
-    void pressEventBitmapTool(PointerEvent* event, BitmapTool& tool);
-    void moveEventBitmapTool(PointerEvent* event, BitmapTool& tool);
-    void releaseEventBitmapTool(PointerEvent* event, BitmapTool& tool);
-
-    // void resolveCursorState(PointerEvent* event, Layer* layer);
-    // QCursor cursorForSelectionState(PointerEvent* event);
 
     void applyTransformation();
     void updateSettings(const SETTING setting);
 
     void beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
-    void beginInteraction(PointerEvent* event, SelectionBitmapEditor& selectionEditor);
-
-    void createVectorSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
-    void storeClosestVectorCurve(const QPointF& pos, Layer* layer);
-
-    void setCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
-    void setAreaSelected(const QPointF& pos, VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
 
     Layer* currentPaintableLayer();
 

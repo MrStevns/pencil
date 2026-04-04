@@ -179,6 +179,8 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/eyedroppertool.cpp \
     src/tool/handtool.cpp \
     src/tool/movetool.cpp \
+    src/tool/movetoolbitmap.cpp \
+    src/tool/movetoolvector.cpp \
     src/tool/penciltool.cpp \
     src/tool/pentool.cpp \
     src/tool/polylinetool.cpp \
