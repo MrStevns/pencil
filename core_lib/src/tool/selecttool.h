@@ -61,9 +61,6 @@ private:
 
     QPointF offsetFromPressPos(const QPointF& pos);
 
-    inline bool isSelectionPointValid(const QPointF& pos) { return mAnchorOriginPoint != pos; }
-    bool maybeDeselect(const QPointF& pos);
-
     // Store selection origin, so we can calculate
     // the selection rectangle in mousePressEvent.
     QPointF mAnchorOriginPoint;

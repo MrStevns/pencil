@@ -192,6 +192,17 @@ bool SelectionManager::somethingSelected() const
     }
 }
 
+bool SelectionManager::isOutsideSelectionArea(const QPointF &point, qreal tolerance) const
+{
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        return bitmapSelection.isOutsideSelectionArea(point, tolerance);
+    default:
+        return false;
+    }
+}
+
 bool SelectionManager::isSelectionValid() const
 {
     switch (mWorkingLayer->type())

@@ -185,28 +185,22 @@ void SelectTool::pointerReleaseEvent(PointerEvent* event)
     {
         mEditor->deselectAll();
     }
-    else if (maybeDeselect(canvasPos))
+    else if (mEditor->select()->isOutsideSelectionArea(canvasPos, mEditor->select()->selectionTolerance()))
     {
         mEditor->deselectAll();
         mSelectionStarted = false;
     }
     else
     {
+        mSelectionStarted = true;
         mSelectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
         keepSelection(currentLayer);
-        mSelectionStarted = true;
     }
 
     mEditor->undoRedo()->record(mUndoState, typeName());
 
     mScribbleArea->updateToolCursor();
     mScribbleArea->updateFrame();
-}
-
-bool SelectTool::maybeDeselect(const QPointF& pos)
-{
-    return ((!isSelectionPointValid(pos) && mDragState.dragHandle == DragHandle::NONE)
-            || !mEditor->select()->mySelectionRect().isValid());
 }
 
 /**

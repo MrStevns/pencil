@@ -124,6 +124,8 @@ public:
     /// This should be called to update the selection transform
     void calculateSelectionTransformation();
 
+    bool isOutsideSelectionArea(const QPointF& point, qreal tolerance) const;
+
     // SelectionBitmapEditor bitmapEditor() { return bitmapSelection; }
     // SelectionVectorEditor vectorEditor() { return vectorSelection; }
 
