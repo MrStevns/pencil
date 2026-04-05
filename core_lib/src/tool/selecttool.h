@@ -80,6 +80,7 @@ private: // Vector
     void vectorToolMoveEvent(PointerEvent* event, VectorTool& tool);
     void vectorToolReleaseEvent(PointerEvent* event, VectorTool& tool);
 
+    void vectorToolDeselectAll();
     void vectorToolSetSelection();
 
 protected:

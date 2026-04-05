@@ -90,18 +90,10 @@ void SelectTool::vectorToolReleaseEvent(PointerEvent *event, VectorTool &tool)
 {
     QPointF canvasPos = event->canvasPos();
 
-    // if there's a small very small distance between current and last point
-    // discard the selection...
-    // TODO: improve by adding a timer to check if the user is deliberately selecting
-    if (QLineF(tool.anchorOriginPoint, canvasPos).length() < 1.0)
+    if (mEditor->select()->isOutsideSelectionArea(canvasPos, mEditor->select()->selectionTolerance()))
     {
         tool.selectionSet = false;
-        mEditor->deselectAll();
-    }
-    else if (mEditor->select()->isOutsideSelectionArea(canvasPos, mEditor->select()->selectionTolerance()))
-    {
-        tool.selectionSet = false;
-        mEditor->deselectAll();
+        vectorToolDeselectAll();
     }
     else
     {
@@ -116,6 +108,18 @@ void SelectTool::vectorToolReleaseEvent(PointerEvent *event, VectorTool &tool)
 
     mScribbleArea->updateToolCursor();
     mScribbleArea->updateFrame();
+}
+
+void SelectTool::vectorToolDeselectAll()
+{
+    mEditor->select()->resetSelectionProperties();
+
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+    if (currentLayer == nullptr) { return; }
+    VectorImage *vectorImage = static_cast<VectorImage*>(currentLayer->getLastKeyFrameAtPosition(mEditor->currentFrame()));
+    if (vectorImage == nullptr) { return; }
+
+    vectorImage->deselectAll();
 }
 
 /**
