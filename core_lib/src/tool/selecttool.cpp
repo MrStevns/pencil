@@ -49,16 +49,36 @@ void SelectTool::loadSettings()
 
 QCursor SelectTool::cursor()
 {
+    QCursor cursor = Qt::ArrowCursor;
     // Don't update cursor while we're moving the selection
-    if (mScribbleArea->isPointerInUse()) { return QCursor(mCursorPixmap); }
+    if (mScribbleArea->isPointerInUse()) { return QCursor(mCursorPixmapCache); }
 
-    mCursorPixmap.fill(QColor(255, 255, 255, 0));
-    QPainter cursorPainter(&mCursorPixmap);
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+    if (currentLayer == nullptr) return cursor;
+    if (!currentLayer->isPaintable()) { return cursor; }
+
+    switch (currentLayer->type())
+    {
+        case Layer::BITMAP:
+            cursor = createCursorForDragHandle(mBitmapTool.dragState.dragHandle);
+            break;
+        case Layer::VECTOR:
+            cursor = createCursorForDragHandle(mVectorTool.dragState.dragHandle);
+            break;
+        default:
+            break;
+    }
+
+    return cursor;
+}
+
+QCursor SelectTool::createCursorForDragHandle(const DragHandle& dragHandle)
+{
+    mCursorPixmapCache.fill(QColor(255, 255, 255, 0));
+    QPainter cursorPainter(&mCursorPixmapCache);
     cursorPainter.setRenderHint(QPainter::Antialiasing);
 
-    DragHandle mode = mDragState.dragHandle;
-
-    switch(mode)
+    switch(dragHandle)
     {
     case DragHandle::TOP_LEFT:
     case DragHandle::BOTTOM_RIGHT:
@@ -84,34 +104,7 @@ QCursor SelectTool::cursor()
         Q_UNREACHABLE();
         break;
     }
-    return QCursor(mCursorPixmap);
-}
-
-void SelectTool::beginSelection(Layer* currentLayer, const QPointF& pos)
-{
-    auto selectMan = mEditor->select();
-
-    if (selectMan->somethingSelected() && mSelectionStarted) // there is something selected
-    {
-        if (currentLayer->type() == Layer::VECTOR)
-        {
-            VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-            if (vectorImage != nullptr) {
-                vectorImage->deselectAll();
-            }
-        }
-        mSelectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
-        mDragState.dragHandle = mEditor->select()->resolveHandleMode(pos, selectMan->selectionTolerance());
-    }
-    else
-    {
-        mDragState.dragHandle = DragHandle::TOP_LEFT;
-        selectMan->setSelection(QRectF(pos.x(), pos.y(), 0, 0));
-        mAnchorOriginPoint = pos;
-    }
-
-    mScribbleArea->updateFrame();
-    mScribbleArea->updateToolCursor();
+    return QCursor(mCursorPixmapCache);
 }
 
 void SelectTool::pointerPressEvent(PointerEvent* event)
@@ -121,15 +114,17 @@ void SelectTool::pointerPressEvent(PointerEvent* event)
     if (!currentLayer->isPaintable()) { return; }
     if (event->button() != Qt::LeftButton) { return; }
 
-    mUndoState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
-
-    mPressPoint = event->canvasPos();
-
-    if (currentLayer->type() == Layer::BITMAP) {
-        mPressPoint = mPressPoint.toPoint();
+    switch (currentLayer->type())
+    {
+        case Layer::BITMAP:
+            bitmapToolPressEvent(event, mBitmapTool);
+            break;
+        case Layer::VECTOR:
+            vectorToolPressEvent(event, mVectorTool);
+            break;
+        default:
+            break;
     }
-
-    beginSelection(currentLayer, mPressPoint);
 }
 
 void SelectTool::pointerMoveEvent(PointerEvent* event)
@@ -137,111 +132,38 @@ void SelectTool::pointerMoveEvent(PointerEvent* event)
     Layer* currentLayer = mEditor->layers()->currentLayer();
     if (currentLayer == nullptr) { return; }
     if (!currentLayer->isPaintable()) { return; }
-    auto selectMan = mEditor->select();
 
-    QPointF canvasPos = event->canvasPos();
-
-    if (currentLayer->type() == Layer::BITMAP) {
-        canvasPos = canvasPos.toPoint();
-    }
-
-    if (mScribbleArea->isPointerInUse())
+    switch (currentLayer->type())
     {
-        controlOffsetOrigin(canvasPos, mAnchorOriginPoint);
-
-        if (currentLayer->type() == Layer::VECTOR)
-        {
-            VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-            if (vectorImage != nullptr) {
-                vectorImage->select(selectMan->mapToSelection(QPolygonF(selectMan->mySelectionRect())).boundingRect());
-            }
-        }
-    } else {
-        mDragState.dragHandle = selectMan->resolveHandleMode(canvasPos, selectMan->selectionTolerance());
+        case Layer::BITMAP:
+            bitmapToolMoveEvent(event, mBitmapTool);
+            break;
+        case Layer::VECTOR:
+            vectorToolMoveEvent(event, mVectorTool);
+            break;
+        default:
+            break;
     }
-
-    mScribbleArea->updateToolCursor();
-    mScribbleArea->updateFrame();
 }
 
 void SelectTool::pointerReleaseEvent(PointerEvent* event)
 {
     Layer* currentLayer = mEditor->layers()->currentLayer();
 
-    mDragState = DragState();
-
     if (currentLayer == nullptr) return;
     if (event->button() != Qt::LeftButton) return;
 
-    QPointF canvasPos = event->canvasPos();
-    if (currentLayer->type() == Layer::BITMAP) {
-        canvasPos = canvasPos.toPoint();
-    }
-
-    // if there's a small very small distance between current and last point
-    // discard the selection...
-    // TODO: improve by adding a timer to check if the user is deliberately selecting
-    if (QLineF(mAnchorOriginPoint, canvasPos).length() < 1.0)
+    switch (currentLayer->type())
     {
-        mEditor->deselectAll();
+        case Layer::BITMAP:
+            bitmapToolReleaseEvent(event, mBitmapTool);
+            break;
+        case Layer::VECTOR:
+            vectorToolReleaseEvent(event, mVectorTool);
+            break;
+        default:
+            break;
     }
-    else if (mEditor->select()->isOutsideSelectionArea(canvasPos, mEditor->select()->selectionTolerance()))
-    {
-        mEditor->deselectAll();
-        mSelectionStarted = false;
-    }
-    else
-    {
-        mSelectionStarted = true;
-        mSelectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
-        keepSelection(currentLayer);
-    }
-
-    mEditor->undoRedo()->record(mUndoState, typeName());
-
-    mScribbleArea->updateToolCursor();
-    mScribbleArea->updateFrame();
-}
-
-/**
- * @brief SelectTool::keepSelection
- * Keep selection rect and normalize if invalid
- */
-void SelectTool::keepSelection(Layer* currentLayer)
-{
-    if (currentLayer->type() == Layer::VECTOR)
-    {
-        VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-        if (vectorImage == nullptr) { return; }
-        auto selectMan = mEditor->select();
-        selectMan->setSelection(vectorImage->getSelectionRect());
-    }
-}
-
-void SelectTool::controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint)
-{
-    QRectF newSelection;
-    if (!mSelectionStarted) {
-        // When the selection is none, manage the selection Origin
-        newSelection = QRectF(currentPoint, anchorPoint);
-    } else {
-        newSelection = mSelectionRect;
-
-        QPointF offset = offsetFromPressPos(currentPoint);
-        if (mDragState.dragHandle == DragHandle::TOP_LEFT) {
-            newSelection.adjust(offset.x(), offset.y(), 0, 0);
-        } else if (mDragState.dragHandle == DragHandle::TOP_RIGHT) {
-            newSelection.adjust(0, offset.y(), offset.x(), 0);
-        } else if (mDragState.dragHandle == DragHandle::BOTTOM_RIGHT) {
-            newSelection.adjust(0, 0, offset.x(), offset.y());
-        } else if (mDragState.dragHandle == DragHandle::BOTTOM_LEFT) {
-            newSelection.adjust(offset.x(), 0, 0, offset.y());
-        } else {
-            newSelection.translate(offset.x(), offset.y());
-        }
-    }
-    newSelection = newSelection.normalized();
-    mEditor->select()->setSelection(newSelection);
 }
 
 bool SelectTool::keyPressEvent(QKeyEvent* event)
@@ -260,9 +182,4 @@ bool SelectTool::keyPressEvent(QKeyEvent* event)
 
     // Follow the generic behavior anyway
     return TransformTool::keyPressEvent(event);
-}
-
-QPointF SelectTool::offsetFromPressPos(const QPointF& pos)
-{
-    return pos - mPressPoint;
 }

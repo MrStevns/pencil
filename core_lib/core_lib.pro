@@ -187,6 +187,8 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/polylinetool.cpp \
     src/tool/radialoffsettool.cpp \
     src/tool/selecttool.cpp \
+    src/tool/selecttoolbitmap.cpp \
+    src/tool/selecttoolvector.cpp \
     src/tool/smudgetool.cpp \
     src/tool/strokeinterpolator.cpp \
     src/tool/stroketool.cpp \

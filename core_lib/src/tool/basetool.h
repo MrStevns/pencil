@@ -51,7 +51,7 @@ protected:
     virtual ~BaseTool();
 public:
     static QString TypeName(ToolType);
-    QString typeName() { return TypeName(type()); }
+    QString typeName() const { return TypeName(type()); }
 
     void initialize(Editor* editor);
 

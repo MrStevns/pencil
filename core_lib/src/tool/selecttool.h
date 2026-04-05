@@ -35,7 +35,29 @@ class SelectTool : public TransformTool
 
     struct DragState
     {
+        QPointF anchorOriginPoint;
+        QPointF dragFromPoint;
+
         DragHandle dragHandle = DragHandle::NONE;
+    };
+
+    struct BitmapTool
+    {
+        QRectF selectionRect;
+        bool selectionSet = false;
+
+        DragState dragState;
+        const UndoSaveState* undoState = nullptr;
+    };
+
+    struct VectorTool
+    {
+        QPointF anchorOriginPoint;
+        QRectF selectionRect;
+        bool selectionSet = false;
+
+        DragState dragState;
+        const UndoSaveState* undoState = nullptr;
     };
 
 public:
@@ -46,35 +68,34 @@ public:
     void loadSettings() override;
     QCursor cursor() override;
 
-private:
+private: // Bitmap
+    void bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool);
+    void bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool);
+    void bitmapToolReleaseEvent(PointerEvent* event, BitmapTool& tool) const;
 
+    QRectF bitmapToolDragSelection(const QPointF& currentPoint, const DragState& dragState) const;
+
+private: // Vector
+    void vectorToolPressEvent(PointerEvent* event, VectorTool& tool);
+    void vectorToolMoveEvent(PointerEvent* event, VectorTool& tool);
+    void vectorToolReleaseEvent(PointerEvent* event, VectorTool& tool);
+
+    void vectorToolSetSelection();
+
+protected:
     void pointerPressEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
     void pointerMoveEvent(PointerEvent*) override;
 
     bool keyPressEvent(QKeyEvent* event) override;
+private:
 
-    void controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint);
+    QCursor createCursorForDragHandle(const DragHandle& dragHandle);
 
-    void beginSelection(Layer* currentLayer, const QPointF& pos);
-    void keepSelection(Layer* currentLayer);
+    QPixmap mCursorPixmapCache = QPixmap(24, 24);
 
-    QPointF offsetFromPressPos(const QPointF& pos);
-
-    // Store selection origin, so we can calculate
-    // the selection rectangle in mousePressEvent.
-    QPointF mAnchorOriginPoint;
-    QPointF mPressPoint;
-    QRectF mSelectionRect;
-
-    QPixmap mCursorPixmap = QPixmap(24, 24);
-
-    bool mSelectionStarted = false;
-    DragState mDragState;
-
-    const UndoSaveState* mUndoState = nullptr;
-
-    qreal mAnchorSize = 10;
+    BitmapTool mBitmapTool;
+    VectorTool mVectorTool;
 };
 
 #endif
