@@ -189,7 +189,7 @@ void MoveTool::pointerReleaseEvent(PointerEvent* event)
     if (dragHandle == DragHandle::CENTER) {
 
         if (keyMod == Qt::ControlModifier) {
-            transformState.rotatedAngle = selectionEditor.angleFromPoint(canvasPos, selectionEditor.currentAnchorPoint()) - selectionEditor.myRotation();
+            transformState.rotatedAngle = selectionEditor.angleFromPoint(canvasPos, selectionEditor.currentAnchorPoint()) - selectionEditor.rotationAngle();
             transformState.transformMode = TransformMode::ROTATE;
         }
         else

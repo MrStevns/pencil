@@ -66,12 +66,11 @@ public:
 
     bool isOutsideSelection(const QPointF& point, const QPolygonF& polygon, qreal threshold) const;
 
-    qreal myRotation() const { return mState->rotatedAngle; }
-    qreal myScaleX() const { return mState->scaleX; }
-    qreal myScaleY() const { return mState->scaleY; }
-    QPointF myTranslation() const { return mState->translation; }
-    QTransform myTransform() const { return mState->selectionTransform; }
-
+    qreal rotationAngle() const { return mState->rotatedAngle; }
+    qreal scaleX() const { return mState->scaleX; }
+    qreal scaleY() const { return mState->scaleY; }
+    QPointF translation() const { return mState->translation; }
+    QTransform transform() const { return mState->selectionTransform; }
 
     void setRotation(const qreal& rotation) { mState->rotatedAngle = rotation; }
     void setScale(const qreal scaleX, const qreal scaleY) { mState->scaleX = scaleX; mState->scaleY = scaleY; }
