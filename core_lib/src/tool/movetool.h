@@ -72,8 +72,8 @@ public:
     explicit MoveTool(QObject* parent);
     QCursor cursor() override;
 
-    QCursor cursorForDragHandle(DragHandle handle) const;
-    QCursor cursorForPerspective(PerspectiveMode mode) const;
+    QCursor createCursorForDragHandle(DragHandle handle) const;
+    QCursor perspectiveToolCreateCursor(PerspectiveMode mode) const;
 
     ToolType type() const override;
 
@@ -108,7 +108,7 @@ private: // Vector
     void vectorToolSetAreaSelected(const QPointF& pos, VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
 
 private: // Perspective Overlay
-    void pressEventPerspectiveTool(PointerEvent* event, PerspectiveOverlayTool& tool);
+    void perspectiveToolPressEvent(PointerEvent* event, PerspectiveOverlayTool& tool);
 
 private:
     void setTransformMode(const PointerEvent* event, const DragHandle& dragHandle, const SelectionTransformEditor& selectionEditor, TransformState& transformState);

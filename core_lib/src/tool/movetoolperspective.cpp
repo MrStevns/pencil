@@ -23,7 +23,33 @@ GNU General Public License for more details.
 #include "layermanager.h"
 #include "overlaymanager.h"
 
-void MoveTool::pressEventPerspectiveTool(PointerEvent* event, PerspectiveOverlayTool& tool)
+QCursor MoveTool::perspectiveToolCreateCursor(PerspectiveMode mode) const
+{
+    QPixmap cursorPixmap = QPixmap(24, 24);
+
+    cursorPixmap.fill(QColor(255, 255, 255, 0));
+    QPainter cursorPainter(&cursorPixmap);
+    cursorPainter.setRenderHint(QPainter::Antialiasing);
+
+    switch(mode)
+    {
+    case PerspectiveMode::LEFT:
+    case PerspectiveMode::RIGHT:
+    case PerspectiveMode::MIDDLE:
+    case PerspectiveMode::SINGLE:
+    {
+        cursorPainter.drawImage(QPoint(6,6),QImage("://icons/general/cursor-move.svg"));
+        break;
+    }
+    default:
+        return Qt::ArrowCursor;
+    }
+    cursorPainter.end();
+
+    return QCursor(cursorPixmap);
+}
+
+void MoveTool::perspectiveToolPressEvent(PointerEvent* event, PerspectiveOverlayTool& tool)
 {
     LayerCamera* layerCam = mEditor->layers()->getCameraLayerBelow(mEditor->currentLayerIndex());
     Q_ASSERT(layerCam);

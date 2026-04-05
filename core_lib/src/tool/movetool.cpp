@@ -71,9 +71,24 @@ QCursor MoveTool::cursor()
 {
     if (mCursorCacheInvalid) {
         if (mEditor->select()->somethingSelected()) {
-            mCursorCache = cursorForDragHandle(mBitmapTool.dragState.dragHandle);
+            Layer* layer = currentPaintableLayer();
+            if (layer == nullptr) { return Qt::ArrowCursor; }
+
+            switch (layer->type())
+            {
+                case Layer::BITMAP:
+                    mCursorCache = createCursorForDragHandle(mBitmapTool.dragState.dragHandle);
+                    break;
+                case Layer::VECTOR:
+                    mCursorCache = createCursorForDragHandle(mVectorTool.dragState.dragHandle);
+                    break;
+                default:
+                    mCursorCache = Qt::ArrowCursor;
+                    break;
+            }
+
         } else if (mEditor->overlays()->anyOverlayEnabled()) {
-            mCursorCache = cursorForPerspective(mPerspectiveTool.perspectiveMode);
+            mCursorCache = perspectiveToolCreateCursor(mPerspectiveTool.perspectiveMode);
         }
         mCursorCacheInvalid = false;
     }
@@ -117,17 +132,13 @@ void MoveTool::pointerPressEvent(PointerEvent* event)
             case Layer::VECTOR:
                 vectorToolPressEvent(event, mVectorTool);
                 break;
-            case Layer::CAMERA:
-                // pressEventCameraTool(event, mCameraTool);
-                // TODO:
-                break;
             default:
                 break;
         }
     }
     else if (mEditor->overlays()->anyOverlayEnabled())
     {
-        pressEventPerspectiveTool(event, mPerspectiveTool);
+        perspectiveToolPressEvent(event, mPerspectiveTool);
     }
 
     mEditor->updateFrame();
@@ -259,7 +270,7 @@ Layer* MoveTool::currentPaintableLayer()
     return layer;
 }
 
-QCursor MoveTool::cursorForDragHandle(DragHandle handle) const
+QCursor MoveTool::createCursorForDragHandle(DragHandle handle) const
 {
     QPixmap cursorPixmap = QPixmap(24, 24);
 
@@ -282,32 +293,6 @@ QCursor MoveTool::cursorForDragHandle(DragHandle handle) const
         break;
     }
     case DragHandle::CENTER:
-    {
-        cursorPainter.drawImage(QPoint(6,6),QImage("://icons/general/cursor-move.svg"));
-        break;
-    }
-    default:
-        return Qt::ArrowCursor;
-    }
-    cursorPainter.end();
-
-    return QCursor(cursorPixmap);
-}
-
-QCursor MoveTool::cursorForPerspective(PerspectiveMode mode) const
-{
-    QPixmap cursorPixmap = QPixmap(24, 24);
-
-    cursorPixmap.fill(QColor(255, 255, 255, 0));
-    QPainter cursorPainter(&cursorPixmap);
-    cursorPainter.setRenderHint(QPainter::Antialiasing);
-
-    switch(mode)
-    {
-    case PerspectiveMode::PERSP_LEFT:
-    case PerspectiveMode::PERSP_RIGHT:
-    case PerspectiveMode::PERSP_MIDDLE:
-    case PerspectiveMode::PERSP_SINGLE:
     {
         cursorPainter.drawImage(QPoint(6,6),QImage("://icons/general/cursor-move.svg"));
         break;

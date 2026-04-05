@@ -20,10 +20,10 @@ GNU General Public License for more details.
 
 enum class PerspectiveMode {
     NONE,
-    PERSP_SINGLE,
-    PERSP_LEFT,
-    PERSP_RIGHT,
-    PERSP_MIDDLE,
+    SINGLE,
+    LEFT,
+    RIGHT,
+    MIDDLE,
 };
 
 #endif // PERSPECTIVEMODE_H

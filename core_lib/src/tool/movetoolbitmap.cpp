@@ -111,6 +111,7 @@ void MoveTool::bitmapToolReleaseEvent(PointerEvent*, BitmapTool& tool)
     if (!selectMan->somethingSelected())
         return;
 
+    mCursorCacheInvalid = true;
     mScribbleArea->updateToolCursor();
     emit mEditor->frameModified(mEditor->currentFrame());
 }
