@@ -33,16 +33,18 @@ void SelectTool::bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool)
 
     tool.undoState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
 
-    if (selectMan->somethingSelected() && tool.selectionSet) // there is something selected
+    if (selectMan->somethingSelected() && tool.selectionSet)
     {
+        // there is something selected
         tool.selectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
         tool.dragState.dragHandle = mEditor->select()->resolveHandleMode(canvasPos, selectMan->selectionTolerance());
     }
     else
     {
-        tool.dragState.dragHandle = DragHandle::TOP_LEFT;
+        tool.selectionRect = QRectF();
+        tool.dragState.dragHandle = DragHandle::NONE;
         tool.dragState.anchorOriginPoint = canvasPos;
-        selectMan->setSelection(QRectF(canvasPos.x(), canvasPos.y(), 0, 0));
+        tool.selectionSet = false;
     }
 
     tool.dragState.dragFromPoint = canvasPos;
@@ -63,7 +65,7 @@ void SelectTool::bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool)
             // When there's no existing selection, create one based on the anchor
             newSelection = QRectF(canvasPos, tool.dragState.anchorOriginPoint);
         } else {
-            newSelection = bitmapToolDragSelection(canvasPos, tool.dragState);
+            newSelection = bitmapToolDragSelection(tool.selectionRect, canvasPos, tool.dragState);
         }
         newSelection = newSelection.normalized();
         selectMan->setSelection(newSelection);
@@ -78,30 +80,29 @@ void SelectTool::bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool)
 }
 
 
-void SelectTool::bitmapToolReleaseEvent(PointerEvent *event, BitmapTool &tool) const
+void SelectTool::bitmapToolReleaseEvent(PointerEvent*, BitmapTool& tool) const
 {
-    tool.dragState = DragState();
+    QRectF selectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();;
 
-    QPointF canvasPos = event->canvasPos();
-
-    // if there's a small very small distance between current and last point
-    // discard the selection...
-    // TODO: improve by adding a timer to check if the user is deliberately selecting
-    if (QLineF(tool.dragState.anchorOriginPoint, canvasPos).length() < 1.0)
+    if (selectionRect.toRect().isEmpty())
     {
-        mEditor->deselectAll();
+        // If there's less than a pixel between the anchor and current point
+        // discard the selection.
+        mEditor->select()->resetSelectionProperties();
         tool.selectionSet = false;
     }
-    else if (mEditor->select()->isOutsideSelectionArea(canvasPos, mEditor->select()->selectionTolerance()))
+    else if (tool.selectionSet && tool.dragState.dragHandle == DragHandle::NONE)
     {
-        mEditor->deselectAll();
+        // The user clicked outside the selection, so discard it
+        mEditor->select()->resetSelectionProperties();
         tool.selectionSet = false;
     }
     else
     {
         tool.selectionSet = true;
-        tool.selectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
+        tool.selectionRect = selectionRect;
     }
+    tool.dragState = DragState();
 
     mEditor->undoRedo()->record(tool.undoState, typeName());
 
@@ -109,9 +110,9 @@ void SelectTool::bitmapToolReleaseEvent(PointerEvent *event, BitmapTool &tool) c
     mScribbleArea->updateFrame();
 }
 
-QRectF SelectTool::bitmapToolDragSelection(const QPointF& currentPoint, const DragState& dragState) const
+QRectF SelectTool::bitmapToolDragSelection(const QRectF& selection, const QPointF& currentPoint, const DragState& dragState) const
 {
-    QRectF newSelection;
+    QRectF newSelection = selection;
     DragHandle dragHandle = dragState.dragHandle;
 
     QPointF offset = currentPoint - dragState.dragFromPoint;

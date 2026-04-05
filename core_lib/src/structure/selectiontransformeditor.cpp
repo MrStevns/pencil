@@ -108,8 +108,7 @@ bool SelectionTransformEditor::isHandleInRange(const QPointF& currentPoint, cons
             return true;
         }
     }
-
-    return false;
+    return projectedPolygon.containsPoint(currentPoint, Qt::FillRule::WindingFill);
 }
 
 QPointF SelectionTransformEditor::resolveAnchorPoint(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const
@@ -143,8 +142,7 @@ QPointF SelectionTransformEditor::resolveAnchorPoint(const QPointF& currentPoint
 
 bool SelectionTransformEditor::isOutsideSelection(const QPointF &point, const QPolygonF& polygon, qreal threshold) const
 {
-    bool inRange = isHandleInRange(point, polygon, threshold);
-    return (!mapToSelection(polygon).containsPoint(point.toPoint(), Qt::WindingFill)) && !inRange;
+    return !isHandleInRange(point, polygon, threshold);
 }
 
 void SelectionTransformEditor::scaleAroundAnchorPoint(DragHandle handle, const QPolygonF& polygon, const QPointF& currentPoint)

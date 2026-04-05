@@ -88,8 +88,6 @@ void SelectTool::vectorToolMoveEvent(PointerEvent* event, VectorTool& tool)
 
 void SelectTool::vectorToolReleaseEvent(PointerEvent *event, VectorTool &tool)
 {
-    tool.dragState = DragState();
-
     QPointF canvasPos = event->canvasPos();
 
     // if there's a small very small distance between current and last point
@@ -112,6 +110,7 @@ void SelectTool::vectorToolReleaseEvent(PointerEvent *event, VectorTool &tool)
 
         vectorToolSetSelection();
     }
+    tool.dragState = DragState();
 
     mEditor->undoRedo()->record(tool.undoState, typeName());
 

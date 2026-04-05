@@ -73,7 +73,7 @@ private: // Bitmap
     void bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool);
     void bitmapToolReleaseEvent(PointerEvent* event, BitmapTool& tool) const;
 
-    QRectF bitmapToolDragSelection(const QPointF& currentPoint, const DragState& dragState) const;
+    QRectF bitmapToolDragSelection(const QRectF& selection, const QPointF& currentPoint, const DragState& dragState) const;
 
 private: // Vector
     void vectorToolPressEvent(PointerEvent* event, VectorTool& tool);
