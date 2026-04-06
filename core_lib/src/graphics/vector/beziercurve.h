@@ -41,7 +41,6 @@ public:
     void loadDomElement(const QDomElement& element);
 
     qreal getWidth() const { return width; }
-    qreal getFeather() const { return feather; }
     bool getVariableWidth() const { return variableWidth; }
     int getColorNumber() const { return colorNumber; }
     void decreaseColorNumber() { colorNumber--; }
@@ -66,7 +65,6 @@ public:
     void setVertex(int i, const QPointF& point);
     void setLastVertex(const QPointF& point);
     void setWidth(qreal desiredWidth);
-    void setFeather(qreal desiredFeather);
     void setVariableWidth(bool YesOrNo);
     void setInvisibility(bool YesOrNo);
     void setColorNumber(int colorNumber) { this->colorNumber = colorNumber; }

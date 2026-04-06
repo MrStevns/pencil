@@ -246,7 +246,6 @@ void PencilTool::paintVectorStroke(Layer* layer)
 
     BezierCurve curve(mStrokePoints, mStrokePressures, tol);
     curve.setWidth(0);
-    curve.setFeather(0);
     curve.setFilled(false);
     curve.setInvisibility(true);
     curve.setVariableWidth(false);

@@ -100,8 +100,6 @@ public:
     void applyColorToSelectedCurve(int colorNumber);
     void applyColorToSelectedArea(int colorNumber);
     void applyWidthToSelection(qreal width);
-    void applyFeatherToSelection(qreal feather);
-    void applyOpacityToSelection(qreal opacity);
     void applyInvisibilityToSelection(bool YesOrNo);
     void applyVariableWidthToSelection(bool YesOrNo);
     void fillContour(QList<QPointF> contourPath, int color);

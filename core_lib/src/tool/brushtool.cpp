@@ -273,7 +273,6 @@ void BrushTool::paintVectorStroke(Layer* layer)
 
         BezierCurve curve(mStrokePoints, mStrokePressures, tol);
         curve.setWidth(mSettings.width());
-        curve.setFeather(mSettings.feather());
         curve.setFilled(false);
         curve.setInvisibility(mSettings.invisibilityEnabled());
         curve.setVariableWidth(mSettings.pressureEnabled());

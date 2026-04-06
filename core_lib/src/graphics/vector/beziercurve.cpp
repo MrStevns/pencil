@@ -248,11 +248,6 @@ void BezierCurve::setWidth(qreal desiredWidth)
     width = desiredWidth;
 }
 
-void BezierCurve::setFeather(qreal desiredFeather)
-{
-    feather = desiredFeather;
-}
-
 void BezierCurve::setVariableWidth(bool YesOrNo)
 {
     variableWidth = YesOrNo;

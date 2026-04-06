@@ -1335,33 +1335,6 @@ void VectorImage::applyWidthToSelection(qreal width)
 }
 
 /**
- * @brief VectorImage::applyFeatherToSelection
- * @param feather: qreal
- */
-void VectorImage::applyFeatherToSelection(qreal feather)
-{
-    for (int i = 0; i < mCurves.size(); i++)
-    {
-        if (mCurves.at(i).isSelected()) mCurves[i].setFeather(feather);
-    }
-    modification();
-}
-
-/**
- * @brief VectorImage::applyOpacityToSelection
- * @param opacity: qreal
- */
-void VectorImage::applyOpacityToSelection(qreal opacity)
-{
-    Q_UNUSED(opacity);
-    for (int i = 0; i < mCurves.size(); i++)
-    {
-        //if ( curve.at(i).isSelected()) curve[i].setOpacity(width);
-    }
-    modification();
-}
-
-/**
  * @brief VectorImage::applyInvisibilityToSelection
  * @param YesOrNo: bool
  */
