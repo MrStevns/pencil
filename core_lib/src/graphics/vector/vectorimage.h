@@ -24,6 +24,8 @@ GNU General Public License for more details.
 #include "vertexref.h"
 #include "keyframe.h"
 
+#include "selectionvectorstate.h"
+
 class Object;
 class QPainter;
 class QImage;
@@ -138,9 +140,6 @@ public:
 
     QPainterPath getStrokedPath() { return mGetStrokedPath; }
 
-    QList<BezierArea> mArea;
-    QList<int> mCurveDisplayOrders;
-
     qreal getDistance(VertexRef r1, VertexRef r2);
 
     QSize getSize() { return mSize; }
@@ -155,10 +154,14 @@ private:
     void checkCurveIntersections(BezierCurve& newCurve, qreal tolerance);
 
     void updateImageSize(BezierCurve& updatedCurve);
-    QPainterPath mGetStrokedPath;
 
 private:
+
+    SelectionVectorState mSelectionState;
+
+    QPainterPath mGetStrokedPath;
     QList<BezierCurve> mCurves;
+    QList<BezierArea> mArea;
 
     QRectF mSelectionRect;
     QTransform mSelectionTransformation;
