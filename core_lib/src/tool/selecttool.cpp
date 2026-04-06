@@ -183,3 +183,19 @@ bool SelectTool::keyPressEvent(QKeyEvent* event)
     // Follow the generic behavior anyway
     return TransformTool::keyPressEvent(event);
 }
+
+void SelectTool::paint(QPainter &painter, const QRect &blitRect)
+{
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+    if (currentLayer == nullptr) { return; }
+
+    switch (currentLayer->type())
+    {
+        case Layer::BITMAP:
+            bitmapToolPaintEvent(painter, blitRect, mBitmapTool);
+            break;
+        case Layer::VECTOR:
+            vectorToolPaintEvent(painter, blitRect, mVectorTool);
+            break;
+    }
+}

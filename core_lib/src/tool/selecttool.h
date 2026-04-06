@@ -22,6 +22,8 @@ GNU General Public License for more details.
 #include "perspectivemode.h"
 #include "undoredomanager.h"
 
+#include "selectionpainter.h"
+
 #include "layer.h"
 
 #include <QRectF>
@@ -35,7 +37,7 @@ class SelectTool : public TransformTool
 
     struct DragState
     {
-        QPointF anchorOriginPoint;
+        QRectF selectionRect;
         QPointF dragFromPoint;
 
         DragHandle dragHandle = DragHandle::NONE;
@@ -43,7 +45,6 @@ class SelectTool : public TransformTool
 
     struct BitmapTool
     {
-        QRectF selectionRect;
         bool selectionSet = false;
 
         DragState dragState;
@@ -52,8 +53,6 @@ class SelectTool : public TransformTool
 
     struct VectorTool
     {
-        QPointF anchorOriginPoint;
-        QRectF selectionRect;
         bool selectionSet = false;
 
         DragState dragState;
@@ -73,12 +72,16 @@ private: // Bitmap
     void bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool);
     void bitmapToolReleaseEvent(PointerEvent* event, BitmapTool& tool) const;
 
+    void bitmapToolPaintEvent(QPainter& painter, const QRect blitRect, const BitmapTool& tool);
+
     QRectF bitmapToolDragSelection(const QRectF& selection, const QPointF& currentPoint, const DragState& dragState) const;
 
 private: // Vector
     void vectorToolPressEvent(PointerEvent* event, VectorTool& tool);
     void vectorToolMoveEvent(PointerEvent* event, VectorTool& tool);
     void vectorToolReleaseEvent(PointerEvent* event, VectorTool& tool);
+
+    void vectorToolPaintEvent(QPainter& painter, const QRect blitRect, const VectorTool& tool);
 
     void vectorToolDeselectAll();
     void vectorToolSetSelection();
@@ -89,6 +92,7 @@ protected:
     void pointerMoveEvent(PointerEvent*) override;
 
     bool keyPressEvent(QKeyEvent* event) override;
+    void paint(QPainter &painter, const QRect &blitRect) override;
 private:
 
     QCursor createCursorForDragHandle(const DragHandle& dragHandle);
@@ -97,6 +101,8 @@ private:
 
     BitmapTool mBitmapTool;
     VectorTool mVectorTool;
+
+    SelectionPainter mSelectionPainter;
 };
 
 #endif

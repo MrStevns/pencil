@@ -319,7 +319,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     currentBitmapPainter.drawImage(paintedImage->topLeft(), *paintedImage->image());
 
     const SelectionBitmapState& state = paintedImage->selectionState();
-    if (state.selectionImageBounds.isValid()) {
+    if (state.selectionImageBounds.isValid() && !state.transformedImage.isNull()) {
         paintTransformedSelection(currentBitmapPainter, paintedImage, state);
     } else {
         if (isCurrentLayer && isDrawing)

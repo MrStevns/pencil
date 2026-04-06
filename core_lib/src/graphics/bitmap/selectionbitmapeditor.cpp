@@ -56,7 +56,7 @@ void SelectionBitmapEditor::setSelection(const QRect& rect)
 {
     if (!mIsValid) { return; }
 
-    setSelection(QPolygon(rect));
+    setSelection(QPolygon(rect.normalized()));
 }
 
 void SelectionBitmapEditor::setSelection(const QPolygon& polygon)

@@ -27,6 +27,7 @@ GNU General Public License for more details.
 #include "scribblearea.h"
 
 #include "layermanager.h"
+#include "viewmanager.h"
 #include "selectionmanager.h"
 
 void SelectTool::vectorToolPressEvent(PointerEvent* event, VectorTool& tool)
@@ -43,14 +44,13 @@ void SelectTool::vectorToolPressEvent(PointerEvent* event, VectorTool& tool)
         if (vectorImage != nullptr) {
             vectorImage->deselectAll();
         }
-        tool.selectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
+        tool.dragState.selectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
         tool.dragState.dragHandle = mEditor->select()->resolveHandleMode(canvasPos, selectMan->selectionTolerance());
     }
     else
     {
         tool.dragState.dragHandle = DragHandle::TOP_LEFT;
-        tool.anchorOriginPoint = canvasPos;
-        selectMan->setSelection(QRectF(canvasPos.x(), canvasPos.y(), 0, 0));
+        tool.selectionSet = false;
     }
 
     tool.dragState.dragFromPoint = canvasPos;
@@ -69,8 +69,7 @@ void SelectTool::vectorToolMoveEvent(PointerEvent* event, VectorTool& tool)
         // QRectF
         if (!tool.selectionSet) {
             // When there's no existing selection, create one based on the anchor
-            tool.selectionRect = QRectF(canvasPos, tool.dragState.anchorOriginPoint);
-            selectMan->setSelection(tool.selectionRect);
+            tool.dragState.selectionRect = QRectF(canvasPos, tool.dragState.dragFromPoint);
         }
 
         // Layer* currentLayer = mEditor->layers()->currentLayer();
@@ -98,8 +97,7 @@ void SelectTool::vectorToolReleaseEvent(PointerEvent *event, VectorTool &tool)
     else
     {
         tool.selectionSet = true;
-        tool.selectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
-
+        mEditor->select()->setSelection(tool.dragState.selectionRect);
         vectorToolSetSelection();
     }
     tool.dragState = DragState();
@@ -135,4 +133,19 @@ void SelectTool::vectorToolSetSelection()
     if (vectorImage == nullptr) { return; }
     auto selectMan = mEditor->select();
     selectMan->setSelection(vectorImage->getSelectionRect());
+}
+
+void SelectTool::vectorToolPaintEvent(QPainter& painter, const QRect blitRect, const VectorTool& tool)
+{
+    Object* object = mEditor->object();
+
+    auto selectMan = mEditor->select();
+
+    TransformParameters params = { tool.dragState.selectionRect, tool.dragState.selectionRect.center(), mEditor->view()->getView(), selectMan->selectionTransform() };
+
+    mSelectionPainter.paint(painter,
+                            object,
+                            mEditor->currentLayerIndex(),
+                            transformSettings(),
+                            params);
 }
