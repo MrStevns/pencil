@@ -32,8 +32,8 @@ SelectionManager::SelectionManager(Editor* editor) : BaseManager(editor, __FUNCT
         switch (mWorkingLayer->type())
         {
         case Layer::BITMAP:
-            bitmapSelection.invalidateBitmapCache();
-            bitmapSelection.updateTransformedSelectionState();
+            mBitmapSelection.invalidateBitmapCache();
+            mBitmapSelection.updateTransformedSelectionState();
         default:
             return;
         }
@@ -70,7 +70,7 @@ void SelectionManager::resetSelectionTransform()
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.resetTransformation();
+        return mBitmapSelection.resetTransformation();
     default:
         return;
     }
@@ -81,7 +81,7 @@ void SelectionManager::setTranslation(const QPointF& translation)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.setTranslation(translation);
+        return mBitmapSelection.setTranslation(translation);
     default:
         return;
     }
@@ -92,7 +92,7 @@ void SelectionManager::setRotation(qreal angle)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.setRotation(angle);
+        return mBitmapSelection.setRotation(angle);
     default:
         return;
     }
@@ -103,7 +103,7 @@ void SelectionManager::setScale(qreal scaleX, qreal scaleY)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.setScale(scaleX, scaleY);
+        return mBitmapSelection.setScale(scaleX, scaleY);
     default:
         return;
     }
@@ -114,7 +114,7 @@ void SelectionManager::setSelectionTransform(const QTransform& transform)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.setTransform(transform);
+        return mBitmapSelection.setTransform(transform);
     default:
         return;
     }
@@ -135,7 +135,7 @@ QPointF SelectionManager::currentTransformAnchor() const
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.currentAnchorPoint();
+        return mBitmapSelection.currentAnchorPoint();
     default:
         return QPointF();
     }
@@ -143,9 +143,9 @@ QPointF SelectionManager::currentTransformAnchor() const
 
 SelectionBitmapEditor* SelectionManager::currentSelectionBitmapEditor()
 {
-    if (!bitmapSelection.isValid()) { return nullptr; }
+    if (!mBitmapSelection.isValid()) { return nullptr; }
 
-    return &bitmapSelection;
+    return &mBitmapSelection;
 }
 
 QPointF SelectionManager::getSelectionAnchorPoint() const
@@ -153,7 +153,7 @@ QPointF SelectionManager::getSelectionAnchorPoint() const
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.getSelectionAnchorPoint();
+        return mBitmapSelection.getSelectionAnchorPoint();
     default:
         return QPointF();
     }
@@ -164,7 +164,7 @@ QPolygonF SelectionManager::getSelectionPolygon() const
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.selectionPolygon();
+        return mBitmapSelection.selectionPolygon();
     default:
         return QPolygonF();
     }
@@ -175,7 +175,7 @@ DragHandle SelectionManager::resolveHandleMode(const QPointF& point, qreal toler
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.resolveHandleMode(point, tolerance);
+        return mBitmapSelection.resolveHandleMode(point, tolerance);
     default:
         return DragHandle::NONE;
     }
@@ -186,7 +186,7 @@ bool SelectionManager::somethingSelected() const
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.somethingSelected();
+        return mBitmapSelection.somethingSelected();
     default:
         return false;
     }
@@ -197,7 +197,7 @@ bool SelectionManager::isOutsideSelectionArea(const QPointF &point, qreal tolera
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.isOutsideSelectionArea(point, tolerance);
+        return mBitmapSelection.isOutsideSelectionArea(point, tolerance);
     default:
         return false;
     }
@@ -208,7 +208,7 @@ bool SelectionManager::isSelectionValid() const
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.isSelectionValid();
+        return mBitmapSelection.isSelectionValid();
     default:
         return false;
     }
@@ -219,7 +219,7 @@ void SelectionManager::maintainAspectRatio(bool state)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.maintainAspectRatio(state);
+        return mBitmapSelection.maintainAspectRatio(state);
     default:
         return;
     }
@@ -230,7 +230,7 @@ void SelectionManager::lockMovementToAxis(bool state)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.lockMovementToAxis(state);
+        return mBitmapSelection.lockMovementToAxis(state);
     default:
         return;
     }
@@ -241,7 +241,7 @@ void SelectionManager::translate(QPointF newPos)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        bitmapSelection.translate(newPos);
+        mBitmapSelection.translate(newPos);
     default:
         break;
     }
@@ -252,7 +252,7 @@ void SelectionManager::rotate(qreal angle, qreal lockedAngle)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        bitmapSelection.rotate(angle, lockedAngle);
+        mBitmapSelection.rotate(angle, lockedAngle);
     default:
         break;
     }
@@ -264,7 +264,7 @@ void SelectionManager::scale(qreal sX, qreal sY)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        bitmapSelection.scale(sX, sY);
+        mBitmapSelection.scale(sX, sY);
     default:
         break;
     }
@@ -274,7 +274,7 @@ QRectF SelectionManager::mySelectionRect() const {
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.selectionRect();
+            return mBitmapSelection.selectionRect();
         default:
             return QRectF();
     }
@@ -284,7 +284,7 @@ qreal SelectionManager::myRotation() const {
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.rotation();
+            return mBitmapSelection.rotation();
         default:
         return 0;
     }
@@ -294,9 +294,9 @@ qreal SelectionManager::myScaleX() const {
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.scaleX();
+            return mBitmapSelection.scaleX();
         default:
-        return 0;
+        return 1;
     }
 }
 
@@ -304,9 +304,9 @@ qreal SelectionManager::myScaleY() const {
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.scaleY();
+            return mBitmapSelection.scaleY();
         default:
-        return 0;
+        return 1;
     }
 }
 
@@ -315,7 +315,7 @@ QPointF SelectionManager::myTranslation() const
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.translation();
+            return mBitmapSelection.translation();
         default:
         return QPointF();
     }
@@ -326,7 +326,7 @@ QTransform SelectionManager::selectionTransform() const
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.transform();
+            return mBitmapSelection.transform();
         default:
             return QTransform();
     }
@@ -337,7 +337,7 @@ QPointF SelectionManager::mapToSelection(const QPointF& point) const
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.mapToSelection(point);
+            return mBitmapSelection.mapToSelection(point);
         default:
         return QPointF();
     }
@@ -348,7 +348,7 @@ QPointF SelectionManager::mapFromLocalSpace(const QPointF& point) const
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.mapFromLocalSpace(point);
+            return mBitmapSelection.mapFromLocalSpace(point);
         default:
         return QPointF();
     }
@@ -359,7 +359,7 @@ QPolygonF SelectionManager::mapToSelection(const QPolygonF& polygon) const
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.mapToSelection(polygon);
+            return mBitmapSelection.mapToSelection(polygon);
         default:
         return QPolygonF();
     }
@@ -370,7 +370,7 @@ QPolygonF SelectionManager::mapFromLocalSpace(const QPolygonF& polygon) const
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP:
-            return bitmapSelection.mapFromLocalSpace(polygon);
+            return mBitmapSelection.mapFromLocalSpace(polygon);
         default:
         return QPolygonF();
     }
@@ -381,7 +381,7 @@ qreal SelectionManager::angleFromPoint(const QPointF& point, const QPointF& anch
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.angleFromPoint(point, anchorPoint);
+        return mBitmapSelection.angleFromPoint(point, anchorPoint);
     default:
         return -1;
     }
@@ -392,8 +392,8 @@ void SelectionManager::setSelection(const QRectF& rect)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        bitmapSelection = SelectionBitmapEditor(static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame())));
-        bitmapSelection.setSelection(rect.toRect());
+        mBitmapSelection = SelectionBitmapEditor(static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame())));
+        mBitmapSelection.setSelection(rect.toRect());
     default:
         break;
     }
@@ -406,7 +406,7 @@ void SelectionManager::setTransformAnchor(const QPointF& point)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        bitmapSelection.setTransformAnchor(point);
+        mBitmapSelection.setTransformAnchor(point);
     default:
         break;
     }
@@ -417,7 +417,7 @@ void SelectionManager::setSmoothTransform(bool smoothTransform)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        bitmapSelection.setSmoothTransform(smoothTransform);
+        mBitmapSelection.setSmoothTransform(smoothTransform);
     default:
         break;
     }
@@ -430,7 +430,7 @@ void SelectionManager::calculateSelectionTransformation()
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        bitmapSelection.calculateSelectionTransformation();
+        mBitmapSelection.calculateSelectionTransformation();
     default:
         break;
     }
@@ -445,7 +445,7 @@ void SelectionManager::flipSelection(bool flipVertical)
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.flipSelection(flipVertical);
+        return mBitmapSelection.flipSelection(flipVertical);
     default:
         return;
     }
@@ -457,7 +457,7 @@ void SelectionManager::resetSelectionProperties()
     switch (mWorkingLayer->type())
     {
     case Layer::BITMAP:
-        return bitmapSelection.resetSelectionProperties();
+        return mBitmapSelection.resetSelectionProperties();
     default:
         return;
     }

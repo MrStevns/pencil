@@ -32,22 +32,14 @@ GNU General Public License for more details.
 class Editor;
 
 /**
- * @brief The SelectionManager class acts as the "Brain" of the selection system.
+ * @brief The SelectionManager acts as a convenient wrapper to get access the current active selection editor
  * 
  * It is responsible for:
- * 1. Storing the "Truth" of the selection:
- *    - The original shape (mOriginalRect)
- *    - The current transformation state (mSelectionTransform) including position, rotation, and scale.
- * 
- * 2. Performing the Math:
- *    - Calculates new transformations based on user input from the SelectTool.
- *    - Handles complex matrix operations for rotation and scaling.
- * 
- * 3. Coordinate Space Management:
- *    - Converts points between "Screen Space" (mouse coordinates) and "Selection Space" (drawing coordinates).
- *    - Maps operations from the UI (SelectTool) to the underlying data.
- * 
- * The SelectTool (the "Hand") delegates all state tracking and heavy calculation to this manager.
+ * - Handling creation of the underlying selection editor for the current frame. Once a SelectionEditor has been created,
+ *   prefer using it directly over going through the manager.
+ * - Storing shared preferences and values among multiple layers
+ *
+ * The manager must not own any layer specific state. All state should belong to the respective layers SelectionXState struct.
  */
 class SelectionManager : public BaseManager
 {
@@ -126,9 +118,6 @@ public:
 
     bool isOutsideSelectionArea(const QPointF& point, qreal tolerance) const;
 
-    // SelectionBitmapEditor bitmapEditor() { return bitmapSelection; }
-    // SelectionVectorEditor vectorEditor() { return vectorSelection; }
-
     // Vector methods
     VectorSelection vectorSelection;
 
@@ -154,7 +143,7 @@ private:
 
     // TODO: implement
     // SelectionVectorEditor vectorSelection;
-    SelectionBitmapEditor bitmapSelection;
+    SelectionBitmapEditor mBitmapSelection;
 
     Layer* mWorkingLayer = nullptr;
 };
