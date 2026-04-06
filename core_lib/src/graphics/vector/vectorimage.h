@@ -72,7 +72,7 @@ public:
     int getNumOfCurvesSelected();
     void selectAll();
     void deselectAll();
-    QRectF getSelectionRect() { return mSelectionRect; }
+    QRectF getSelectionRect() { return mSelectionState.selectionRect; }
     void calculateSelectionRect();
     void deleteSelection();
     void deleteSelectedPoints();
@@ -162,8 +162,6 @@ private:
     QList<BezierCurve> mCurves;
     QList<BezierArea> mArea;
 
-    QRectF mSelectionRect;
-    QTransform mSelectionTransformation;
     QSize mSize;
     qreal mOpacity = 1.0;
 };
