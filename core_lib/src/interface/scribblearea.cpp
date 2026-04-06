@@ -1360,10 +1360,11 @@ void ScribbleArea::applyTransformedSelection()
             // Unfortunately this doesn't work right currently so vector transforms
             // will always be applied on the previous keyframe when on an empty frame
             //handleDrawingOnEmptyFrame();
-            VectorImage* vectorImage = currentVectorImage(layer);
-            if (vectorImage == nullptr) { return; }
+            // VectorImage* vectorImage = currentVectorImage(layer);
+            // if (vectorImage == nullptr) { return; }
 
-            vectorImage->applySelectionTransformation();
+            // vectorImage->applySelectionTransformation();
+            mEditor->select()->applyTransformation();
         }
 
         mEditor->setModified(mEditor->layers()->currentLayerIndex(), mEditor->currentFrame());

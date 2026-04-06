@@ -148,6 +148,13 @@ SelectionBitmapEditor* SelectionManager::currentSelectionBitmapEditor()
     return &mBitmapSelection;
 }
 
+SelectionVectorEditor* SelectionManager::currentSelectionVectorEditor()
+{
+    if (!mVectorSelection.isValid()) { return nullptr; }
+
+    return &mVectorSelection;
+}
+
 QPointF SelectionManager::getSelectionAnchorPoint() const
 {
     switch (mWorkingLayer->type())
@@ -394,11 +401,31 @@ void SelectionManager::setSelection(const QRectF& rect)
     case Layer::BITMAP:
         mBitmapSelection = SelectionBitmapEditor(static_cast<BitmapImage*>(mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame())));
         mBitmapSelection.setSelection(rect.toRect());
+        break;
+    case Layer::VECTOR:
+        mVectorSelection = SelectionVectorEditor(static_cast<VectorImage*>(mWorkingLayer->getLastKeyFrameAtPosition(editor()->currentFrame())));
+        mVectorSelection.setSelection(rect);
+        break;
     default:
         break;
     }
 
     emit selectionChanged();
+}
+
+void SelectionManager::applyTransformation()
+{
+    switch (mWorkingLayer->type())
+    {
+    case Layer::BITMAP:
+        // mBitmapSelection.applyTransformation();
+        break;
+    case Layer::VECTOR:
+        mVectorSelection.applyTransformation();
+        break;
+    default:
+        break;
+    }
 }
 
 void SelectionManager::setTransformAnchor(const QPointF& point)

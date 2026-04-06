@@ -852,16 +852,6 @@ void VectorImage::deselectAll()
     modification();
 }
 
-/**
- * @brief VectorImage::setSelectionRect
- * @param rectangle: QRectF
- */
-void VectorImage::setSelectionRect(QRectF rectangle)
-{
-    mSelectionRect = rectangle;
-    select(rectangle);
-}
-
 QRectF VectorImage::getBoundsOfTransformedCurves() const
 {
     QRectF bounds;
@@ -875,19 +865,6 @@ QRectF VectorImage::getBoundsOfTransformedCurves() const
         }
     }
     return bounds;
-}
-
-/**
- * @brief VectorImage::calculateSelectionRect
- */
-void VectorImage::calculateSelectionRect()
-{
-    mSelectionRect = QRectF(0, 0, 0, 0);
-    for (int i = 0; i < mCurves.size(); i++)
-    {
-        if (mCurves.at(i).isPartlySelected())
-            mSelectionRect |= mCurves[i].getBoundingRect();
-    }
 }
 
 /**
@@ -1266,32 +1243,6 @@ void VectorImage::clean()
             i--;
         }
     }
-}
-
-/**
- * @brief VectorImage::applySelectionTransformation
- */
-void VectorImage::applySelectionTransformation()
-{
-    applySelectionTransformation(mSelectionTransformation);
-}
-
-/**
- * @brief VectorImage::applySelectionTransformation
- * @param transf: QTransform
- */
-void VectorImage::applySelectionTransformation(QTransform transf)
-{
-    for (int i = 0; i < mCurves.size(); i++)
-    {
-        if (mCurves.at(i).isPartlySelected())
-        {
-            mCurves[i].transform(transf);
-        }
-    }
-    calculateSelectionRect();
-    mSelectionTransformation.reset();
-    modification();
 }
 
 /**

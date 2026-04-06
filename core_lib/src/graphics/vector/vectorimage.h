@@ -73,7 +73,6 @@ public:
     void selectAll();
     void deselectAll();
     QRectF getSelectionRect() { return mSelectionRect; }
-    void setSelectionRect(QRectF rectange);
     void calculateSelectionRect();
     void deleteSelection();
     void deleteSelectedPoints();
@@ -97,8 +96,6 @@ public:
     void clear();
     void clean();
     void setSelectionTransformation(QTransform transform);
-    void applySelectionTransformation();
-    void applySelectionTransformation(QTransform transform);
     void applyColorToSelectedCurve(int colorNumber);
     void applyColorToSelectedArea(int colorNumber);
     void applyWidthToSelection(qreal width);
@@ -147,6 +144,10 @@ public:
     void setOpacity(qreal opacity) { mOpacity = opacity; }
     qreal getOpacity() const { return mOpacity; }
 
+    const QList<BezierCurve>& curves() const { return mCurves; }
+
+    SelectionVectorState mSelectionState;
+
 private:
     void addPoint(int curveNumber, int vertexNumber, qreal fraction);
 
@@ -156,8 +157,6 @@ private:
     void updateImageSize(BezierCurve& updatedCurve);
 
 private:
-
-    SelectionVectorState mSelectionState;
 
     QPainterPath mGetStrokedPath;
     QList<BezierCurve> mCurves;

@@ -23,6 +23,7 @@ GNU General Public License for more details.
 #include "vectorselection.h"
 
 #include "selectionbitmapeditor.h"
+#include "selectionvectoreditor.h"
 
 #include <QPointF>
 #include <QRectF>
@@ -56,6 +57,8 @@ public:
     void flipSelection(bool flipVertical);
     
     void setSelection(const QRectF& rect);
+
+    void applyTransformation();
 
     void translate(QPointF point);
     void rotate(qreal angle, qreal lockedAngle);
@@ -111,6 +114,7 @@ public:
 
     QPolygonF getSelectionPolygon() const;
 
+    SelectionVectorEditor* currentSelectionVectorEditor();
     SelectionBitmapEditor* currentSelectionBitmapEditor();
 
     /// This should be called to update the selection transform
@@ -141,8 +145,7 @@ private:
 
     qreal mSelectionTolerance = 10.0;
 
-    // TODO: implement
-    // SelectionVectorEditor vectorSelection;
+    SelectionVectorEditor mVectorSelection;
     SelectionBitmapEditor mBitmapSelection;
 
     Layer* mWorkingLayer = nullptr;

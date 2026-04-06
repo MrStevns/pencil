@@ -37,6 +37,7 @@ HEADERS +=  \
     src/graphics/vector/bezierarea.h \
     src/graphics/vector/beziercurve.h \
     src/graphics/vector/colorref.h \
+    src/graphics/vector/selectionvectoreditor.h \
     src/graphics/vector/selectionvectorstate.h \
     src/graphics/vector/vectorimage.h \
     src/graphics/vector/vectorselection.h \
@@ -136,6 +137,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/graphics/vector/bezierarea.cpp \
     src/graphics/vector/beziercurve.cpp \
     src/graphics/vector/colorref.cpp \
+    src/graphics/vector/selectionvectoreditor.cpp \
     src/graphics/vector/vectorimage.cpp \
     src/graphics/vector/vectorselection.cpp \
     src/graphics/vector/vertexref.cpp \

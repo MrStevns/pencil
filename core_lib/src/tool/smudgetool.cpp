@@ -253,11 +253,13 @@ void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
         }
         else if (layer->type() == Layer::VECTOR)
         {
+            auto selectMan = mEditor->select();
             VectorImage *vectorImage = ((LayerVector *)layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
             if (vectorImage == nullptr) { return; }
-            vectorImage->applySelectionTransformation();
+            // vectorImage->applySelectionTransformation();
 
-            auto selectMan = mEditor->select();
+            selectMan->applyTransformation();
+
             selectMan->resetSelectionTransform();
             for (int k = 0; k < selectMan->vectorSelection.curve.size(); k++)
             {
