@@ -23,27 +23,26 @@ GNU General Public License for more details.
 
 #include "selectionmanager.h"
 #include "undoredomanager.h"
+#include "viewmanager.h"
 
 #include "scribblearea.h"
 
 void SelectTool::bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool)
 {
     auto selectMan = mEditor->select();
-    const QPointF canvasPos = event->canvasPos();
+    const QPointF canvasPos = event->canvasPos().toPoint();
 
     tool.undoState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
 
     if (selectMan->somethingSelected() && tool.selectionSet)
     {
         // there is something selected
-        tool.selectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
         tool.dragState.dragHandle = mEditor->select()->resolveHandleMode(canvasPos, selectMan->selectionTolerance());
     }
     else
     {
-        tool.selectionRect = QRectF();
+        tool.dragState.selectionRect = QRectF();
         tool.dragState.dragHandle = DragHandle::NONE;
-        tool.dragState.anchorOriginPoint = canvasPos;
         tool.selectionSet = false;
     }
 
@@ -55,20 +54,17 @@ void SelectTool::bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool)
 
 void SelectTool::bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool)
 {
-    QPointF canvasPos = event->canvasPos();
+    QPointF canvasPos = event->canvasPos().toPoint();
     auto selectMan = mEditor->select();
 
     if (mScribbleArea->isPointerInUse())
     {
-        QRectF newSelection;
-        if (!tool.selectionSet) {
+        if (!tool.selectionSet || tool.dragState.dragHandle == DragHandle::NONE) {
             // When there's no existing selection, create one based on the anchor
-            newSelection = QRectF(canvasPos, tool.dragState.anchorOriginPoint);
+            tool.dragState.selectionRect = QRectF(canvasPos, tool.dragState.dragFromPoint);
         } else {
-            newSelection = bitmapToolDragSelection(tool.selectionRect, canvasPos, tool.dragState);
+            tool.dragState.selectionRect = bitmapToolDragSelection(selectMan->mySelectionRect(), canvasPos, tool.dragState);
         }
-        newSelection = newSelection.normalized();
-        selectMan->setSelection(newSelection);
 
     } else
     {
@@ -82,16 +78,17 @@ void SelectTool::bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool)
 
 void SelectTool::bitmapToolReleaseEvent(PointerEvent*, BitmapTool& tool) const
 {
-    QRectF selectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();;
+    QRectF activeSelectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();;
 
-    if (selectionRect.toRect().isEmpty())
+    QRectF newSelection = tool.dragState.selectionRect.normalized();
+    if ((mEditor->select()->somethingSelected() && activeSelectionRect.toRect().isEmpty()) || newSelection.isEmpty())
     {
         // If there's less than a pixel between the anchor and current point
         // discard the selection.
         mEditor->select()->resetSelectionProperties();
         tool.selectionSet = false;
     }
-    else if (tool.selectionSet && tool.dragState.dragHandle == DragHandle::NONE)
+    else if (tool.selectionSet && tool.dragState.dragHandle == DragHandle::NONE && newSelection.isEmpty())
     {
         // The user clicked outside the selection, so discard it
         mEditor->select()->resetSelectionProperties();
@@ -100,7 +97,7 @@ void SelectTool::bitmapToolReleaseEvent(PointerEvent*, BitmapTool& tool) const
     else
     {
         tool.selectionSet = true;
-        tool.selectionRect = selectionRect;
+        mEditor->select()->setSelection(tool.dragState.selectionRect);
     }
     tool.dragState = DragState();
 
@@ -129,4 +126,20 @@ QRectF SelectTool::bitmapToolDragSelection(const QRectF& selection, const QPoint
     }
 
     return newSelection;
+}
+
+void SelectTool::bitmapToolPaintEvent(QPainter& painter, const QRect, const BitmapTool& tool)
+{
+    if (tool.dragState.selectionRect.isNull()) { return; }
+
+    Object* object = mEditor->object();
+    auto selectMan = mEditor->select();
+
+    TransformParameters params = { tool.dragState.selectionRect, tool.dragState.selectionRect.center(), mEditor->view()->getView(), selectMan->selectionTransform() };
+
+    mSelectionPainter.paint(painter,
+                            object,
+                            mEditor->currentLayerIndex(),
+                            transformSettings(),
+                            params);
 }

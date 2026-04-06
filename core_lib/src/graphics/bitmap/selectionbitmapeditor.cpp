@@ -52,7 +52,7 @@ void SelectionBitmapEditor::invalidateBitmapCache()
 
 void SelectionBitmapEditor::setSelection(const QRect& rect)
 {
-    setSelection(QPolygon(rect));
+    setSelection(QPolygon(rect.normalized()));
 }
 
 void SelectionBitmapEditor::setSelection(const QPolygon& polygon)

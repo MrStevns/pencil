@@ -31,7 +31,7 @@ void SelectionVectorEditor::invalidate()
 
 void SelectionVectorEditor::setSelection(const QRectF& rect)
 {
-    mState->selectionPolygon = calculateBoundingBox(rect);
+    mState->selectionPolygon = rect;//calculateBoundingBox(rect);
     mTransformEditor.setTransformAnchor(mTransformEditor.resolveAnchorPoint(QPoint(), mState->selectionPolygon, 0));
 }
 
