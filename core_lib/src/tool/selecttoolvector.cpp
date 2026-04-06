@@ -39,11 +39,6 @@ void SelectTool::vectorToolPressEvent(PointerEvent* event, VectorTool& tool)
 
     if (selectMan->somethingSelected() && tool.selectionSet) // there is something selected
     {
-        Layer* currentLayer = mEditor->layers()->currentLayer();
-        VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-        if (vectorImage != nullptr) {
-            vectorImage->deselectAll();
-        }
         tool.dragState.selectionRect = mEditor->select()->mapToSelection(mEditor->select()->mySelectionRect()).boundingRect();
         tool.dragState.dragHandle = mEditor->select()->resolveHandleMode(canvasPos, selectMan->selectionTolerance());
     }
@@ -67,7 +62,7 @@ void SelectTool::vectorToolMoveEvent(PointerEvent* event, VectorTool& tool)
     if (mScribbleArea->isPointerInUse())
     {
         // QRectF
-        if (!tool.selectionSet) {
+        if (!tool.selectionSet || tool.dragState.dragHandle == DragHandle::NONE) {
             // When there's no existing selection, create one based on the anchor
             tool.dragState.selectionRect = QRectF(canvasPos, tool.dragState.dragFromPoint);
         }
@@ -89,16 +84,20 @@ void SelectTool::vectorToolReleaseEvent(PointerEvent *event, VectorTool &tool)
 {
     QPointF canvasPos = event->canvasPos();
 
-    if (mEditor->select()->isOutsideSelectionArea(canvasPos, mEditor->select()->selectionTolerance()))
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+    if (currentLayer == nullptr) { return; }
+    VectorImage *vectorImage = static_cast<VectorImage*>(currentLayer->getLastKeyFrameAtPosition(mEditor->currentFrame()));
+    if (vectorImage == nullptr) { return; }
+
+    if (mEditor->select()->somethingSelected() && !vectorImage->intersects(tool.dragState.selectionRect))
     {
         tool.selectionSet = false;
-        vectorToolDeselectAll();
+        mEditor->select()->resetSelectionProperties();
     }
     else
     {
         tool.selectionSet = true;
         mEditor->select()->setSelection(tool.dragState.selectionRect);
-        vectorToolSetSelection();
     }
     tool.dragState = DragState();
 
@@ -108,37 +107,11 @@ void SelectTool::vectorToolReleaseEvent(PointerEvent *event, VectorTool &tool)
     mScribbleArea->updateFrame();
 }
 
-void SelectTool::vectorToolDeselectAll()
+void SelectTool::vectorToolPaintEvent(QPainter& painter, const QRect, const VectorTool& tool)
 {
-    mEditor->select()->resetSelectionProperties();
+    if (tool.dragState.selectionRect.isNull()) { return; }
 
-    Layer* currentLayer = mEditor->layers()->currentLayer();
-    if (currentLayer == nullptr) { return; }
-    VectorImage *vectorImage = static_cast<VectorImage*>(currentLayer->getLastKeyFrameAtPosition(mEditor->currentFrame()));
-    if (vectorImage == nullptr) { return; }
-
-    vectorImage->deselectAll();
-}
-
-/**
- * @brief SelectTool::vectorToolSetSelection
- * Keep selection rect and normalize if invalid
- */
-void SelectTool::vectorToolSetSelection()
-{
-    Layer* currentLayer = mEditor->layers()->currentLayer();
-    if (currentLayer == nullptr) { return; }
-
-    VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
-    if (vectorImage == nullptr) { return; }
-    auto selectMan = mEditor->select();
-    selectMan->setSelection(vectorImage->getSelectionRect());
-}
-
-void SelectTool::vectorToolPaintEvent(QPainter& painter, const QRect blitRect, const VectorTool& tool)
-{
     Object* object = mEditor->object();
-
     auto selectMan = mEditor->select();
 
     TransformParameters params = { tool.dragState.selectionRect, tool.dragState.selectionRect.center(), mEditor->view()->getView(), selectMan->selectionTransform() };

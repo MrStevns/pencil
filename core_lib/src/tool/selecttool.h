@@ -81,10 +81,7 @@ private: // Vector
     void vectorToolMoveEvent(PointerEvent* event, VectorTool& tool);
     void vectorToolReleaseEvent(PointerEvent* event, VectorTool& tool);
 
-    void vectorToolPaintEvent(QPainter& painter, const QRect blitRect, const VectorTool& tool);
-
-    void vectorToolDeselectAll();
-    void vectorToolSetSelection();
+    void vectorToolPaintEvent(QPainter& painter, const QRect, const VectorTool& tool);
 
 protected:
     void pointerPressEvent(PointerEvent*) override;

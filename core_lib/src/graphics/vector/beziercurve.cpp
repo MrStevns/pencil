@@ -521,7 +521,7 @@ QPainterPath BezierCurve::getStraightPath()
 }
 
 // With bezier curve fitting
-QPainterPath BezierCurve::getSimplePath()
+QPainterPath BezierCurve::getSimplePath() const
 {
     QPainterPath path;
     path.moveTo(origin);
@@ -817,7 +817,7 @@ bool BezierCurve::intersects(QPointF point, qreal distance)
     return result;
 }
 
-bool BezierCurve::intersects(QRectF rectangle)
+bool BezierCurve::intersects(QRectF rectangle) const
 {
     bool result = false;
     if ( getSimplePath().controlPointRect().intersects(rectangle))

@@ -807,6 +807,18 @@ int VectorImage::getFirstSelectedArea()
     return result;
 }
 
+bool VectorImage::intersects(const QRectF& rect) const
+{
+    for (int i = 0; i < mCurves.size(); i++)
+    {
+        if (mCurves.at(i).intersects(rect)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /**
  * @brief VectorImage::selectAll
  */

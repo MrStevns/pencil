@@ -9,7 +9,7 @@
 struct SelectionVectorState
 {
     QRectF selectionRect;
-    QPolygonF selectionPolygon;
+    // QPolygonF selectionPolygon;
     QList<int> selectedCurves;
     QList<VertexRef> selectedVertices;
     SelectionTransformState transformState;

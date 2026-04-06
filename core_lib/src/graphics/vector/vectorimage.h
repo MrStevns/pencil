@@ -67,6 +67,13 @@ public:
     bool isAreaSelected(int areaNumber);
     bool isPathFilled();
 
+    /**
+     * @brief Check if the input rect intersects with any curve
+     * @param rect
+     * @return true if any curve intersects, otherwise false
+     */
+    bool intersects(const QRectF& rect) const;
+
     int getFirstSelectedCurve();
     int getFirstSelectedArea();
     int getNumOfCurvesSelected();

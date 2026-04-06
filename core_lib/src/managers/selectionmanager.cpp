@@ -183,6 +183,8 @@ DragHandle SelectionManager::resolveHandleMode(const QPointF& point, qreal toler
     {
     case Layer::BITMAP:
         return mBitmapSelection.resolveHandleMode(point, tolerance);
+    case Layer::VECTOR:
+        return mVectorSelection.resolveHandleMode(point, tolerance);
     default:
         return DragHandle::NONE;
     }
@@ -194,6 +196,8 @@ bool SelectionManager::somethingSelected() const
     {
     case Layer::BITMAP:
         return mBitmapSelection.somethingSelected();
+    case Layer::VECTOR:
+        return mVectorSelection.somethingSelected();
     default:
         return false;
     }
@@ -205,8 +209,10 @@ bool SelectionManager::isOutsideSelectionArea(const QPointF &point, qreal tolera
     {
     case Layer::BITMAP:
         return mBitmapSelection.isOutsideSelectionArea(point, tolerance);
+    case Layer::VECTOR:
+        return mVectorSelection.isOutsideSelectionArea(point, tolerance);
     default:
-        return false;
+        return true;
     }
 }
 
@@ -282,6 +288,8 @@ QRectF SelectionManager::mySelectionRect() const {
     {
         case Layer::BITMAP:
             return mBitmapSelection.selectionRect();
+        case Layer::VECTOR:
+            return mVectorSelection.selectionRect();
         default:
             return QRectF();
     }
@@ -485,6 +493,8 @@ void SelectionManager::resetSelectionProperties()
     {
     case Layer::BITMAP:
         return mBitmapSelection.resetSelectionProperties();
+    case Layer::VECTOR:
+        return mVectorSelection.resetSelectionProperties();
     default:
         return;
     }

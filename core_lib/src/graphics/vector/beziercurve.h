@@ -55,7 +55,7 @@ public:
     bool isPartlySelected() const { bool result=false; for(int i=0; i<selected.size(); i++) result = result || selected[i]; return result; }
     bool isInvisible() const { return invisible; }
     bool intersects(QPointF point, qreal distance);
-    bool intersects(QRectF rectangle);
+    bool intersects(QRectF rectangle) const;
     bool isFilled() const { return mFilled; }
 
     void setOrigin(const QPointF& point);
@@ -81,7 +81,7 @@ public:
     QPointF getPointOnCubic(int i, qreal t);
     void removeVertex(int i);
     QPainterPath getStraightPath();
-    QPainterPath getSimplePath();
+    QPainterPath getSimplePath() const;
     QPainterPath getStrokedPath();
     QPainterPath getStrokedPath(qreal width);
     QPainterPath getStrokedPath(qreal width, bool pressure);
