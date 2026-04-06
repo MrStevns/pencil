@@ -31,11 +31,13 @@ HEADERS +=  \
     src/graphics/bitmap/bitmapbucket.h \
     src/graphics/bitmap/bitmapimage.h \
     src/graphics/bitmap/selectionbitmapeditor.h \
+    src/graphics/bitmap/selectionbitmapstate.h \
     src/graphics/bitmap/tile.h \
     src/graphics/bitmap/tiledbuffer.h \
     src/graphics/vector/bezierarea.h \
     src/graphics/vector/beziercurve.h \
     src/graphics/vector/colorref.h \
+    src/graphics/vector/selectionvectorstate.h \
     src/graphics/vector/vectorimage.h \
     src/graphics/vector/vectorselection.h \
     src/graphics/vector/vertexref.h \
@@ -71,8 +73,8 @@ HEADERS +=  \
     src/structure/layersound.h \
     src/structure/layervector.h \
     src/structure/pegbaraligner.h \
-    src/structure/selectionstate.h \
     src/structure/selectiontransformeditor.h \
+    src/structure/selectiontransformstate.h \
     src/structure/soundclip.h \
     src/structure/object.h \
     src/structure/objectdata.h \

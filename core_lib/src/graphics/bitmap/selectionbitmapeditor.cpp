@@ -87,32 +87,32 @@ QPolygon SelectionBitmapEditor::selectionPolygon() const
 qreal SelectionBitmapEditor::rotation() const
 {
     if (!mIsValid) { return 0; }
-    return mTransformEditor.myRotation();
+    return mTransformEditor.rotationAngle();
 }
 
 qreal SelectionBitmapEditor::scaleX() const
 {
     if (!mIsValid) { return 1; }
-    return mTransformEditor.myScaleX();
+    return mTransformEditor.scaleX();
 }
 
 qreal SelectionBitmapEditor::scaleY() const
 {
     if (!mIsValid) { return 1; }
-    return mTransformEditor.myScaleY();
+    return mTransformEditor.scaleY();
 }
 
 QPointF SelectionBitmapEditor::translation() const
 {
     if (!mIsValid) { return QPointF(); }
 
-    return mTransformEditor.myTranslation().toPoint();
+    return mTransformEditor.translation().toPoint();
 }
 
 QTransform SelectionBitmapEditor::transform() const
 {
     if (!mIsValid) { return QTransform(); }
-    return mTransformEditor.myTransform();
+    return mTransformEditor.transform();
 }
 
 void SelectionBitmapEditor::scaleAroundAnchorPoint(DragHandle handle, QPointF position)

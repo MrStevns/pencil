@@ -1,20 +1,12 @@
-#ifndef SELECTIONSTATE_H
-#define SELECTIONSTATE_H
+#ifndef SELECTIONBITMAPSTATE_H
+#define SELECTIONBITMAPSTATE_H
+
+#include "selectiontransformstate.h"
 
 #include <QPointF>
 #include <QTransform>
 #include <QPolygonF>
 #include <QImage>
-
-struct SelectionTransformState {
-    qreal scaleX = 1;
-    qreal scaleY = 1;
-    QPointF translation;
-    qreal rotatedAngle = 0.0;
-    QPointF anchorPoint;
-
-    QTransform selectionTransform;
-};
 
 struct SelectionBitmapState {
     // The rect that belongs to the initial selection
@@ -39,4 +31,4 @@ struct SelectionBitmapState {
     bool smoothTransform = true;
 };
 
-#endif // SELECTIONSTATE_H
+#endif // SELECTIONBITMAPSTATE_H

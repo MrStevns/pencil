@@ -14,7 +14,7 @@ GNU General Public License for more details.
 #define SELECTIONTRANSFORMEDITOR_H
 
 #include "perspectivemode.h"
-#include "selectionstate.h"
+#include "selectiontransformstate.h"
 
 #include <QPointF>
 #include <QRectF>

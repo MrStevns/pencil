@@ -2,6 +2,7 @@
 #define SELECTIONBITMAPEDITOR_H
 
 #include "selectiontransformeditor.h"
+#include "selectionbitmapstate.h"
 
 #include <QImage>
 

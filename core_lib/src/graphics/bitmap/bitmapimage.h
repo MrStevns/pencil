@@ -22,7 +22,7 @@ GNU General Public License for more details.
 #include <QtMath>
 #include <QHash>
 
-#include "selectionstate.h"
+#include "selectionbitmapstate.h"
 
 class TiledBuffer;
 
