@@ -30,7 +30,7 @@ GNU General Public License for more details.
 
 void MoveTool::bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool)
 {
-    auto selectionEditor = mEditor->select()->currentSelectionBitmapEditor();
+    auto selectionEditor = mEditor->select()->activeBitmapEditor();
     const QPointF& canvasPos = event->canvasPos();
     const Qt::KeyboardModifiers keyMod = event->modifiers();
 
@@ -128,7 +128,7 @@ void MoveTool::bitmapToolSetDragState(PointerEvent* event, const SelectionBitmap
 
 void MoveTool::bitmapToolTransformSelection(const PointerEvent* event, const BitmapTool& tool)
 {
-    auto selectionEditor = mEditor->select()->currentSelectionBitmapEditor();
+    auto selectionEditor = mEditor->select()->activeBitmapEditor();
     if (selectionEditor->somethingSelected())
     {
         const Qt::KeyboardModifiers keyMod = event->modifiers();

@@ -21,6 +21,7 @@ GNU General Public License for more details.
 #include "perspectivemode.h"
 #include "vertexref.h"
 #include "vectorselection.h"
+#include "layer.h"
 
 #include "selectionbitmapeditor.h"
 
@@ -28,6 +29,7 @@ GNU General Public License for more details.
 #include <QRectF>
 #include <QPolygonF>
 #include <QTransform>
+#include <QVector>
 
 class Editor;
 
@@ -44,6 +46,18 @@ class Editor;
 class SelectionManager : public BaseManager
 {
     Q_OBJECT
+
+    struct BitmapEditorEntry {
+        Layer::LAYER_TYPE layerType = Layer::UNDEFINED;
+        SelectionBitmapEditor bitmapEditor;
+
+        BitmapEditorEntry(Layer::LAYER_TYPE layerType, const SelectionBitmapEditor& bitmapEditor)
+        {
+            this->layerType = layerType;
+            this->bitmapEditor = bitmapEditor;
+        }
+    };
+
 public:
     explicit SelectionManager(Editor* editor);
     ~SelectionManager() override;
@@ -51,7 +65,13 @@ public:
     bool init() override;
     Status load(Object*) override;
     Status save(Object*) override;
-    void workingLayerChanged(Layer*workingLayer) override;
+    void workingLayerChanged(Layer* workingLayer) override;
+    void scrubberChanged(int framePos);
+
+    void createEditor();
+    void invalidateEditor();
+
+    SelectionBitmapEditor* activeBitmapEditor();
 
     void flipSelection(bool flipVertical);
     
@@ -111,8 +131,6 @@ public:
 
     QPolygonF getSelectionPolygon() const;
 
-    SelectionBitmapEditor* currentSelectionBitmapEditor();
-
     /// This should be called to update the selection transform
     void calculateSelectionTransformation();
 
@@ -136,14 +154,20 @@ signals:
     void needDeleteSelection();
 
 private:
+    SelectionBitmapEditor* findActiveEditor(int layerId, KeyFrame* keyFrame);
+    void setActiveEditor(int layerId, int framePos);
+
     QList<int> mClosestCurves;
     QList<VertexRef> mClosestVertices;
 
     qreal mSelectionTolerance = 10.0;
 
+    QVector<BitmapEditorEntry> mBitmapEditors;
+
     // TODO: implement
     // SelectionVectorEditor vectorSelection;
-    SelectionBitmapEditor mBitmapSelection;
+    SelectionBitmapEditor mNullBitmapEditor;
+    SelectionBitmapEditor* mActiveBitmapEditor = nullptr;
 
     Layer* mWorkingLayer = nullptr;
 };

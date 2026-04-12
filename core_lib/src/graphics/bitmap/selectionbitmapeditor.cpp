@@ -52,6 +52,8 @@ void SelectionBitmapEditor::invalidateBitmapCache()
 
 void SelectionBitmapEditor::setSelection(const QRect& rect)
 {
+    if (!mIsValid) { return; }
+
     setSelection(QPolygon(rect));
 }
 
@@ -151,6 +153,13 @@ void SelectionBitmapEditor::setSmoothTransform(bool smooth)
     mState->smoothTransform = smooth;
 
     updateTransformedSelectionState();
+}
+
+bool SelectionBitmapEditor::belongsTo(int keyPos) const
+{
+    if (!mIsValid) { return false; }
+
+    return keyPos == mBitmapImage->pos();
 }
 
 DragHandle SelectionBitmapEditor::resolveHandleMode(const QPointF& point, qreal selectionTolerance) const

@@ -27,7 +27,7 @@ GNU General Public License for more details.
 
 void MoveTool::vectorToolPressEvent(PointerEvent* event, VectorTool& tool)
 {
-    auto selectionEditor = mEditor->select()->currentSelectionBitmapEditor();
+    auto selectionEditor = mEditor->select()->activeBitmapEditor();
     const QPointF& canvasPos = event->canvasPos();
     const Qt::KeyboardModifiers keyMod = event->modifiers();
 

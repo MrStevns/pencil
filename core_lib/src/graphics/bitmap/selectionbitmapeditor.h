@@ -28,6 +28,8 @@ public:
     void scale(qreal scaleX, qreal scaleY);
     void scaleAroundAnchorPoint(DragHandle handle, QPointF position);
 
+    bool belongsTo(int keyPos) const;
+
     QPointF mapToSelection(const QPointF& point) const;
 
     QPointF mapFromLocalSpace(const QPointF& point) const;
