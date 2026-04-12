@@ -25,16 +25,6 @@ GNU General Public License for more details.
 
 SelectionManager::SelectionManager(Editor* editor) : BaseManager(editor, __FUNCTION__)
 {
-    connect(editor, &Editor::frameModified, this, [=] {
-        switch (mWorkingLayer->type())
-        {
-        case Layer::BITMAP:
-            mBitmapSelection.invalidateBitmapCache();
-            mBitmapSelection.updateTransformedSelectionState();
-        default:
-            return;
-        }
-    });
     mActiveBitmapEditor = &mNullBitmapEditor;
 }
 
