@@ -249,7 +249,12 @@ void CanvasPainter::paintBitmapOnionSkinFrame(QPainter& painter, const QRect& bl
     QPainter onionSkinPainter;
     initializePainter(onionSkinPainter, mOnionSkinPixmap, blitRect);
 
-    onionSkinPainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
+    const SelectionBitmapState& state = bitmapImage->selectionState();
+    if (state.selectionRect.isValid()) {
+        paintTransformedSelection(onionSkinPainter, state);
+    } else {
+        onionSkinPainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
+    }
     paintOnionSkinFrame(painter, onionSkinPainter, nFrame, colorize, bitmapImage->getOpacity());
 }
 
