@@ -48,12 +48,12 @@ class SelectionManager : public BaseManager
     Q_OBJECT
 
     struct BitmapEditorEntry {
-        Layer::LAYER_TYPE layerType = Layer::UNDEFINED;
+        int layerID = -1;
         SelectionBitmapEditor bitmapEditor;
 
-        BitmapEditorEntry(Layer::LAYER_TYPE layerType, const SelectionBitmapEditor& bitmapEditor)
+        BitmapEditorEntry(int layerID, const SelectionBitmapEditor& bitmapEditor)
         {
-            this->layerType = layerType;
+            this->layerID = layerID;
             this->bitmapEditor = bitmapEditor;
         }
     };

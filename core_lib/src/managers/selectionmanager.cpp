@@ -90,7 +90,7 @@ void SelectionManager::createEditor()
             auto editor = findActiveEditor(mWorkingLayer->id(), keyframe);
             if (!editor) {
                 mBitmapEditors.append(
-                            BitmapEditorEntry(mWorkingLayer->type(),
+                            BitmapEditorEntry(mWorkingLayer->id(),
                                               SelectionBitmapEditor(static_cast<BitmapImage*>(keyframe))));
                 editor = &mBitmapEditors.back().bitmapEditor;
             }
@@ -126,12 +126,8 @@ void SelectionManager::invalidateEditor()
 
 SelectionBitmapEditor* SelectionManager::findActiveEditor(int layerId, KeyFrame* keyFrame)
 {
-    if (mWorkingLayer->id() != layerId) {
-        return nullptr;
-    }
-
     for (auto& entry : mBitmapEditors) {
-        if (mWorkingLayer->type() == entry.layerType && entry.bitmapEditor.belongsTo(keyFrame->pos())) {
+        if (mWorkingLayer->id() == entry.layerID && entry.bitmapEditor.belongsTo(keyFrame->pos())) {
             return &entry.bitmapEditor;
         }
     }
