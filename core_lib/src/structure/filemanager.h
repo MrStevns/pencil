@@ -63,6 +63,8 @@ private:
     bool loadObjectOldWay(Object*, const QDomElement& root);
     bool isArchiveFormat(const QString& fileName) const;
     bool loadPalette(Object*);
+
+    Status writeToFolder(const Object* object, const QString mainXml, const QString& dataFolder, QStringList filesWritten);
     Status writeKeyFrameFiles(const Object* obj, const QString& dataFolder, QStringList& filesWritten);
     Status writeMainXml(const Object* obj, const QString& mainXmlPath, QStringList& filesWritten);
     Status writePalette(const Object* obj, const QString& dataFolder, QStringList& filesWritten);

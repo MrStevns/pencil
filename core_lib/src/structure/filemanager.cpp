@@ -339,16 +339,10 @@ Status FileManager::save(const Object* object, const QString& sFileName)
     }
 
     QStringList filesToZip; // A files list in the working folder needs to be zipped
-    Status stKeyFrames = writeKeyFrameFiles(object, sTempDataFolder, filesToZip);
-    dd.collect(stKeyFrames.details());
+    Status st = writeToFolder(object, sMainXMLFile, sTempDataFolder, filesToZip);
+    dd.collect(st.details());
 
-    Status stMainXml = writeMainXml(object, sMainXMLFile, filesToZip);
-    dd.collect(stMainXml.details());
-
-    Status stPalette = writePalette(object, sTempDataFolder, filesToZip);
-    dd.collect(stPalette.details());
-
-    const bool saveOk = stKeyFrames.ok() && stMainXml.ok() && stPalette.ok();
+    const bool saveOk = st.ok();
 
     progressForward();
 
@@ -426,14 +420,9 @@ Status FileManager::save(const Object* object, const QString& sFileName)
     return Status::OK;
 }
 
-Status FileManager::writeToWorkingFolder(const Object* object)
+Status FileManager::writeToFolder(const Object* object, const QString mainXml, const QString& dataFolder, QStringList filesWritten)
 {
     DebugDetails dd;
-
-    QStringList filesWritten;
-
-    const QString dataFolder = object->dataDir();
-    const QString mainXml = object->mainXMLFile();
 
     Status stKeyFrames = writeKeyFrameFiles(object, dataFolder, filesWritten);
     dd.collect(stKeyFrames.details());
@@ -447,6 +436,17 @@ Status FileManager::writeToWorkingFolder(const Object* object)
     const bool saveOk = stKeyFrames.ok() && stMainXml.ok() && stPalette.ok();
     const auto errorCode = (saveOk) ? Status::OK : Status::FAIL;
     return Status(errorCode, dd);
+}
+
+Status FileManager::writeToWorkingFolder(const Object* object)
+{
+    QStringList filesWritten;
+
+    const QString dataFolder = object->dataDir();
+    const QString mainXml = object->mainXMLFile();
+    Q_UNUSED(filesWritten)
+
+    return writeToFolder(object, mainXml, dataFolder, filesWritten);
 }
 
 ObjectData FileManager::loadProjectData(const QDomElement& docElem)
