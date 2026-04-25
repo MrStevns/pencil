@@ -237,7 +237,7 @@ Status FileManager::save(const Object* object, const QString& sFileName)
 {
     DebugDetails dd;
     dd << "\n[Project SAVE diagnostics]\n";
-    dd << ("file name:" + sFileName);
+    dd << ("Original file name:" + sFileName);
 
     if (object == nullptr)
     {
@@ -258,6 +258,7 @@ Status FileManager::save(const Object* object, const QString& sFileName)
     progressForward();
 
     QFileInfo fileInfo(sFileName);
+
     if (fileInfo.isDir())
     {
         dd << "Error: File name must point to a file, not a directory.";
@@ -285,14 +286,21 @@ Status FileManager::save(const Object* object, const QString& sFileName)
     QString sMainXMLFile;
     QString sDataFolder;
 
+    const QString sTempFileName = sFileName + ".tmp";
+    QString sTempDataFolder;
+
     QString fileFormat = QString("Project format: %1");
     bool isArchive = isArchiveFormat(sFileName);
+
     if (!isArchive)
     {
         dd << fileFormat.arg(".pcl");
 
-        sMainXMLFile = sFileName;
-        sDataFolder = sMainXMLFile + "." + PFF_OLD_DATA_DIR;
+        QString dataSuffix = "." + QString(PFF_OLD_DATA_DIR);
+        sMainXMLFile = sTempFileName;
+
+        sDataFolder = sFileName + dataSuffix;
+        sTempDataFolder = sFileName + dataSuffix + ".tmp";
     }
     else
     {
@@ -305,19 +313,20 @@ Status FileManager::save(const Object* object, const QString& sFileName)
 
         sMainXMLFile = QDir(sTempWorkingFolder).filePath(PFF_XML_FILE_NAME);
         sDataFolder = QDir(sTempWorkingFolder).filePath(PFF_OLD_DATA_DIR);
+        sTempDataFolder = sDataFolder;
     }
 
-    QFileInfo dataInfo(sDataFolder);
+    QFileInfo dataInfo(sTempDataFolder);
     if (!dataInfo.exists())
     {
-        QDir dir(sDataFolder); // the directory where all key frames will be saved
+        QDir dir(sTempDataFolder); // the directory where all key frames will be saved
 
-        if (!dir.mkpath(sDataFolder))
+        if (!dir.mkpath(sTempDataFolder))
         {
             dd << QString("Error: Unable to create data directory, tried to save to: %1").arg(dir.absolutePath());
             return Status(Status::FAIL, dd,
                           tr("Cannot Create Data Directory"),
-                          tr("Failed to create directory \"%1\". Please make sure you have sufficient permissions.").arg(sDataFolder));
+                          tr("Failed to create directory \"%1\". Please make sure you have sufficient permissions.").arg(sTempDataFolder));
         }
     }
     if (!dataInfo.isDir())
@@ -330,13 +339,13 @@ Status FileManager::save(const Object* object, const QString& sFileName)
     }
 
     QStringList filesToZip; // A files list in the working folder needs to be zipped
-    Status stKeyFrames = writeKeyFrameFiles(object, sDataFolder, filesToZip);
+    Status stKeyFrames = writeKeyFrameFiles(object, sTempDataFolder, filesToZip);
     dd.collect(stKeyFrames.details());
 
     Status stMainXml = writeMainXml(object, sMainXMLFile, filesToZip);
     dd.collect(stMainXml.details());
 
-    Status stPalette = writePalette(object, sDataFolder, filesToZip);
+    Status stPalette = writePalette(object, sTempDataFolder, filesToZip);
     dd.collect(stPalette.details());
 
     const bool saveOk = stKeyFrames.ok() && stMainXml.ok() && stPalette.ok();
@@ -346,11 +355,6 @@ Status FileManager::save(const Object* object, const QString& sFileName)
     if (isArchive)
     {
         dd << "\n[Archiving diagnostics]\n";
-        QString sBackupFile = backupPreviousFile(sFileName);
-
-        if (!sBackupFile.isEmpty()) {
-            dd << QString("\nNote: A backup has been made here: %1").arg(sBackupFile);
-        }
 
         if (!saveOk) {
             return Status(Status::FAIL, dd,
@@ -359,7 +363,7 @@ Status FileManager::save(const Object* object, const QString& sFileName)
         }
 
         dd << "Miniz: Zipping...";
-        Status stMiniz = MiniZ::compressFolder(sFileName, sTempWorkingFolder, filesToZip, "application/x-pencil2d-pclx");
+        Status stMiniz = MiniZ::compressFolder(sTempFileName, sTempWorkingFolder, filesToZip, "application/x-pencil2d-pclx");
         if (!stMiniz.ok())
         {
             dd.collect(stMiniz.details());
@@ -371,10 +375,43 @@ Status FileManager::save(const Object* object, const QString& sFileName)
         dd << "Miniz: Zip file saved successfully";
         Q_ASSERT(stMiniz.ok());
 
-        if (saveOk) {
-            dd << "Project saved successfully, deleting backup";
-            deleteBackupFile(sBackupFile);
+        dd << "Project saved successfully";
+    } else {
+        const QString backupDataFolder = sDataFolder + ".bak";
+        bool backupOk = QFile::rename(sDataFolder, backupDataFolder);
+
+        if (backupOk) {
+            dd << "Backup made of original data folder: " << backupDataFolder;
         }
+
+        if (QFile::rename(sTempDataFolder, sDataFolder))
+        {
+            dd << "Updated original project file successfully, deleting backup file";
+            QDir backupDir(backupDataFolder);
+            if (backupDir.removeRecursively()) {
+                dd << "Backup of data folder deleted";
+            }
+        }
+    }
+
+    const QString backupFileName = sFileName + ".bak";
+    bool backupOk = QFile::rename(sFileName, backupFileName);
+
+    if (backupOk) {
+        dd << "Turned original file into backup: " << backupFileName;
+    }
+
+    if (QFile::rename(sTempFileName, sFileName))
+    {
+        dd << "Updated original project file successfully, deleting backup file";
+        QFile::remove(backupFileName);
+    }
+    else
+    {
+        QFile::remove(sTempFileName);
+        return Status(Status::ERROR_COPY_FAIL, dd,
+                      tr("Miniz Error"),
+                      tr("An internal error occurred. Was not able to replace the project file"));
     }
 
     progressForward();
