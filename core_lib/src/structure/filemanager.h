@@ -64,7 +64,12 @@ private:
     bool isArchiveFormat(const QString& fileName) const;
     bool loadPalette(Object*);
 
-    Status writeToFolder(const Object* object, const QString mainXml, const QString& dataFolder, QStringList filesWritten);
+    Status saveAsPCL(const Object* object, const QString& fileName);
+    Status saveAsPCLX(const Object* object, const QString& fileName);
+    Status replaceBackupFile(const QString& newFilePath, const QString& originalFilePath);
+    Status ensureDataDirectoryForSaving(const QString& dataFolderPath) const;
+    Status validateSavePath(const QString& fileName) const;
+    Status writeToFolder(const Object* object, const QString mainXml, const QString& dataFolder, QStringList& filesWritten);
     Status writeKeyFrameFiles(const Object* obj, const QString& dataFolder, QStringList& filesWritten);
     Status writeMainXml(const Object* obj, const QString& mainXmlPath, QStringList& filesWritten);
     Status writePalette(const Object* obj, const QString& dataFolder, QStringList& filesWritten);
