@@ -288,13 +288,13 @@ Status FileManager::saveAsPCLX(const Object* object, const QString& filename)
     const QString sDataFolder  = QDir(sTempWorkingFolder).filePath(PFF_OLD_DATA_DIR);
 
     Status dataFolderStatus = ensureDataDirectoryForSaving(sTempWorkingFolder);
-    dd.collect(dataFolderStatus.details());
+    dd.collect(dataFolderStatus.details(), "");
 
     if (!dataFolderStatus.ok()) { return Status(dataFolderStatus.code(), dd); }
 
     QStringList filesToZip;
     Status writeStatus = writeToFolder(object, sMainXMLFile, sDataFolder, filesToZip);
-    dd.collect(writeStatus.details());
+    dd.collect(writeStatus.details(), "");
     if (!writeStatus.ok())
     {
         return Status(writeStatus.code(), dd,
@@ -308,7 +308,7 @@ Status FileManager::saveAsPCLX(const Object* object, const QString& filename)
     Status stMiniz = MiniZ::compressFolder(sTempFileName, sTempWorkingFolder, filesToZip, "application/x-pencil2d-pclx");
     if (!stMiniz.ok())
     {
-        dd.collect(stMiniz.details());
+        dd.collect(stMiniz.details(), "");
         dd << "\nError: Miniz failed to zip project";
         return Status(stMiniz.code(), dd,
                       tr("Miniz Error"),
@@ -329,13 +329,13 @@ Status FileManager::saveAsPCL(const Object* object, const QString& fileName)
     dd << "Project format: .pcl";
 
     Status directoryStatus = ensureDataDirectoryForSaving(sTempDataFolder);
-    dd.collect(directoryStatus.details());
+    dd.collect(directoryStatus.details(), "");
 
     if (!directoryStatus.ok()) { return directoryStatus; }
 
     QStringList filesToZip;
     Status writeStatus = writeToFolder(object, sTempFileName, sTempDataFolder, filesToZip);
-    dd.collect(writeStatus.details());
+    dd.collect(writeStatus.details(), "");
 
     if (!writeStatus.ok()) { return writeStatus; }
 
@@ -451,7 +451,7 @@ Status FileManager::save(const Object* object, const QString& sFileName)
     progressForward();
 
     Status validateStatus = validateSavePath(sFileName);
-    dd.collect(validateStatus.details());
+    dd.collect(validateStatus.details(), "");
     if (!validateStatus.ok()) { return Status(validateStatus.code(), dd); }
 
     const int totalCount = object->totalKeyFrameCount();
@@ -469,7 +469,7 @@ Status FileManager::save(const Object* object, const QString& sFileName)
     {
         saveStatus = saveAsPCL(object, sFileName);
     }
-    dd.collect(saveStatus.details());
+    dd.collect(saveStatus.details(), "");
 
     if (!saveStatus.ok()) { return Status(saveStatus.code(), dd); }
 

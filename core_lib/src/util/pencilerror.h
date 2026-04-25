@@ -26,6 +26,7 @@ class DebugDetails
 public:
     DebugDetails();
 
+    void collect(const DebugDetails& d, const QString& spacing);
     void collect(const DebugDetails& d);
     QString str();
     QString html();

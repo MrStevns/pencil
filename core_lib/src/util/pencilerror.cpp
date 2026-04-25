@@ -26,9 +26,14 @@ DebugDetails::DebugDetails()
 
 void DebugDetails::collect(const DebugDetails& d)
 {
+    collect(d, "&nbsp;&nbsp;");
+}
+
+void DebugDetails::collect(const DebugDetails& d, const QString& spacing)
+{
     for (const QString& s : d.mDetails)
     {
-        mDetails.append("&nbsp;&nbsp;" + s);
+        mDetails.append(spacing + s);
     }
 }
 
