@@ -80,10 +80,6 @@ private:
     void extractProjectData(const QDomElement& element, ObjectData& data);
     void handleOpenProjectError(Status::ErrorCode, const DebugDetails&);
 
-    QString backupPreviousFile(const QString& fileName);
-    void deleteBackupFile(const QString& fileName);
-    int countExistingBackups(const QString& fileName) const;
-
     void progressForward();
 
 private: // Project recovery

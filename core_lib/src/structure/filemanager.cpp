@@ -339,33 +339,46 @@ Status FileManager::saveAsPCL(const Object* object, const QString& fileName)
 
     if (!writeStatus.ok()) { return writeStatus; }
 
-    const QString backupDataFolder = sDataFolder + ".bak";
-    bool backupCreated = false;
+    const QString backupDataFolderPath = sDataFolder + ".bak";
     QDir folderInfo(sDataFolder);
+    QDir backupInfo(backupDataFolderPath);
+
+    if (backupInfo.exists()) {
+
+        dd << "Stale data folder backup found from previous save attempt, removing...";
+
+        if (!backupInfo.removeRecursively()) {
+            dd << "Unable to remove stale backup directory, aborting!";
+            return Status(Status::ERROR_BACKUP_FAIL, dd,
+                          tr("Backup Error"),
+                          tr("Unable to remove stale backup data folder at: %1"
+                             "Please remove it manually and try again.").arg(backupDataFolderPath));
+        }
+    }
 
     if (folderInfo.exists()) {
-        backupCreated = QFile::rename(sDataFolder, backupDataFolder);
-        if (!backupCreated)
+
+        if (!QFile::rename(sDataFolder, backupDataFolderPath))
         {
             dd << "Unable to backup the original data folder, aborting!";
             return Status(Status::ERROR_COPY_FAIL, dd,
-                          tr("Save Error"),
-                          tr("An internal error occurred. Not able to create backup"));
+                          tr("Backup Error"),
+                          tr("Unable to create a backup of %1 before saving.").arg(sDataFolder));
         }
 
-        dd << "Backup made of original data folder: " << backupDataFolder;
+        dd << "Backup made of original data folder: " << backupDataFolderPath;
     }
 
     if (!QFile::rename(sTempDataFolder, sDataFolder))
     {
         QFile::remove(sTempDataFolder);
         return Status(Status::ERROR_COPY_FAIL, dd,
-                      tr("Save Error"),
+                      tr("Backup Error"),
                       tr("An internal error occurred. Not able to replace the data folder"));
     }
 
     dd << "Updated original project data folder successfully, deleting backup";
-    QDir(backupDataFolder).removeRecursively();
+    QDir(backupDataFolderPath).removeRecursively();
 
     return Status(replaceBackupFile(sTempFileName, fileName).code(), dd);
 }
@@ -377,16 +390,27 @@ Status FileManager::replaceBackupFile(const QString& newFilePath, const QString&
     QFileInfo originalFileInfo(originalFilePath);
 
     const QString backupPath = originalFilePath + ".bak";
-    bool fileExists = originalFileInfo.exists();
-    bool backupCreated = false;
 
-    if (fileExists) {
+    if (QFile::exists(backupPath)) {
+        dd << "Found stale backup file from previous save attempt, removing...";
 
-        backupCreated = QFile::rename(originalFilePath, backupPath);
-        if (!backupCreated)
+        if (!QFile::remove(backupPath)) {
+            dd << "Unable to remove stale backup file, aborting!";
+            return Status(Status::ERROR_BACKUP_FAIL, dd,
+                          tr("Backup Error"),
+                          tr("Unable to remove stale backup file at: %1"
+                             "Please remove it manually and try again.").arg(backupPath));
+        }
+    }
+
+    if (originalFileInfo.exists()) {
+
+        if (!QFile::rename(originalFilePath, backupPath))
         {
             dd << "Unable to backup original file, aborting!";
-            return Status(Status::ERROR_COPY_FAIL, dd);
+            return Status(Status::ERROR_BACKUP_FAIL, dd,
+                    tr("Backup Error"),
+                    tr("Unable to create a backup of %1 before saving.").arg(originalFilePath));
         }
 
         dd << "Backed up original file here: " << backupPath;
@@ -396,14 +420,12 @@ Status FileManager::replaceBackupFile(const QString& newFilePath, const QString&
     {
         QFile::remove(newFilePath);
         return Status(Status::ERROR_COPY_FAIL, dd,
-                      tr("Save Error"),
-                      tr("An internal error occurred. Not able to replace the project file"));
+                    tr("Save Error"),
+                    tr("An internal error occurred. Not able to replace the project file"));
     }
 
-    if (backupCreated) {
-        dd << "Updated original project file successfully, deleting backup file";
-        QFile::remove(backupPath);
-    }
+    dd << "Updated original project file successfully, deleting backup file";
+    QFile::remove(backupPath);
 
     return Status(Status::OK, dd);
 }
@@ -677,57 +699,6 @@ void FileManager::handleOpenProjectError(Status::ErrorCode error, const DebugDet
 
     mError = Status(error, dd, title, errorDesc + contactLinks);
     removePFFTmpDirectory(mstrLastTempFolder);
-}
-
-int FileManager::countExistingBackups(const QString& fileName) const
-{
-    QFileInfo fileInfo(fileName);
-    QDir directory(fileInfo.absoluteDir());
-    const QString& baseFileName = fileInfo.completeBaseName();
-
-    int backupCount = 0;
-    for (const QFileInfo &dirFileInfo : directory.entryInfoList(QDir::Filter::Files)) {
-        QString searchFileAbsPath = dirFileInfo.absoluteFilePath();
-        QString searchFileName = dirFileInfo.baseName();
-
-        bool sameBaseName = baseFileName.compare(searchFileName) == 0;
-        if (sameBaseName && searchFileAbsPath.contains(PFF_BACKUP_IDENTIFIER)) {
-            backupCount++;
-        }
-    }
-
-    return backupCount;
-}
-
-QString FileManager::backupPreviousFile(const QString& fileName)
-{
-    if (!QFile::exists(fileName))
-        return "";
-
-    QFileInfo fileInfo(fileName);
-    QString baseName = fileInfo.completeBaseName();
-
-    int backupCount = countExistingBackups(fileName) + 1; // start index 1
-    QString countStr = QString::number(backupCount);
-
-    QString sBackupFile = baseName + "." + PFF_BACKUP_IDENTIFIER + countStr + "." + fileInfo.suffix();
-    QString sBackupFileFullPath = QDir(fileInfo.absolutePath()).filePath(sBackupFile);
-
-    bool ok = QFile::copy(fileInfo.absoluteFilePath(), sBackupFileFullPath);
-    if (!ok)
-    {
-        FILEMANAGER_LOG("Cannot backup the previous file");
-        return "";
-    }
-    return sBackupFileFullPath;
-}
-
-void FileManager::deleteBackupFile(const QString& fileName)
-{
-    if (QFile::exists(fileName))
-    {
-        QFile::remove(fileName);
-    }
 }
 
 void FileManager::progressForward()

@@ -58,6 +58,7 @@ public:
         ERROR_INVALID_PENCIL_FILE,
         ERROR_MINIZ_FAIL,
         ERROR_COPY_FAIL,
+        ERROR_BACKUP_FAIL,
 
         // General
         ERROR_INVALID_LAYER_TYPE,
