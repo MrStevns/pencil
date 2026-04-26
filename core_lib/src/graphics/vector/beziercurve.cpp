@@ -86,6 +86,17 @@ BezierCurve::BezierCurve(const QList<QPointF>& pointList, const QList<qreal>& pr
 
 Status BezierCurve::createDomElement( QXmlStreamWriter& xmlStream )
 {
+    DebugDetails debugInfo("BezierCurve::createDomElement");
+    debugInfo << QString("width: %1").arg(width);
+    debugInfo << QString("variableWidth: %1").arg("variableWidth");
+    debugInfo << QString("feather: %1").arg(feather);
+    debugInfo << QString("invisible: %1").arg(invisible);
+    debugInfo << QString("filled: %1").arg(mFilled);
+    debugInfo << QString("colorNumber: %1").arg(colorNumber);
+    debugInfo << QString("originX: %1").arg(origin.x());
+    debugInfo << QString("originY: %1").arg(origin.y());
+    debugInfo << QString("originPressure: %1").arg(pressure.at(0));
+
     xmlStream.writeStartElement( "curve" );
     xmlStream.writeAttribute( "width", QString::number( width ) );
     xmlStream.writeAttribute( "variableWidth", variableWidth ? "true" : "false" );
@@ -118,30 +129,19 @@ Status BezierCurve::createDomElement( QXmlStreamWriter& xmlStream )
 
     if ( xmlStream.hasError() && errorLocation >= 0 )
     {
-        DebugDetails debugInfo;
-        debugInfo << "BezierCurve::createDomElement";
-        debugInfo << QString("width = %1").arg(width);
-        debugInfo << QString("variableWidth = %1").arg("variableWidth");
-        debugInfo << QString("feather = %1").arg(feather);
-        debugInfo << QString("invisible = %1").arg(invisible);
-        debugInfo << QString("filled = %1").arg(mFilled);
-        debugInfo << QString("colorNumber = %1").arg(colorNumber);
-        debugInfo << QString("originX = %1").arg(origin.x());
-        debugInfo << QString("originY = %1").arg(origin.y());
-        debugInfo << QString("originPressure = %1").arg(pressure.at(0));
-        debugInfo << QString("- segmentTag[%1] has failed to write").arg(errorLocation);
-        debugInfo << QString("&nbsp;&nbsp;c1x = %1").arg(c1.at(errorLocation).x());
-        debugInfo << QString("&nbsp;&nbsp;c1y = %1").arg(c1.at(errorLocation).y());
-        debugInfo << QString("&nbsp;&nbsp;c2x = %1").arg(c2.at(errorLocation).x());
-        debugInfo << QString("&nbsp;&nbsp;c2y = %1").arg(c2.at(errorLocation).y());
-        debugInfo << QString("&nbsp;&nbsp;vx = %1").arg(vertex.at(errorLocation).x());
-        debugInfo << QString("&nbsp;&nbsp;vy = %1").arg(vertex.at(errorLocation).y());
-        debugInfo << QString("&nbsp;&nbsp;pressure = %1").arg(pressure.at(errorLocation + 1));
+        debugInfo.addSection(QString("Error found at SegmentTag: %1").arg(errorLocation));
+        debugInfo << QString("c1x: %1").arg(c1.at(errorLocation).x());
+        debugInfo << QString("c1y: %1").arg(c1.at(errorLocation).y());
+        debugInfo << QString("c2x: %1").arg(c2.at(errorLocation).x());
+        debugInfo << QString("c2y: %1").arg(c2.at(errorLocation).y());
+        debugInfo << QString("vx: %1").arg(vertex.at(errorLocation).x());
+        debugInfo << QString("vy: %1").arg(vertex.at(errorLocation).y());
+        debugInfo << QString("pressure: %1").arg(pressure.at(errorLocation + 1));
 
         return Status(Status::FAIL, debugInfo);
     }
 
-    return Status::OK;
+    return Status(Status::OK, debugInfo);
 }
 
 void BezierCurve::loadDomElement(const QDomElement& element)

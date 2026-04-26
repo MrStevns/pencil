@@ -924,10 +924,9 @@ Status Object::exportIm(int frame, const QTransform& view, QSize cameraSize, QSi
     if (b) {
         return Status::OK;
     } else {
-        DebugDetails dd;
-        dd << "Object::exportIm";
-        dd << QString("&nbsp;&nbsp;filePath: ").append(filePath);
-        dd << QString("&nbsp;&nbsp;Error: %1 (code %2)").arg(writer.errorString()).arg(static_cast<int>(writer.error()));
+        DebugDetails dd("Object::exportIm");
+        dd << QString("filePath: ").append(filePath);
+        dd << QString("Error: %1 (code %2)").arg(writer.errorString()).arg(static_cast<int>(writer.error()));
         return Status(Status::FAIL, dd);
     }
 }

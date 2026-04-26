@@ -53,6 +53,9 @@ void BezierArea::setSelected(bool YesOrNo)
 
 Status BezierArea::createDomElement( QXmlStreamWriter& xmlStream )
 {
+    DebugDetails debugInfo("BezierArea::createDomElement");
+    debugInfo << QString("colorNumber: %1").arg(mColorNumber);
+
     xmlStream.writeStartElement( "area" );
     xmlStream.writeAttribute( "colourNumber", QString::number( mColorNumber ) );
     xmlStream.writeAttribute("filled", QString::number( mIsFilled ) );
@@ -74,17 +77,14 @@ Status BezierArea::createDomElement( QXmlStreamWriter& xmlStream )
 
     if ( xmlStream.hasError() && errorLocation >= 0 )
     {
-        DebugDetails debugInfo;
-        debugInfo << "BezierArea::createDomElement";
-        debugInfo << QString("colorNumber = %1").arg(mColorNumber);
-        debugInfo << QString("- mVertex[%1] has failed to write").arg(errorLocation);
-        debugInfo << QString("&nbsp;&nbsp;curve = %1").arg(mVertex.at(errorLocation).curveNumber);
-        debugInfo << QString("&nbsp;&nbsp;vertex = %1 ").arg(mVertex.at(errorLocation).vertexNumber);
+        debugInfo.addSection(QString("Error found at Vertex: %1").arg(errorLocation));
+        debugInfo << QString("Curve number: %1").arg(mVertex.at(errorLocation).curveNumber);
+        debugInfo << QString("Vertex number: %1 ").arg(mVertex.at(errorLocation).vertexNumber);
 
         return Status( Status::FAIL, debugInfo );
     }
 
-    return Status::OK;
+    return Status(Status::OK, debugInfo);
 }
 
 void BezierArea::loadDomElement(const QDomElement& element)

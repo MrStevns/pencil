@@ -788,18 +788,17 @@ BitmapImage* BitmapImage::scanToTransparent(BitmapImage *img, const int threshol
 
 Status BitmapImage::writeFile(const QString& filename)
 {
-    DebugDetails dd;
-    dd << "BitmapImage::writeFile";
-    dd << QString("&nbsp;&nbsp;filename = ").append(filename);
+    DebugDetails dd("BitmapImage::writeFile");
 
     QImageWriter writer(filename);
     if (!mImage.isNull())
     {
         bool b = writer.write(mImage);
         if (b) {
-            return Status::OK;
+            dd << "[✓] Image written to: " << filename;
+            return Status(Status::OK, dd);
         } else {
-            dd << QString("&nbsp;&nbsp;Error: %1 (Code %2)").arg(writer.errorString()).arg(static_cast<int>(writer.error()));
+            dd << QString("Error: %1 (Code %2)").arg(writer.errorString()).arg(static_cast<int>(writer.error()));
             return Status(Status::FAIL, dd);
         }
     }
@@ -811,7 +810,7 @@ Status BitmapImage::writeFile(const QString& filename)
         {
             bool b = f.remove();
             if (!b) {
-                dd << "&nbsp;&nbsp;Error: Image is empty but unable to remove file.";
+                dd << "Error: Image is empty but unable to remove file.";
                 return Status::FAIL;
             }
         }

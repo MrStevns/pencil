@@ -311,8 +311,6 @@ Status FileManager::saveAsPCLX(const Object* object, const QString& filename)
                       tr("An internal error occurred. Unable to write to project file"));
     }
 
-    dd.addSection("Compressing");
-
     Status stMiniz = MiniZ::compressFolder(sTempFileName, sTempWorkingFolder, filesToZip, "application/x-pencil2d-pclx");
     dd.collect(stMiniz.details());
     if (!stMiniz.ok())
