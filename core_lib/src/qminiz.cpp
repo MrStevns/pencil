@@ -91,6 +91,8 @@ Status MiniZ::compressFolder(QString zipFilePath, QString srcFolderPath, const Q
         dd << QString("Error: Failed to init writer. Error code: %1, reason: %2").arg(static_cast<int>(err)).arg(mz_zip_get_error_string(err));
         return Status(Status::FAIL, dd);
     }
+    dd << "[✓] Zip writer initiated";
+
     ScopeGuard mzScopeGuard2([&] {
         mz_zip_writer_end(mz);
     });
@@ -108,6 +110,7 @@ Status MiniZ::compressFolder(QString zipFilePath, QString srcFolderPath, const Q
             dd << QString("ERROR: Unable to add mimetype. Error code: %1, reason: %2").arg(static_cast<int>(err)).arg(mz_zip_get_error_string(err));
             return Status(Status::FAIL, dd);
         }
+        dd << "[✓] Added meta data";
     }
 
     //qDebug() << "SrcFolder=" << srcFolderPath;
@@ -116,8 +119,6 @@ Status MiniZ::compressFolder(QString zipFilePath, QString srcFolderPath, const Q
         QString sRelativePath = filePath;
         sRelativePath.remove(srcFolderPath);
         if (sRelativePath == "mimetype") continue;
-
-        dd << QString("Add file to zip: ").append(sRelativePath);
 
         ok = mz_zip_writer_add_file(mz,
                                     sRelativePath.toUtf8().data(),
@@ -129,6 +130,7 @@ Status MiniZ::compressFolder(QString zipFilePath, QString srcFolderPath, const Q
             dd << QString("Error: Unable to add file: %3. Error code: %1, reason: %2 - Aborting!").arg(static_cast<int>(err)).arg(mz_zip_get_error_string(err), sRelativePath);
             return Status(Status::FAIL, dd);
         }
+        dd << QString("[✓] Added file to zip: ").append(sRelativePath);
     }
     ok &= mz_zip_writer_finalize_archive(mz);
     if (!ok)
@@ -138,7 +140,9 @@ Status MiniZ::compressFolder(QString zipFilePath, QString srcFolderPath, const Q
         return Status(Status::FAIL, dd);
     }
 
-    return Status::OK;
+    dd << "[✓] Zip finalized";
+
+    return Status(Status::OK, dd);
 }
 
 Status MiniZ::uncompressFolder(QString zipFilePath, QString destPath)

@@ -100,7 +100,6 @@ Status LayerBitmap::saveKeyFrameFile(KeyFrame* keyframe, QString path)
         bitmapImage->setFileName("");
         return Status(Status::FAIL, dd);
     }
-    dd << "[✓] Image written to: " << bitmapImage->fileName();
 
     bitmapImage->setModified(false);
     return Status(Status::OK, dd);

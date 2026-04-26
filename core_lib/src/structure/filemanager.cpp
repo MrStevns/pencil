@@ -320,7 +320,6 @@ Status FileManager::saveAsPCLX(const Object* object, const QString& filename)
                       tr("Compression Error"),
                       tr("An internal error occurred. The project may not have been saved successfully."));
     }
-    dd << "[✓] Zip file saved";
 
     Status replaceStatus = replaceBackupFile(sTempFileName, filename);
     dd.collect(replaceStatus.details());
@@ -331,7 +330,7 @@ Status FileManager::saveAsPCLX(const Object* object, const QString& filename)
 
 Status FileManager::saveAsPCL(const Object* object, const QString& fileName)
 {
-    DebugDetails dd("Save PCL Diagnostics");
+    DebugDetails dd("Save as PCL");
     const QString sTempFileName   = fileName + ".tmp";
     const QString sDataFolder     = fileName + "." + QString(PFF_OLD_DATA_DIR);
     const QString sTempDataFolder = sDataFolder + ".tmp";
@@ -354,6 +353,8 @@ Status FileManager::saveAsPCL(const Object* object, const QString& fileName)
         return writeStatus;
     }
 
+    dd.addSection("Backup dataFolder");
+
     const QString backupDataFolderPath = sDataFolder + ".bak";
     QDir folderInfo(sDataFolder);
     QDir backupInfo(backupDataFolderPath);
@@ -369,19 +370,20 @@ Status FileManager::saveAsPCL(const Object* object, const QString& fileName)
                           tr("Unable to remove stale backup data folder at: %1"
                              "Please remove it manually and try again.").arg(backupDataFolderPath));
         }
+        dd << "[✓] Stale data folder removed";
     }
 
     if (folderInfo.exists()) {
 
         if (!QFile::rename(sDataFolder, backupDataFolderPath))
         {
-            dd << "Unable to backup the original data folder, aborting!";
+            dd << "Error: Unable to backup the original data folder, aborting!";
             return Status(Status::ERROR_COPY_FAIL, dd,
                           tr("Backup Error"),
                           tr("Unable to create a backup of %1 before saving.").arg(sDataFolder));
         }
 
-        dd << "Backup made of original data folder: " << backupDataFolderPath;
+        dd << "[✓] Created backup at: " << backupDataFolderPath;
     }
 
     if (!QFile::rename(sTempDataFolder, sDataFolder))
@@ -391,9 +393,11 @@ Status FileManager::saveAsPCL(const Object* object, const QString& fileName)
                       tr("Backup Error"),
                       tr("An internal error occurred. Not able to replace the data folder"));
     }
+    dd << "[✓] Updated data folder";
 
-    dd << "Updated original project data folder successfully, deleting backup";
-    QDir(backupDataFolderPath).removeRecursively();
+    if (QDir(backupDataFolderPath).removeRecursively()) {
+        dd << "[✓] Removed data folder backup";
+    }
 
     Status replaceStatus = replaceBackupFile(sTempFileName, fileName);
     dd.collect(replaceStatus.details());
@@ -404,7 +408,7 @@ Status FileManager::saveAsPCL(const Object* object, const QString& fileName)
 
 Status FileManager::replaceBackupFile(const QString& newFilePath, const QString& originalFilePath)
 {
-    DebugDetails dd("Backup diagnostics");
+    DebugDetails dd("Backup file");
 
     QFileInfo originalFileInfo(originalFilePath);
 
@@ -433,7 +437,7 @@ Status FileManager::replaceBackupFile(const QString& newFilePath, const QString&
                     tr("Unable to create a backup of %1 before saving.").arg(originalFilePath));
         }
 
-        dd << "[✓] Backed up original file here: " << backupPath;
+        dd << "[✓] Created backup at: " << backupPath;
     }
 
     if (!QFile::rename(newFilePath, originalFilePath))
@@ -455,7 +459,7 @@ Status FileManager::replaceBackupFile(const QString& newFilePath, const QString&
 
 Status FileManager::ensureDataDirectoryForSaving(const QString& dataFolderPath) const
 {
-    DebugDetails dd("Data directory diagnostics");
+    DebugDetails dd("Data directory validation");
     QFileInfo dataInfo(dataFolderPath);
     if (!dataInfo.exists())
     {
@@ -468,8 +472,9 @@ Status FileManager::ensureDataDirectoryForSaving(const QString& dataFolderPath) 
                           tr("Cannot Create Data Directory"),
                           tr("Failed to create directory \"%1\". Please make sure you have sufficient permissions.").arg(dataFolderPath));
         }
-        dd << "[✓] Data folder created";
+        dd << "[✓] Folder created";
     }
+    dd << "[✓] Folder exists";
 
     if (!dataInfo.isDir())
     {
@@ -479,7 +484,7 @@ Status FileManager::ensureDataDirectoryForSaving(const QString& dataFolderPath) 
                       tr("Cannot Create Data Directory"),
                       tr("\"%1\" is a file. Please delete the file and try again.").arg(dataInfo.absoluteFilePath()));
     }
-    dd << "[✓] Data folder validated";
+    dd << "[✓] Folder validated";
 
     return Status(Status::OK, dd);
 }
