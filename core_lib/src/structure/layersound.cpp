@@ -124,6 +124,11 @@ void LayerSound::replaceKeyFrame(const KeyFrame* soundClip)
 
 Status LayerSound::saveKeyFrameFile(KeyFrame* key, QString path)
 {
+    DebugDetails dd;
+    dd.addSection(QString("SoundClip: %1").arg(key->pos()));
+
+    dd << ("Length: " + QString::number(key->length()));
+
     Q_ASSERT(key);
 
     if (key->fileName().isEmpty())
@@ -136,25 +141,29 @@ Status LayerSound::saveKeyFrameFile(KeyFrame* key, QString path)
 
     if (sDestFileLocation != key->fileName())
     {
-        if (QFile::exists(sDestFileLocation))
-            QFile::remove(sDestFileLocation);
+        dd << "SoundClip needs to be moved";
+        if (QFile::exists(sDestFileLocation)) {
+            dd << "File exists at destination, attempting to remove: " + sDestFileLocation;
+
+            if (!QFile::remove(sDestFileLocation)) {
+                dd << QString("Error: Failed to remove existing file");
+                return Status(Status::FAIL, dd);
+            }
+            dd << "[✓] Removed file successfully";
+        }
 
         bool ok = QFile::copy(key->fileName(), sDestFileLocation);
         if (!ok)
         {
             key->setFileName("");
 
-            DebugDetails dd;
-            dd << "LayerSound::saveKeyFrameFile";
-            dd << QString("&nbsp;&nbsp;KeyFrame.pos() = %1").arg(key->pos());
-            dd << QString("&nbsp;&nbsp;Key->fileName() = %1").arg(key->fileName());
-            dd << QString("&nbsp;&nbsp;FilePath = %1").arg(sDestFileLocation);
             dd << QString("Error: Failed to save SoundClip");
             return Status(Status::FAIL, dd);
         }
         key->setFileName(sDestFileLocation);
+        dd << "[✓] Sound file copied to: " + sDestFileLocation;
     }
-    return Status::OK;
+    return Status(Status::OK, dd);
 }
 
 KeyFrame* LayerSound::createKeyFrame(int position)

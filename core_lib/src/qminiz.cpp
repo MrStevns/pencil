@@ -67,8 +67,7 @@ size_t MiniZ::istreamReadCallback(void *pOpaque, mz_uint64 file_ofs, void * pBuf
 // ReSharper disable once CppInconsistentNaming
 Status MiniZ::compressFolder(QString zipFilePath, QString srcFolderPath, const QStringList& fileList, QString mimetype)
 {
-    DebugDetails dd;
-    dd << "\n[Miniz COMPRESSION diagnostics]\n";
+    DebugDetails dd("Miniz COMPRESSION");
     dd << QString("Creating Zip %1 from folder %2").arg(zipFilePath, srcFolderPath);
 
     if (!srcFolderPath.endsWith("/"))

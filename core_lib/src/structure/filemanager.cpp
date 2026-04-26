@@ -235,7 +235,7 @@ bool FileManager::isArchiveFormat(const QString& fileName) const
 
 Status FileManager::validateSavePath(const QString& fileName) const
 {
-    DebugDetails dd;
+    DebugDetails dd("Path validation");
 
     if (fileName.isEmpty()) {
         dd << "Error: File name is empty, unable to save.";
@@ -243,6 +243,7 @@ Status FileManager::validateSavePath(const QString& fileName) const
                       tr("Invalid Save Path"),
                       tr("The path is empty."));
     }
+    dd << "[✓] File exists";
 
     QFileInfo fileInfo(fileName);
 
@@ -253,28 +254,33 @@ Status FileManager::validateSavePath(const QString& fileName) const
                       tr("Invalid Save Path"),
                       tr("The path (\"%1\") points to a directory.").arg(fileInfo.absoluteFilePath()));
     }
+    dd << "[✓] fileName does not point to a folder";
+
     QFileInfo parentDirInfo(fileInfo.dir().absolutePath());
     if (!parentDirInfo.exists())
     {
         dd << QString("Error: The parent directory of %1 does not exist").arg(fileName);
         return Status(Status::INVALID_ARGUMENT, dd,
                       tr("Invalid Save Path"),
-                      tr("The directory (\"%1\") does not exist.").arg(parentDirInfo.absoluteFilePath()));
+                      tr("The directory %1 does not exist.").arg(parentDirInfo.absoluteFilePath()));
     }
+    dd << "[✓] Parent folder exists";
+
     if ((fileInfo.exists() && !fileInfo.isWritable()) || !parentDirInfo.isWritable())
     {
         dd << "Error: File name points to a location that is not writable";
         return Status(Status::INVALID_ARGUMENT, dd,
                       tr("Invalid Save Path"),
-                      tr("The path (\"%1\") is not writable.").arg(fileInfo.absoluteFilePath()));
+                      tr("The path %1 is not writable.").arg(fileInfo.absoluteFilePath()));
     }
+    dd << "[✓] Path is writable";
 
-    return Status::OK;
+    return Status(Status::OK, dd);
 }
 
 Status FileManager::saveAsPCLX(const Object* object, const QString& filename)
 {
-    DebugDetails dd;
+    DebugDetails dd("Save as PCLX");
 
     const QString sTempFileName = filename + ".tmp";
     const QString sTempWorkingFolder = object->workingDir();
@@ -288,40 +294,46 @@ Status FileManager::saveAsPCLX(const Object* object, const QString& filename)
     const QString sDataFolder  = QDir(sTempWorkingFolder).filePath(PFF_OLD_DATA_DIR);
 
     Status dataFolderStatus = ensureDataDirectoryForSaving(sTempWorkingFolder);
-    dd.collect(dataFolderStatus.details(), "");
+    dd.collect(dataFolderStatus.details());
 
-    if (!dataFolderStatus.ok()) { return Status(dataFolderStatus.code(), dd); }
+    if (!dataFolderStatus.ok()) {
+        dataFolderStatus.setDetails(dd);
+        return dataFolderStatus;
+    }
 
     QStringList filesToZip;
     Status writeStatus = writeToFolder(object, sMainXMLFile, sDataFolder, filesToZip);
-    dd.collect(writeStatus.details(), "");
+    dd.collect(writeStatus.details());
     if (!writeStatus.ok())
     {
         return Status(writeStatus.code(), dd,
                       tr("Internal Error"),
-                      tr("An internal error occurred. The project could not be saved."));
+                      tr("An internal error occurred. Unable to write to project file"));
     }
 
-    dd << "\n[Archiving diagnostics]\n";
-    dd << "Miniz: Zipping...";
+    dd.addSection("Compressing");
 
     Status stMiniz = MiniZ::compressFolder(sTempFileName, sTempWorkingFolder, filesToZip, "application/x-pencil2d-pclx");
+    dd.collect(stMiniz.details());
     if (!stMiniz.ok())
     {
-        dd.collect(stMiniz.details(), "");
-        dd << "\nError: Miniz failed to zip project";
+        dd << "Error: Miniz failed to zip project";
         return Status(stMiniz.code(), dd,
-                      tr("Miniz Error"),
+                      tr("Compression Error"),
                       tr("An internal error occurred. The project may not have been saved successfully."));
     }
-    dd << "Miniz: Zip file saved successfully";
+    dd << "[✓] Zip file saved";
 
-    return Status(replaceBackupFile(sTempFileName, filename).code(), dd);
+    Status replaceStatus = replaceBackupFile(sTempFileName, filename);
+    dd.collect(replaceStatus.details());
+
+    replaceStatus.setDetails(dd);
+    return replaceStatus;
 }
 
 Status FileManager::saveAsPCL(const Object* object, const QString& fileName)
 {
-    DebugDetails dd;
+    DebugDetails dd("Save PCL Diagnostics");
     const QString sTempFileName   = fileName + ".tmp";
     const QString sDataFolder     = fileName + "." + QString(PFF_OLD_DATA_DIR);
     const QString sTempDataFolder = sDataFolder + ".tmp";
@@ -329,15 +341,20 @@ Status FileManager::saveAsPCL(const Object* object, const QString& fileName)
     dd << "Project format: .pcl";
 
     Status directoryStatus = ensureDataDirectoryForSaving(sTempDataFolder);
-    dd.collect(directoryStatus.details(), "");
 
-    if (!directoryStatus.ok()) { return directoryStatus; }
+    if (!directoryStatus.ok()) {
+        directoryStatus.setDetails(dd);
+        return directoryStatus;
+    }
 
     QStringList filesToZip;
     Status writeStatus = writeToFolder(object, sTempFileName, sTempDataFolder, filesToZip);
-    dd.collect(writeStatus.details(), "");
+    dd.collect(writeStatus.details());
 
-    if (!writeStatus.ok()) { return writeStatus; }
+    if (!writeStatus.ok()) {
+        writeStatus.setDetails(dd);
+        return writeStatus;
+    }
 
     const QString backupDataFolderPath = sDataFolder + ".bak";
     QDir folderInfo(sDataFolder);
@@ -380,12 +397,16 @@ Status FileManager::saveAsPCL(const Object* object, const QString& fileName)
     dd << "Updated original project data folder successfully, deleting backup";
     QDir(backupDataFolderPath).removeRecursively();
 
-    return Status(replaceBackupFile(sTempFileName, fileName).code(), dd);
+    Status replaceStatus = replaceBackupFile(sTempFileName, fileName);
+    dd.collect(replaceStatus.details());
+
+    replaceStatus.setDetails(dd);
+    return replaceStatus;
 }
 
 Status FileManager::replaceBackupFile(const QString& newFilePath, const QString& originalFilePath)
 {
-    DebugDetails dd;
+    DebugDetails dd("Backup diagnostics");
 
     QFileInfo originalFileInfo(originalFilePath);
 
@@ -395,25 +416,26 @@ Status FileManager::replaceBackupFile(const QString& newFilePath, const QString&
         dd << "Found stale backup file from previous save attempt, removing...";
 
         if (!QFile::remove(backupPath)) {
-            dd << "Unable to remove stale backup file, aborting!";
+            dd << "Error: Unable to remove stale backup file, aborting!";
             return Status(Status::ERROR_BACKUP_FAIL, dd,
                           tr("Backup Error"),
                           tr("Unable to remove stale backup file at: %1"
                              "Please remove it manually and try again.").arg(backupPath));
         }
+        dd << "[✓] Stale backup removed";
     }
 
     if (originalFileInfo.exists()) {
 
         if (!QFile::rename(originalFilePath, backupPath))
         {
-            dd << "Unable to backup original file, aborting!";
+            dd << "Error: Unable to backup original file, aborting!";
             return Status(Status::ERROR_BACKUP_FAIL, dd,
                     tr("Backup Error"),
                     tr("Unable to create a backup of %1 before saving.").arg(originalFilePath));
         }
 
-        dd << "Backed up original file here: " << backupPath;
+        dd << "[✓] Backed up original file here: " << backupPath;
     }
 
     if (!QFile::rename(newFilePath, originalFilePath))
@@ -424,15 +446,18 @@ Status FileManager::replaceBackupFile(const QString& newFilePath, const QString&
                     tr("An internal error occurred. Not able to replace the project file"));
     }
 
-    dd << "Updated original project file successfully, deleting backup file";
-    QFile::remove(backupPath);
+    dd << "[✓] Updated project file";
+
+    if (QFile::remove(backupPath)) {
+        dd << "[✓] Backup removed";
+    }
 
     return Status(Status::OK, dd);
 }
 
 Status FileManager::ensureDataDirectoryForSaving(const QString& dataFolderPath) const
 {
-    DebugDetails dd;
+    DebugDetails dd("Data directory diagnostics");
     QFileInfo dataInfo(dataFolderPath);
     if (!dataInfo.exists())
     {
@@ -445,7 +470,9 @@ Status FileManager::ensureDataDirectoryForSaving(const QString& dataFolderPath) 
                           tr("Cannot Create Data Directory"),
                           tr("Failed to create directory \"%1\". Please make sure you have sufficient permissions.").arg(dataFolderPath));
         }
+        dd << "[✓] Data folder created";
     }
+
     if (!dataInfo.isDir())
     {
         dd << QString("Error: Expected data to be a directory but found %1 instead").arg(dataInfo.absoluteFilePath());
@@ -454,15 +481,15 @@ Status FileManager::ensureDataDirectoryForSaving(const QString& dataFolderPath) 
                       tr("Cannot Create Data Directory"),
                       tr("\"%1\" is a file. Please delete the file and try again.").arg(dataInfo.absoluteFilePath()));
     }
+    dd << "[✓] Data folder validated";
 
-    return Status::OK;
+    return Status(Status::OK, dd);
 }
 
 Status FileManager::save(const Object* object, const QString& sFileName)
 {
-    DebugDetails dd;
-    dd << "\n[Project SAVE diagnostics]\n";
-    dd << ("Original file name:" + sFileName);
+    DebugDetails dd("Project SAVE diagnostics");
+    dd << ("Original file name: " + sFileName);
 
     if (object == nullptr)
     {
@@ -473,8 +500,11 @@ Status FileManager::save(const Object* object, const QString& sFileName)
     progressForward();
 
     Status validateStatus = validateSavePath(sFileName);
-    dd.collect(validateStatus.details(), "");
-    if (!validateStatus.ok()) { return Status(validateStatus.code(), dd); }
+    dd.collect(validateStatus.details());
+    if (!validateStatus.ok()) {
+        validateStatus.setDetails(dd);
+        return validateStatus;
+    }
 
     const int totalCount = object->totalKeyFrameCount();
     mMaxProgressValue = totalCount + 5;
@@ -491,9 +521,12 @@ Status FileManager::save(const Object* object, const QString& sFileName)
     {
         saveStatus = saveAsPCL(object, sFileName);
     }
-    dd.collect(saveStatus.details(), "");
+    dd.collect(saveStatus.details());
 
-    if (!saveStatus.ok()) { return Status(saveStatus.code(), dd); }
+    if (!saveStatus.ok()) {
+        saveStatus.setDetails(dd);
+        return saveStatus;
+    }
 
     progressForward();
 
@@ -502,20 +535,33 @@ Status FileManager::save(const Object* object, const QString& sFileName)
 
 Status FileManager::writeToFolder(const Object* object, const QString mainXml, const QString& dataFolder, QStringList& filesWritten)
 {
-    DebugDetails dd;
+    DebugDetails dd("Writing");
 
     Status stKeyFrames = writeKeyFrameFiles(object, dataFolder, filesWritten);
     dd.collect(stKeyFrames.details());
 
+    if (!stKeyFrames.ok()) {
+        stKeyFrames.setDetails(dd);
+        return stKeyFrames;
+    }
+
     Status stMainXml = writeMainXml(object, mainXml, filesWritten);
     dd.collect(stMainXml.details());
+
+    if (!stMainXml.ok()) {
+        stMainXml.setDetails(dd);
+        return stMainXml;
+    }
 
     Status stPalette = writePalette(object, dataFolder, filesWritten);
     dd.collect(stPalette.details());
 
-    const bool saveOk = stKeyFrames.ok() && stMainXml.ok() && stPalette.ok();
-    const auto errorCode = (saveOk) ? Status::OK : Status::FAIL;
-    return Status(errorCode, dd);
+    if (!stPalette.ok()) {
+        stPalette.setDetails(dd);
+        return stPalette;
+    }
+
+    return Status(Status::OK, dd);
 }
 
 Status FileManager::writeToWorkingFolder(const Object* object)
@@ -721,8 +767,7 @@ bool FileManager::loadPalette(Object* obj)
 
 Status FileManager::writeKeyFrameFiles(const Object* object, const QString& dataFolder, QStringList& filesFlushed)
 {
-    DebugDetails dd;
-    dd << "\n[Keyframes WRITE diagnostics]\n";
+    DebugDetails dd("Writing Files");
 
     const int numLayers = object->getLayerCount();
     dd << QString("Total layer count: %1").arg(numLayers);
@@ -738,34 +783,31 @@ Status FileManager::writeKeyFrameFiles(const Object* object, const QString& data
     {
         Layer* layer = object->getLayer(i);
 
-        dd << QString("Layer[%1] = [id=%2, type=%3, name=%4]").arg(i).arg(layer->id()).arg(layer->type()).arg(layer->name());
-
         Status st = layer->save(dataFolder, filesFlushed, [this] { progressForward(); });
+        dd.collect(st.details());
         if (!st.ok())
         {
             saveLayersOK = false;
-            dd.collect(st.details());
-            dd << QString("\nError: Failed to save Layer[%1] %2").arg(i).arg(layer->name());
+            dd << QString("Error: Failed to save Layer[%1] %2").arg(i).arg(layer->name());
         }
     }
+    dd << "";
 
     progressForward();
 
-    auto errorCode = (saveLayersOK) ? Status::OK : Status::FAIL;
-
-    if (saveLayersOK) {
-        dd << "\nAll Layers saved";
-    } else {
-        dd << "\nError: Unable to save all layers";
+    if (!saveLayersOK) {
+        dd << "Error: Unable to save all layers";
+        return Status(Status::FAIL, dd);
     }
 
-    return Status(errorCode, dd);
+    dd << "[✓] All Layers saved successfully";
+
+    return Status(Status::OK, dd);
 }
 
 Status FileManager::writeMainXml(const Object* object, const QString& mainXmlPath, QStringList& filesWritten)
 {
-    DebugDetails dd;
-    dd << "\n[XML WRITE diagnostics]\n";
+    DebugDetails dd("Writing XML");
 
     QFile file(mainXmlPath);
     if (!file.open(QFile::WriteOnly | QFile::Text))
@@ -798,15 +840,13 @@ Status FileManager::writeMainXml(const Object* object, const QString& mainXmlPat
     versionElem.appendChild(xmlDoc.createTextNode(QString(APP_VERSION)));
     root.appendChild(versionElem);
 
-    dd << "Writing main xml file...";
-
     const int indentSize = 2;
 
     QTextStream out(&file);
     xmlDoc.save(out, indentSize);
     out.flush();
 
-    dd << "Done writing main xml file: " << mainXmlPath;
+    dd << "[✓] Main XML written to: " << mainXmlPath;
 
     filesWritten.append(mainXmlPath);
     return Status(Status::OK, dd);
@@ -814,15 +854,16 @@ Status FileManager::writeMainXml(const Object* object, const QString& mainXmlPat
 
 Status FileManager::writePalette(const Object* object, const QString& dataFolder, QStringList& filesWritten)
 {
+    DebugDetails dd("Writing palette");
     const QString paletteFile = object->savePalette(dataFolder);
     if (paletteFile.isEmpty())
     {
-        DebugDetails dd;
-        dd << "\nError: Failed to save palette";
+        dd << "Error: Failed to save palette";
         return Status(Status::FAIL, dd);
     }
+    dd << "[✓] Palette written to: " << paletteFile;
     filesWritten.append(paletteFile);
-    return Status::OK;
+    return Status(Status::OK, dd);
 }
 
 /** Copy a directory to another directory recursively (depth-first).

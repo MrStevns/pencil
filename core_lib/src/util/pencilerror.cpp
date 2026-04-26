@@ -24,59 +24,95 @@ DebugDetails::DebugDetails()
 {
 }
 
-void DebugDetails::collect(const DebugDetails& d)
+DebugDetails::DebugDetails(const QString& title)
 {
-    collect(d, "&nbsp;&nbsp;");
+    addSection(title);
 }
 
-void DebugDetails::collect(const DebugDetails& d, const QString& spacing)
+void DebugDetails::addSection(const QString& title)
 {
-    for (const QString& s : d.mDetails)
+    mDetails.append({"- [" + title + "] -", mCurrentDepth, true });
+    mCurrentDepth += 1;
+}
+
+void DebugDetails::collect(const DebugDetails& d)
+{
+    for (const Line& line : d.mDetails)
     {
-        mDetails.append(spacing + s);
+        mDetails.append( { line.text, line.depth + mCurrentDepth, line.isSection });
     }
 }
 
 QString DebugDetails::str()
 {
     appendSystemInfo();
-    return mDetails.join("\n");
+    return render("\n", "  ");
 }
 
 QString DebugDetails::html()
 {
     appendSystemInfo();
-    return mDetails.join("<br>");
+    return render("<br>", "&nbsp;&nbsp;");
+}
+
+QString DebugDetails::render(const QString& lineBreak, const QString& indentUnit) const
+{
+    QStringList lines;
+
+    for (int i = 0; i < mDetails.size(); i++)
+    {
+        const Line& line = mDetails[i];
+        if (line.isSection)
+        {
+            if (!lines.isEmpty() && !lines.last().isEmpty()) {
+                lines.append("");
+            }
+            lines.append(indentUnit.repeated(line.depth) + line.text);
+            if (!mDetails[i + 1].isSection)
+                lines.append("");
+        }
+        else
+        {
+            lines.append(indentUnit.repeated(line.depth) + line.text);
+        }
+    }
+    return lines.join(lineBreak);
 }
 
 DebugDetails& DebugDetails::operator<<(const QString& s)
 {
-    mDetails.append(s);
+    mDetails.append({ s, mCurrentDepth });
     return *this;
+}
+
+void DebugDetails::append(const QString &desc)
+{
+    *this << desc;
 }
 
 void DebugDetails::appendSystemInfo()
 {
-    if (mDetails.empty() || mDetails.last() == "end")
+    if (mDetails.empty() || mDetails.last().text == "end")
         return;
 
-    mDetails << "\n[System Info]\n";
+    addSection("System Info");
+
     QString version(APP_VERSION);
     if (version.startsWith("99.0.0")) {
-        mDetails << "&nbsp;&nbsp;Pencil2D version: " APP_VERSION " (nightly)";
+        append("Pencil2D version: " APP_VERSION " (nightly)");
     } else if (version == "0.0.0.0") {
-        mDetails << "&nbsp;&nbsp;Pencil2D version: " APP_VERSION " (dev)";
+        append("Pencil2D version: " APP_VERSION " (dev)");
     } else {
-        mDetails << "&nbsp;&nbsp;Pencil2D version: " APP_VERSION " (stable)";
+        append("Pencil2D version: " APP_VERSION " (stable)");
     }
 
-#if defined(GIT_EXISTS)
-    mDetails << "&nbsp;&nbsp;Commit: " S__GIT_COMMIT_HASH;
-#endif
-    mDetails << "&nbsp;&nbsp;Build ABI: " + QSysInfo::buildAbi();
-    mDetails << "&nbsp;&nbsp;Kernel: " + QSysInfo::kernelType() + ", " + QSysInfo::kernelVersion();
-    mDetails << "&nbsp;&nbsp;Operating System: " + QSysInfo::prettyProductName();
-    mDetails << "&nbsp;&nbsp;Language: " + QLocale::system().name();
+    #if defined(GIT_EXISTS)
+        append("Commit: " S__GIT_COMMIT_HASH);
+    #endif
+    append("Build ABI: " + QSysInfo::buildAbi());
+    append("Kernel: " + QSysInfo::kernelType() + ", " + QSysInfo::kernelVersion());
+    append("Operating System: " + QSysInfo::prettyProductName());
+    append("Language: " + QLocale::system().name());
 }
 
 Status::Status(ErrorCode code)

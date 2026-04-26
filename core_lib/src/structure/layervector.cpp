@@ -76,6 +76,9 @@ void LayerVector::loadImageAtFrame(QString path, int frameNumber)
 
 Status LayerVector::saveKeyFrameFile(KeyFrame* keyFrame, QString path)
 {
+    DebugDetails dd;
+    dd.addSection(QString("VectorImage: %1").arg(keyFrame->pos()));
+
     QString theFileName = fileName(keyFrame);
     QString strFilePath = QDir(path).filePath(theFileName);
 
@@ -87,22 +90,20 @@ Status LayerVector::saveKeyFrameFile(KeyFrame* keyFrame, QString path)
     }
 
     Status st = vecImage->write(strFilePath, "VEC");
+    dd.collect(st.details());
     if (!st.ok())
     {
         vecImage->setFileName("");
 
-        DebugDetails dd;
-        dd << "LayerVector::saveKeyFrameFile";
-        dd << QString("&nbsp;&nbsp;KeyFrame.pos() = %1").arg(keyFrame->pos());
-        dd << QString("&nbsp;&nbsp;strFilePath = ").append(strFilePath);
         dd << "Error: Failed to save VectorImage";
-        dd.collect(st.details());
         return Status(Status::FAIL, dd);
     }
+    dd << "[✓] VEC file written to: " + strFilePath;
 
     vecImage->setFileName(strFilePath);
     vecImage->setModified(false);
-    return Status::OK;
+
+    return Status(Status::OK, dd);
 }
 
 KeyFrame* LayerVector::createKeyFrame(int position)

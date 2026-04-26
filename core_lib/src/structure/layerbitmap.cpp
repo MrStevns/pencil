@@ -74,9 +74,16 @@ void LayerBitmap::loadImageAtFrame(QString path, QPoint topLeft, int frameNumber
 
 Status LayerBitmap::saveKeyFrameFile(KeyFrame* keyframe, QString path)
 {
+    DebugDetails dd;
+    dd.addSection(QString("BitmapImage: %1").arg(keyframe->pos()));
+
     QString strFilePath = filePath(keyframe, QDir(path));
 
     BitmapImage* bitmapImage = static_cast<BitmapImage*>(keyframe);
+
+    dd << (QString("Size: (%1, %2)"))
+          .arg(bitmapImage->size().width())
+          .arg(bitmapImage->size().height());
 
     bool needSave = needSaveFrame(keyframe, strFilePath);
     if (!needSave)
@@ -87,19 +94,16 @@ Status LayerBitmap::saveKeyFrameFile(KeyFrame* keyframe, QString path)
     bitmapImage->setFileName(strFilePath);
 
     Status st = bitmapImage->writeFile(strFilePath);
+    dd.collect(st.details());
     if (!st.ok())
     {
         bitmapImage->setFileName("");
-
-        DebugDetails dd;
-        dd << "LayerBitmap::saveKeyFrame";
-        dd << QString("&nbsp;&nbsp;KeyFrame.pos() = %1").arg(keyframe->pos());
-        dd.collect(st.details());
         return Status(Status::FAIL, dd);
     }
+    dd << "[✓] Image written to: " << bitmapImage->fileName();
 
     bitmapImage->setModified(false);
-    return Status::OK;
+    return Status(Status::OK, dd);
 }
 
 KeyFrame* LayerBitmap::createKeyFrame(int position)

@@ -539,9 +539,24 @@ void LayerCamera::loadImageAtFrame(int frameNumber, qreal dx, qreal dy, qreal ro
     loadKey(camera);
 }
 
-Status LayerCamera::saveKeyFrameFile(KeyFrame*, QString)
+Status LayerCamera::saveKeyFrameFile(KeyFrame* keyFrame, QString)
 {
-    return Status::OK;
+    DebugDetails dd;
+    dd.addSection(QString("Camera: %1").arg(keyFrame->pos()));
+
+    auto camera = static_cast<Camera*>(keyFrame);
+
+    dd << ("Easing type: " + QString::number(static_cast<int>(camera->getEasingType())));
+    dd << QString("Translation: (%1, %2)")
+          .arg(camera->translation().x())
+          .arg(camera->translation().y());
+    dd << "Scale: " + QString::number(camera->scaling());
+    dd << "Rotation angle: " + QString::number(camera->rotation());
+    dd << QString("Control point: (%1, %2)")
+          .arg(camera->getPathControlPoint().x())
+          .arg(camera->getPathControlPoint().y());
+
+    return Status(Status::OK, dd);
 }
 
 KeyFrame* LayerCamera::createKeyFrame(int position)

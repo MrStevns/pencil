@@ -338,7 +338,8 @@ bool Layer::loadKey(KeyFrame* pKey)
 Status Layer::save(const QString& sDataFolder, QStringList& attachedFiles, ProgressCallback progressStep)
 {
     DebugDetails dd;
-    dd << "\n[Layer SAVE diagnostics]\n";
+    dd.addSection(QString(("Layer: %1")).arg(name()));
+    dd << (QString("ID: %1, Type: %2").arg(id()).arg(type()));
 
     bool ok = true;
 
@@ -346,26 +347,28 @@ Status Layer::save(const QString& sDataFolder, QStringList& attachedFiles, Progr
     {
         KeyFrame* keyFrame = pair.second;
         Status st = saveKeyFrameFile(keyFrame, sDataFolder);
+        dd.collect(st.details());
         if (st.ok())
         {
-            //qDebug() << "Layer [" << name() << "] FN=" << keyFrame->fileName();
-            if (!keyFrame->fileName().isEmpty())
+            if (!keyFrame->fileName().isEmpty()) {
                 attachedFiles.append(keyFrame->fileName());
+            }
         }
         else
         {
             ok = false;
-            dd.collect(st.details());
-            dd << QString("- Keyframe[%1] failed to save").arg(keyFrame->pos());
+            dd << QString("Error: failed to save");
         }
         progressStep();
     }
+
     if (!ok)
     {
-        dd << "\nError: Failed to save one or more files";
+        dd << "Error: Failed to save one or more files";
         return Status(Status::FAIL, dd);
     }
-    return Status::OK;
+
+    return Status(Status::OK, dd);
 }
 
 void Layer::setModified(int position, bool modified) const

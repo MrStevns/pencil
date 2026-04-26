@@ -25,16 +25,29 @@ class DebugDetails
 {
 public:
     DebugDetails();
+    DebugDetails(const QString& title);
 
-    void collect(const DebugDetails& d, const QString& spacing);
+    void addSection(const QString& section);
     void collect(const DebugDetails& d);
     QString str();
     QString html();
     DebugDetails& operator<<(const QString& s);
 
 private:
+    QString render(const QString& lineBreak, const QString& indentUnit) const;
+    void append(const QString& desc);
+
+    struct Line
+    {
+        QString text;
+        int depth = 0;
+        bool isSection = false;
+    };
+
     void appendSystemInfo();
-    QStringList mDetails;
+    QVector<Line> mDetails;
+
+    int mCurrentDepth = 0;
 };
 
 class Status
