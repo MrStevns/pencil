@@ -247,11 +247,6 @@ bool MoveTool::leavingThisTool()
 {
     TransformTool::leavingThisTool();
 
-    if (currentPaintableLayer())
-    {
-        applyTransformation();
-    }
-
     return true;
 }
 
