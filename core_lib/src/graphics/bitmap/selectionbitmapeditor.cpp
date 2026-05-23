@@ -106,7 +106,7 @@ QPointF SelectionBitmapEditor::translation() const
 {
     if (!mIsValid) { return QPointF(); }
 
-    return mTransformEditor.translation().toPoint();
+    return mTransformEditor.translation();
 }
 
 QTransform SelectionBitmapEditor::transform() const
