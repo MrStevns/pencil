@@ -203,8 +203,9 @@ void MoveTool::pointerReleaseEvent(PointerEvent* event)
 
 void MoveTool::translateSelection(const PointerEvent* event, const DragState& dragState, SelectionTransformEditor& selectionEditor)
 {
-    QPointF delta = event->canvasPos() - dragState.startPos;
+    QPointF delta = (event->canvasPos() - dragState.startPos).toPoint();
     QPointF newPos = QPointF(dragState.dx, dragState.dy) + delta;
+
     selectionEditor.setTranslation(newPos);
 }
 
@@ -226,9 +227,9 @@ void MoveTool::rotateSelection(const PointerEvent* event, const TransformState& 
     selectionEditor.rotate(newAngle, rotationIncrement);
 }
 
-void MoveTool::scaleAroundAnchorPoint(const PointerEvent* event, const DragState& dragState, const QPolygonF& selectionPolygon, SelectionTransformEditor& selectionEditor)
+void MoveTool::scaleAroundAnchorPoint(const QPointF& canvasPoint, const DragState& dragState, const QPolygonF& selectionPolygon, SelectionTransformEditor& selectionEditor)
 {
-    selectionEditor.scaleAroundAnchorPoint(dragState.dragHandle, selectionPolygon, event->canvasPos());
+    selectionEditor.scaleAroundAnchorPoint(dragState.dragHandle, selectionPolygon, canvasPoint);
 }
 
 void MoveTool::applyTransformation()

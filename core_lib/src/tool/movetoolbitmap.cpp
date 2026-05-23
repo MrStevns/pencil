@@ -143,7 +143,7 @@ void MoveTool::bitmapToolTransformSelection(const PointerEvent* event, const Bit
             break;
         }
         case TransformMode::SCALE: {
-            scaleAroundAnchorPoint(event, tool.dragState, selectionEditor->selectionPolygon(), selectionEditor->editTransformEditor());
+            scaleAroundAnchorPoint(event->canvasPos().toPoint(), tool.dragState, selectionEditor->selectionPolygon(), selectionEditor->editTransformEditor());
             break;
         }
         case TransformMode::ROTATE: {

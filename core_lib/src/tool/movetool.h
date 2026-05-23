@@ -89,7 +89,7 @@ public:
 
     void translateSelection(const PointerEvent* event, const DragState& dragState, SelectionTransformEditor& selectionEditor);
     void rotateSelection(const PointerEvent* event, const TransformState& transformState, SelectionTransformEditor& selectionEditor);
-    void scaleAroundAnchorPoint(const PointerEvent* evet, const DragState& dragState, const QPolygonF& selectionPolygon, SelectionTransformEditor& selectionEditor);
+    void scaleAroundAnchorPoint(const QPointF& canvasPoint, const DragState& dragState, const QPolygonF& selectionPolygon, SelectionTransformEditor& selectionEditor);
 
 private: // Bitmap
     void bitmapToolTransformSelection(const PointerEvent* event, const BitmapTool& tool);
