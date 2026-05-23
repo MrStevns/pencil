@@ -1350,9 +1350,9 @@ void ScribbleArea::applyTransformedSelection()
             handleDrawingOnEmptyFrame();
             BitmapImage* bitmapImage = currentBitmapImage(layer);
             if (bitmapImage == nullptr) { return; }
-            BitmapImage transformedImage = BitmapImage(bitmapImage->selectionState().transformedRect.topLeft(), bitmapImage->selectionState().transformedImage);
+            BitmapImage transformedImage = BitmapImage(bitmapImage->selectionState().transformedImageBounds.topLeft(), bitmapImage->selectionState().transformedImage);
 
-            bitmapImage->clear(bitmapImage->mSelectionState.originalRect);
+            bitmapImage->clear(bitmapImage->mSelectionState.baseImageBounds);
             bitmapImage->paste(&transformedImage, QPainter::CompositionMode_SourceOver);
         }
         else if (layer->type() == Layer::VECTOR)
@@ -1462,7 +1462,7 @@ void ScribbleArea::deleteSelection()
         {
             BitmapImage* bitmapImage = currentBitmapImage(layer);
             Q_CHECK_PTR(bitmapImage);
-            bitmapImage->clear(bitmapImage->selectionState().selectionRect);
+            bitmapImage->clear(bitmapImage->selectionState().selectionImageBounds);
         }
         mEditor->setModified(mEditor->currentLayerIndex(), mEditor->currentFrame());
     }

@@ -9,20 +9,24 @@
 #include <QImage>
 
 struct SelectionBitmapState {
-    // The rect that belongs to the initial selection
-    QRect originalRect;
+    // The image bounds that belong to the initial selection
+    QRect baseImageBounds;
+    // The base image cache is constructed from the bitmap image
+    QImage baseImageCache;
+
+    /// The geometry of the selection, used to draw the visual selection outline
+    QPolygon selectionGeometry;
 
     /// the state before being transformed
-    QRect selectionRect;
-    QImage selectionImage;
-    QPolygon selectionPolygon;
+    QRect selectionImageBounds;
     ///
 
     /// The state after being transformed
     QImage transformedImage;
-    QRect transformedRect;
+    QRect transformedImageBounds;
     ///
 
+    // The editor that owns the current transformation
     SelectionTransformState transformState;
 
     // Padding to account for pixels being out of bound when rotating

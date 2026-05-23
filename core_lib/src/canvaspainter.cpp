@@ -250,7 +250,7 @@ void CanvasPainter::paintBitmapOnionSkinFrame(QPainter& painter, const QRect& bl
     initializePainter(onionSkinPainter, mOnionSkinPixmap, blitRect);
 
     const SelectionBitmapState& state = bitmapImage->selectionState();
-    if (state.selectionRect.isValid()) {
+    if (state.selectionImageBounds.isValid()) {
         paintTransformedSelection(onionSkinPainter, state);
     } else {
         onionSkinPainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
@@ -319,7 +319,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     currentBitmapPainter.drawImage(paintedImage->topLeft(), *paintedImage->image());
 
     const SelectionBitmapState& state = paintedImage->selectionState();
-    if (state.selectionRect.isValid()) {
+    if (state.selectionImageBounds.isValid()) {
         paintTransformedSelection(currentBitmapPainter, state);
     } else {
 
@@ -383,7 +383,7 @@ void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blit
 void CanvasPainter::paintTransformedSelection(QPainter& painter, const SelectionBitmapState& selectionState) const
 {
     // // Make sure there is something selected
-    if (selectionState.selectionRect.width() == 0 && selectionState.selectionRect.height() == 0)
+    if (selectionState.selectionImageBounds.width() == 0 && selectionState.selectionImageBounds.height() == 0)
         return;
 
     painter.save();
@@ -393,7 +393,7 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
         painter.save();
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
             QPainterPath erasePath;
-            erasePath.addRect(selectionState.originalRect);
+            erasePath.addRect(selectionState.baseImageBounds);
             painter.fillPath(erasePath, QColor(255,255,255,255));
         painter.restore();
 
@@ -401,7 +401,7 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
         painter.save();
             painter.setTransform(mViewTransform);
 
-            painter.drawImage(selectionState.transformedRect, selectionState.transformedImage);
+            painter.drawImage(selectionState.transformedImageBounds, selectionState.transformedImage);
         painter.restore();
     painter.restore();
 }

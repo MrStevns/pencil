@@ -46,7 +46,7 @@ void SelectionBitmapEditor::invalidateBitmapCache()
     if (!mState || mState->transformedImage.isNull()) { return; }
 
     mState->transformedImage = QImage();
-    mState->selectionImage = QImage();
+    mState->baseImageCache = QImage();
     mCacheInvalidated = true;
 }
 
@@ -59,16 +59,14 @@ void SelectionBitmapEditor::setSelection(const QRect& rect)
 
 void SelectionBitmapEditor::setSelection(const QPolygon& polygon)
 {
-    mState->selectionPolygon = polygon;
+    mState->selectionGeometry = polygon;
 
-    // QRect's right() and bottom() are slightly different from QRectF,
-    // because they always return left+width-1
-    // and top+height-1 for historical reasons.
-    // as such in order to get the same bound, we need to subtract from the right and bottom
-    mState->selectionRect = polygon.boundingRect().adjusted(0, 0,-1,-1);
-    mState->originalRect = mState->selectionRect;
+    // Polygon bounds are geometric, where as image bounds are raster-based.
+    // As such we adjust the bounds.
+    mState->selectionImageBounds = polygon.boundingRect().adjusted(0, 0,-1,-1);
+    mState->baseImageBounds = mState->selectionImageBounds;
 
-    mTransformEditor.setTransformAnchor(mTransformEditor.resolveAnchorPoint(QPoint(), mState->selectionPolygon, 0));
+    mTransformEditor.setTransformAnchor(mTransformEditor.resolveAnchorPoint(QPoint(), mState->selectionGeometry, 0));
 
     createImageCache();
 }
@@ -76,14 +74,14 @@ void SelectionBitmapEditor::setSelection(const QPolygon& polygon)
 QRect SelectionBitmapEditor::selectionRect() const
 {
     if (!mIsValid) { return QRect(); }
-    return mState->selectionRect;
+    return mState->selectionImageBounds;
 }
 
 QPolygon SelectionBitmapEditor::selectionPolygon() const
 {
     if (!mIsValid) { return QPolygon(); }
 
-    return mState->selectionPolygon;
+    return mState->selectionGeometry;
 }
 
 qreal SelectionBitmapEditor::rotation() const
@@ -120,7 +118,7 @@ QTransform SelectionBitmapEditor::transform() const
 void SelectionBitmapEditor::scaleAroundAnchorPoint(DragHandle handle, QPointF position)
 {
     if (!mIsValid) { return; }
-    mTransformEditor.scaleAroundAnchorPoint(handle, mState->selectionPolygon, position);
+    mTransformEditor.scaleAroundAnchorPoint(handle, mState->selectionGeometry, position);
 }
 
 void SelectionBitmapEditor::setTranslation(const QPointF& point)
@@ -165,7 +163,7 @@ bool SelectionBitmapEditor::belongsTo(int keyPos) const
 DragHandle SelectionBitmapEditor::resolveHandleMode(const QPointF& point, qreal selectionTolerance) const
 {
     if (!mIsValid) { return DragHandle::NONE; }
-    return mTransformEditor.resolveHandleMode(point, mState->selectionPolygon, selectionTolerance);
+    return mTransformEditor.resolveHandleMode(point, mState->selectionGeometry, selectionTolerance);
 }
 
 QPointF SelectionBitmapEditor::currentAnchorPoint() const
@@ -258,14 +256,14 @@ void SelectionBitmapEditor::createImageCache()
     if (!mIsValid) { return; }
 
     // Make sure the selection is valid before creating a cache
-    if (!mState->selectionRect.isValid()) {
+    if (!mState->selectionImageBounds.isValid()) {
         return;
     }
 
     if (!mCacheInvalidated) {
         invalidateBitmapCache();
     }
-    mState->selectionImage = *mBitmapImage->copy(mState->selectionRect, mState->selectionPolygon).image();
+    mState->baseImageCache = *mBitmapImage->copy(mState->selectionImageBounds, mState->selectionGeometry).image();
     mCacheInvalidated = false;
 
     updateTransformedSelectionState();
@@ -288,14 +286,14 @@ bool SelectionBitmapEditor::somethingSelected() const
 {
     if (!mIsValid) { return false; }
 
-    return mState->selectionPolygon.count() > 0;
+    return mState->selectionGeometry.count() > 0;
 }
 
 bool SelectionBitmapEditor::isSelectionValid() const
 {
     if (!mIsValid) { return false; }
 
-    return somethingSelected() && (mState->selectionRect.width() >= 1 && mState->selectionRect.height() >= 1);
+    return somethingSelected() && (mState->selectionImageBounds.width() >= 1 && mState->selectionImageBounds.height() >= 1);
 }
 
 void SelectionBitmapEditor::flipSelection(bool flipVertical)
@@ -314,7 +312,7 @@ void SelectionBitmapEditor::deleteSelection()
     if (!mIsValid) { return; }
     if (somethingSelected())
     {
-        mBitmapImage->clear(mState->selectionRect);
+        mBitmapImage->clear(mState->selectionImageBounds);
     }
 }
 
@@ -329,7 +327,7 @@ QPointF SelectionBitmapEditor::getSelectionAnchorPoint() const
 QPointF SelectionBitmapEditor::resolveAnchorPoint(const QPointF& currentPoint, const qreal tolerance) const
 {
     if (!mIsValid) { return QPointF(); }
-    return mTransformEditor.resolveAnchorPoint(currentPoint, mState->selectionPolygon, tolerance);
+    return mTransformEditor.resolveAnchorPoint(currentPoint, mState->selectionGeometry, tolerance);
 }
 
 bool SelectionBitmapEditor::isOutsideSelectionArea(const QPointF& point, qreal tolerance) const
@@ -337,7 +335,7 @@ bool SelectionBitmapEditor::isOutsideSelectionArea(const QPointF& point, qreal t
     if (!mIsValid) { return true; }
     if (!somethingSelected()) { return true; }
 
-    return mTransformEditor.isOutsideSelection(point, mState->selectionPolygon, tolerance);
+    return mTransformEditor.isOutsideSelection(point, mState->selectionGeometry, tolerance);
 }
 
 void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBounds,
@@ -362,21 +360,21 @@ void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBou
 void SelectionBitmapEditor::updateTransformedSelectionState()
 {
     if (!mIsValid) { return; }
-    const QRect& originalBounds = mState->selectionRect;
+    const QRect& originalBounds = mState->selectionImageBounds;
 
-    QRect transformedImageBounds;
-    QRectF bRectF;
+    QRect outAlignedRect;
+    QRectF outPreciseRect;
     QTransform transform = mState->transformState.selectionTransform;
 
     if (mCacheInvalidated) {
         createImageCache();
     }
 
-    computeTransformedImageBounds(originalBounds, transform, transformedImageBounds, bRectF);
+    computeTransformedImageBounds(originalBounds, transform, outAlignedRect, outPreciseRect);
 
-    mState->transformedImage = transformedImage(mState->selectionImage, transform, transformedImageBounds, bRectF, mState->smoothTransform);
+    mState->transformedImage = transformedImage(mState->baseImageCache, transform, outAlignedRect, outPreciseRect, mState->smoothTransform);
     int padding = mState->boundsPadding * 0.5;
-    mState->transformedRect = transformedImageBounds.adjusted(-padding,
+    mState->transformedImageBounds = outAlignedRect.adjusted(-padding,
                                                               -padding,
                                                               padding,
                                                               padding);
