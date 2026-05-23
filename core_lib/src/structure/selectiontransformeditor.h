@@ -10,11 +10,11 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
-#ifndef SELECTIONEDITOR_H
-#define SELECTIONEDITOR_H
+#ifndef SELECTIONTRANSFORMEDITOR_H
+#define SELECTIONTRANSFORMEDITOR_H
 
-#include "movemode.h"
-#include "selectionstate.h"
+#include "perspectivemode.h"
+#include "selectiontransformstate.h"
 
 #include <QPointF>
 #include <QRectF>
@@ -22,34 +22,28 @@ GNU General Public License for more details.
 #include <QTransform>
 #include <QList>
 
-enum class SelectionEvent {
-    NONE,
-    CHANGED,
-    RESET
-};
+#include "pencildef.h"
 
-class SelectionEditor
+class SelectionTransformEditor
 {
 public:
 
-    SelectionEditor();
-    SelectionEditor(SelectionState* state);
-    ~SelectionEditor();
+    SelectionTransformEditor();
+    SelectionTransformEditor(SelectionTransformState* state);
+    ~SelectionTransformEditor();
 
     void flipSelection(bool flipVertical);
     void deselect();
 
     void resetState();
 
-    // QTransform selectionTransform() const { return mCommonState.selectionTransform; }
-    // void setSelectionTransform(const QTransform& transform) { mCommonState.selectionTransform = transform; }
     void resetTransformation();
     void setTransform(const QTransform& transform);
 
-    void adjustScaleFromCurrentAnchorPoint(const QPolygonF& polygon, const QPointF& currentPoint);
+    void scaleAroundAnchorPoint(DragHandle handle, const QPolygonF& polygon, const QPointF& currentPoint);
     void adjustTranslation(const QPointF& currentPoint, const QPointF& offset);
     void translate(QPointF point);
-    void rotate(qreal angle, qreal lockedAngle);
+    void rotate(qreal angle, qreal angleIncrement);
     void scale(qreal sX, qreal sY);
     void maintainAspectRatio(bool state) { mAspectRatioFixed = state; }
 
@@ -63,24 +57,20 @@ public:
      */
     QPointF alignedPositionToAxis(QPointF currentPoint) const;
 
-    MoveMode getMoveMode() const { return mMoveMode; }
-    void setMoveMode(const MoveMode moveMode) { mMoveMode = moveMode; }
+    bool isHandleInRange(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const;
 
-    MoveMode resolveMoveModeForAnchorInRange(const QPointF &point, const QPolygonF& polygon, qreal selectionTolerance) const;
+    DragHandle resolveHandleMode(const QPointF &point, const QPolygonF& polygon, qreal selectionTolerance) const;
 
     QPointF currentAnchorPoint() const { return mState->anchorPoint; }
     void setTransformAnchor(const QPointF& point);
 
-    void setDragOrigin(const QPointF& point) { mDragOrigin = point; }
+    bool isOutsideSelection(const QPointF& point, const QPolygonF& polygon, qreal threshold) const;
 
-    bool isOutsideSelection(const QPointF& point, const QPolygonF& polygon) const;
-
-    qreal myRotation() const { return mState->rotatedAngle; }
-    qreal myScaleX() const { return mState->scaleX; }
-    qreal myScaleY() const { return mState->scaleY; }
-    QPointF myTranslation() const { return mState->translation; }
-    QTransform myTransform() const { return mState->selectionTransform; }
-
+    qreal rotationAngle() const { return mState->rotatedAngle; }
+    qreal scaleX() const { return mState->scaleX; }
+    qreal scaleY() const { return mState->scaleY; }
+    QPointF translation() const { return mState->translation; }
+    QTransform transform() const { return mState->selectionTransform; }
 
     void setRotation(const qreal& rotation) { mState->rotatedAngle = rotation; }
     void setScale(const qreal scaleX, const qreal scaleY) { mState->scaleX = scaleX; mState->scaleY = scaleY; }
@@ -96,14 +86,7 @@ public:
     /// This should be called to update the selection transform
     void calculateSelectionTransformation();
 
-    typedef std::function<void(SelectionEvent)> SelectionEventCallback;
-
-    void subscribe(SelectionEventCallback callback);
-    void onEvent(SelectionEvent event) const;
-    void notify(SelectionEvent event) const;
-
-    void adjustCurrentSelection(const QPolygonF& selectionPolygon, const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
-    QPointF getSelectionAnchorPoint(const QPolygonF& selectionPolygon) const;
+    QPointF resolveAnchorPoint(const QPointF& currentPoint, const QPolygonF& selectionPolygon, qreal tolerance) const;
 
     void invalidate();
     bool isValid() { return mIsValid && mState != nullptr; }
@@ -112,15 +95,11 @@ private:
     int constrainRotationToAngle(const qreal rotatedAngle, const int rotationIncrement) const;
 
 private:
-    SelectionState* mState = nullptr;
-    QList<SelectionEventCallback> mObservers;
-
-    MoveMode mMoveMode = MoveMode::NONE;
-    QPointF mDragOrigin;
+    SelectionTransformState* mState = nullptr;
 
     bool mIsValid = false;
     bool mAspectRatioFixed = false;
     bool mLockAxis = false;
 };
 
-#endif // SELECTIONEDITOR_H
+#endif // SELECTIONTRANSFORMEDITOR_H

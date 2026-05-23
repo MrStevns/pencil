@@ -43,6 +43,10 @@ void SelectionPainter::paint(QPainter& painter,
 
         // Draw current selection
         painter.drawPolygon(projectedSelectionPolygon.toPolygon());
+
+        // Draw anchor point
+        painter.setPen(Qt::gray);
+        painter.drawEllipse(transform.map(tParams.anchorPoint), 5, 5);
     }
     if (layer->type() == Layer::VECTOR)
     {

@@ -1,25 +1,12 @@
-#ifndef SELECTIONSTATE_H
-#define SELECTIONSTATE_H
+#ifndef SELECTIONBITMAPSTATE_H
+#define SELECTIONBITMAPSTATE_H
+
+#include "selectiontransformstate.h"
 
 #include <QPointF>
 #include <QTransform>
 #include <QPolygonF>
 #include <QImage>
-
-struct SelectionState {
-    qreal scaleX = 1;
-    qreal scaleY = 1;
-    QPointF translation;
-
-    qreal rotatedAngle = 0.0;
-
-    QPointF anchorPoint;
-
-    QTransform selectionTransform;
-    QTransform prevSelectionTransform;
-
-    SelectionState() = default;
-};
 
 struct SelectionBitmapState {
     // The rect that belongs to the initial selection
@@ -36,14 +23,17 @@ struct SelectionBitmapState {
     QRect transformedRect;
     ///
 
-    /// Clipping
+    // Clipping
     QPolygon clipPolygon;
-    QTransform clipTransform;
+    QTransform accumulatedClipTransform;
+    //
 
-    SelectionState commonState;
+    SelectionTransformState transformState;
 
     // Padding to account for pixels being out of bound when rotating
     int boundsPadding = 2;
+
+    bool smoothTransform = true;
 };
 
-#endif // SELECTIONSTATE_H
+#endif // SELECTIONBITMAPSTATE_H

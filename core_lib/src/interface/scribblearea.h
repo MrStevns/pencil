@@ -29,7 +29,7 @@ GNU General Public License for more details.
 #include <QWidget>
 #include <QPixmapCache>
 
-#include "movemode.h"
+#include "perspectivemode.h"
 #include "pencildef.h"
 #include "bitmapimage.h"
 #include "canvaspainter.h"

@@ -1,7 +1,8 @@
 #ifndef SELECTIONBITMAPEDITOR_H
 #define SELECTIONBITMAPEDITOR_H
 
-#include "selectioneditor.h"
+#include "selectiontransformeditor.h"
+#include "selectionbitmapstate.h"
 #include "tiledbuffer.h"
 
 #include <QImage>
@@ -24,8 +25,11 @@ public:
     void setTransform(const QTransform& transform);
 
     void translate(const QPointF& point);
-    void rotate(qreal rotationAngle, qreal lockedAngle);
+    void rotate(qreal rotationAngle, qreal angleIncrement);
     void scale(qreal scaleX, qreal scaleY);
+    void scaleAroundAnchorPoint(DragHandle handle, QPointF position);
+
+    bool belongsTo(int keyPos) const;
 
     QPointF mapToSelection(const QPointF& point) const;
 
@@ -38,20 +42,19 @@ public:
     void maintainAspectRatio(const bool state);
     void lockMovementToAxis(const bool state);
 
-    QRect mySelectionRect() const;
-    QPolygonF mySelectionPolygon() const;
-    qreal myRotation() const;
-    qreal myScaleX() const;
-    qreal myScaleY() const;
-    QPointF myTranslation() const;
-    QTransform myTransform() const;
+    QRect selectionRect() const;
+    QPolygon selectionPolygon() const;
+    qreal rotation() const;
+    qreal scaleX() const;
+    qreal scaleY() const;
+    QPointF translation() const;
+    QTransform transform() const;
 
     void flipSelection(bool flipVertical);
 
-    void setMoveMode(MoveMode mode);
-    MoveMode moveMode() const;
-    MoveMode resolveMoveModeForAnchorInRange(const QPointF& point, qreal selectionTolerance) const;
+    DragHandle resolveHandleMode(const QPointF& point, qreal selectionTolerance) const;
 
+    QPointF resolveAnchorPoint(const QPointF& currentPoint, const qreal tolerance) const;
     QPointF currentAnchorPoint() const;
     void setTransformAnchor(const QPointF& anchorPoint);
 
@@ -59,13 +62,10 @@ public:
 
     void updateTransformedSelectionState();
 
-    void commitChanges();
     void discardChanges();
     void deleteSelection();
 
     void calculateSelectionTransformation();
-
-    void setDragOrigin(const QPointF& point);
 
     QPointF getSelectionAnchorPoint() const;
 
@@ -74,19 +74,20 @@ public:
     void resetTransformation();
     void resetSelectionProperties();
 
-    void adjustCurrentSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement);
-
     bool somethingSelected() const;
     bool isSelectionValid() const;
-    bool isOutsideSelectionArea(const QPointF& point) const;
+    bool isOutsideSelectionArea(const QPointF& point, qreal tolerance) const;
 
     void setSmoothTransform(bool smooth);
 
-    bool isValid() { return mIsValid; }
+    bool isValid() const { return mIsValid; }
     void invalidate();
     void invalidateBitmapCache();
 
     void paste(TiledBuffer& tiledBuffer);
+
+    SelectionTransformEditor& editTransformEditor() { return mTransformEditor; }
+    const SelectionTransformEditor& transformEditor() const { return mTransformEditor; }
 
 private:
     /// Computes two rectangles, a rectangle for the aligned bounds of the image used to create the image
@@ -107,10 +108,10 @@ private:
 
     // When this value is valid, is means that all state should memory wise be intact
     // for example when the Editor has been created with a valid BitmapImage ptr.
-    bool mSmoothTransform = true;
     bool mIsValid = false;
     bool mCacheInvalidated = true;
-    SelectionEditor mCommonEditor;
+
+    SelectionTransformEditor mTransformEditor;
 
     /// Creates a copy of the editor based on the selection that was set
     void createImageCache();

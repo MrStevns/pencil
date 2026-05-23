@@ -19,7 +19,7 @@ GNU General Public License for more details.
 #define SELECTTOOL_H
 
 #include "transformtool.h"
-#include "movemode.h"
+#include "perspectivemode.h"
 #include "undoredomanager.h"
 
 #include "layer.h"
@@ -33,6 +33,33 @@ class SelectTool : public TransformTool
 {
     Q_OBJECT
 
+    struct DragState
+    {
+        QPointF anchorOriginPoint;
+        QPointF dragFromPoint;
+
+        DragHandle dragHandle = DragHandle::NONE;
+    };
+
+    struct BitmapTool
+    {
+        QRectF selectionRect;
+        bool selectionSet = false;
+
+        DragState dragState;
+        const UndoSaveState* undoState = nullptr;
+    };
+
+    struct VectorTool
+    {
+        QPointF anchorOriginPoint;
+        QRectF selectionRect;
+        bool selectionSet = false;
+
+        DragState dragState;
+        const UndoSaveState* undoState = nullptr;
+    };
+
 public:
     explicit SelectTool(QObject* parent = nullptr);
 
@@ -41,35 +68,35 @@ public:
     void loadSettings() override;
     QCursor cursor() override;
 
-private:
+private: // Bitmap
+    void bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool);
+    void bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool);
+    void bitmapToolReleaseEvent(PointerEvent* event, BitmapTool& tool) const;
 
+    QRectF bitmapToolDragSelection(const QRectF& selection, const QPointF& currentPoint, const DragState& dragState) const;
+
+private: // Vector
+    void vectorToolPressEvent(PointerEvent* event, VectorTool& tool);
+    void vectorToolMoveEvent(PointerEvent* event, VectorTool& tool);
+    void vectorToolReleaseEvent(PointerEvent* event, VectorTool& tool);
+
+    void vectorToolDeselectAll();
+    void vectorToolSetSelection();
+
+protected:
     void pointerPressEvent(PointerEvent*) override;
     void pointerReleaseEvent(PointerEvent*) override;
     void pointerMoveEvent(PointerEvent*) override;
 
     bool keyPressEvent(QKeyEvent* event) override;
+private:
 
-    void controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint, Layer::LAYER_TYPE layerType);
+    QCursor createCursorForDragHandle(const DragHandle& dragHandle);
 
-    void beginSelection(Layer* currentLayer, const QPointF& pos);
-    void keepSelection(Layer* currentLayer);
+    QPixmap mCursorPixmapCache = QPixmap(24, 24);
 
-    QPointF offsetFromPressPos(const QPointF& pos);
-
-    inline bool isSelectionPointValid(const QPointF& pos) { return mAnchorOriginPoint != pos; }
-    bool maybeDeselect(const QPointF& pos);
-
-    // Store selection origin, so we can calculate
-    // the selection rectangle in mousePressEvent.
-    QPointF mAnchorOriginPoint;
-    QPointF mPressPoint;
-    MoveMode mMoveMode;
-    MoveMode mStartMoveMode = MoveMode::NONE;
-    QRectF mSelectionRect;
-
-    QPixmap mCursorPixmap = QPixmap(24, 24);
-
-    const UndoSaveState* mUndoState = nullptr;
+    BitmapTool mBitmapTool;
+    VectorTool mVectorTool;
 };
 
 #endif

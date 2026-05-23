@@ -18,9 +18,10 @@ GNU General Public License for more details.
 #define SELECTIONMANAGER_H
 
 #include "basemanager.h"
-#include "movemode.h"
+#include "perspectivemode.h"
 #include "vertexref.h"
 #include "vectorselection.h"
+#include "layer.h"
 
 #include "selectionbitmapeditor.h"
 
@@ -28,30 +29,35 @@ GNU General Public License for more details.
 #include <QRectF>
 #include <QPolygonF>
 #include <QTransform>
+#include <QVector>
 
 class Editor;
 
 /**
- * @brief The SelectionManager class acts as the "Brain" of the selection system.
+ * @brief The SelectionManager acts as a convenient wrapper to get access the current active selection editor
  * 
  * It is responsible for:
- * 1. Storing the "Truth" of the selection:
- *    - The original shape (mOriginalRect)
- *    - The current transformation state (mSelectionTransform) including position, rotation, and scale.
- * 
- * 2. Performing the Math:
- *    - Calculates new transformations based on user input from the SelectTool.
- *    - Handles complex matrix operations for rotation and scaling.
- * 
- * 3. Coordinate Space Management:
- *    - Converts points between "Screen Space" (mouse coordinates) and "Selection Space" (drawing coordinates).
- *    - Maps operations from the UI (SelectTool) to the underlying data.
- * 
- * The SelectTool (the "Hand") delegates all state tracking and heavy calculation to this manager.
+ * - Handling creation of the underlying selection editor for the current frame. Once a SelectionEditor has been created,
+ *   prefer using it directly over going through the manager.
+ * - Storing shared preferences and values among multiple layers
+ *
+ * The manager must not own any layer specific state. All state should belong to the respective layers SelectionXState struct.
  */
 class SelectionManager : public BaseManager
 {
     Q_OBJECT
+
+    struct BitmapEditorEntry {
+        int layerID = -1;
+        SelectionBitmapEditor bitmapEditor;
+
+        BitmapEditorEntry(int layerID, const SelectionBitmapEditor& bitmapEditor)
+        {
+            this->layerID = layerID;
+            this->bitmapEditor = bitmapEditor;
+        }
+    };
+
 public:
     explicit SelectionManager(Editor* editor);
     ~SelectionManager() override;
@@ -59,7 +65,13 @@ public:
     bool init() override;
     Status load(Object*) override;
     Status save(Object*) override;
-    void workingLayerChanged(Layer*workingLayer) override;
+    void workingLayerChanged(Layer* workingLayer) override;
+    void scrubberChanged(int framePos);
+
+    void createEditor();
+    void invalidateEditor();
+
+    SelectionBitmapEditor* activeBitmapEditor();
 
     void flipSelection(bool flipVertical);
     
@@ -74,18 +86,8 @@ public:
      *  @param state */
     void lockMovementToAxis(bool state);
 
-    /** @brief Checks if the point is over a handle (corner) or body and sets the MoveMode accordingly. */
-    void setMoveModeForAnchorInRange(const QPointF& point);
-
-    MoveMode getMoveMode() const;
-    void setMoveMode(const MoveMode moveMode);
-
     bool somethingSelected() const;
     bool isSelectionValid() const;
-
-    /** @brief Updates the selection transform (move, scale, rotate) based on input delta.
-     *  This is the core logic for interactive manipulation. */
-    void adjustSelection(const QPointF& currentPoint, const QPointF& offset, qreal rotationOffset, int rotationIncrement = 0);
 
     void setSelectionTransform(const QTransform& transform);
     void resetSelectionTransform();
@@ -99,8 +101,6 @@ public:
     void resetSelectionProperties();
     void deleteSelection();
 
-    bool isOutsideSelectionArea(const QPointF& point) const;
-
     qreal selectionTolerance() const;
 
     QPointF currentTransformAnchor() const;
@@ -108,7 +108,7 @@ public:
 
     void setTransformAnchor(const QPointF& point);
 
-    MoveMode resolveMoveModeForPoint(const QPointF& point) const;
+    DragHandle resolveHandleMode(const QPointF& point, qreal tolerance) const;
 
     QRectF mySelectionRect() const;
     qreal myRotation() const;
@@ -131,15 +131,10 @@ public:
 
     QPolygonF getSelectionPolygon() const;
 
-    /// The point from where the dragging will be based of inside the selection area.
-    /// Not to be confused with the selection origin
-    void setDragOrigin(const QPointF& point);
-
     /// This should be called to update the selection transform
     void calculateSelectionTransformation();
 
-    // SelectionBitmapEditor bitmapEditor() { return bitmapSelection; }
-    // SelectionVectorEditor vectorEditor() { return vectorSelection; }
+    bool isOutsideSelectionArea(const QPointF& point, qreal tolerance) const;
 
     // Vector methods
     VectorSelection vectorSelection;
@@ -153,21 +148,26 @@ public:
     const QList<int> closestCurves() const { return mClosestCurves; }
     const QList<VertexRef> closestVertices() const { return mClosestVertices; }
 
-    SelectionBitmapEditor bitmapSelection;
 signals:
     void selectionChanged();
     void selectionReset();
     void needDeleteSelection();
 
 private:
+    SelectionBitmapEditor* findActiveEditor(int layerId, KeyFrame* keyFrame);
+    void setActiveEditor(int layerId, int framePos);
+
     QList<int> mClosestCurves;
     QList<VertexRef> mClosestVertices;
 
     qreal mSelectionTolerance = 10.0;
 
+    QVector<BitmapEditorEntry> mBitmapEditors;
+
     // TODO: implement
     // SelectionVectorEditor vectorSelection;
-    // SelectionBitmapEditor bitmapSelection;
+    SelectionBitmapEditor mNullBitmapEditor;
+    SelectionBitmapEditor* mActiveBitmapEditor = nullptr;
 
     Layer* mWorkingLayer = nullptr;
 };

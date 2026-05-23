@@ -19,22 +19,62 @@ GNU General Public License for more details.
 #define MOVETOOL_H
 
 #include "transformtool.h"
-#include "movemode.h"
+#include "perspectivemode.h"
 #include "preferencemanager.h"
 #include "undoredomanager.h"
+
+#include "selectionbitmapeditor.h"
 
 class Layer;
 class VectorImage;
 
-
 class MoveTool : public TransformTool
 {
+    struct DragState
+    {
+        QPointF startPos;
+        qreal dx, dy;
+        DragHandle dragHandle = DragHandle::NONE;
+
+        DragState() = default;
+    };
+
+    struct TransformState
+    {
+        QPointF currentPoint;
+        qreal rotatedAngle = 0.0;
+        TransformMode transformMode = TransformMode::NONE;
+    };
+
+    struct BitmapTool
+    {
+        TransformState transformState;
+        DragState dragState;
+
+        const UndoSaveState* undoSaveState = nullptr;
+    };
+
+    struct VectorTool
+    {
+        TransformState transformState;
+        DragState dragState;
+
+        const UndoSaveState* undoSaveState = nullptr;
+    };
+
+    struct PerspectiveOverlayTool
+    {
+        PerspectiveMode perspectiveMode;
+    };
+
     Q_OBJECT
 public:
     explicit MoveTool(QObject* parent);
     QCursor cursor() override;
 
-    QCursor cursor(MoveMode mode) const;
+    QCursor createCursorForDragHandle(DragHandle handle) const;
+    QCursor perspectiveToolCreateCursor(PerspectiveMode mode) const;
+
     ToolType type() const override;
 
     ToolProperties& toolProperties() override { return mSettings.toolProperties(); }
@@ -47,27 +87,44 @@ public:
     bool leavingThisTool() override;
     bool isActive() const override;
 
+    void translateSelection(const PointerEvent* event, const DragState& dragState, SelectionTransformEditor& selectionEditor);
+    void rotateSelection(const PointerEvent* event, const TransformState& transformState, SelectionTransformEditor& selectionEditor);
+    void scaleAroundAnchorPoint(const PointerEvent* evet, const DragState& dragState, const QPolygonF& selectionPolygon, SelectionTransformEditor& selectionEditor);
+
+private: // Bitmap
+    void bitmapToolTransformSelection(const PointerEvent* event, const BitmapTool& tool);
+    void bitmapToolSetDragState(PointerEvent* event, const SelectionBitmapEditor& selectionEditor, BitmapTool& tool);
+    void bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool);
+    void bitmapToolMoveEvent(PointerEvent* event, BitmapTool& tool);
+    void bitmapToolReleaseEvent(PointerEvent* event, BitmapTool& tool);
+
+private: // Vector
+    // void vectorToolSetDragState(PointerEvent* event, const SelectionVectorEditor& selectionEditor, VectorTool& tool);
+    void vectorToolPressEvent(PointerEvent* event, VectorTool& tool);
+    void vectorToolCreateSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod);
+    void vectorToolStoreClosestCurve(const QPointF& pos, Layer* layer);
+
+    void vectorToolSetCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
+    void vectorToolSetAreaSelected(const QPointF& pos, VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
+
+private: // Perspective Overlay
+    void perspectiveToolPressEvent(PointerEvent* event, PerspectiveOverlayTool& tool);
+
 private:
+    void setTransformMode(const PointerEvent* event, const DragHandle& dragHandle, const SelectionTransformEditor& selectionEditor, TransformState& transformState);
     void applyTransformation();
     void updateSettings(const SETTING setting);
 
-    void beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
-    void createVectorSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod, Layer* layer);
-    void transformSelection(const QPointF& pos, Qt::KeyboardModifiers keyMod);
-    void storeClosestVectorCurve(const QPointF& pos, Layer* layer);
-
-    void setCurveSelected(VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
-    void setAreaSelected(const QPointF& pos, VectorImage* vectorImage, Qt::KeyboardModifiers keyMod);
-
     Layer* currentPaintableLayer();
 
-    QPointF mCurrentPoint;
-    qreal mRotatedAngle = 0.0;
-    int mRotationIncrement = 0;
-    MoveMode mPerspMode;
-    QPointF mOffset;
+    int mRotationIncrementPref = 0;
 
-    const UndoSaveState* mUndoSaveState = nullptr;
+    QCursor mCursorCache;
+    bool mCursorCacheInvalid = true;
+
+    BitmapTool mBitmapTool;
+    VectorTool mVectorTool;
+    PerspectiveOverlayTool mPerspectiveTool;
 };
 
 #endif

@@ -796,7 +796,7 @@ void ScribbleArea::paintBitmapBuffer()
 
         if (mEditor->select()->isSelectionValid()) {
             // targetImage->paste(&mTiledBuffer, mEditor->select()->selectionTransform().inverted(), cm);
-            mEditor->select()->bitmapSelection.paste(mTiledBuffer);
+            mEditor->select()->activeBitmapEditor()->paste(mTiledBuffer);
         } else {
             targetImage->paste(&mTiledBuffer, cm);
         }
@@ -1037,7 +1037,7 @@ void ScribbleArea::paintSelectionVisuals(QPainter &painter)
 
     QRectF currentSelectionRect = selectMan->mySelectionRect();
 
-    TransformParameters params = { currentSelectionRect, editor()->view()->getView(), selectMan->selectionTransform() };
+    TransformParameters params = { currentSelectionRect, selectMan->currentTransformAnchor(), editor()->view()->getView(), selectMan->selectionTransform() };
 
     mSelectionPainter.paint(painter,
                             object,

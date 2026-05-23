@@ -249,7 +249,12 @@ void CanvasPainter::paintBitmapOnionSkinFrame(QPainter& painter, const QRect& bl
     QPainter onionSkinPainter;
     initializePainter(onionSkinPainter, mOnionSkinPixmap, blitRect);
 
-    onionSkinPainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
+    const SelectionBitmapState& state = bitmapImage->selectionState();
+    if (state.selectionRect.isValid()) {
+        paintTransformedSelection(onionSkinPainter, state);
+    } else {
+        onionSkinPainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
+    }
     paintOnionSkinFrame(painter, onionSkinPainter, nFrame, colorize, bitmapImage->getOpacity());
 }
 
@@ -381,7 +386,7 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
     if (selectionState.selectionRect.width() == 0 && selectionState.selectionRect.height() == 0)
         return;
 
-    const QTransform& selectionTransform = selectionState.commonState.selectionTransform;
+    const QTransform& selectionTransform = selectionState.transformState.selectionTransform;
 
     painter.save();
         painter.setTransform(mViewTransform);
@@ -411,10 +416,10 @@ void CanvasPainter::paintTransformedSelection(QPainter& painter, const Selection
 
             clipPath.addPolygon(selectionState.clipPolygon);
 
-            // painter.save();
-            // painter.setPen(Qt::red);
-            // painter.drawPolygon(selectionState.clipPolygon);
-            // painter.restore();
+            painter.save();
+            painter.setPen(Qt::red);
+            painter.drawPolygon(selectionState.clipPolygon);
+            painter.restore();
 
             painter.setTransform(mViewTransform);
             painter.setClipPath(clipPath);

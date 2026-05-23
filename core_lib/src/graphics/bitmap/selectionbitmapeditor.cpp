@@ -21,7 +21,7 @@ SelectionBitmapEditor::SelectionBitmapEditor(BitmapImage* bitmapImage)
 
     mBitmapImage = bitmapImage;
     mState = &mBitmapImage->mSelectionState;
-    mCommonEditor = SelectionEditor(&mBitmapImage->mSelectionState.commonState);
+    mTransformEditor = SelectionTransformEditor(&mBitmapImage->mSelectionState.transformState);
     mIsValid = true;
 }
 
@@ -39,7 +39,7 @@ void SelectionBitmapEditor::invalidate()
         mBitmapImage = nullptr;
     }
     mState = nullptr;
-    mCommonEditor.invalidate();
+    mTransformEditor.invalidate();
     mIsValid = false;
 }
 
@@ -54,6 +54,8 @@ void SelectionBitmapEditor::invalidateBitmapCache()
 
 void SelectionBitmapEditor::setSelection(const QRect& rect)
 {
+    if (!mIsValid) { return; }
+
     setSelection(QPolygon(rect));
 }
 
@@ -69,194 +71,189 @@ void SelectionBitmapEditor::setSelection(const QPolygon& polygon)
     mState->selectionRect = polygon.boundingRect().adjusted(0, 0,-1,-1);
     mState->originalRect = mState->selectionRect;
 
-    qDebug() << "set Selection";
+    mTransformEditor.setTransformAnchor(mTransformEditor.resolveAnchorPoint(QPoint(), mState->selectionPolygon, 0));
 
     createImageCache();
 }
 
-QRect SelectionBitmapEditor::mySelectionRect() const
+QRect SelectionBitmapEditor::selectionRect() const
 {
     if (!mIsValid) { return QRect(); }
     return mState->selectionRect;
 }
 
-QPolygonF SelectionBitmapEditor::mySelectionPolygon() const
+QPolygon SelectionBitmapEditor::selectionPolygon() const
 {
     if (!mIsValid) { return QPolygon(); }
 
     return mState->selectionPolygon;
 }
 
-qreal SelectionBitmapEditor::myRotation() const
+qreal SelectionBitmapEditor::rotation() const
 {
     if (!mIsValid) { return 0; }
-    return mCommonEditor.myRotation();
+    return mTransformEditor.rotationAngle();
 }
 
-qreal SelectionBitmapEditor::myScaleX() const
+qreal SelectionBitmapEditor::scaleX() const
 {
     if (!mIsValid) { return 1; }
-    return mCommonEditor.myScaleX();
+    return mTransformEditor.scaleX();
 }
 
-qreal SelectionBitmapEditor::myScaleY() const
+qreal SelectionBitmapEditor::scaleY() const
 {
     if (!mIsValid) { return 1; }
-    return mCommonEditor.myScaleY();
+    return mTransformEditor.scaleY();
 }
 
-QPointF SelectionBitmapEditor::myTranslation() const
+QPointF SelectionBitmapEditor::translation() const
 {
     if (!mIsValid) { return QPointF(); }
 
-    return mCommonEditor.myTranslation().toPoint();
+    return mTransformEditor.translation().toPoint();
 }
 
-QTransform SelectionBitmapEditor::myTransform() const
+QTransform SelectionBitmapEditor::transform() const
 {
     if (!mIsValid) { return QTransform(); }
-    return mCommonEditor.myTransform();
+    return mTransformEditor.transform();
+}
+
+void SelectionBitmapEditor::scaleAroundAnchorPoint(DragHandle handle, QPointF position)
+{
+    if (!mIsValid) { return; }
+    mTransformEditor.scaleAroundAnchorPoint(handle, mState->selectionPolygon, position);
 }
 
 void SelectionBitmapEditor::setTranslation(const QPointF& point)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.setTranslation(point);
+    mTransformEditor.setTranslation(point);
 }
 
 void SelectionBitmapEditor::setRotation(qreal rotationAngle)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.setRotation(rotationAngle);
+    mTransformEditor.setRotation(rotationAngle);
 }
 
 void SelectionBitmapEditor::setScale(qreal scaleX, qreal scaleY)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.setScale(scaleX, scaleY);
+    mTransformEditor.setScale(scaleX, scaleY);
 }
 
 void SelectionBitmapEditor::setTransform(const QTransform& transform)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.setTransform(transform);
+    mTransformEditor.setTransform(transform);
 }
 
 void SelectionBitmapEditor::setSmoothTransform(bool smooth)
 {
     if (!mIsValid) { return; }
-    mSmoothTransform = smooth;
+    mState->smoothTransform = smooth;
 
-    // updateTransformedSelectionState();
+    updateTransformedSelectionState();
 }
 
-MoveMode SelectionBitmapEditor::moveMode() const
+bool SelectionBitmapEditor::belongsTo(int keyPos) const
 {
-    if (!mIsValid) { return MoveMode::NONE; }
-    return mCommonEditor.getMoveMode();
+    if (!mIsValid) { return false; }
+
+    return keyPos == mBitmapImage->pos();
 }
 
-void SelectionBitmapEditor::setMoveMode(MoveMode mode)
+DragHandle SelectionBitmapEditor::resolveHandleMode(const QPointF& point, qreal selectionTolerance) const
 {
-    if (!mIsValid) { return; }
-    mCommonEditor.setMoveMode(mode);
-}
-
-MoveMode SelectionBitmapEditor::resolveMoveModeForAnchorInRange(const QPointF& point, qreal selectionTolerance) const
-{
-    if (!mIsValid) { return MoveMode::NONE; }
-    return mCommonEditor.resolveMoveModeForAnchorInRange(point, mState->selectionPolygon, selectionTolerance);
-}
-
-void SelectionBitmapEditor::setDragOrigin(const QPointF& point)
-{
-    if (!mIsValid) { return; }
-    mCommonEditor.setDragOrigin(point.toPoint());
+    if (!mIsValid) { return DragHandle::NONE; }
+    return mTransformEditor.resolveHandleMode(point, mState->selectionPolygon, selectionTolerance);
 }
 
 QPointF SelectionBitmapEditor::currentAnchorPoint() const
 {
     if (!mIsValid) { return QPointF(); }
-    return mCommonEditor.currentAnchorPoint().toPoint();
+    return mTransformEditor.currentAnchorPoint();
 }
 
 void SelectionBitmapEditor::setTransformAnchor(const QPointF& anchorPoint)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.setTransformAnchor(anchorPoint.toPoint());
+    mTransformEditor.setTransformAnchor(anchorPoint);
 }
 
 void SelectionBitmapEditor::translate(const QPointF& point)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.translate(point.toPoint());
+    mTransformEditor.translate(point.toPoint());
 }
 
-void SelectionBitmapEditor::rotate(qreal rotationAngle, qreal lockedAngle)
+void SelectionBitmapEditor::rotate(qreal rotationAngle, qreal angleIncrement)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.rotate(rotationAngle, lockedAngle);
+    mTransformEditor.rotate(rotationAngle, angleIncrement);
 }
 
 void SelectionBitmapEditor::scale(qreal scaleX, qreal scaleY)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.scale(scaleX, scaleY);
+    mTransformEditor.scale(scaleX, scaleY);
 }
 
 QPointF SelectionBitmapEditor::mapToSelection(const QPointF& point) const
 {
     if (!mIsValid) { return QPointF(); }
-    return mCommonEditor.mapToSelection(point);
+    return mTransformEditor.mapToSelection(point);
 }
 
 QPointF SelectionBitmapEditor::mapFromLocalSpace(const QPointF& point) const
 {
     if (!mIsValid) { return QPointF(); }
-    return mCommonEditor.mapFromLocalSpace(point);
+    return mTransformEditor.mapFromLocalSpace(point);
 }
 
 QPolygonF SelectionBitmapEditor::mapToSelection(const QPolygonF& polygon) const
 {
     if (!mIsValid) { return QPolygonF(); }
-    return mCommonEditor.mapToSelection(polygon);
+    return mTransformEditor.mapToSelection(polygon);
 }
 
 QPolygonF SelectionBitmapEditor::mapFromLocalSpace(const QPolygonF& polygon) const
 {
     if (!mIsValid) { return QPolygonF(); }
-    return mCommonEditor.mapFromLocalSpace(polygon);
+    return mTransformEditor.mapFromLocalSpace(polygon);
 }
 
 void SelectionBitmapEditor::calculateSelectionTransformation()
 {
     if (!mIsValid) { return; }
-    mCommonEditor.calculateSelectionTransformation();
+    mTransformEditor.calculateSelectionTransformation();
     updateTransformedSelectionState();
 }
 
 qreal SelectionBitmapEditor::angleFromPoint(const QPointF &point, const QPointF &anchorPoint) const
 {
     if (!mIsValid) { return 0; }
-    return mCommonEditor.angleFromPoint(point, anchorPoint);
+    return mTransformEditor.angleFromPoint(point, anchorPoint);
 }
 
 void SelectionBitmapEditor::lockMovementToAxis(const bool state)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.lockMovementToAxis(state);
+    mTransformEditor.lockMovementToAxis(state);
 }
 
 QPointF SelectionBitmapEditor::alignedPositionToAxis(QPointF currentPoint) const
 {
     if (!mIsValid) { return QPointF(); }
-    return mCommonEditor.alignedPositionToAxis(currentPoint);
+    return mTransformEditor.alignedPositionToAxis(currentPoint);
 }
 
 void SelectionBitmapEditor::maintainAspectRatio(const bool state)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.maintainAspectRatio(state);
+    mTransformEditor.maintainAspectRatio(state);
 }
 
 void SelectionBitmapEditor::createImageCache()
@@ -280,7 +277,7 @@ void SelectionBitmapEditor::createImageCache()
 void SelectionBitmapEditor::resetTransformation()
 {
     if (!mIsValid) { return; }
-    mCommonEditor.resetState();
+    mTransformEditor.resetState();
 }
 
 void SelectionBitmapEditor::resetSelectionProperties()
@@ -307,74 +304,13 @@ bool SelectionBitmapEditor::isSelectionValid() const
 void SelectionBitmapEditor::flipSelection(bool flipVertical)
 {
     if (!mIsValid) { return; }
-    mCommonEditor.flipSelection(flipVertical);
+    mTransformEditor.flipSelection(flipVertical);
 }
-
-void SelectionBitmapEditor::commitChanges()
-{
-    if (!mIsValid) { return; }
-    if (!somethingSelected()) { return; }
-    // BitmapImage* currentBitmapImage = static_cast<BitmapImage*>(keyframe);
-
-    auto state = mState;
-    // TODO: replace with qpolygon
-    // const QPolygon& alignedSelection = mState->selectionPolygon;
-
-    // if (!mTransformCopyImage) {
-    //     return;
-    // }
-    // if (currentBitmapImage == nullptr) { return; }
-
-    // BitmapImage* floatingImage = static_cast<SelectionBitmapEditor*>(currentBitmapImage->selectionEditor())->floatingImage();
-    // if (mFloatingImage.selection.isValid()) {
-    //     const QRect& transformedSelectionRect = mSelectionTransform.mapRect(alignedSelectionRect);
-    //     const QImage& transformedFloatingImage = mFloatingImage.image.transformed(mSelectionTransform, Qt::SmoothTransformation);
-
-    // //     auto floatingBitmapImage = BitmapImage(transformedSelectionRect.topLeft(), transformedFloatingImage);
-    // //     currentBitmapImage->paste(&floatingBitmapImage, QPainter::CompositionMode_SourceOver);
-    // //     // TODO: figure out how we clear the temporary image without destroying the editor as well
-    // //     // currentBitmapImage->clearTemporaryImage();
-    // } else {
-        // BitmapEditor transformedImage = mTransformCopyEditor.get()->transformed(mSelectionTransform, true);
-
-        // mBitmapEditor->clear(alignedSelection);
-        // mBitmapEditor->paste(transformedImage, QPainter::CompositionMode_SourceOver);
-    // }
-    // // When the selection has been applied, a new rect is applied based on the bounding box.
-    // // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
-    // setSelection(mapToSelection(QPolygonF(alignedSelection)).boundingRect());
-}
-
-// BitmapEditor SelectionBitmapEditor::transformedEditor()
-// {
-//     if (!mTransformCopyEditor) {
-//         return BitmapEditor();
-//     }
-//     if (mCacheInvalidated) {
-//         createImageCache();
-//     }
-//     return mTransformCopyEditor.get()->transformed(mSelectionTransform, true);
-// }
 
 void SelectionBitmapEditor::discardChanges()
 {
-    // if (!keyframe) { return; }
-
-    // BitmapImage* bitmapImage = static_cast<BitmapImage*>(keyframe);
-
-    // if (bitmapImage->temporaryImage()) {
-    //     bitmapImage->clearTemporaryImage();
-    // }
-
     resetSelectionProperties();
 }
-
-// void SelectionBitmapEditor::setFloatingImage(const QImage &floatingImage, const QRect &bounds)
-// {
-//     // mFloatingImage = SelectionBitmapImage();
-//     // mFloatingImage.selection = bounds;
-//     // mFloatingImage.image = floatingImage;
-// }
 
 void SelectionBitmapEditor::deleteSelection()
 {
@@ -390,23 +326,21 @@ QPointF SelectionBitmapEditor::getSelectionAnchorPoint() const
     if (!mIsValid) { return QPointF(); }
     if (!somethingSelected()) { return QPointF(); }
 
-    return mCommonEditor.getSelectionAnchorPoint(mState->selectionPolygon);
+    return mTransformEditor.currentAnchorPoint();
 }
 
-bool SelectionBitmapEditor::isOutsideSelectionArea(const QPointF& point) const
+QPointF SelectionBitmapEditor::resolveAnchorPoint(const QPointF& currentPoint, const qreal tolerance) const
+{
+    if (!mIsValid) { return QPointF(); }
+    return mTransformEditor.resolveAnchorPoint(currentPoint, mState->selectionPolygon, tolerance);
+}
+
+bool SelectionBitmapEditor::isOutsideSelectionArea(const QPointF& point, qreal tolerance) const
 {
     if (!mIsValid) { return true; }
     if (!somethingSelected()) { return true; }
 
-    return mCommonEditor.isOutsideSelection(point, mState->selectionPolygon);
-}
-
-void SelectionBitmapEditor::adjustCurrentSelection(const QPointF &currentPoint, const QPointF &offset, qreal rotationOffset, int rotationIncrement)
-{
-    if (!mIsValid) { return; }
-    auto selectionState = mBitmapImage->mSelectionState;
-    mCommonEditor.adjustCurrentSelection(selectionState.selectionPolygon, currentPoint.toPoint(), offset.toPoint(), rotationOffset, rotationIncrement);
-    updateTransformedSelectionState();
+    return mTransformEditor.isOutsideSelection(point, mState->selectionPolygon, tolerance);
 }
 
 void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBounds,
@@ -429,7 +363,7 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
 
     QRect alignedRect;
     QRectF preciseRect;
-    computeTransformedImageBounds(mState->selectionRect, mState->commonState.selectionTransform, alignedRect, preciseRect);
+    computeTransformedImageBounds(mState->selectionRect, mState->transformState.selectionTransform, alignedRect, preciseRect);
 
     QPainter painter(&mState->transformedImage);
     auto const tiles = tiledBuffer.tiles();
@@ -452,8 +386,9 @@ void SelectionBitmapEditor::paste(TiledBuffer& tiledBuffer)
     mState->selectionRect = alignedRect;
 
     mState->selectionPolygon = QPolygon(QRect(mState->selectionRect));
+    mState->accumulatedClipTransform *= mState->transformState.selectionTransform;
 
-    mCommonEditor.resetState();
+    mTransformEditor.resetState();
 
     mCacheInvalidated = false;
 
@@ -469,25 +404,23 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
 
     QRect transformedImageBounds;
     QRectF bRectF;
-    QTransform transform = mState->commonState.selectionTransform;
+    QTransform transform = mState->transformState.selectionTransform;
 
-    // if (mCacheInvalidated) {
-    //     createImageCache();
-    // }
+    if (mCacheInvalidated) {
+        createImageCache();
+    }
 
     computeTransformedImageBounds(originalBounds, transform, transformedImageBounds, bRectF);
 
-    mState->transformedImage = transformedImage(mState->selectionImage, transform, transformedImageBounds, bRectF, mSmoothTransform);
+    mState->transformedImage = transformedImage(mState->selectionImage, transform, transformedImageBounds, bRectF, mState->smoothTransform);
     int padding = mState->boundsPadding * 0.5;
     mState->transformedRect = transformedImageBounds.adjusted(-padding,
                                                               -padding,
                                                               padding,
                                                               padding);
 
-    QTransform selectionT = mState->commonState.selectionTransform;
-    QTransform deltaT = selectionT * mState->commonState.prevSelectionTransform.inverted();
-    mState->clipTransform = deltaT * mState->clipTransform;
-    mState->clipPolygon = QPolygonF(mState->clipTransform.map(QPolygonF(QRectF(mState->originalRect)))).toPolygon();
+    QTransform t = mState->accumulatedClipTransform * mState->transformState.selectionTransform;
+    mState->clipPolygon = QPolygonF(t.map(QPolygon(mState->originalRect))).toPolygon();
 }
 
 QImage SelectionBitmapEditor::transformedImage(const QImage& src,

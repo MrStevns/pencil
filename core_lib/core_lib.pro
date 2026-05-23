@@ -31,11 +31,13 @@ HEADERS +=  \
     src/graphics/bitmap/bitmapbucket.h \
     src/graphics/bitmap/bitmapimage.h \
     src/graphics/bitmap/selectionbitmapeditor.h \
+    src/graphics/bitmap/selectionbitmapstate.h \
     src/graphics/bitmap/tile.h \
     src/graphics/bitmap/tiledbuffer.h \
     src/graphics/vector/bezierarea.h \
     src/graphics/vector/beziercurve.h \
     src/graphics/vector/colorref.h \
+    src/graphics/vector/selectionvectorstate.h \
     src/graphics/vector/vectorimage.h \
     src/graphics/vector/vectorselection.h \
     src/graphics/vector/vertexref.h \
@@ -71,8 +73,8 @@ HEADERS +=  \
     src/structure/layersound.h \
     src/structure/layervector.h \
     src/structure/pegbaraligner.h \
-    src/structure/selectioneditor.h \
-    src/structure/selectionstate.h \
+    src/structure/selectiontransformeditor.h \
+    src/structure/selectiontransformstate.h \
     src/structure/soundclip.h \
     src/structure/object.h \
     src/structure/objectdata.h \
@@ -109,11 +111,11 @@ HEADERS +=  \
     src/util/pencildef.h \
     src/util/pencilerror.h \
     src/util/pencilsettings.h \
+    src/util/perspectivemode.h \
     src/util/preferencesdef.h \
     src/util/transform.h \
     src/util/util.h \
     src/util/log.h \
-    src/util/movemode.h \
     src/util/pointerevent.h \
     src/canvaspainter.h \
     src/soundplayer.h \
@@ -167,7 +169,7 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/structure/layervector.cpp \
     src/structure/object.cpp \
     src/structure/pegbaraligner.cpp \
-    src/structure/selectioneditor.cpp \
+    src/structure/selectiontransformeditor.cpp \
     src/structure/soundclip.cpp \
     src/structure/objectdata.cpp \
     src/structure/filemanager.cpp \
@@ -179,11 +181,16 @@ SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/tool/eyedroppertool.cpp \
     src/tool/handtool.cpp \
     src/tool/movetool.cpp \
+    src/tool/movetoolbitmap.cpp \
+    src/tool/movetoolperspective.cpp \
+    src/tool/movetoolvector.cpp \
     src/tool/penciltool.cpp \
     src/tool/pentool.cpp \
     src/tool/polylinetool.cpp \
     src/tool/radialoffsettool.cpp \
     src/tool/selecttool.cpp \
+    src/tool/selecttoolbitmap.cpp \
+    src/tool/selecttoolvector.cpp \
     src/tool/smudgetool.cpp \
     src/tool/strokeinterpolator.cpp \
     src/tool/stroketool.cpp \
