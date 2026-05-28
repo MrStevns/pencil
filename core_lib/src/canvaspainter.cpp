@@ -320,7 +320,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
     const SelectionBitmapState& state = paintedImage->selectionState();
     if (state.selectionImageBounds.isValid()) {
-        paintTransformedSelection(currentBitmapPainter, state);
+        paintSelectionCompositePatch(currentBitmapPainter, state);
     } else {
 
         if (isCurrentLayer && isDrawing)
@@ -339,6 +339,32 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     }
 
     painter.drawPixmap(mPointZero, mCurrentLayerPixmap);
+}
+
+void CanvasPainter::paintSelectionCompositePatch(
+    QPainter& painter,
+    const SelectionBitmapState& state)
+{
+    painter.save();
+    painter.setCompositionMode(
+        QPainter::CompositionMode_Clear);
+
+    // Clear the base area plus some padding to account for bleeding where a thin line would otherwise
+    // be shown at some zoom levels
+    painter.drawImage(
+        state.baseImageBounds.adjusted(-state.boundsPadding,
+                                       -state.boundsPadding,
+                                       state.boundsPadding,
+                                       state.boundsPadding),
+        state.baseImageCache);
+
+    painter.restore();
+
+    if (state.cachedPatch.isNull()) return;
+
+     painter.save();
+     painter.drawImage(state.cachedPatchBounds, state.cachedPatch);
+     painter.restore();
 }
 
 void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blitRect, Layer* layer, bool isCurrentLayer)

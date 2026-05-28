@@ -21,6 +21,7 @@ SelectionBitmapEditor::SelectionBitmapEditor(BitmapImage* bitmapImage)
     mState = &mBitmapImage->mSelectionState;
     mTransformEditor = SelectionTransformEditor(&mBitmapImage->mSelectionState.transformState);
     mIsValid = true;
+    mPatchJobId = patchSystem().generateId();
 }
 
 SelectionBitmapEditor::~SelectionBitmapEditor()
@@ -39,6 +40,7 @@ void SelectionBitmapEditor::invalidate()
     mState = nullptr;
     mTransformEditor.invalidate();
     mIsValid = false;
+    patchSystem().cancelAndRemove(mPatchJobId);
 }
 
 void SelectionBitmapEditor::invalidateBitmapCache()
@@ -64,7 +66,6 @@ void SelectionBitmapEditor::setSelection(const QPolygon& polygon)
     // Polygon bounds are geometric, where as image bounds are raster-based.
     // As such we adjust the bounds.
     mState->selectionImageBounds = polygon.boundingRect().adjusted(0, 0,-1,-1);
-    mState->baseImageBounds = mState->selectionImageBounds;
 
     mTransformEditor.setTransformAnchor(mTransformEditor.resolveAnchorPoint(QPoint(), mState->selectionGeometry, 0));
 
@@ -264,6 +265,7 @@ void SelectionBitmapEditor::createImageCache()
         invalidateBitmapCache();
     }
     mState->baseImageCache = *mBitmapImage->copy(mState->selectionImageBounds, mState->selectionGeometry).image();
+    mState->baseImageBounds = mState->selectionImageBounds;
     mCacheInvalidated = false;
 
     updateTransformedSelectionState();
@@ -348,14 +350,15 @@ void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBou
 
     outPreciseRect = transform.map(QPolygonF(boundsPolygon)).boundingRect();
 
+    // The aligned rect is calculated such that it accounts for transformations
+    // where the image might otherwise have been slightly larger.
     outAlignedRect = QRect(
-        qFloor(boundingRect.x()),
-        qFloor(boundingRect.y()),
-        qCeil(boundingRect.width()),
-        qCeil(boundingRect.height())
+        qFloor(boundingRect.x() - 1),
+        qFloor(boundingRect.y() - 1),
+        qCeil(boundingRect.width() + 1),
+        qCeil(boundingRect.height() + 1)
     );
 }
-
 
 void SelectionBitmapEditor::updateTransformedSelectionState()
 {
@@ -373,12 +376,36 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
     computeTransformedImageBounds(originalBounds, transform, outAlignedRect, outPreciseRect);
 
     mState->transformedImage = transformedImage(mState->baseImageCache, transform, outAlignedRect, outPreciseRect, mState->smoothTransform);
-    int padding = mState->boundsPadding * 0.5;
-    mState->transformedImageBounds = outAlignedRect.adjusted(-padding,
-                                                              -padding,
-                                                              padding,
-                                                              padding);
+    mState->transformedImageBounds = outAlignedRect;
+
+    SelectionPatchJob job;
+    job.jobId = mPatchJobId;
+    job.backingCopy = *mBitmapImage->image();
+    job.baseCache = mState->baseImageCache;
+    job.baseBounds = mState->baseImageBounds;
+
+    job.transformedImage = mState->transformedImage;
+    job.transformedBounds = mState->transformedImageBounds;
+
+    job.imageBounds = mBitmapImage->bounds();
+    job.padding = mState->boundsPadding;
+
+    patchSystem().requestPatch(job);
 }
+
+void SelectionBitmapEditor::onPatchReady(int jobId)
+{
+    if (!mIsValid) { return; }
+
+    if (jobId != mPatchJobId) return;
+
+    SelectionPatchResult result;
+    if (patchSystem().tryGetResult(jobId, result.patch, result.bounds)) {
+        mState->cachedPatch       = result.patch;
+        mState->cachedPatchBounds = result.bounds;
+    }
+}
+
 
 QImage SelectionBitmapEditor::transformedImage(const QImage& src,
                                                const QTransform& transform,
@@ -386,9 +413,7 @@ QImage SelectionBitmapEditor::transformedImage(const QImage& src,
                                                const QRectF& preciseRect,
                                                bool smooth) const
 {
-    int padding = mState->boundsPadding;
-
-    QImage result(QSize(alignedRect.width() + padding, alignedRect.height() + padding),
+    QImage result(QSize(alignedRect.width(), alignedRect.height()),
                   QImage::Format_ARGB32_Premultiplied);
     result.fill(Qt::transparent);
 
@@ -400,7 +425,6 @@ QImage SelectionBitmapEditor::transformedImage(const QImage& src,
 
     QPointF preciseCenter(preciseRect.width() * 0.5, preciseRect.height() * 0.5);
 
-    painter.translate(padding * 0.5, padding * 0.5);
     painter.setTransform(transform, true);
 
     // Calculates the sub pixel position offset in order to account for the image being integer based.

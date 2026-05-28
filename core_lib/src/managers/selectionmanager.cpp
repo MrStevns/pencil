@@ -92,7 +92,18 @@ void SelectionManager::createEditor()
                 mBitmapEditors.append(
                             BitmapEditorEntry(mWorkingLayer->id(),
                                               SelectionBitmapEditor(static_cast<BitmapImage*>(keyframe))));
-                editor = &mBitmapEditors.back().bitmapEditor;
+                int editorIndex = mBitmapEditors.size() - 1;
+
+                auto editorEntry = mBitmapEditors.back();
+                editor = &editorEntry.bitmapEditor;
+
+                editorEntry.patchConnection = connect(&SelectionBitmapEditor::patchSystem(), &SelectionPatchSystem::patchReady,
+                        this, [this, editorIndex](int jobId) {
+                            if (editorIndex > mBitmapEditors.size() - 1) { return; }
+
+                            mBitmapEditors[editorIndex].bitmapEditor.onPatchReady(jobId);
+                            emit selectionChanged();
+                        });
             }
             mActiveBitmapEditor = editor;
             break;
@@ -113,7 +124,11 @@ void SelectionManager::invalidateEditor()
             mActiveBitmapEditor->invalidate();
 
             for (int i = 0; i < mBitmapEditors.count(); i += 1) {
-                if (&mBitmapEditors[i].bitmapEditor == mActiveBitmapEditor) {
+
+                auto editor = mBitmapEditors[i];
+                // TODO: Consider using an id here...
+                if (&editor.bitmapEditor == mActiveBitmapEditor) {
+                    disconnect(editor.patchConnection);
                     mBitmapEditors.removeAt(i);
                     return;
                 }

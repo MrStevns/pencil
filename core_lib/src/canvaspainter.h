@@ -82,6 +82,9 @@ private:
      */
     void initializePainter(QPainter& painter, QPaintDevice& device, const QRect& blitRect);
 
+    void paintSelectionCompositePatch(QPainter& painter,
+                                      const SelectionBitmapState& state);
+
     void paintOnionSkinOnLayer(QPainter& painter, const QRect& blitRect, Layer* layer);
     void paintOnionSkin(QPainter& painter, const QRect& blitRect);
 

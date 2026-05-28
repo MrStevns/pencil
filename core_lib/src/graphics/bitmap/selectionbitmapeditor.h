@@ -3,6 +3,7 @@
 
 #include "selectiontransformeditor.h"
 #include "selectionbitmapstate.h"
+#include "selectionpatchsystem.h"
 
 #include <QImage>
 
@@ -86,6 +87,14 @@ public:
     SelectionTransformEditor& editTransformEditor() { return mTransformEditor; }
     const SelectionTransformEditor& transformEditor() const { return mTransformEditor; }
 
+    void onPatchReady(int jobId);
+
+    // Connect to this to trigger repaints when patch is ready
+    static SelectionPatchSystem& patchSystem() {
+        static SelectionPatchSystem system;
+        return system;
+    }
+
 private:
     /// Computes two rectangles, a rectangle for the aligned bounds of the image used to create the image
     /// and a second bound used to allow smooth sub pixel transformation
@@ -113,6 +122,7 @@ private:
     /// Creates a copy of the editor based on the selection that was set
     void createImageCache();
 
+    int mPatchJobId = -1;
     SelectionBitmapState* mState = nullptr;
     BitmapImage* mBitmapImage = nullptr;
 };
