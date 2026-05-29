@@ -340,54 +340,23 @@ bool SelectionBitmapEditor::isOutsideSelectionArea(const QPointF& point, qreal t
     return mTransformEditor.isOutsideSelection(point, mState->selectionGeometry, tolerance);
 }
 
-void SelectionBitmapEditor::computeTransformedImageBounds(const QRect& sourceBounds,
-                                   const QTransform& transform,
-                                   QRect& outAlignedRect, QRectF& outPreciseRect) const
-{
-    QPolygon boundsPolygon(sourceBounds);
-
-    QRectF boundingRect = transform.map(boundsPolygon).boundingRect();
-
-    outPreciseRect = transform.map(QPolygonF(boundsPolygon)).boundingRect();
-
-    // The aligned rect is calculated such that it accounts for transformations
-    // where the image might otherwise have been slightly larger.
-    outAlignedRect = QRect(
-        qFloor(boundingRect.x() - 1),
-        qFloor(boundingRect.y() - 1),
-        qCeil(boundingRect.width() + 1),
-        qCeil(boundingRect.height() + 1)
-    );
-}
-
 void SelectionBitmapEditor::updateTransformedSelectionState()
 {
     if (!mIsValid) { return; }
-    const QRect& originalBounds = mState->selectionImageBounds;
-
-    QRect outAlignedRect;
-    QRectF outPreciseRect;
-    QTransform transform = mState->transformState.selectionTransform;
 
     if (mCacheInvalidated) {
         createImageCache();
     }
 
-    computeTransformedImageBounds(originalBounds, transform, outAlignedRect, outPreciseRect);
-
-    mState->transformedImage = transformedImage(mState->baseImageCache, transform, outAlignedRect, outPreciseRect, mState->smoothTransform);
-    mState->transformedImageBounds = outAlignedRect;
-
     SelectionPatchJob job;
     job.jobId = mPatchJobId;
-    job.backingCopy = *mBitmapImage->image();
+    job.backingImage = *mBitmapImage->image();
+    job.backingImageBounds = mBitmapImage->bounds();
     job.baseCache = mState->baseImageCache;
-    job.baseBounds = mState->baseImageBounds;
+    job.baseCacheBounds = mState->baseImageBounds;
+    job.transform = mState->transformState.selectionTransform;
+    job.smoothTransform = mState->smoothTransform;
 
-    job.transformedImage = mState->transformedImage;
-    job.transformedBounds = mState->transformedImageBounds;
-
-    job.imageBounds = mBitmapImage->bounds();
     job.padding = mState->boundsPadding;
 
     patchSystem().requestPatch(job);
@@ -400,41 +369,10 @@ void SelectionBitmapEditor::onPatchReady(int jobId)
     if (jobId != mPatchJobId) return;
 
     SelectionPatchResult result;
-    if (patchSystem().tryGetResult(jobId, result.patch, result.bounds)) {
+    if (patchSystem().tryGetResult(jobId, result)) {
         mState->cachedPatch       = result.patch;
         mState->cachedPatchBounds = result.bounds;
+        mState->transformedImage = result.transformedImage;
+        mState->transformedImageBounds = result.transformedBounds;
     }
-}
-
-
-QImage SelectionBitmapEditor::transformedImage(const QImage& src,
-                                               const QTransform& transform,
-                                               const QRect& alignedRect,
-                                               const QRectF& preciseRect,
-                                               bool smooth) const
-{
-    QImage result(QSize(alignedRect.width(), alignedRect.height()),
-                  QImage::Format_ARGB32_Premultiplied);
-    result.fill(Qt::transparent);
-
-    QPainter painter(&result);
-    if (smooth) {
-        painter.setRenderHint(QPainter::SmoothPixmapTransform);
-        painter.setRenderHint(QPainter::Antialiasing);
-    }
-
-    QPointF preciseCenter(preciseRect.width() * 0.5, preciseRect.height() * 0.5);
-
-    painter.setTransform(transform, true);
-
-    // Calculates the sub pixel position offset in order to account for the image being integer based.
-    QPointF pixelCorrectionOffset = preciseRect.topLeft() - alignedRect.topLeft();
-    QPointF centerInSource = transform.inverted().map(preciseCenter + pixelCorrectionOffset);
-    QPointF copiedCenter(src.width() * 0.5, src.height() * 0.5);
-    QPointF drawPoint = centerInSource - copiedCenter;
-
-    painter.drawImage(drawPoint, src);
-    painter.end();
-
-    return result;
 }

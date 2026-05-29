@@ -96,21 +96,6 @@ public:
     }
 
 private:
-    /// Computes two rectangles, a rectangle for the aligned bounds of the image used to create the image
-    /// and a second bound used to allow smooth sub pixel transformation
-    ///
-    /// @param sourceBounds The bound of the source, ie. the image boundingbox
-    /// @param tranform The transform used to transform the image
-    /// @param outAlignedRect the bound required to store the transformed image.
-    /// @param outPreciseRect the bound required to calculate the sub pixel position of the image
-    void computeTransformedImageBounds(const QRect& sourceBounds,
-                                       const QTransform& transform,
-                                       QRect& outAlignedRect, QRectF& outPreciseRect) const;
-    QImage transformedImage(const QImage& src,
-                            const QTransform& transform,
-                            const QRect& alignedRect,
-                            const QRectF& preciseRect,
-                            bool smooth) const;
 
     // When this value is valid, is means that all state should memory wise be intact
     // for example when the Editor has been created with a valid BitmapImage ptr.
