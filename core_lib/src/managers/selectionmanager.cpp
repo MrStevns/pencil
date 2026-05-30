@@ -143,7 +143,7 @@ void SelectionManager::invalidateEditor()
 SelectionBitmapEditor* SelectionManager::findActiveEditor(int layerId, KeyFrame* keyFrame)
 {
     for (auto& entry : mBitmapEditors) {
-        if (mWorkingLayer->id() == entry.layerID && entry.bitmapEditor.belongsTo(keyFrame->pos())) {
+        if (layerId == entry.layerID && entry.bitmapEditor.belongsTo(keyFrame->pos())) {
             return &entry.bitmapEditor;
         }
     }
