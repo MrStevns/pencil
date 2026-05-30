@@ -94,10 +94,10 @@ void SelectionManager::createEditor()
                                               SelectionBitmapEditor(static_cast<BitmapImage*>(keyframe))));
                 int editorIndex = mBitmapEditors.size() - 1;
 
-                auto editorEntry = mBitmapEditors.back();
-                editor = &editorEntry.bitmapEditor;
+                auto* editorEntry = &mBitmapEditors[editorIndex];
+                editor = &editorEntry->bitmapEditor;
 
-                editorEntry.connections = connect(&SelectionBitmapEditor::renderWorker(),
+                editorEntry->connections = connect(&SelectionBitmapEditor::renderWorker(),
                                                   &BitmapSelectionRenderWorker::jobDone,
                                                   this, [this, editorIndex](int jobId) {
                     if (editorIndex > mBitmapEditors.size() - 1) { return; }
@@ -131,7 +131,7 @@ void SelectionManager::invalidateEditor()
                 if (&editor.bitmapEditor == mActiveBitmapEditor) {
                     disconnect(editor.connections);
                     mBitmapEditors.removeAt(i);
-                    return;
+                    mActiveBitmapEditor = &mNullBitmapEditor;
                 }
             }
         }
