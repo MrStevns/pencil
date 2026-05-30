@@ -21,21 +21,21 @@ void SelectionPatchSystem::requestPatch(const SelectionPatchJob &job)
 
         QImage patch(patchBounds.size(), QImage::Format_ARGB32_Premultiplied);
         patch.fill(Qt::transparent);
-        QPoint offset = -patchBounds.topLeft();
 
         QPainter p(&patch);
+        p.translate(-patchBounds.topLeft());
 
         // draw the backing image, this needs to be done to avoid showing
         // seams in the rendered result.
         QRect visibleWorld = job.backingImageBounds.intersected(patchBounds);
         if (visibleWorld.isValid()) {
             QRect src = visibleWorld.translated(-job.backingImageBounds.topLeft());
-            QRect dst(visibleWorld.topLeft() + offset, visibleWorld.size());
+            QRect dst(visibleWorld.topLeft(), visibleWorld.size());
             p.drawImage(dst, job.backingImage, src);
         }
 
         p.setCompositionMode(QPainter::CompositionMode_Clear);
-        p.drawImage(job.baseCacheBounds.topLeft() + offset, job.baseCache);
+        p.drawImage(job.baseCacheBounds, job.baseCache);
 
         // TODO: can we cache the transformed image so it only needs to be created when scaling the image?
         QImage transformedImage = subPixelTransformedImage(job.baseCache,
@@ -45,7 +45,7 @@ void SelectionPatchSystem::requestPatch(const SelectionPatchJob &job)
                                                            job.smoothTransform);
 
         p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        p.drawImage(transformedAlignedRect.topLeft() + offset, transformedImage);
+        p.drawImage(transformedAlignedRect, transformedImage);
         p.end();
 
         return { job.jobId, patch, patchBounds, transformedImage, transformedAlignedRect };
