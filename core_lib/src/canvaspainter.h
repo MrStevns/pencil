@@ -82,7 +82,7 @@ private:
      */
     void initializePainter(QPainter& painter, QPaintDevice& device, const QRect& blitRect);
 
-    void paintSelectionCompositePatch(QPainter& painter, BitmapImage* paintedImage,
+    void paintTransformedSelection(QPainter& painter, BitmapImage* paintedImage,
                                       const SelectionBitmapState& state);
 
     void paintOnionSkinOnLayer(QPainter& painter, const QRect& blitRect, Layer* layer);
@@ -92,8 +92,6 @@ private:
     void renderPreLayers(QPainter& painter, const QRect& blitRect);
 
     void paintCurrentFrame(QPainter& painter, const QRect& blitRect, int startLayer, int endLayer);
-
-    void paintTransformedSelection(QPainter& painter, const SelectionBitmapState& selectionState) const;
 
     void paintBitmapOnionSkinFrame(QPainter& painter, const QRect& blitRect, Layer* layer, int nFrame, bool colorize);
     void paintVectorOnionSkinFrame(QPainter& painter, const QRect& blitRect, Layer* layer, int nFrame, bool colorize);

@@ -251,7 +251,7 @@ void CanvasPainter::paintBitmapOnionSkinFrame(QPainter& painter, const QRect& bl
 
     const SelectionBitmapState& state = bitmapImage->selectionState();
     if (state.selectionImageBounds.isValid()) {
-        paintTransformedSelection(onionSkinPainter, state);
+        paintTransformedSelection(onionSkinPainter, bitmapImage, state);
     } else {
         onionSkinPainter.drawImage(bitmapImage->topLeft(), *bitmapImage->image());
     }
@@ -320,7 +320,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
     const SelectionBitmapState& state = paintedImage->selectionState();
     if (state.selectionImageBounds.isValid()) {
-        paintSelectionCompositePatch(currentBitmapPainter, paintedImage, state);
+        paintTransformedSelection(currentBitmapPainter, paintedImage, state);
     } else {
         if (isCurrentLayer && isDrawing)
         {
@@ -340,7 +340,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     painter.drawPixmap(mPointZero, mCurrentLayerPixmap);
 }
 
-void CanvasPainter::paintSelectionCompositePatch(
+void CanvasPainter::paintTransformedSelection(
     QPainter& painter,
     BitmapImage* paintedImage,
     const SelectionBitmapState& state)
@@ -406,32 +406,6 @@ void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blit
     painter.setTransform(QTransform());
 
     painter.drawPixmap(mPointZero, mCurrentLayerPixmap);
-}
-
-void CanvasPainter::paintTransformedSelection(QPainter& painter, const SelectionBitmapState& selectionState) const
-{
-    // // Make sure there is something selected
-    if (selectionState.selectionImageBounds.width() == 0 && selectionState.selectionImageBounds.height() == 0)
-        return;
-
-    painter.save();
-        painter.setTransform(mViewTransform);
-
-        // Clear the painted area to make it look like the content has been erased
-        painter.save();
-            painter.setCompositionMode(QPainter::CompositionMode_Clear);
-            QPainterPath erasePath;
-            erasePath.addRect(selectionState.baseImageBounds);
-            painter.fillPath(erasePath, QColor(255,255,255,255));
-        painter.restore();
-
-        // Draw the selection image separately and on top
-        painter.save();
-            painter.setTransform(mViewTransform);
-
-            painter.drawImage(selectionState.transformedImageBounds, selectionState.transformedImage);
-        painter.restore();
-    painter.restore();
 }
 
 /** Paints layers within the specified range for the current frame.
