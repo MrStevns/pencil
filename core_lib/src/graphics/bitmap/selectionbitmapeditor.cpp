@@ -21,7 +21,7 @@ SelectionBitmapEditor::SelectionBitmapEditor(BitmapImage* bitmapImage)
     mState = &mBitmapImage->mSelectionState;
     mTransformEditor = SelectionTransformEditor(&mBitmapImage->mSelectionState.transformState);
     mIsValid = true;
-    mPatchJobId = patchSystem().generateId();
+    mPatchJobId = renderWorker().generateId();
 }
 
 SelectionBitmapEditor::~SelectionBitmapEditor()
@@ -40,7 +40,7 @@ void SelectionBitmapEditor::invalidate()
     mState = nullptr;
     mTransformEditor.invalidate();
     mIsValid = false;
-    patchSystem().cancelAndRemove(mPatchJobId);
+    renderWorker().cancelAndRemove(mPatchJobId);
 }
 
 void SelectionBitmapEditor::invalidateBitmapCache()
@@ -264,6 +264,7 @@ void SelectionBitmapEditor::createImageCache()
     if (!mCacheInvalidated) {
         invalidateBitmapCache();
     }
+
     mState->baseImageCache = *mBitmapImage->copy(mState->selectionImageBounds, mState->selectionGeometry).image();
     mState->baseImageBounds = mState->selectionImageBounds;
     mCacheInvalidated = false;
@@ -348,10 +349,8 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
         createImageCache();
     }
 
-    SelectionPatchJob job;
+    BitmapSelectionRenderJob job;
     job.jobId = mPatchJobId;
-    job.backingImage = *mBitmapImage->image();
-    job.backingImageBounds = mBitmapImage->bounds();
     job.baseCache = mState->baseImageCache;
     job.baseCacheBounds = mState->baseImageBounds;
     job.transform = mState->transformState.selectionTransform;
@@ -359,19 +358,17 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
 
     job.padding = mState->boundsPadding;
 
-    patchSystem().requestPatch(job);
+    renderWorker().requestJob(job);
 }
 
-void SelectionBitmapEditor::onPatchReady(int jobId)
+void SelectionBitmapEditor::onRenderJobDone(int jobId)
 {
     if (!mIsValid) { return; }
 
     if (jobId != mPatchJobId) return;
 
-    SelectionPatchResult result;
-    if (patchSystem().tryGetResult(jobId, result)) {
-        mState->cachedPatch       = result.patch;
-        mState->cachedPatchBounds = result.bounds;
+    BitmapSelectionRenderResult result;
+    if (renderWorker().tryGetResult(jobId, result)) {
         mState->transformedImage = result.transformedImage;
         mState->transformedImageBounds = result.transformedBounds;
     }

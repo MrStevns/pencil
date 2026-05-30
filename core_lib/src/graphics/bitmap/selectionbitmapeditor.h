@@ -3,7 +3,7 @@
 
 #include "selectiontransformeditor.h"
 #include "selectionbitmapstate.h"
-#include "selectionpatchsystem.h"
+#include "bitmapselectionrenderworker.h"
 
 #include <QImage>
 
@@ -87,11 +87,11 @@ public:
     SelectionTransformEditor& editTransformEditor() { return mTransformEditor; }
     const SelectionTransformEditor& transformEditor() const { return mTransformEditor; }
 
-    void onPatchReady(int jobId);
+    void onRenderJobDone(int jobId);
 
     // Connect to this to trigger repaints when patch is ready
-    static SelectionPatchSystem& patchSystem() {
-        static SelectionPatchSystem system;
+    static BitmapSelectionRenderWorker& renderWorker() {
+        static BitmapSelectionRenderWorker system;
         return system;
     }
 

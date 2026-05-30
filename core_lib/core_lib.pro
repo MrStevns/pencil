@@ -30,9 +30,9 @@ HEADERS +=  \
     src/corelib-pch.h \
     src/graphics/bitmap/bitmapbucket.h \
     src/graphics/bitmap/bitmapimage.h \
+    src/graphics/bitmap/bitmapselectionrenderworker.h \
     src/graphics/bitmap/selectionbitmapeditor.h \
     src/graphics/bitmap/selectionbitmapstate.h \
-    src/graphics/bitmap/selectionpatchsystem.h \
     src/graphics/bitmap/tile.h \
     src/graphics/bitmap/tiledbuffer.h \
     src/graphics/vector/bezierarea.h \
@@ -131,8 +131,8 @@ HEADERS +=  \
 SOURCES +=  src/graphics/bitmap/bitmapimage.cpp \
     src/canvascursorpainter.cpp \
     src/graphics/bitmap/bitmapbucket.cpp \
+    src/graphics/bitmap/bitmapselectionrenderworker.cpp \
     src/graphics/bitmap/selectionbitmapeditor.cpp \
-    src/graphics/bitmap/selectionpatchsystem.cpp \
     src/graphics/bitmap/tile.cpp \
     src/graphics/bitmap/tiledbuffer.cpp \
     src/graphics/vector/bezierarea.cpp \

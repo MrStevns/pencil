@@ -50,7 +50,7 @@ class SelectionManager : public BaseManager
     struct BitmapEditorEntry {
         int layerID = -1;
         SelectionBitmapEditor bitmapEditor;
-        QMetaObject::Connection patchConnection;
+        QMetaObject::Connection connections;
 
         BitmapEditorEntry(int layerID, const SelectionBitmapEditor& bitmapEditor)
         {

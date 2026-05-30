@@ -1,5 +1,5 @@
-#ifndef SELECTIONPATCHSYSTEM_H
-#define SELECTIONPATCHSYSTEM_H
+#ifndef BITMAPSELECTIONRENDERWORKER_H
+#define BITMAPSELECTIONRENDERWORKER_H
 
 #include <QFuture>
 #include <QFutureWatcher>
@@ -7,10 +7,8 @@
 #include <QRect>
 #include <QHash>
 
-struct SelectionPatchJob {
+struct BitmapSelectionRenderJob {
     int    jobId;
-    QImage backingImage;
-    QRect  backingImageBounds;
     QImage baseCache;
     QRect  baseCacheBounds;
     QTransform transform;
@@ -18,37 +16,38 @@ struct SelectionPatchJob {
     bool smoothTransform;
 };
 
-struct SelectionPatchResult {
+struct BitmapSelectionRenderResult {
     int    jobId;
 
-    // Patch of the composited result
-    QImage patch;
-    QRect  bounds;
-
-    // The transformed image which is used for pasting onto a keyframe
     QImage transformedImage;
     QRect transformedBounds;
 };
 
-class SelectionPatchSystem : public QObject {
+class BitmapSelectionRenderWorker : public QObject {
     Q_OBJECT
 public:
     int generateId() {
         return mNextId++;
     }
 
-    void requestPatch(const SelectionPatchJob& job);
+    void requestJob(const BitmapSelectionRenderJob& job);
 
     void cancelAndRemove(int jobId);
 
-    bool tryGetResult(int jobId, SelectionPatchResult& result);
+    bool tryGetResult(int jobId, BitmapSelectionRenderResult& result);
     void deleteJob(int jobId);
 
 signals:
-    void patchReady(int jobId);
+    void jobDone(int jobId);
 
 private:
 
+    /// Creates a sub pixel transformed image based on the input image
+    /// @param src The input image to transform
+    /// @param transform The transform that alters the input image
+    /// @param alignedRect The rectangle used for the image bounds
+    /// @param preciseRect The rectangle used for the sub pixel transformations
+    /// @param smooth A boolean indicating whether to transform the image using SmoothPixmapTransform
     QImage subPixelTransformedImage(const QImage& src,
                                    const QTransform& transform,
                                    const QRect& alignedRect,
@@ -67,8 +66,8 @@ private:
                                        QRect& outAlignedRect, QRectF& outPreciseRect) const;
 
     int mNextId = 0;
-    QHash<int, QFutureWatcher<SelectionPatchResult>*> mWatchers;
-    QHash<int, SelectionPatchResult>                  mResults;
+    QHash<int, QFutureWatcher<BitmapSelectionRenderResult>*> mWatchers;
+    QHash<int, BitmapSelectionRenderResult>                  mResults;
 };
 
-#endif // SELECTIONPATCHSYSTEM_H
+#endif // BITMAPSELECTIONRENDERWORKER_H

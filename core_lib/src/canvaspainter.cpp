@@ -320,9 +320,8 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
     const SelectionBitmapState& state = paintedImage->selectionState();
     if (state.selectionImageBounds.isValid()) {
-        paintSelectionCompositePatch(currentBitmapPainter, state);
+        paintSelectionCompositePatch(currentBitmapPainter, paintedImage, state);
     } else {
-
         if (isCurrentLayer && isDrawing)
         {
             // Multiply the selection and view matrix to get proper rotation and scale values
@@ -343,28 +342,31 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 
 void CanvasPainter::paintSelectionCompositePatch(
     QPainter& painter,
+    BitmapImage* paintedImage,
     const SelectionBitmapState& state)
 {
+    qreal margin = state.boundsPadding;
+    QRectF expandedBounds = state.baseImageBounds.adjusted(-margin, -margin, margin, margin);
+
     painter.save();
-    painter.setCompositionMode(
-        QPainter::CompositionMode_Clear);
-
-    // Clear the base area plus some padding to account for bleeding where a thin line would otherwise
-    // be shown at some zoom levels
-    painter.drawImage(
-        state.baseImageBounds.adjusted(-state.boundsPadding,
-                                       -state.boundsPadding,
-                                       state.boundsPadding,
-                                       state.boundsPadding),
-        state.baseImageCache);
-
+    painter.setCompositionMode(QPainter::CompositionMode_Clear);
+    painter.fillRect(expandedBounds, Qt::transparent);
     painter.restore();
 
-    if (state.cachedPatch.isNull()) return;
+    // Draw a margin of the existing image around the selection to account for seams
+    // due to floating point precision errors in the transformatuon
+    painter.save();
+    QPainterPath outerRect;
+    outerRect.addRect(expandedBounds);
+    QPainterPath innerRect;
+    innerRect.addRect(state.baseImageBounds);
+    painter.setClipPath(outerRect - innerRect);
+    painter.drawImage(paintedImage->topLeft(), *paintedImage->image());
+    painter.restore();
+    painter.save();
 
-     painter.save();
-     painter.drawImage(state.cachedPatchBounds, state.cachedPatch);
-     painter.restore();
+    painter.drawImage(state.transformedImageBounds, state.transformedImage);
+    painter.restore();
 }
 
 void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blitRect, Layer* layer, bool isCurrentLayer)

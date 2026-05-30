@@ -97,13 +97,14 @@ void SelectionManager::createEditor()
                 auto editorEntry = mBitmapEditors.back();
                 editor = &editorEntry.bitmapEditor;
 
-                editorEntry.patchConnection = connect(&SelectionBitmapEditor::patchSystem(), &SelectionPatchSystem::patchReady,
-                        this, [this, editorIndex](int jobId) {
-                            if (editorIndex > mBitmapEditors.size() - 1) { return; }
+                editorEntry.connections = connect(&SelectionBitmapEditor::renderWorker(),
+                                                  &BitmapSelectionRenderWorker::jobDone,
+                                                  this, [this, editorIndex](int jobId) {
+                    if (editorIndex > mBitmapEditors.size() - 1) { return; }
 
-                            mBitmapEditors[editorIndex].bitmapEditor.onPatchReady(jobId);
-                            emit selectionChanged();
-                        });
+                    mBitmapEditors[editorIndex].bitmapEditor.onRenderJobDone(jobId);
+                    emit selectionChanged();
+                });
             }
             mActiveBitmapEditor = editor;
             break;
@@ -128,7 +129,7 @@ void SelectionManager::invalidateEditor()
                 auto editor = mBitmapEditors[i];
                 // TODO: Consider using an id here...
                 if (&editor.bitmapEditor == mActiveBitmapEditor) {
-                    disconnect(editor.patchConnection);
+                    disconnect(editor.connections);
                     mBitmapEditors.removeAt(i);
                     return;
                 }

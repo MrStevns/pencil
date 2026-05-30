@@ -1,69 +1,41 @@
-#include "selectionpatchsystem.h"
+#include "bitmapselectionrenderworker.h"
 
 #include <QtConcurrent>
 #include <QPainter>
 
-void SelectionPatchSystem::requestPatch(const SelectionPatchJob &job)
+void BitmapSelectionRenderWorker::requestJob(const BitmapSelectionRenderJob& job)
 {
     deleteJob(job.jobId);
 
-    auto future = QtConcurrent::run([job, this]() -> SelectionPatchResult {
+    auto future = QtConcurrent::run([job, this]() -> BitmapSelectionRenderResult {
 
         QRect transformedAlignedRect;
         QRectF transformedPreciseRect;
 
         computeTransformedImageBounds(job.baseCacheBounds, job.transform, transformedAlignedRect, transformedPreciseRect);
 
-        QRect patchBounds = job.baseCacheBounds
-            .united(transformedAlignedRect)
-            .adjusted(-job.padding, -job.padding,
-                       job.padding,  job.padding);
-
-        QImage patch(patchBounds.size(), QImage::Format_ARGB32_Premultiplied);
-        patch.fill(Qt::transparent);
-
-        QPainter p(&patch);
-        p.translate(-patchBounds.topLeft());
-
-        // draw the backing image, this needs to be done to avoid showing
-        // seams in the rendered result.
-        QRect visibleWorld = job.backingImageBounds.intersected(patchBounds);
-        if (visibleWorld.isValid()) {
-            QRect src = visibleWorld.translated(-job.backingImageBounds.topLeft());
-            QRect dst(visibleWorld.topLeft(), visibleWorld.size());
-            p.drawImage(dst, job.backingImage, src);
-        }
-
-        p.setCompositionMode(QPainter::CompositionMode_Clear);
-        p.drawImage(job.baseCacheBounds, job.baseCache);
-
-        // TODO: can we cache the transformed image so it only needs to be created when scaling the image?
         QImage transformedImage = subPixelTransformedImage(job.baseCache,
                                                            job.transform,
                                                            transformedAlignedRect,
                                                            transformedPreciseRect,
                                                            job.smoothTransform);
 
-        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        p.drawImage(transformedAlignedRect, transformedImage);
-        p.end();
-
-        return { job.jobId, patch, patchBounds, transformedImage, transformedAlignedRect };
+        return { job.jobId, transformedImage, transformedAlignedRect };
     });
 
-    auto* watcher = new QFutureWatcher<SelectionPatchResult>(this);
-    connect(watcher, &QFutureWatcher<SelectionPatchResult>::finished,
+    auto* watcher = new QFutureWatcher<BitmapSelectionRenderResult>(this);
+    connect(watcher, &QFutureWatcher<BitmapSelectionRenderResult>::finished,
             this, [this, watcher]() {
-                SelectionPatchResult result = watcher->result();
+                BitmapSelectionRenderResult result = watcher->result();
                 mResults[result.jobId] = std::move(result);
                 delete mWatchers.take(result.jobId);
-                emit patchReady(result.jobId);
+                emit jobDone(result.jobId);
             });
     watcher->setFuture(future);
     mWatchers[job.jobId] = watcher;
 }
 
-bool SelectionPatchSystem::tryGetResult(int jobId, SelectionPatchResult& result)
+bool BitmapSelectionRenderWorker::tryGetResult(int jobId, BitmapSelectionRenderResult& result)
 {
     if (!mResults.contains(jobId))
         return false;
@@ -71,7 +43,7 @@ bool SelectionPatchSystem::tryGetResult(int jobId, SelectionPatchResult& result)
     return true;
 }
 
-void SelectionPatchSystem::deleteJob(int jobId)
+void BitmapSelectionRenderWorker::deleteJob(int jobId)
 {
     if (mWatchers.contains(jobId)) {
         mWatchers[jobId]->cancel();
@@ -80,12 +52,12 @@ void SelectionPatchSystem::deleteJob(int jobId)
     }
 }
 
-void SelectionPatchSystem::cancelAndRemove(int jobId) {
+void BitmapSelectionRenderWorker::cancelAndRemove(int jobId) {
     deleteJob(jobId);
     mResults.remove(jobId);
 }
 
-QImage SelectionPatchSystem::subPixelTransformedImage(const QImage& src,
+QImage BitmapSelectionRenderWorker::subPixelTransformedImage(const QImage& src,
                                                const QTransform& transform,
                                                const QRect& alignedRect,
                                                const QRectF& preciseRect,
@@ -103,7 +75,7 @@ QImage SelectionPatchSystem::subPixelTransformedImage(const QImage& src,
 
     QPointF preciseCenter(preciseRect.width() * 0.5, preciseRect.height() * 0.5);
 
-    painter.setTransform(transform, true);
+    painter.setTransform(transform);
 
     // Calculates the sub pixel position offset in order to account for the image being integer based.
     QPointF pixelCorrectionOffset = preciseRect.topLeft() - alignedRect.topLeft();
@@ -117,7 +89,7 @@ QImage SelectionPatchSystem::subPixelTransformedImage(const QImage& src,
     return result;
 }
 
-void SelectionPatchSystem::computeTransformedImageBounds(const QRect& sourceBounds,
+void BitmapSelectionRenderWorker::computeTransformedImageBounds(const QRect& sourceBounds,
                                    const QTransform& transform,
                                    QRect& outAlignedRect, QRectF& outPreciseRect) const
 {
