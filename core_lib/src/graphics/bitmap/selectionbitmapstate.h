@@ -26,10 +26,6 @@ struct SelectionBitmapState {
     QRect transformedImageBounds;
     ///
 
-    /// Renderer cache
-    QImage cachedPatch;
-    QRect cachedPatchBounds;
-
     // The editor that owns the current transformation
     SelectionTransformState transformState;
 
