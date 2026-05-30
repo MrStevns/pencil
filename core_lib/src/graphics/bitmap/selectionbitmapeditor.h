@@ -107,7 +107,7 @@ private:
     /// Creates a copy of the editor based on the selection that was set
     void createImageCache();
 
-    int mPatchJobId = -1;
+    int mRenderJob = -1;
     SelectionBitmapState* mState = nullptr;
     BitmapImage* mBitmapImage = nullptr;
 };

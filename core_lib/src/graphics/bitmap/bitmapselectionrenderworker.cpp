@@ -5,8 +5,18 @@
 
 void BitmapSelectionRenderWorker::requestJob(const BitmapSelectionRenderJob& job)
 {
-    deleteJob(job.jobId);
+    // Rather than discarding the current job, wait for the existing one to finish,
+    // so we can render the intermediate result while we wait
+    if (mWatchers.contains(job.jobId)) {
+        mPendingJobs[job.jobId] = job;
+        return;
+    }
 
+    startJob(job);
+}
+
+void BitmapSelectionRenderWorker::startJob(const BitmapSelectionRenderJob& job)
+{
     auto future = QtConcurrent::run([job, this]() -> BitmapSelectionRenderResult {
 
         QRect transformedAlignedRect;
@@ -30,6 +40,12 @@ void BitmapSelectionRenderWorker::requestJob(const BitmapSelectionRenderJob& job
                 mResults[result.jobId] = std::move(result);
                 delete mWatchers.take(result.jobId);
                 emit jobDone(result.jobId);
+
+                // Always ensure we render the latest result
+                if (mPendingJobs.contains(result.jobId)) {
+                    startJob(mPendingJobs.take(result.jobId));
+                }
+
             });
     watcher->setFuture(future);
     mWatchers[job.jobId] = watcher;
@@ -37,14 +53,15 @@ void BitmapSelectionRenderWorker::requestJob(const BitmapSelectionRenderJob& job
 
 bool BitmapSelectionRenderWorker::tryGetResult(int jobId, BitmapSelectionRenderResult& result)
 {
-    if (!mResults.contains(jobId))
-        return false;
+    if (!mResults.contains(jobId)) { return false; }
+
     result  = mResults[jobId];
     return true;
 }
 
 void BitmapSelectionRenderWorker::deleteJob(int jobId)
 {
+    mPendingJobs.remove(jobId);
     if (mWatchers.contains(jobId)) {
         mWatchers[jobId]->cancel();
         mWatchers[jobId]->waitForFinished();
@@ -52,7 +69,8 @@ void BitmapSelectionRenderWorker::deleteJob(int jobId)
     }
 }
 
-void BitmapSelectionRenderWorker::cancelAndRemove(int jobId) {
+void BitmapSelectionRenderWorker::cancelAndRemove(int jobId)
+{
     deleteJob(jobId);
     mResults.remove(jobId);
 }

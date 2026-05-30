@@ -21,7 +21,7 @@ SelectionBitmapEditor::SelectionBitmapEditor(BitmapImage* bitmapImage)
     mState = &mBitmapImage->mSelectionState;
     mTransformEditor = SelectionTransformEditor(&mBitmapImage->mSelectionState.transformState);
     mIsValid = true;
-    mPatchJobId = renderWorker().generateId();
+    mRenderJob = renderWorker().generateId();
 }
 
 SelectionBitmapEditor::~SelectionBitmapEditor()
@@ -40,7 +40,7 @@ void SelectionBitmapEditor::invalidate()
     mState = nullptr;
     mTransformEditor.invalidate();
     mIsValid = false;
-    renderWorker().cancelAndRemove(mPatchJobId);
+    renderWorker().cancelAndRemove(mRenderJob);
 }
 
 void SelectionBitmapEditor::invalidateBitmapCache()
@@ -350,7 +350,7 @@ void SelectionBitmapEditor::updateTransformedSelectionState()
     }
 
     BitmapSelectionRenderJob job;
-    job.jobId = mPatchJobId;
+    job.jobId = mRenderJob;
     job.baseCache = mState->baseImageCache;
     job.baseCacheBounds = mState->baseImageBounds;
     job.transform = mState->transformState.selectionTransform;
@@ -365,7 +365,7 @@ void SelectionBitmapEditor::onRenderJobDone(int jobId)
 {
     if (!mIsValid) { return; }
 
-    if (jobId != mPatchJobId) return;
+    if (jobId != mRenderJob) return;
 
     BitmapSelectionRenderResult result;
     if (renderWorker().tryGetResult(jobId, result)) {

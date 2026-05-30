@@ -31,6 +31,7 @@ public:
     }
 
     void requestJob(const BitmapSelectionRenderJob& job);
+    void startJob(const BitmapSelectionRenderJob& job);
 
     void cancelAndRemove(int jobId);
 
@@ -66,6 +67,7 @@ private:
                                        QRect& outAlignedRect, QRectF& outPreciseRect) const;
 
     int mNextId = 0;
+    QHash<int, BitmapSelectionRenderJob> mPendingJobs;
     QHash<int, QFutureWatcher<BitmapSelectionRenderResult>*> mWatchers;
     QHash<int, BitmapSelectionRenderResult>                  mResults;
 };
