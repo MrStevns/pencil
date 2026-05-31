@@ -67,7 +67,7 @@ void SelectionManager::setActiveEditor(int layerId, int framePos)
     switch (mWorkingLayer->type())
     {
         case Layer::BITMAP: {
-            auto editor = findActiveEditor(layerId, mWorkingLayer->getLastKeyFrameAtPosition(framePos));
+            auto editor = findActiveSelectionBitmapEditor(layerId, mWorkingLayer->getLastKeyFrameAtPosition(framePos));
             if (editor) {
                 mActiveBitmapEditor = editor;
             } else {
@@ -87,7 +87,7 @@ void SelectionManager::createEditor()
 
     switch (mWorkingLayer->type()) {
         case Layer::BITMAP: {
-            auto editor = findActiveEditor(mWorkingLayer->id(), keyframe);
+            auto editor = findActiveSelectionBitmapEditor(mWorkingLayer->id(), keyframe);
             if (!editor) {
                 mBitmapEditors.append(
                             BitmapEditorEntry(mWorkingLayer->id(),
@@ -164,7 +164,7 @@ void SelectionManager::invalidateEditor()
     emit selectionChanged();
 }
 
-SelectionBitmapEditor* SelectionManager::findActiveEditor(int layerId, KeyFrame* keyFrame)
+SelectionBitmapEditor* SelectionManager::findActiveSelectionBitmapEditor(int layerId, KeyFrame* keyFrame)
 {
     for (auto& entry : mBitmapEditors) {
         if (layerId == entry.layerID && entry.bitmapEditor.belongsTo(keyFrame->pos())) {

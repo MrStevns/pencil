@@ -69,9 +69,6 @@ public:
     void workingLayerChanged(Layer* workingLayer) override;
     void scrubberChanged(int framePos);
 
-    void createEditor();
-    void invalidateEditor();
-
     SelectionBitmapEditor* activeBitmapEditor();
 
     void flipSelection(bool flipVertical);
@@ -158,7 +155,10 @@ signals:
     void needDeleteSelection();
 
 private:
-    SelectionBitmapEditor* findActiveEditor(int layerId, KeyFrame* keyFrame);
+    void createEditor();
+    void invalidateEditor();
+
+    SelectionBitmapEditor* findActiveSelectionBitmapEditor(int layerId, KeyFrame* keyFrame);
     void setActiveEditor(int layerId, int framePos);
 
     QList<int> mClosestCurves;
