@@ -150,8 +150,8 @@ void SelectionManager::invalidateEditor()
             for (int i = 0; i < mBitmapEditors.count(); i += 1) {
 
                 auto editor = mBitmapEditors[i];
-                // TODO: Consider using an id here...
-                if (&editor.bitmapEditor == mActiveBitmapEditor) {
+
+                if (editor.bitmapEditor.id() == mActiveBitmapEditor->id()) {
                     disconnect(editor.connections);
                     mBitmapEditors.removeAt(i);
                     mActiveBitmapEditor = &mNullBitmapEditor;

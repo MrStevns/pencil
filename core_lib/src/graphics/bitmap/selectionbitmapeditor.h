@@ -62,6 +62,8 @@ public:
 
     void updateTransformedSelectionState();
 
+    int id() const { return mId; }
+
     void discardChanges();
     void deleteSelection();
 
@@ -110,6 +112,7 @@ private:
     void createImageCache();
 
     int mRenderJob = -1;
+    int mId = -1;
     SelectionBitmapState* mState = nullptr;
     BitmapImage* mBitmapImage = nullptr;
 };

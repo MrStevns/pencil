@@ -22,6 +22,7 @@ SelectionBitmapEditor::SelectionBitmapEditor(BitmapImage* bitmapImage)
     mTransformEditor = SelectionTransformEditor(&mBitmapImage->mSelectionState.transformState);
     mIsValid = true;
     mRenderJob = renderWorker().generateId();
+    mId += 1;
 }
 
 SelectionBitmapEditor::~SelectionBitmapEditor()
