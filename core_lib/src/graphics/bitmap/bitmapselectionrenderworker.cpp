@@ -107,6 +107,13 @@ QImage BitmapSelectionRenderWorker::subPixelTransformedImage(const QImage& src,
     return result;
 }
 
+bool BitmapSelectionRenderWorker::jobRunning(int jobId) const
+{
+    if (mPendingJobs.isEmpty()) { return false; }
+
+    return mPendingJobs.contains(jobId);
+}
+
 void BitmapSelectionRenderWorker::computeTransformedImageBounds(const QRect& sourceBounds,
                                    const QTransform& transform,
                                    QRect& outAlignedRect, QRectF& outPreciseRect) const

@@ -65,6 +65,8 @@ public:
     void discardChanges();
     void deleteSelection();
 
+    bool jobRunning() const;
+
     void calculateSelectionTransformation();
 
     QPointF getSelectionAnchorPoint() const;

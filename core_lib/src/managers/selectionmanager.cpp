@@ -118,10 +118,33 @@ void SelectionManager::createEditor()
     }
 }
 
+bool SelectionManager::canCommitSelection() const
+{
+    bool jobRunning = false;
+    switch (mWorkingLayer->type())
+    {
+        case Layer::BITMAP: {
+            jobRunning = mActiveBitmapEditor->jobRunning();
+            break;
+        case Layer::VECTOR:
+            // TODO: implement...
+            break;
+        default:
+            break;
+        }
+    }
+
+    return jobRunning == false;
+}
+
 void SelectionManager::invalidateEditor()
 {
     switch (mWorkingLayer->type()) {
         case Layer::BITMAP: {
+            if (mActiveBitmapEditor->jobRunning()) {
+                return;
+            }
+
             mActiveBitmapEditor->invalidate();
 
             for (int i = 0; i < mBitmapEditors.count(); i += 1) {
@@ -138,6 +161,7 @@ void SelectionManager::invalidateEditor()
         default:
             break;
     }
+    emit selectionChanged();
 }
 
 SelectionBitmapEditor* SelectionManager::findActiveEditor(int layerId, KeyFrame* keyFrame)
@@ -165,6 +189,11 @@ void SelectionManager::setSelection(const QRectF& rect)
     }
 
     emit selectionChanged();
+}
+
+void SelectionManager::deselect()
+{
+    invalidateEditor();
 }
 
 void SelectionManager::resetSelectionTransform()

@@ -38,6 +38,8 @@ public:
     bool tryGetResult(int jobId, BitmapSelectionRenderResult& result);
     void deleteJob(int jobId);
 
+    bool jobRunning(int jobId) const;
+
 signals:
     void jobDone(int jobId);
 

@@ -85,6 +85,11 @@ QPolygon SelectionBitmapEditor::selectionPolygon() const
     return mState->selectionGeometry;
 }
 
+bool SelectionBitmapEditor::jobRunning() const
+{
+    return renderWorker().jobRunning(mRenderJob);
+}
+
 qreal SelectionBitmapEditor::rotation() const
 {
     if (!mIsValid) { return 0; }

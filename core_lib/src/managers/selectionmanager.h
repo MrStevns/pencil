@@ -77,6 +77,7 @@ public:
     void flipSelection(bool flipVertical);
     
     void setSelection(const QRectF& rect);
+    void deselect();
 
     void translate(QPointF point);
     void rotate(qreal angle, qreal lockedAngle);
@@ -148,6 +149,8 @@ public:
 
     const QList<int> closestCurves() const { return mClosestCurves; }
     const QList<VertexRef> closestVertices() const { return mClosestVertices; }
+
+    bool canCommitSelection() const;
 
 signals:
     void selectionChanged();

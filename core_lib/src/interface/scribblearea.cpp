@@ -1344,6 +1344,7 @@ void ScribbleArea::applyTransformedSelection()
     if (selectMan->somethingSelected())
     {
         if (selectMan->mySelectionRect().isEmpty() || selectMan->selectionTransform().isIdentity()) { return; }
+        if (!selectMan->canCommitSelection()) { return; }
 
         if (layer->type() == Layer::BITMAP)
         {

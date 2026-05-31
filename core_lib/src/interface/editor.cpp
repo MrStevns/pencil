@@ -829,8 +829,7 @@ void Editor::selectAll() const
 
 void Editor::deselectAll() const
 {
-    // TODO: should not be called here...
-    select()->invalidateEditor();
+    select()->deselect();
 
     Layer* layer = layers()->currentLayer();
     if (layer == nullptr) { return; }
