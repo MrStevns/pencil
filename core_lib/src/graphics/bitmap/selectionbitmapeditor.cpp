@@ -274,8 +274,6 @@ void SelectionBitmapEditor::createImageCache()
     mState->baseImageCache = *mBitmapImage->copy(mState->selectionImageBounds, mState->selectionGeometry).image();
     mState->baseImageBounds = mState->selectionImageBounds;
     mCacheInvalidated = false;
-
-    updateTransformedSelectionState();
 }
 
 void SelectionBitmapEditor::resetTransformation()
