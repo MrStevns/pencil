@@ -224,15 +224,17 @@ void UndoRedoManager::replaceBitmap(const UndoSaveState& undoState, const QStrin
                                                editor());
 
     const SelectionSaveState& selectionState = undoState.selectionState;
-    new TransformCommand(selectionState.bounds,
-                         selectionState.translation,
-                         selectionState.rotationAngle,
-                         selectionState.scaleX,
-                         selectionState.scaleY,
-                         selectionState.anchor,
-                         true, // roundPixels
-                         description,
-                         editor(), element);
+    if (selectionState.bounds.isValid()) {
+        new TransformCommand(selectionState.bounds,
+                             selectionState.translation,
+                             selectionState.rotationAngle,
+                             selectionState.scaleX,
+                             selectionState.scaleY,
+                             selectionState.anchor,
+                             true, // roundPixels
+                             description,
+                             editor(), element);
+    }
 
     pushCommand(element);
 }
@@ -246,15 +248,17 @@ void UndoRedoManager::replaceVector(const UndoSaveState& undoState, const QStrin
                                                  editor());
 
     const SelectionSaveState& selectionState = undoState.selectionState;
-    new TransformCommand(selectionState.bounds,
-                         selectionState.translation,
-                         selectionState.rotationAngle,
-                         selectionState.scaleX,
-                         selectionState.scaleY,
-                         selectionState.anchor,
-                         false, // Round pixels
-                         description,
-                         editor(), element);
+    if (selectionState.bounds.isValid()) {
+        new TransformCommand(selectionState.bounds,
+                             selectionState.translation,
+                             selectionState.rotationAngle,
+                             selectionState.scaleX,
+                             selectionState.scaleY,
+                             selectionState.anchor,
+                             false, // Round pixels
+                             description,
+                             editor(), element);
+    }
     pushCommand(element);
 }
 
@@ -286,13 +290,15 @@ void UndoRedoManager::initCommonKeyFrameState(UndoSaveState* undoSaveState) cons
 
     if (layer->type() == Layer::BITMAP || layer->type() == Layer::VECTOR) {
         auto selectMan = editor()->select();
-        undoSaveState->selectionState = SelectionSaveState(
-            selectMan->mySelectionRect(),
-            selectMan->myRotation(),
-            selectMan->myScaleX(),
-            selectMan->myScaleY(),
-            selectMan->myTranslation(),
-            selectMan->currentTransformAnchor());
+        if (selectMan->somethingSelected()) {
+            undoSaveState->selectionState = SelectionSaveState(
+                selectMan->mySelectionRect(),
+                selectMan->myRotation(),
+                selectMan->myScaleX(),
+                selectMan->myScaleY(),
+                selectMan->myTranslation(),
+                selectMan->currentTransformAnchor());
+        }
     }
 
     const int frameIndex = editor()->currentFrame();
