@@ -97,14 +97,14 @@ void SelectionManager::createEditor()
                 auto* editorEntry = &mBitmapEditors[editorIndex];
                 editor = &editorEntry->bitmapEditor;
 
-                editorEntry->connections = connect(&SelectionBitmapEditor::renderWorker(),
+                editorEntry->connections.append(connect(&SelectionBitmapEditor::renderWorker(),
                                                   &BitmapSelectionRenderWorker::jobDone,
                                                   this, [this, editorIndex](int jobId) {
                     if (editorIndex > mBitmapEditors.size() - 1) { return; }
 
                     mBitmapEditors[editorIndex].bitmapEditor.onRenderJobDone(jobId);
                     emit selectionChanged();
-                });
+                }));
             }
             mActiveBitmapEditor = editor;
             break;
@@ -152,7 +152,9 @@ void SelectionManager::invalidateEditor()
                 auto editor = mBitmapEditors[i];
 
                 if (editor.bitmapEditor.id() == mActiveBitmapEditor->id()) {
-                    disconnect(editor.connections);
+                    for (const auto& connection : editor.connections) {
+                        disconnect(connection);
+                    }
                     mBitmapEditors.removeAt(i);
                     mActiveBitmapEditor = &mNullBitmapEditor;
                 }
