@@ -35,12 +35,12 @@ void SelectTool::vectorToolPressEvent(PointerEvent* event, VectorTool& tool)
     auto selectMan = mEditor->select();
     const QPointF canvasPos = event->canvasPos();
 
-    tool.undoState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
+    tool.saveStateId = mEditor->undoRedo()->createState(UndoRedoRecordType::KEYFRAME_MODIFY);
 
     if (selectMan->somethingSelected() && tool.selectionSet) // there is something selected
     {
         Layer* currentLayer = mEditor->layers()->currentLayer();
-        VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+        VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame());
         if (vectorImage != nullptr) {
             vectorImage->deselectAll();
         }
@@ -102,7 +102,7 @@ void SelectTool::vectorToolReleaseEvent(PointerEvent *event, VectorTool &tool)
     }
     tool.dragState = DragState();
 
-    mEditor->undoRedo()->record(tool.undoState, typeName());
+    mEditor->undoRedo()->record(tool.saveStateId, typeName());
 
     mScribbleArea->updateToolCursor();
     mScribbleArea->updateFrame();
@@ -129,7 +129,7 @@ void SelectTool::vectorToolSetSelection()
     Layer* currentLayer = mEditor->layers()->currentLayer();
     if (currentLayer == nullptr) { return; }
 
-    VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+    VectorImage* vectorImage = static_cast<LayerVector*>(currentLayer)->getLastVectorImageAtFrame(mEditor->currentFrame());
     if (vectorImage == nullptr) { return; }
     auto selectMan = mEditor->select();
     selectMan->setSelection(vectorImage->getSelectionRect());

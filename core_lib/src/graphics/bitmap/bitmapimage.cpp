@@ -141,7 +141,7 @@ void BitmapImage::loadFile()
 
 void BitmapImage::unloadFile()
 {
-    if (isModified() == false)
+    if (isModified() == false && !fileName().isEmpty())
     {
         mImage = QImage();
     }
@@ -149,6 +149,8 @@ void BitmapImage::unloadFile()
 
 bool BitmapImage::isLoaded() const
 {
+    if (mImage.isNull()) { return false; }
+
     return mImage.width() == mBounds.width();
 }
 

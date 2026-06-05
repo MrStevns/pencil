@@ -51,7 +51,7 @@ class MoveTool : public TransformTool
         TransformState transformState;
         DragState dragState;
 
-        const UndoSaveState* undoSaveState = nullptr;
+        SAVESTATE_ID saveStateId = -1;
     };
 
     struct VectorTool
@@ -59,7 +59,7 @@ class MoveTool : public TransformTool
         TransformState transformState;
         DragState dragState;
 
-        const UndoSaveState* undoSaveState = nullptr;
+        SAVESTATE_ID saveStateId = -1;
     };
 
     struct PerspectiveOverlayTool

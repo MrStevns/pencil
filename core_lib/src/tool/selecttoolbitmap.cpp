@@ -32,7 +32,7 @@ void SelectTool::bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool)
     auto selectMan = mEditor->select();
     const QPointF canvasPos = event->canvasPos().toPoint();
 
-    tool.undoState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
+    tool.saveStateId = mEditor->undoRedo()->createState(UndoRedoRecordType::KEYFRAME_MODIFY);
 
     if (selectMan->somethingSelected() && tool.selectionSet)
     {
@@ -101,7 +101,7 @@ void SelectTool::bitmapToolReleaseEvent(PointerEvent*, BitmapTool& tool) const
     }
     tool.dragState = DragState();
 
-    mEditor->undoRedo()->record(tool.undoState, typeName());
+    mEditor->undoRedo()->record(tool.saveStateId, typeName());
 
     mScribbleArea->updateToolCursor();
     mScribbleArea->updateFrame();

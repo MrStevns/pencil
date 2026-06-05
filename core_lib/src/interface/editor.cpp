@@ -32,6 +32,8 @@ GNU General Public License for more details.
 #include "layercamera.h"
 #include "undoredocommand.h"
 
+#include "movetool.h"
+
 #include "colormanager.h"
 #include "filemanager.h"
 #include "toolmanager.h"
@@ -155,23 +157,7 @@ void Editor::settingUpdated(SETTING setting)
 
 void Editor::onCurrentLayerWillChange(int index)
 {
-    Layer* newLayer = layers()->getLayer(index);
-    Layer* currentLayer = layers()->currentLayer();
-    Q_ASSERT(newLayer && currentLayer);
-    if (currentLayer->type() != newLayer->type()) {
-        // We apply transform changes upon leaving a layer and deselect all
-        mScribbleArea->applyTransformedSelection();
-
-        if (currentLayer->type() == Layer::VECTOR) {
-            auto keyFrame = static_cast<VectorImage*>(currentLayer->getLastKeyFrameAtPosition(mFrame));
-            if (keyFrame)
-            {
-                keyFrame->deselectAll();
-            }
-        }
-
-        select()->resetSelectionProperties();
-    }
+    Q_UNUSED(index)
 }
 
 void Editor::updateAutoSaveCounter()
@@ -936,9 +922,15 @@ KeyFrame* Editor::addKeyFrame(const int layerNumber, int frameIndex)
     const bool ok = layer->addNewKeyFrameAt(frameIndex);
     Q_ASSERT(ok); // We already ensured that there is no keyframe at frameIndex, so this should always succeed
     scrubTo(frameIndex); // currentFrameChanged() emit inside.
+
+    SAVESTATE_ID saveStateId = undoRedo()->createState(UndoRedoRecordType::KEYFRAME_ADD);
     emit frameModified(frameIndex);
     layers()->notifyAnimationLengthChanged();
-    return layer->getKeyFrameAt(frameIndex);
+    KeyFrame* newFrame = layer->getKeyFrameAt(frameIndex);
+
+    undoRedo()->record(saveStateId, tr("Add frame"));
+
+    return newFrame;
 }
 
 void Editor::removeKey()
@@ -958,12 +950,15 @@ void Editor::removeKey()
         return;
     }
 
+    SAVESTATE_ID saveStateId =  undoRedo()->createState(UndoRedoRecordType::KEYFRAME_REMOVE);
     backup(tr("Remove frame"));
 
     deselectAll();
     layer->removeKeyFrame(currentFrame());
     layers()->notifyAnimationLengthChanged();
     emit layers()->currentLayerChanged(layers()->currentLayerIndex()); // trigger timeline repaint.
+
+    undoRedo()->record(saveStateId, tr("Remove frame"));
 }
 
 void Editor::scrubNextKeyFrame()

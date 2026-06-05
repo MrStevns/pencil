@@ -36,7 +36,7 @@ void MoveTool::bitmapToolPressEvent(PointerEvent* event, BitmapTool& tool)
 
     if (!selectionEditor->selectionRect().isNull())
     {
-        tool.undoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
+        tool.saveStateId = mEditor->undoRedo()->createState(UndoRedoRecordType::KEYFRAME_MODIFY);
         mEditor->backup(typeName());
     }
 
@@ -97,7 +97,7 @@ void MoveTool::bitmapToolMoveEvent(PointerEvent *event, BitmapTool& tool)
 
 void MoveTool::bitmapToolReleaseEvent(PointerEvent*, BitmapTool& tool)
 {
-    mEditor->undoRedo()->record(tool.undoSaveState, typeName());
+    mEditor->undoRedo()->record(tool.saveStateId, typeName());
 
     tool.dragState = DragState();
 

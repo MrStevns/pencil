@@ -48,7 +48,7 @@ class SelectTool : public TransformTool
         bool selectionSet = false;
 
         DragState dragState;
-        const UndoSaveState* undoState = nullptr;
+        SAVESTATE_ID saveStateId = -1;
     };
 
     struct VectorTool
@@ -56,7 +56,7 @@ class SelectTool : public TransformTool
         bool selectionSet = false;
 
         DragState dragState;
-        const UndoSaveState* undoState = nullptr;
+        SAVESTATE_ID saveStateId = -1;
     };
 
 public:

@@ -33,7 +33,7 @@ void MoveTool::vectorToolPressEvent(PointerEvent* event, VectorTool& tool)
 
     if (!selectionEditor->selectionRect().isNull())
     {
-        tool.undoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
+        tool.saveStateId = mEditor->undoRedo()->createState(UndoRedoRecordType::KEYFRAME_MODIFY);
         mEditor->backup(typeName());
     }
 
@@ -76,7 +76,7 @@ void MoveTool::vectorToolCreateSelection(const QPointF& pos, Qt::KeyboardModifie
     auto layer = mEditor->layers()->currentLayer();
     assert(layer->type() == Layer::VECTOR);
     LayerVector* vecLayer = static_cast<LayerVector*>(layer);
-    VectorImage* vectorImage = vecLayer->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+    VectorImage* vectorImage = vecLayer->getLastVectorImageAtFrame(mEditor->currentFrame());
     if (vectorImage == nullptr) { return; }
 
     if (!mEditor->select()->closestCurves().empty()) // the user clicks near a curve
@@ -125,7 +125,7 @@ void MoveTool::vectorToolStoreClosestCurve(const QPointF& pos, Layer* layer)
 {
     auto selectMan = mEditor->select();
     auto layerVector = static_cast<LayerVector*>(layer);
-    VectorImage* pVecImg = layerVector->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+    VectorImage* pVecImg = layerVector->getLastVectorImageAtFrame(mEditor->currentFrame());
     if (pVecImg == nullptr) { return; }
     selectMan->setCurves(pVecImg->getCurvesCloseTo(pos, selectMan->selectionTolerance()));
 }
