@@ -58,10 +58,10 @@ BitmapReplaceCommand::BitmapReplaceCommand(const BitmapImage* undoBitmap,
 
 void BitmapReplaceCommand::undo()
 {
-    QUndoCommand::undo();
-
     Layer* layer = editor()->layers()->findLayerById(undoLayerId);
     static_cast<LayerBitmap*>(layer)->replaceKeyFrame(&undoBitmap);
+
+    QUndoCommand::undo();
 
     editor()->scrubTo(undoBitmap.pos());
 }

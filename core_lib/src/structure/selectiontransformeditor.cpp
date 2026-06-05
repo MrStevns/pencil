@@ -36,7 +36,7 @@ SelectionTransformEditor::SelectionTransformEditor(SelectionTransformState* stat
 
 SelectionTransformEditor::~SelectionTransformEditor()
 {
-    qDebug() << "SelectionEditor destroyed";
+    qDebug() << "SelectionTransformEditor destroyed";
 
     invalidate();
 }

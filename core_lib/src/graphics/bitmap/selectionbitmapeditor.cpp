@@ -28,7 +28,10 @@ SelectionBitmapEditor::SelectionBitmapEditor(BitmapImage* bitmapImage)
 SelectionBitmapEditor::~SelectionBitmapEditor()
 {
     qDebug() << "deinit SelectionBitmapEditor";
-    invalidate();
+
+    if (mIsValid) {
+        invalidate();
+    }
 }
 
 void SelectionBitmapEditor::invalidate()

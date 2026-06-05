@@ -319,7 +319,8 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
     currentBitmapPainter.drawImage(paintedImage->topLeft(), *paintedImage->image());
 
     const SelectionBitmapState& state = paintedImage->selectionState();
-    if (state.selectionImageBounds.isValid() && !state.transformedImage.isNull()) {
+
+    if (state.selectionImageBounds.isValid()) {
         paintTransformedSelection(currentBitmapPainter, paintedImage, state);
     } else {
         if (isCurrentLayer && isDrawing)
@@ -363,10 +364,16 @@ void CanvasPainter::paintTransformedSelection(
     painter.setClipPath(outerRect - innerRect);
     painter.drawImage(paintedImage->topLeft(), *paintedImage->image());
     painter.restore();
-    painter.save();
 
-    painter.drawImage(state.transformedImageBounds, state.transformedImage);
-    painter.restore();
+    if (!state.transformedImage.isNull()) {
+        painter.drawImage(state.transformedImageBounds, state.transformedImage);
+    } else {
+        // While we wait for the transformed image to be rendered, show a low quality version
+        painter.save();
+        painter.setTransform(state.transformState.selectionTransform, true);
+        painter.drawImage(state.baseImageBounds, state.baseImageCache);
+        painter.restore();
+    }
 }
 
 void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blitRect, Layer* layer, bool isCurrentLayer)
