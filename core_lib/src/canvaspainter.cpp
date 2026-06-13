@@ -81,6 +81,8 @@ void CanvasPainter::setTransformedSelection(QRect selection, QTransform transfor
 void CanvasPainter::ignoreTransformedSelection()
 {
     mRenderTransform = false;
+    mSelectionTransform.reset();
+    mSelection = QRect();
 }
 
 void CanvasPainter::paintCached(const QRect& blitRect)
@@ -336,7 +338,7 @@ void CanvasPainter::paintCurrentBitmapFrame(QPainter& painter, const QRect& blit
 void CanvasPainter::paintCurrentVectorFrame(QPainter& painter, const QRect& blitRect, Layer* layer, bool isCurrentLayer)
 {
     LayerVector* vectorLayer = static_cast<LayerVector*>(layer);
-    VectorImage* vectorImage = vectorLayer->getLastVectorImageAtFrame(mFrameNumber, 0);
+    VectorImage* vectorImage = vectorLayer->getLastVectorImageAtFrame(mFrameNumber);
     if (vectorImage == nullptr)
     {
         return;

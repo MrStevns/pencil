@@ -47,6 +47,8 @@ public:
     bool leavingThisTool() override;
     bool isActive() const override;
 
+    void applyTransformationAndDeselect();
+
 private:
     void applyTransformation();
     void updateSettings(const SETTING setting);
@@ -67,7 +69,7 @@ private:
     MoveMode mPerspMode;
     QPointF mOffset;
 
-    const UndoSaveState* mUndoSaveState = nullptr;
+    SAVESTATE_ID mUndoSaveStateId = 0;
 };
 
 #endif

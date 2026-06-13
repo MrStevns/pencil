@@ -47,6 +47,7 @@ class PegBarAlignmentDialog;
 class AddTransparencyToPaperDialog;
 class RepositionFramesDialog;
 class StatusBar;
+class AutosaverByTime;
 class ToolBrushSettingsWidget;
 class MPBrushConfigurator;
 class MPBrushSelector;
@@ -115,6 +116,8 @@ public:
     void displayMessageBox(const QString& title, const QString& body);
     void displayMessageBoxNoTitle(const QString& body);
 
+    void onFocusRequested(QWidget* widget);
+
 signals:
     /** Emitted when window regains focus */
     void windowActivated();
@@ -127,6 +130,7 @@ protected:
 private slots:
     void updateCopyCutPasteEnabled();
     void updateLayerMenu();
+    void autoSaveTimeout();
 private:
     void hideBrushSelectorWidgetIfNeeded(const bool hide);
     bool shouldHideBrushSelectorWidget(const Layer* layer, ToolType toolType);
@@ -191,6 +195,9 @@ private:
     RepositionFramesDialog* mReposDialog = nullptr;
     LayerOpacityDialog* mLayerOpacityDialog = nullptr;
     AddTransparencyToPaperDialog* mAddTranspToPaper = nullptr;
+
+    // Autosave handler
+    AutosaverByTime* mAutoSaver = nullptr;
 
     void createToolbars();
 private:

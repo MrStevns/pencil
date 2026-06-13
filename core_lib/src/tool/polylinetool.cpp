@@ -125,7 +125,7 @@ void PolylineTool::pointerPressEvent(PointerEvent* event)
 
             if (layer->type() == Layer::VECTOR)
             {
-                VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+                VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame());
                 Q_CHECK_PTR(vectorImage);
                 vectorImage->deselectAll();
                 if (mScribbleArea->makeInvisible() && !mEditor->preference()->isOn(SETTING::INVISIBLE_LINES))
@@ -170,14 +170,18 @@ void PolylineTool::pointerReleaseEvent(PointerEvent* event)
 void PolylineTool::pointerDoubleClickEvent(PointerEvent* event)
 {
     mInterpolator.pointerPressEvent(event);
-    // include the current point before ending the line.
-    mPoints << getCurrentPoint();
 
-    const UndoSaveState* saveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
-    mEditor->backup(typeName());
 
-    endPolyline(mPoints);
-    mEditor->undoRedo()->record(saveState, typeName());
+    if (mPoints.size() > 0) {
+        if (mPoints.last() != getCurrentPoint()) {
+            // include the current point before ending the line.
+            mPoints << getCurrentPoint();
+        }
+        SAVESTATE_ID saveStateId = mEditor->undoRedo()->createState(UndoRedoRecordType::KEYFRAME_MODIFY);
+        mEditor->backup(typeName());
+        endPolyline(mPoints);
+        mEditor->undoRedo()->record(saveStateId, typeName());
+    }
 }
 
 void PolylineTool::removeLastPolylineSegment()
@@ -207,9 +211,11 @@ bool PolylineTool::keyPressEvent(QKeyEvent* event)
     case Qt::Key_Return:
         if (mPoints.size() > 0)
         {
-            const UndoSaveState* saveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
+            // include the current point before ending the line.
+            mPoints << getCurrentPoint();
+            SAVESTATE_ID saveStateId = mEditor->undoRedo()->createState(UndoRedoRecordType::KEYFRAME_MODIFY);
             endPolyline(mPoints);
-            mEditor->undoRedo()->record(saveState, typeName());
+            mEditor->undoRedo()->record(saveStateId, typeName());
             return true;
         }
         break;
@@ -326,7 +332,7 @@ void PolylineTool::endPolyline(QList<QPointF> points)
         curve.setVariableWidth(false);
         curve.setInvisibility(mScribbleArea->makeInvisible());
 
-        VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+        VectorImage* vectorImage = static_cast<LayerVector*>(layer)->getLastVectorImageAtFrame(mEditor->currentFrame());
         if (vectorImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
         vectorImage->addCurve(curve, mEditor->view()->scaling());
     }

@@ -170,7 +170,7 @@ void MoveTool::pointerMoveEvent(PointerEvent* event)
 
 void MoveTool::pointerReleaseEvent(PointerEvent*)
 {
-    mEditor->undoRedo()->record(mUndoSaveState, typeName());
+    mEditor->undoRedo()->record(mUndoSaveStateId, typeName());
 
     if (mEditor->overlays()->anyOverlayEnabled())
     {
@@ -220,7 +220,7 @@ void MoveTool::beginInteraction(const QPointF& pos, Qt::KeyboardModifiers keyMod
     QRectF selectionRect = selectMan->mySelectionRect();
     if (!selectionRect.isNull())
     {
-        mUndoSaveState = mEditor->undoRedo()->state(UndoRedoRecordType::KEYFRAME_MODIFY);
+        mUndoSaveStateId = mEditor->undoRedo()->createState(UndoRedoRecordType::KEYFRAME_MODIFY);
         mEditor->backup(typeName());
     }
 
@@ -264,7 +264,7 @@ void MoveTool::createVectorSelection(const QPointF& pos, Qt::KeyboardModifiers k
 {
     assert(layer->type() == Layer::VECTOR);
     LayerVector* vecLayer = static_cast<LayerVector*>(layer);
-    VectorImage* vectorImage = vecLayer->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+    VectorImage* vectorImage = vecLayer->getLastVectorImageAtFrame(mEditor->currentFrame());
     if (vectorImage == nullptr) { return; }
 
     if (!mEditor->select()->closestCurves().empty()) // the user clicks near a curve
@@ -313,7 +313,7 @@ void MoveTool::storeClosestVectorCurve(const QPointF& pos, Layer* layer)
 {
     auto selectMan = mEditor->select();
     auto layerVector = static_cast<LayerVector*>(layer);
-    VectorImage* pVecImg = layerVector->getLastVectorImageAtFrame(mEditor->currentFrame(), 0);
+    VectorImage* pVecImg = layerVector->getLastVectorImageAtFrame(mEditor->currentFrame());
     if (pVecImg == nullptr) { return; }
     selectMan->setCurves(pVecImg->getCurvesCloseTo(pos, selectMan->selectionTolerance()));
 }
@@ -326,6 +326,24 @@ void MoveTool::applyTransformation()
     // When the selection has been applied, a new rect is applied based on the bounding box.
     // This ensures that if the selection has been rotated, it will still fit the bounds of the image.
     selectMan->setSelection(selectMan->mapToSelection(QPolygonF(selectMan->mySelectionRect())).boundingRect());
+    mRotatedAngle = 0;
+}
+
+void MoveTool::applyTransformationAndDeselect()
+{
+    // We apply transform changes upon leaving a layer and deselect all
+    mScribbleArea->applyTransformedSelection();
+
+    Layer* currentLayer = mEditor->layers()->currentLayer();
+    if (currentLayer->type() == Layer::VECTOR) {
+        auto keyFrame = static_cast<VectorImage*>(currentLayer->getLastKeyFrameAtPosition(mEditor->currentFrame()));
+        if (keyFrame)
+        {
+            keyFrame->deselectAll();
+        }
+    }
+
+    mEditor->select()->resetSelectionProperties();
     mRotatedAngle = 0;
 }
 

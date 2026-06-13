@@ -49,6 +49,7 @@ private:
 
     bool keyPressEvent(QKeyEvent* event) override;
 
+    void manageSelectionOrigin(QPointF currentPoint, QPointF originPoint, Layer::LAYER_TYPE layerType);
     void controlOffsetOrigin(QPointF currentPoint, QPointF anchorPoint, Layer::LAYER_TYPE layerType);
 
     void beginSelection(Layer* currentLayer, const QPointF& pos);
@@ -69,7 +70,7 @@ private:
 
     QPixmap mCursorPixmap = QPixmap(24, 24);
 
-    const UndoSaveState* mUndoState = nullptr;
+    SAVESTATE_ID mUndoStateId = 0;
 };
 
 #endif

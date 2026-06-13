@@ -38,10 +38,10 @@ BitmapImage* LayerBitmap::getBitmapImageAtFrame(int frameNumber)
     return static_cast<BitmapImage*>(getKeyFrameAt(frameNumber));
 }
 
-BitmapImage* LayerBitmap::getLastBitmapImageAtFrame(int frameNumber, int increment)
+BitmapImage* LayerBitmap::getLastBitmapImageAtFrame(int frameNumber)
 {
     Q_ASSERT(frameNumber >= 1);
-    return static_cast<BitmapImage*>(getLastKeyFrameAtPosition(frameNumber + increment));
+    return static_cast<BitmapImage*>(getLastKeyFrameAtPosition(frameNumber));
 }
 
 void LayerBitmap::replaceKeyFrame(const KeyFrame* bitmapImage)
@@ -94,6 +94,8 @@ Status LayerBitmap::saveKeyFrameFile(KeyFrame* keyframe, QString path)
         DebugDetails dd;
         dd << "LayerBitmap::saveKeyFrame";
         dd << QString("&nbsp;&nbsp;KeyFrame.pos() = %1").arg(keyframe->pos());
+        dd << QString("&nbsp;&nbsp;strFilePath = %1").arg(strFilePath);
+        dd << QString("Error: Failed to save BitmapImage");
         dd.collect(st.details());
         return Status(Status::FAIL, dd);
     }

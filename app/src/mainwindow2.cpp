@@ -35,6 +35,8 @@ GNU General Public License for more details.
 #include <QToolBar>
 #include <QToolButton>
 #include <QDebug>
+#include <QLineEdit>
+#include <QSpinBox>
 
 // common_lib headers
 #include "pencilerror.h"
@@ -87,6 +89,7 @@ GNU General Public License for more details.
 #include "app_util.h"
 #include "presetdialog.h"
 #include "pegbaralignmentdialog.h"
+#include "autosaverbytime.h"
 
 // mypaint interface
 #include "mpbrushselector.h"
@@ -152,10 +155,19 @@ MainWindow2::MainWindow2(QWidget* parent) :
 
     connect(mEditor, &Editor::needSave, this, &MainWindow2::autoSave);
 
+    mAutoSaver = new AutosaverByTime(mEditor->preference(), this);
+    connect(mAutoSaver, &AutosaverByTime::timeout, this, &MainWindow2::autoSaveTimeout);
+
     mEditor->tools()->setDefaultTool();
     ui->background->init(mEditor->preference());
 
     setWindowTitle(getWindowTitle());
+}
+
+void MainWindow2::autoSaveTimeout()
+{
+    FileManager fm;
+    fm.writeToWorkingFolder(mEditor->object());
 }
 
 MainWindow2::~MainWindow2()
@@ -250,8 +262,10 @@ void MainWindow2::createDockWidgets()
 
     for (BaseDockWidget* w : mDockWidgets)
     {
-        w->setFloating(false);
-        w->show();
+        if (w->isFloating()) {
+            w->show();
+            w->raise();
+        }
         w->updateUI();
     }
 }
@@ -1539,6 +1553,8 @@ void MainWindow2::makeConnections(Editor* editor, ScribbleArea* scribbleArea)
     connect(editor->tools(), &ToolManager::toolChanged, scribbleArea, &ScribbleArea::updateToolCursor);
     connect(editor->tools(), &ToolManager::toolChanged, mToolBox, &ToolBoxDockWidget::setActiveTool);
 
+    connect(scribbleArea, &ScribbleArea::requestFocus, this, &MainWindow2::onFocusRequested);
+
     connect(editor->layers(), &LayerManager::currentLayerChanged, scribbleArea, &ScribbleArea::onLayerChanged);
     connect(editor->layers(), &LayerManager::layerDeleted, scribbleArea, &ScribbleArea::onLayerChanged);
     connect(editor, &Editor::willScrub, scribbleArea, &ScribbleArea::onWillScrub);
@@ -1682,6 +1698,24 @@ bool MainWindow2::event(QEvent* event)
     return QMainWindow::event(event);
 }
 
+void MainWindow2::onFocusRequested(QWidget *widget)
+{
+    ScribbleArea* scribbleArea = qobject_cast<ScribbleArea*>(widget);
+
+    QWidget* currentFocus = QApplication::focusWidget();
+
+    bool hasEditingFocus = false;
+
+    if (currentFocus) {
+        hasEditingFocus = qobject_cast<QLineEdit*>(currentFocus) ||
+                    qobject_cast<QAbstractSpinBox*>(currentFocus);
+    }
+
+    if (scribbleArea && !scribbleArea->hasFocus() && !hasEditingFocus) {
+        scribbleArea->setFocus();
+    }
+}
+
 void MainWindow2::displayMessageBox(const QString& title, const QString& body)
 {
     QMessageBox::information(this, tr(qPrintable(title)), tr(qPrintable(body)), QMessageBox::Ok);
@@ -1696,11 +1730,6 @@ bool MainWindow2::checkForRecoverableProjects()
 {
     FileManager fm;
     QStringList recoverables = fm.searchForUnsavedProjects();
-
-    if (recoverables.empty())
-    {
-        return false;
-    }
 
     foreach (const QString path, recoverables)
     {
