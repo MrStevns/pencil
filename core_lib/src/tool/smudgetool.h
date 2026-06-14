@@ -42,7 +42,7 @@ public:
     bool keyPressEvent(QKeyEvent *) override;
     bool keyReleaseEvent(QKeyEvent *) override;
 
-    void drawStroke();
+    void drawStroke(PointerEvent* event);
 
 protected:
     bool emptyFrameActionEnabled() override;

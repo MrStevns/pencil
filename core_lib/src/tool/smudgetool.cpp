@@ -188,7 +188,7 @@ void SmudgeTool::pointerMoveEvent(PointerEvent* event)
         {
             if (layer->type() == Layer::BITMAP)
             {
-                drawStroke();
+                drawStroke(event);
             }
             else //if (layer->type() == Layer::VECTOR)
             {
@@ -246,7 +246,7 @@ void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
 
         if (layer->type() == Layer::BITMAP)
         {
-            drawStroke();
+            drawStroke(event);
             mScribbleArea->paintBitmapBuffer();
             mScribbleArea->clearDrawingBuffer();
             endStroke();
@@ -271,83 +271,23 @@ void SmudgeTool::pointerReleaseEvent(PointerEvent* event)
     StrokeTool::pointerReleaseEvent(event);
 }
 
-void SmudgeTool::drawStroke()
+void SmudgeTool::drawStroke(PointerEvent* event)
 {
-    // Layer* layer = mEditor->layers()->currentLayer();
-    // if (layer == nullptr || !layer->isPaintable()) { return; }
+    StrokeTool::drawStroke();
 
-    // BitmapImage *sourceImage = static_cast<LayerBitmap*>(layer)->getLastBitmapImageAtFrame(mEditor->currentFrame(), 0);
-    // if (sourceImage == nullptr) { return; } // Can happen if the first frame is deleted while drawing
-    // BitmapImage targetImage = sourceImage->copy();
-    // StrokeTool::drawStroke();
-    // QList<QPointF> p = mInterpolator.interpolateStroke();
+    Layer* layer = mEditor->layers()->currentLayer();
+    if (layer->type() == Layer::BITMAP)
+    {
+        const float pressure = static_cast<float>(mCurrentPressure);
 
-    // for (int i = 0; i < p.size(); i++)
-    // {
-    //     p[i] = mEditor->view()->mapScreenToCanvas(p[i]);
-    // }
+        double dt = calculateDeltaTime(event->timeStamp());
 
-    // qreal opacity = 1.0;
-    // mCurrentWidth = mSettings.width();
-    // qreal brushWidth = mCurrentWidth + 0.0 * mSettings.feather();
-    // qreal offset = qMax(0.0, mCurrentWidth - 0.5 * mSettings.feather()) / brushWidth;
-    // //opacity = currentPressure; // todo: Probably not interesting?!
-    // //brushWidth = brushWidth * opacity;
-
-    // QPointF a = mLastBrushPoint;
-    // QPointF b = getCurrentPoint();
-
-
-    // if (toolMode == 1) // liquify hard
-    // {
-    //     qreal brushStep = 2;
-    //     qreal distance = QLineF(b, a).length() / 2.0;
-    //     int steps = qRound(distance / brushStep);
-
-    //     QPointF sourcePoint = mLastBrushPoint;
-    //     for (int i = 0; i < steps; i++)
-    //     {
-    //         targetImage.paste(&mScribbleArea->mTiledBuffer);
-    //         QPointF targetPoint = mLastBrushPoint + (i + 1) * (brushStep) * (b - mLastBrushPoint) / distance;
-    //         mScribbleArea->liquifyBrush(&targetImage,
-    //                                     sourcePoint,
-    //                                     targetPoint,
-    //                                     brushWidth,
-    //                                     offset,
-    //                                     opacity);
-
-    //         if (i == (steps - 1))
-    //         {
-    //             mLastBrushPoint = targetPoint;
-    //         }
-    //         sourcePoint = targetPoint;
-    //     }
-    // }
-    // else // liquify smooth
-    // {
-    //     qreal brushStep = 2.0;
-    //     qreal distance = QLineF(b, a).length();
-    //     int steps = qRound(distance / brushStep);
-
-    //     QPointF sourcePoint = mLastBrushPoint;
-    //     for (int i = 0; i < steps; i++)
-    //     {
-    //         targetImage.paste(&mScribbleArea->mTiledBuffer);
-    //         QPointF targetPoint = mLastBrushPoint + (i + 1) * (brushStep) * (b - mLastBrushPoint) / distance;
-    //         mScribbleArea->blurBrush(&targetImage,
-    //                                  sourcePoint,
-    //                                  targetPoint,
-    //                                  brushWidth,
-    //                                  offset,
-    //                                  opacity);
-
-    //         if (i == (steps - 1))
-    //         {
-    //             mLastBrushPoint = targetPoint;
-    //         }
-    //         sourcePoint = targetPoint;
-    //     }
-    // }
+        if (mEditor->layers()->currentLayer()->type() == Layer::BITMAP) {
+            mScribbleArea->strokeTo(getCurrentPoint(), pressure, 0.0f,  0.0f, dt);
+        } else {
+            // Only mypaint utilizes a strokeTo method currently...
+        }
+    }
 }
 
 QPointF SmudgeTool::offsetFromPressPos()
